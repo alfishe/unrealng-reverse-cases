@@ -39,10 +39,7 @@ for part in rick1 stage2 loadgroup; do
     "$asm" --nologo --msg=war -I"$here/src/loader" --lst=$part.lst "$here/src/loader/$part.asm"
 done
 "$asm" --nologo --msg=war -I"$here/build" -I"$here/src/music" --lst=music.lst "$here/src/music/music.asm"
-# the game INCBINs the built second stage and AY player (case.json "built"; never kept in src/res)
-mkdir -p res/loader res/music
-cp stage2.bin res/loader/stage2.bin
-cp music.bin res/music/music.bin
+# the game INCBINs the built second stage and AY player from here (case.json "built"; never kept in src/res)
 "$asm" --nologo --msg=war -I"$here/build" -I"$here/src/game" --lst=game.lst "$here/src/game/game.asm"
 python3 "$here/tools/mktape.py" "$here/src/tape/tape.txt" "Rick Dangerous.tzx" "$here/build"
 python3 "$here/tools/mktape.py" --orig orig.tzx

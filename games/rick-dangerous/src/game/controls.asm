@@ -28,7 +28,7 @@
 ; Reads port $F7FE (keys 1-5) and tests bit 0. Output: A, BC, F. Title only
 ; ($E273): selects the keyboard (method 0).
 ;
-; Witness: L1 6595 (beeper48, c1, controls, ending2, gameover, level1).
+; Witness: L1 6741 (beeper48, c1, controls, ending, ending2, gameover, level1).
 Key1Pressed:
   LD BC,$F7FE
   IN A,(C)
@@ -39,7 +39,7 @@ Key1Pressed:
 ;
 ; Port $F7FE bit 1. Title ($E289): selects the Kempston (method 1).
 ;
-; Witness: L1 6595 (beeper48, c1, controls, ending2, gameover, level1).
+; Witness: L1 6741 (beeper48, c1, controls, ending, ending2, gameover, level1).
 Key2Pressed:
   LD BC,$F7FE
   IN A,(C)
@@ -50,7 +50,7 @@ Key2Pressed:
 ;
 ; Port $F7FE bit 2. Title ($E2A1): selects the cursor keys (method 2).
 ;
-; Witness: L1 6595 (beeper48, c1, controls, ending2, gameover, level1).
+; Witness: L1 6741 (beeper48, c1, controls, ending, ending2, gameover, level1).
 Key3Pressed:
   LD BC,$F7FE
   IN A,(C)
@@ -61,7 +61,7 @@ Key3Pressed:
 ;
 ; Port $F7FE bit 3. Title ($E2B9): selects the Sinclair joystick (method 3).
 ;
-; Witness: L1 6595 (beeper48, c1, controls, ending2, gameover, level1).
+; Witness: L1 6741 (beeper48, c1, controls, ending, ending2, gameover, level1).
 Key4Pressed:
   LD BC,$F7FE
   IN A,(C)
@@ -78,8 +78,8 @@ Key4Pressed:
 ; game over ($E389, $E38E) and the level's end ($AC38, $AC3D); each waits for
 ; the release first, then for the press.
 ;
-; Witness: L1 1149386 (beeper48, c1, controls, ending2, gameover, l1end,
-; level1-level4).
+; Witness: L1 1340688 (beeper48, c1, controls, ending, ending2, gameover,
+; l1end, level1-level4).
 StartPressed:
   LD BC,$BFFE
   IN A,(C)
@@ -152,9 +152,10 @@ InputBits:
 ; controls (and 30 times in c1); the cursor keys in c1, controls and the four
 ; level recordings; the Sinclair in c1 and controls.
 ;
-; Witness: L1 1145688 (beeper48, c1, controls, emptygun, ending2, gameover,
-; l1end, l1z1left, spotL2Z4-34, spotL3Z7-51, spotL4Z8-69, L1Z1-L1Z6, L2Z1-L2Z7,
-; L3Z1-L3Z12, L4Z1-L4Z9, level1-level4, spotL1Z4-43, spotL1Z4-44, spotL1Z4-47).
+; Witness: L1 1332994 (beeper48, c1, controls, emptygun, ending, ending2,
+; gameover, l1end, l1z1left, spotL2Z4-34, spotL3Z7-51, spotL4Z8-69, L1Z1-L1Z6,
+; L2Z1-L2Z7, L3Z1-L3Z12, L4Z1-L4Z9, level1-level4, spotL1Z4-43, spotL1Z4-44,
+; spotL1Z4-47).
 ReadInput:
   PUSH HL
   LD HL,InputBits

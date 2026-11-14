@@ -100,8 +100,8 @@ CheckZone:
 ; $EAAE >= `$CC`: `$ADB9` (c1 14, level1 15); RickY < `$60`: `$ADF0` (only
 ; level2, 11 times).
 ;
-; Witness: L1 106 (c1, ending2, l1end, L1Z2-L1Z4, L1Z6, L2Z2-L2Z7, L3Z2-L3Z12,
-; L4Z2-L4Z6, L4Z8, level1).
+; Witness: L1 107 (c1, ending, ending2, l1end, L1Z2-L1Z4, L1Z6, L2Z2-L2Z7,
+; L3Z2-L3Z12, L4Z2-L4Z6, L4Z8, level1).
 CheckGameComplete:
   LD A,(GameComplete)
   AND A
@@ -188,9 +188,10 @@ FrameCountHigh:
 ; FrameCount $E462 + 1, carried into FrameCountHigh $E464. Called by the IM 2
 ; handler once a frame (its counts equal the handler's: c1 14301, ending 1499).
 ;
-; Witness: L1 111926 (beeper48, c1, controls, emptygun, ending2, gameover,
-; l1end, l1z1left, spotL2Z4-34, spotL3Z7-51, spotL4Z8-69, L1Z1-L1Z6, L2Z1-L2Z7,
-; L3Z1-L3Z12, L4Z1-L4Z9, level1-level4, spotL1Z4-43, spotL1Z4-44, spotL1Z4-47).
+; Witness: L1 113425 (beeper48, c1, controls, emptygun, ending, ending2,
+; gameover, l1end, l1z1left, spotL2Z4-34, spotL3Z7-51, spotL4Z8-69, L1Z1-L1Z6,
+; L2Z1-L2Z7, L3Z1-L3Z12, L4Z1-L4Z9, level1-level4, spotL1Z4-43, spotL1Z4-44,
+; spotL1Z4-47).
 FrameTick:
   LD HL,(FrameCount)
   INC HL

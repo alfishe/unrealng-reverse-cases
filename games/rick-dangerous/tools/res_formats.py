@@ -47,10 +47,7 @@ def group_of(name):
 
 
 def install(files):
-    # case.json "built": resources a build step makes (the second stage, the AY player): never installed as bytes
-    import json
-    built = json.load(open(os.path.join(ROOT, 'case.json'))).get('built', {})
-    files = {k: v for k, v in files.items() if k not in built}
+    # case.json "built" (the second stage, the AY player) never reaches here: kit/mkgame.py leaves them out
     done = set()
     for ed, (bins, to_ed, from_ed) in GROUPS.items():
         if not all(b in files for b in bins):

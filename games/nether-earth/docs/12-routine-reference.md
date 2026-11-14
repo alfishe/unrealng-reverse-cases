@@ -6,7 +6,9 @@ Runs count the calls of the entry itself; the time is its own t-states (callees 
 of the recording. Memory ranges name the label at or below their first byte (inner labels too, `Label+offset`)
 and the entries they cover. The interrupt's acceptance (the vector read, the return address pushed) is
 the handler's, not the interrupted routine's. An entry no recording reached says so; one the case's other
-recordings ran gives their calls.
+recordings ran gives their calls. An entry no routine of a recording starts at (entered by a jump, a table jump or
+by running on: L1 books its time to the routine it runs in) gives the runs of its first instruction, as its witness
+line counts them.
 Written by `kit/refdocs.py`; edit `src/game/game.ann`, then run `kit/mkgame.py --case . --install`
 (see [3. Build and load](03-build-and-load.md)) and `kit/refdocs.py --case .`.
 
@@ -61,8 +63,9 @@ Zeroes the robot records `$DA00-$DCFF` (48 x 16), the variables `$FD04-$FDFC` (e
 
 | | |
 | --- | --- |
-| Runs (the first recording's game window) | run into, not called, 26,831 t-states own (0.01 %) |
-| Runs (the bot's game: robots built, orders given, factories captured, fights) | run into, not called, 656,157 t-states own (0.03 %) |
+| Runs (the first recording's game window) | 1 run of its first instruction (entered by a jump or by running on, no routine of its own in the L1), 26,831 t-states own (0.01 %) |
+| Runs (the bot's game: robots built, orders given, factories captured, fights) | 1 run of its first instruction (entered by a jump or by running on, no routine of its own in the L1), 656,157 t-states own (0.03 %) |
+| Runs (the other recordings) | 9 runs of its first instruction, entered by a jump (`load` 8, `play` 1) |
 | Calls | `BuildMap` |
 | Reads | `$D7D3`-`$D7FE` (`Shots`); `$DA00`-`$DCFE` (`Robots`, `EnemyRobots`); `$E714`-`$E716` (`Map+2580`); `$E914`-`$EB18` (`Map+3092`); `$ED12`-`$ED18` (`Map+4114`); `$EF12`-`$F118` (`Map+4626`); 6 more ranges |
 | Writes | `$D7D3`-`$D7FF` (`Shots`); `$DA00`-`$DCFF` (`Robots`, `EnemyRobots`); `$FD04`-`$FDFF` (`work space $FD04+`); `$FF01`-`$FFC9` (`work space $FF01+`) |
@@ -75,7 +78,9 @@ DrawViewBackground and DrawPlayScreen build the play screen (the view, its frame
 
 | | |
 | --- | --- |
-| Runs | not reached in `game`, `deep`; in the other recordings 6 calls (`load` 6) |
+| Runs (the first recording's game window) | 1 run of its first instruction (entered by a jump or by running on, no routine of its own in the L1) |
+| Runs (the bot's game: robots built, orders given, factories captured, fights) | 1 run of its first instruction (entered by a jump or by running on, no routine of its own in the L1) |
+| Runs (the other recordings) | 6 calls (`load` 6) |
 | Called from | `PlayLoop` (tail) |
 | Calls | `PlayLoop` (falls into), `DrawViewBackground`, `DrawPlayScreen` |
 
@@ -94,6 +99,7 @@ Last, the game keys: Input bit 6 (key I in the default KeyTable) abandons the ga
 | | |
 | --- | --- |
 | Runs (the first recording's game window) | 1 call, 64,293 t-states own (0.02 %) |
+| Runs (the bot's game: robots built, orders given, factories captured, fights) | 3,332 runs of its first instruction (entered by a jump or by running on, no routine of its own in the L1) |
 | Runs (the other recordings) | 15 calls (`load` 14, `play` 1) |
 | Called from | `EnterPlay` (falls into) |
 | Calls | `Start` (tail), `EnterPlay` (tail), `RobotMenu`, `GameTurn`, `MoveShip`, `WorldTurn`, `CountRobots`, `SaveGame`, `ConstructionMenu`, `ShipCell`, `DrawView`, `FindRobot`, `FindBuilding`, `UpdateStatusPanel`, `WaitKey` |
@@ -177,7 +183,7 @@ CloseRobotMenu (`$A812`) clears the panel, sets `$FD39` = 0 and redraws the stat
 
 | | |
 | --- | --- |
-| Runs | ran within another entry's routine (reached by a jump or by running on, its calls below), no runs of its own counted |
+| Runs (the bot's game: robots built, orders given, factories captured, fights) | 14 runs of its first instruction (entered by a jump or by running on, no routine of its own in the L1) |
 | Calls | `ShowStrength`, `OrdersMenu` (tail), `ListMenu`, `Beep`, `ShowStatusPanel`, `ClearPanel` |
 
 ### `ShowStrength` (`$A81D`)
@@ -642,7 +648,9 @@ RadarDirty (`$FD52`) is set when the window moved (`$B017`) and by other code th
 
 | | |
 | --- | --- |
+| Runs (the first recording's game window) | 369 runs of its first instruction (entered by a jump or by running on, no routine of its own in the L1) |
 | Runs (the bot's game: robots built, orders given, factories captured, fights) | 3,416 calls, 99,093 t-states own (0.00 %) |
+| Runs (the other recordings) | 624 runs of its first instruction, entered by a jump (`play` 369, `load` 255) |
 | Called from | `PutShipOnMap` (falls into), `MenuRadarTick` (tail) |
 | Calls | `BlinkShipDot` (falls into), `BuildRadar` |
 | Reads | `$FD52` (`work space $FD52+`) |
@@ -804,6 +812,7 @@ Recording: 9652 steps; the shot records and strengths at frames 18680-18850 matc
 | | |
 | --- | --- |
 | Runs (the first recording's game window) | 844 calls, 151,768 t-states own (0.06 %) |
+| Runs (the bot's game: robots built, orders given, factories captured, fights) | 49,110 runs of its first instruction (entered by a jump or by running on, no routine of its own in the L1) |
 | Runs (the other recordings) | 964 calls (`play` 844, `load` 120) |
 | Called from | `UpdateRobot` (tail) |
 | Calls | `SteerByOrder`, `TurnOrStep`, `CountDirections`, `FreeDirections`, `SetStepDelay`, `SpotEnemies`, `FindFreeShot`, `FireShot`, `PlaceRobot` (tail), `Random`, `ToggleRadarDot` |
@@ -844,7 +853,9 @@ Masks C with random bytes until exactly one bit is left (CountDirections); when 
 
 | | |
 | --- | --- |
-| Runs | ran within another entry's routine (reached by a jump or by running on, its calls below), no runs of its own counted |
+| Runs (the first recording's game window) | 11 runs of its first instruction (entered by a jump or by running on, no routine of its own in the L1) |
+| Runs (the bot's game: robots built, orders given, factories captured, fights) | 1,016 runs of its first instruction (entered by a jump or by running on, no routine of its own in the L1) |
+| Runs (the other recordings) | 11 runs of its first instruction, entered by a jump (`play` 11) |
 | Calls | `CountDirections`, `Random` |
 
 ### `FindTargetBuilding` (`$B34D`)
@@ -1588,7 +1599,8 @@ The entry of MainMenu after ClearScreen; nothing jumps here (MainMenuKeys key 4 
 
 | | |
 | --- | --- |
-| Runs (the first recording's game window) | run into, not called, 17 t-states own (0.00 %) |
+| Runs (the first recording's game window) | 1 run of its first instruction (entered by a jump or by running on, no routine of its own in the L1), 17 t-states own (0.00 %) |
+| Runs (the other recordings) | 16 runs of its first instruction, entered by a jump (`load` 15, `play` 1) |
 | Calls | `PrintTitle` |
 
 ### `MainMenuOptions` (`$C106`)
@@ -1963,7 +1975,7 @@ Part of DefineKey (`$C427`): code `$0D` prints "ENTER" and returns through the R
 
 | | |
 | --- | --- |
-| Runs | not reached in the recordings |
+| Runs | not reached in `game`, `deep`; in the other recordings 8 runs of its first instruction, entered by a jump (`load` 8) |
 
 ### `KeyNameEnterEnd` (`$C487`)
 
@@ -1981,7 +1993,7 @@ Part of DefineKey (`$C427`): code `$E3` (the byte after the ROM's key table, wha
 
 | | |
 | --- | --- |
-| Runs | not reached in the recordings |
+| Runs | not reached in `game`, `deep`; in the other recordings 8 runs of its first instruction, entered by a jump (`load` 8) |
 
 ### `KeyNameCapsShiftEnd` (`$C497`)
 
@@ -1999,7 +2011,7 @@ Part of DefineKey (`$C427`). A code other than `$20` goes to PrintCharKeep (prin
 
 | | |
 | --- | --- |
-| Runs | ran within another entry's routine (reached by a jump or by running on, its calls below), no runs of its own counted |
+| Runs | not reached in `game`, `deep`; in the other recordings 8 runs of its first instruction, entered by a jump (`load` 8) |
 | Calls | `PrintCharKeep` (tail) |
 
 ### `DefineKeyDone` (`$C4A6`)
@@ -2043,7 +2055,9 @@ The tone loop runs LeadStep and BassStep in turn, about 122 T a turn. A step who
 
 | | |
 | --- | --- |
+| Runs (the first recording's game window) | 74,202 runs of its first instruction (entered by a jump or by running on, no routine of its own in the L1) |
 | Runs (the bot's game: robots built, orders given, factories captured, fights) | 9,929 calls, 466,798 t-states own (0.02 %) |
+| Runs (the other recordings) | 665,252 runs of its first instruction, entered by a jump (`load` 591,050, `play` 74,202) |
 | Called from | `MenuMusic` (falls into), `BassStep` (tail) |
 | Calls | `LeadStep` (falls into) |
 | Reads | `$FD0C` (`work space $FD0C+`) |
@@ -2057,7 +2071,9 @@ D counts the lead voice's period in loop turns. At 0 it reloads D with the note'
 
 | | |
 | --- | --- |
+| Runs (the first recording's game window) | 74,831 runs of its first instruction (entered by a jump or by running on, no routine of its own in the L1) |
 | Runs (the bot's game: robots built, orders given, factories captured, fights) | 10,007 calls, 419,098 t-states own (0.02 %) |
+| Runs (the other recordings) | 670,835 runs of its first instruction, entered by a jump (`load` 596,004, `play` 74,831) |
 | Called from | `BassIdlePad` (falls into), `BassStep` (tail) |
 | Calls | `LeadIdlePadTail` (falls into), `BassStep` (tail) |
 | Reads | `$FD0C` (`work space $FD0C+`) |
@@ -2071,7 +2087,9 @@ Write Input back and POP AF, then fall into BassStep. The recording of work/deep
 
 | | |
 | --- | --- |
+| Runs (the first recording's game window) | 73,308 runs of its first instruction (entered by a jump or by running on, no routine of its own in the L1) |
 | Runs (the bot's game: robots built, orders given, factories captured, fights) | 9,824 calls, 226,032 t-states own (0.01 %) |
+| Runs (the other recordings) | 657,551 runs of its first instruction, entered by a jump (`load` 584,243, `play` 73,308) |
 | Called from | `LeadStep` (falls into) |
 | Calls | `BassStep` (falls into) |
 | Writes | `$FD0C` (`work space $FD0C+`) |
@@ -2084,7 +2102,9 @@ The bass voice's twin of LeadStep: E is its counter, the operands `$C4ED` (perio
 
 | | |
 | --- | --- |
+| Runs (the first recording's game window) | 74,831 runs of its first instruction (entered by a jump or by running on, no routine of its own in the L1) |
 | Runs (the bot's game: robots built, orders given, factories captured, fights) | 10,007 calls, 178,735 t-states own (0.01 %) |
+| Runs (the other recordings) | 670,828 runs of its first instruction, entered by a jump (`load` 595,997, `play` 74,831) |
 | Called from | `LeadStep` (tail), `LeadIdlePadTail` (falls into) |
 | Calls | `BassIdlePad` (tail), `LeadStep` (tail) |
 | Ports out | `$00FE` |
@@ -2146,9 +2166,9 @@ A table entry of BassCommandTable: command 2 calls a pattern.
 
 | | |
 | --- | --- |
-| Runs (the first recording's game window) | run into, not called, 20 t-states own (0.00 %) |
-| Runs (the bot's game: robots built, orders given, factories captured, fights) | run into, not called, 10 t-states own (0.00 %) |
-| Runs (the other recordings) | run into, not called (`load`, `play`) |
+| Runs (the first recording's game window) | 2 runs of its first instruction (entered by a jump or by running on, no routine of its own in the L1), 20 t-states own (0.00 %) |
+| Runs (the bot's game: robots built, orders given, factories captured, fights) | 1 run of its first instruction (entered by a jump or by running on, no routine of its own in the L1), 10 t-states own (0.00 %) |
+| Runs (the other recordings) | 21 runs of its first instruction, entered by a jump (`load` 19, `play` 2) |
 | Called from | `MusicDispatch` |
 | Calls | `BassCall` (tail) |
 
@@ -2160,9 +2180,9 @@ A table entry: command 3 starts another drum track.
 
 | | |
 | --- | --- |
-| Runs (the first recording's game window) | run into, not called, 20 t-states own (0.00 %) |
-| Runs (the bot's game: robots built, orders given, factories captured, fights) | run into, not called, 10 t-states own (0.00 %) |
-| Runs (the other recordings) | run into, not called (`load`, `play`) |
+| Runs (the first recording's game window) | 2 runs of its first instruction (entered by a jump or by running on, no routine of its own in the L1), 20 t-states own (0.00 %) |
+| Runs (the bot's game: robots built, orders given, factories captured, fights) | 1 run of its first instruction (entered by a jump or by running on, no routine of its own in the L1), 10 t-states own (0.00 %) |
+| Runs (the other recordings) | 19 runs of its first instruction, entered by a jump (`load` 17, `play` 2) |
 | Called from | `MusicDispatch` |
 | Calls | `SetDrumTrack` (tail) |
 
@@ -2174,8 +2194,8 @@ A table entry: command 4 turns the bass voice on.
 
 | | |
 | --- | --- |
-| Runs (the first recording's game window) | run into, not called, 20 t-states own (0.00 %) |
-| Runs (the other recordings) | run into, not called (`load`, `play`) |
+| Runs (the first recording's game window) | 2 runs of its first instruction (entered by a jump or by running on, no routine of its own in the L1), 20 t-states own (0.00 %) |
+| Runs (the other recordings) | 19 runs of its first instruction, entered by a jump (`load` 17, `play` 2) |
 | Called from | `MusicDispatch` |
 | Calls | `BassOn` (tail) |
 
@@ -2187,9 +2207,9 @@ A table entry: command 5 turns the bass voice off (its notes keep their time, si
 
 | | |
 | --- | --- |
-| Runs (the first recording's game window) | run into, not called, 30 t-states own (0.00 %) |
-| Runs (the bot's game: robots built, orders given, factories captured, fights) | run into, not called, 10 t-states own (0.00 %) |
-| Runs (the other recordings) | run into, not called (`load`, `play`) |
+| Runs (the first recording's game window) | 3 runs of its first instruction (entered by a jump or by running on, no routine of its own in the L1), 30 t-states own (0.00 %) |
+| Runs (the bot's game: robots built, orders given, factories captured, fights) | 1 run of its first instruction (entered by a jump or by running on, no routine of its own in the L1), 10 t-states own (0.00 %) |
+| Runs (the other recordings) | 31 runs of its first instruction, entered by a jump (`load` 28, `play` 3) |
 | Called from | `MusicDispatch` |
 | Calls | `BassOff` (tail) |
 
@@ -2201,7 +2221,7 @@ A table entry: command 6 ends a pattern.
 
 | | |
 | --- | --- |
-| Runs | not reached in `game`, `deep`; in the other recordings run into, not called (`load`) |
+| Runs | not reached in `game`, `deep`; in the other recordings 2 runs of its first instruction, entered by a jump (`load` 2) |
 | Called from | `MusicDispatch` |
 | Calls | `BassReturn` (tail) |
 
@@ -2213,7 +2233,9 @@ The lead twin of BassCommand. HL' (the bass position) is pushed so the handlers 
 
 | | |
 | --- | --- |
-| Runs | ran within another entry's routine (reached by a jump or by running on, its calls below), no runs of its own counted |
+| Runs (the first recording's game window) | 8 runs of its first instruction (entered by a jump or by running on, no routine of its own in the L1) |
+| Runs (the bot's game: robots built, orders given, factories captured, fights) | 2 runs of its first instruction (entered by a jump or by running on, no routine of its own in the L1) |
+| Runs (the other recordings) | 84 runs of its first instruction, entered by a jump (`load` 76, `play` 8) |
 | Calls | `MusicDispatch` |
 
 ### `LeadCmd2` (`$C578`)
@@ -2224,9 +2246,9 @@ A table entry of LeadCommandTable: command 2 calls a pattern.
 
 | | |
 | --- | --- |
-| Runs (the first recording's game window) | run into, not called, 20 t-states own (0.00 %) |
-| Runs (the bot's game: robots built, orders given, factories captured, fights) | run into, not called, 10 t-states own (0.00 %) |
-| Runs (the other recordings) | run into, not called (`load`, `play`) |
+| Runs (the first recording's game window) | 2 runs of its first instruction (entered by a jump or by running on, no routine of its own in the L1), 20 t-states own (0.00 %) |
+| Runs (the bot's game: robots built, orders given, factories captured, fights) | 1 run of its first instruction (entered by a jump or by running on, no routine of its own in the L1), 10 t-states own (0.00 %) |
+| Runs (the other recordings) | 21 runs of its first instruction, entered by a jump (`load` 19, `play` 2) |
 | Called from | `MusicDispatch` |
 | Calls | `LeadCall` (tail) |
 
@@ -2238,8 +2260,8 @@ A table entry: command 4 turns the lead voice on.
 
 | | |
 | --- | --- |
-| Runs (the first recording's game window) | run into, not called, 30 t-states own (0.00 %) |
-| Runs (the other recordings) | run into, not called (`load`, `play`) |
+| Runs (the first recording's game window) | 3 runs of its first instruction (entered by a jump or by running on, no routine of its own in the L1), 30 t-states own (0.00 %) |
+| Runs (the other recordings) | 30 runs of its first instruction, entered by a jump (`load` 27, `play` 3) |
 | Called from | `MusicDispatch` |
 | Calls | `LeadOn` (tail) |
 
@@ -2251,9 +2273,9 @@ A table entry: command 5 turns the lead voice off.
 
 | | |
 | --- | --- |
-| Runs (the first recording's game window) | run into, not called, 30 t-states own (0.00 %) |
-| Runs (the bot's game: robots built, orders given, factories captured, fights) | run into, not called, 10 t-states own (0.00 %) |
-| Runs (the other recordings) | run into, not called (`load`, `play`) |
+| Runs (the first recording's game window) | 3 runs of its first instruction (entered by a jump or by running on, no routine of its own in the L1), 30 t-states own (0.00 %) |
+| Runs (the bot's game: robots built, orders given, factories captured, fights) | 1 run of its first instruction (entered by a jump or by running on, no routine of its own in the L1), 10 t-states own (0.00 %) |
+| Runs (the other recordings) | 31 runs of its first instruction, entered by a jump (`load` 28, `play` 3) |
 | Called from | `MusicDispatch` |
 | Calls | `LeadOff` (tail) |
 
@@ -2265,7 +2287,7 @@ A table entry: command 6 ends a pattern.
 
 | | |
 | --- | --- |
-| Runs | not reached in `game`, `deep`; in the other recordings run into, not called (`load`) |
+| Runs | not reached in `game`, `deep`; in the other recordings 2 runs of its first instruction, entered by a jump (`load` 2) |
 | Called from | `MusicDispatch` |
 | Calls | `LeadReturn` (tail) |
 
@@ -2807,6 +2829,7 @@ The drawing order of DrawMapObjects: diagonals by falling x - y, along a diagona
 | | |
 | --- | --- |
 | Runs (the bot's game: robots built, orders given, factories captured, fights) | 2,857 calls, 276,937 t-states own (0.01 %) |
+| Runs (the other recordings) | 1 run of its first instruction, entered by a jump (`load` 1) |
 | Called from | `CheckObjectNeighbour`, `CheckBlockNeighbour` (falls into) |
 
 ### `FindRobot` (`$CDD8`)
@@ -2861,7 +2884,7 @@ Robots and shots keep their real position in +`$02`/+`$03` (x) and +`$04` (y) an
 
 | | |
 | --- | --- |
-| Runs | ran within another entry's routine (reached by a jump or by running on, its calls below), no runs of its own counted |
+| Runs (the bot's game: robots built, orders given, factories captured, fights) | 1,485 runs of its first instruction (entered by a jump or by running on, no routine of its own in the L1) |
 | Calls | `MapCell`, `FindLatestBlock`, `DrawMoverSprite` (tail) |
 
 ### `DrawMoverSprite` (`$CEC3`)
@@ -3027,6 +3050,8 @@ An entry only because the recording work/game started inside this LDIR; no code 
 | | |
 | --- | --- |
 | Runs (the first recording's game window) | 1 call, 324,839 t-states own (0.12 %) |
+| Runs (the bot's game: robots built, orders given, factories captured, fights) | 103,665 runs of its first instruction (entered by a jump or by running on, no routine of its own in the L1) |
+| Runs (the other recordings) | 221,152 runs of its first instruction, entered by a jump (`load` 207,330, `play` 13,822) |
 | Called from | `ClearScreen` (falls into) |
 | Reads | `$4000`-`$5AFE` (screen) |
 | Writes | `$4001`-`$5AFF` (screen) |
@@ -3379,7 +3404,9 @@ The operand `$FF9C` is -100 (the source writes it so with @isub; as a label it w
 
 | | |
 | --- | --- |
+| Runs (the first recording's game window) | 367 runs of its first instruction (entered by a jump or by running on, no routine of its own in the L1) |
 | Runs (the bot's game: robots built, orders given, factories captured, fights) | 140 calls, 95,977 t-states own (0.00 %) |
+| Runs (the other recordings) | 614 runs of its first instruction, entered by a jump (`play` 367, `load` 247) |
 | Called from | `ShowStrengthValue`, `PrintMenuTotal` (tail) |
 | Calls | `PrintDigit` |
 

@@ -6,7 +6,9 @@ Runs count the calls of the entry itself; the time is its own t-states (callees 
 of the recording. Memory ranges name the label at or below their first byte (inner labels too, `Label+offset`)
 and the entries they cover. The interrupt's acceptance (the vector read, the return address pushed) is
 the handler's, not the interrupted routine's. An entry no recording reached says so; one the case's other
-recordings ran gives their calls.
+recordings ran gives their calls. An entry no routine of a recording starts at (entered by a jump, a table jump or
+by running on: L1 books its time to the routine it runs in) gives the runs of its first instruction, as its witness
+line counts them.
 Written by `kit/refdocs.py`; edit `src/main/main.ann`, then run `kit/mkgame.py --case . --install`
 (see [3. Build and load](03-build-and-load.md)) and `kit/refdocs.py --case .`.
 The parts of the medium (`case.json` `ref_parts`: The BASIC loader (sector 0 of boot), The music: ASC Sound Master
@@ -66,7 +68,8 @@ Witness: L1 27670 (c1-c4).
 
 | | |
 | --- | --- |
-| Runs | ran within another entry's routine (reached by a jump or by running on, its calls below), no runs of its own counted |
+| Runs (c1: the original disk from power-on, the menu idle (NO EXE FILES !), SPACE) | 15,234 runs of its first instruction (entered by a jump or by running on, no routine of its own in the L1) |
+| Runs (the other recordings) | 12,436 runs of its first instruction, entered by a jump (`stage1/c2` 6,292, `stage1/c4` 3,308, `stage1/c3` 2,836) |
 | Calls | `MoveStars`, `PrintRombPhase` |
 
 ## rhombi
@@ -371,7 +374,7 @@ Witness: L1 4 (c1-c4).
 | Called from | `Start` |
 | Calls | `PrintSprite`, `ShowCatalogue` (falls into), `PrintString`, `ColourCorners` |
 | Reads | `$4000`-`$5AFF` (screen); `$AC20`-`$AC83` (`LogoAttributes`) |
-| Writes | `$5806`-`$5899` (screen); `$5C36`-`$5C37` (system); `$E000`-`$FAFF` (`work space $E000+`) |
+| Writes | `$5806`-`$5899` (screen); `$5C36`-`$5C37` (`Chars`); `$E000`-`$FAFF` (`work space $E000+`) |
 
 ### `ShowCatalogue` (`$6586`)
 
@@ -392,7 +395,7 @@ Witness: L1 8 (c1-c4).
 | Called from | `DrawScreen` (falls into), `ReadKeyboard` |
 | Calls | `SampleStars`, `ListCatalogue`, `CursorAttrAddr`, `ClearFilesArea`, `SoundOff` |
 | Reads | `$4000`-`$5AFF` (screen); `$E000`-`$FAFF` (`work space $E000+`) |
-| Writes | `$4000`-`$5AFF` (screen); `$5C78`-`$5C79` (system); `$B3BF`-`$B3CB` (`work space $B3BF+`); `$DEAC` (`work space $DEAC+`); `$E000`-`$FAFF` (`work space $E000+`) |
+| Writes | `$4000`-`$5AFF` (screen); `$5C78`-`$5C79` (`Frames`); `$B3BF`-`$B3CB` (`work space $B3BF+`); `$DEAC` (`work space $DEAC+`); `$E000`-`$FAFF` (`work space $E000+`) |
 
 ### `ListCatalogue` (`$65C7`)
 
@@ -411,7 +414,7 @@ Witness: L1 8 (c1-c4).
 | Called from | `ShowCatalogue` |
 | Calls | `PrintColumn`, `PrintString`, `IsBootFile`, `SkipDeleted` |
 | Reads | `$9D00`-`$9D10` (`Catalogue`) |
-| Writes | `$5C78` (system); `$B3B5`-`$B3BE` (`work space $B3B5+`) |
+| Writes | `$5C78` (`Frames`); `$B3B5`-`$B3BE` (`work space $B3B5+`) |
 
 ### `ListTwoColumns` (`$6648`)
 
@@ -614,8 +617,8 @@ Witness: L1 13932 (c1-c4).
 | Runs (c1: the original disk from power-on, the menu idle (NO EXE FILES !), SPACE) | 7,275 calls, 3,880,821 t-states own (0.70 %) |
 | Runs (the other recordings) | 6,658 calls (`stage1/c2` 3,189, `stage1/c4` 1,847, `stage1/c3` 1,622) |
 | Calls | `RotateCursorName` (falls into), `CursorAttrAddr`, `TwinkleStar`, `LogoGlint` |
-| Reads | `$5C78`-`$5C79` (system); `$AFC8`-`$AFCB` (`work space $AFC8+`); `$B3B6`-`$B3BF` (`work space $B3B6+`); `$DEAC` (`work space $DEAC+`) |
-| Writes | `$5969`-`$5976` (screen); `$5C78`-`$5C79` (system); `$67D8` (`SpinCharacters`); `$B3BF`-`$B3CD` (`work space $B3BF+`); `$B3EC` (`work space $B3EC+`); `$DEAC` (`work space $DEAC+`) |
+| Reads | `$5C78`-`$5C79` (`Frames`); `$AFC8`-`$AFCB` (`work space $AFC8+`); `$B3B6`-`$B3BF` (`work space $B3B6+`); `$DEAC` (`work space $DEAC+`) |
+| Writes | `$5969`-`$5976` (screen); `$5C78`-`$5C79` (`Frames`); `$67D8` (`SpinCharacters`); `$B3BF`-`$B3CD` (`work space $B3BF+`); `$B3EC` (`work space $B3EC+`); `$DEAC` (`work space $DEAC+`) |
 
 ### `RotateCursorName` (`$67C2`)
 
@@ -660,7 +663,7 @@ Witness: L1 13931 (c1-c4).
 | Runs (the other recordings) | 6,657 calls (`stage1/c2` 3,189, `stage1/c4` 1,846, `stage1/c3` 1,622) |
 | Called from | `ShowRotatedName` (tail) |
 | Calls | `ReadKeyboard` |
-| Reads | `$5C78` (system) |
+| Reads | `$5C78` (`Frames`) |
 
 ### `CopyNameToScreen` (`$6CA2`)
 
@@ -810,7 +813,7 @@ Witness: L1 13931 (c1-c4).
 | Runs (the other recordings) | 6,657 calls (`stage1/c2` 3,189, `stage1/c4` 1,846, `stage1/c3` 1,622) |
 | Called from | `Interrupt` |
 | Calls | `RestoreGlintCells`, `DrawGlintRow` |
-| Reads | `$5C78`-`$5C79` (system) |
+| Reads | `$5C78`-`$5C79` (`Frames`) |
 | Writes | `$5806` (screen); `$5819` (screen); `$5A66` (screen); `$5A79` (screen); `$6D3E`-`$6D42` (`GlintCornerLeft+1`, `GlintCornerRight`); `$6D54`-`$6D55` (`GlintRowStart+1`) |
 
 ### `RestoreGlintCells` (`$6D6A`)
@@ -976,8 +979,8 @@ Witness: L1 4 (c1-c4).
 | --- | --- |
 | Runs (c1: the original disk from power-on, the menu idle (NO EXE FILES !), SPACE) | 1 call, 844,558 t-states own (0.15 %) |
 | Runs (the other recordings) | 3 calls (`stage1/c2` 1, `stage1/c3` 1, `stage1/c4` 1) |
-| Reads | `$5CF4`-`$5CF5`; `$61A8`-`$FEAE` |
-| Writes | `$61A8`-`$FC81`; `$FCBC`-`$FEAF` |
+| Reads | `$5CF4`-`$5CF5` (`TrdosNextSector`); `$61A8`-`$FEAE` (`MenuStart`, `MenuGraphics`, `MusicPiece`) |
+| Writes | `$61A8`-`$FC81` (`MenuStart`, `MenuGraphics`, `MusicPiece`); `$FCBC`-`$FEAF` |
 
 
 ## The music: ASC Sound Master player and tune (src/music) (`src/music/music.json`)
@@ -1068,7 +1071,8 @@ Witness: L1 4 (c1-c4).
 
 | | |
 | --- | --- |
-| Runs | ran within another entry's routine (reached by a jump or by running on, its calls below), no runs of its own counted |
+| Runs (c1: the original disk from power-on, the menu idle (NO EXE FILES !), SPACE) | 1 run of its first instruction (entered by a jump or by running on, no routine of its own in the L1) |
+| Runs (the other recordings) | 3 runs of its first instruction, entered by a jump (`stage1/c2` 1, `stage1/c3` 1, `stage1/c4` 1) |
 | Calls | `WriteAY` (tail) |
 
 #### `PlayFrame` (`$C104`)
@@ -1242,7 +1246,8 @@ Witness: L1 173 (c1-c4).
 
 | | |
 | --- | --- |
-| Runs | not reached in the recordings |
+| Runs (c1: the original disk from power-on, the menu idle (NO EXE FILES !), SPACE) | 74 runs of its first instruction (entered by a jump or by running on, no routine of its own in the L1) |
+| Runs (the other recordings) | 99 runs of its first instruction, entered by a jump (`stage1/c2` 41, `stage1/c3` 29, `stage1/c4` 29) |
 
 #### `CommandNoise` (`$C290`)
 
@@ -1254,7 +1259,8 @@ Witness: L1 119 (c1-c4).
 
 | | |
 | --- | --- |
-| Runs | not reached in the recordings |
+| Runs (c1: the original disk from power-on, the menu idle (NO EXE FILES !), SPACE) | 59 runs of its first instruction (entered by a jump or by running on, no routine of its own in the L1) |
+| Runs (the other recordings) | 60 runs of its first instruction, entered by a jump (`stage1/c2` 28, `stage1/c3` 16, `stage1/c4` 16) |
 
 #### `CommandLength` (`$C294`)
 
@@ -1266,7 +1272,8 @@ Witness: L1 706 (c1-c4).
 
 | | |
 | --- | --- |
-| Runs | not reached in the recordings |
+| Runs (c1: the original disk from power-on, the menu idle (NO EXE FILES !), SPACE) | 364 runs of its first instruction (entered by a jump or by running on, no routine of its own in the L1) |
+| Runs (the other recordings) | 342 runs of its first instruction, entered by a jump (`stage1/c2` 167, `stage1/c4` 93, `stage1/c3` 82) |
 
 #### `ChannelSound` (`$C2A0`)
 

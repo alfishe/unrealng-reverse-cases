@@ -6,7 +6,9 @@ Runs count the calls of the entry itself; the time is its own t-states (callees 
 of the recording. Memory ranges name the label at or below their first byte (inner labels too, `Label+offset`)
 and the entries they cover. The interrupt's acceptance (the vector read, the return address pushed) is
 the handler's, not the interrupted routine's. An entry no recording reached says so; one the case's other
-recordings ran gives their calls.
+recordings ran gives their calls. An entry no routine of a recording starts at (entered by a jump, a table jump or
+by running on: L1 books its time to the routine it runs in) gives the runs of its first instruction, as its witness
+line counts them.
 Written by `kit/refdocs.py`; edit `src/game/game.ann`, then run `kit/mkgame.py --case . --install`
 (see [3. Build and load](03-build-and-load.md)) and `kit/refdocs.py --case .`.
 
@@ -78,7 +80,8 @@ ClearScreen `$7A9F`, Menu `$8854` (1, 2, 3 choose the controls, 0 starts), NewGa
 
 | | |
 | --- | --- |
-| Runs | not reached in `stage1/c1`, `stage1/rec/energy-out`; in the other recordings 3 calls (`stage1/rec/game-over` 1, `stage1/rec/rzx-080000` 1, `stage1/rec/win` 1) |
+| Runs (c1: power-on, the tape at ROM speed, the menu and keyboard play) | 1 run of its first instruction (entered by a jump or by running on, no routine of its own in the L1) |
+| Runs (the other recordings) | 3 calls (`stage1/rec/game-over` 1, `stage1/rec/rzx-080000` 1, `stage1/rec/win` 1) |
 | Called from | `WinTest` (tail), `LoseLife` (tail) |
 | Calls | `QueueMessage`, `NewGame`, `ClearScreen`, `Menu` |
 | Writes | `$6704`-`$6707` (`EnemyBufferPtrs`) |
@@ -95,8 +98,9 @@ Witness: L1 18 585 passes. Most passes hold exactly two interrupts (the two HALT
 
 | | |
 | --- | --- |
-| Runs (energy-out: 5001 frames of play from the RZX state after 47 000 frames) | run into, not called, 2,104,052 t-states own (0.60 %) |
-| Runs (the other recordings) | run into, not called (`stage1/rec/rzx-065000`, `stage1/rec/rzx-070000`, `stage1/rec/rzx-074000` and 60 more) |
+| Runs (c1: power-on, the tape at ROM speed, the menu and keyboard play) | 536 runs of its first instruction (entered by a jump or by running on, no routine of its own in the L1) |
+| Runs (energy-out: 5001 frames of play from the RZX state after 47 000 frames) | 2,434 runs of its first instruction (entered by a jump or by running on, no routine of its own in the L1), 2,104,052 t-states own (0.60 %) |
+| Runs (the other recordings) | 15,615 runs of its first instruction, entered by a jump (`stage1/rec/rzx-065000` 1,225, `stage1/rec/rzx-070000` 1,134, `stage1/rec/rzx-074000` 907 and 63 more) |
 | Calls | `HazardFlash`, `WinTest`, `EnergyOut`, `MovePatrollers`, `MoveDroid`, `Pause`, `WaitFrame`, `PassTick`, `MoveObject`, `MoveShot`, `DroidExhaust`, `ExhaustStep`, `MoveEnemy` |
 | Writes | `$6704`-`$6707` (`EnemyBufferPtrs`) |
 
@@ -171,7 +175,8 @@ Energy back to 99 and the timers to `$FA`; Lives - 1 (BCD); GEN 19 DESTROYED; De
 
 | | |
 | --- | --- |
-| Runs | not reached in `stage1/c1`, `stage1/rec/energy-out`; in the other recordings 53 calls (`stage1/rec/room-tour` 52, `stage1/rec/rzx-035000` 1) |
+| Runs (energy-out: 5001 frames of play from the RZX state after 47 000 frames) | 1 run of its first instruction (entered by a jump or by running on, no routine of its own in the L1) |
+| Runs (the other recordings) | 53 calls (`stage1/rec/room-tour` 52, `stage1/rec/rzx-035000` 1) |
 | Called from | `HazardDeath` (tail) |
 | Calls | `Restart` (tail), `QueueMessage`, `SaveRoomObjects`, `DrawRoom`, `PlaceDroid`, `DeathEffect`, `PrintBcd`, `ProgressScreen` |
 | Reads | `$635B` (`DroidFlags`); `$636D` (`Lives`) |
@@ -1496,7 +1501,7 @@ The frame from `$B902` (walking right) or `$BA82` (left), 96 bytes a frame (4 by
 | --- | --- |
 | Runs (c1: power-on, the tape at ROM speed, the menu and keyboard play) | 1 call, 6,924 t-states own (0.00 %) |
 | Called from | `Setup` |
-| Writes | `$5B5B`-`$5B5D` (system); `$63C7`-`$63D1` (`ScrollText`, `ScrollNext`, `ScrollPriority`, `ScrollLine` and 3 more); `$FE00`-`$FF02` (`work space $FE00+`) |
+| Writes | `$5B5B`-`$5B5D` (`ImJump`); `$63C7`-`$63D1` (`ScrollText`, `ScrollNext`, `ScrollPriority`, `ScrollLine` and 3 more); `$FE00`-`$FF02` (`work space $FE00+`) |
 
 ### `Interrupt` (`$95D0`)
 

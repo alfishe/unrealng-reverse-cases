@@ -6,7 +6,9 @@ Runs count the calls of the entry itself; the time is its own t-states (callees 
 of the recording. Memory ranges name the label at or below their first byte (inner labels too, `Label+offset`)
 and the entries they cover. The interrupt's acceptance (the vector read, the return address pushed) is
 the handler's, not the interrupted routine's. An entry no recording reached says so; one the case's other
-recordings ran gives their calls.
+recordings ran gives their calls. An entry no routine of a recording starts at (entered by a jump, a table jump or
+by running on: L1 books its time to the routine it runs in) gives the runs of its first instruction, as its witness
+line counts them.
 Written by `kit/refdocs.py`; edit `src/game/game.ann`, then run `kit/mkgame.py --case . --install`
 (see [3. Build and load](03-build-and-load.md)) and `kit/refdocs.py --case .`.
 The parts of the medium (`case.json` `ref_parts`: The BASIC "Rick", Rick1, the first loader stage, The second loader
@@ -68,9 +70,9 @@ Witness: L1 43086 (beeper48, c1, controls, emptygun, ending2, gameover, l1end, l
 | | |
 | --- | --- |
 | Runs (c1: power-on, the original tape at ROM speed on the 128K, the control menu and play on level 1; from the entry `$AB4D` (frame 19 010, T 70 483)) | 1,095 calls, 35,192,992 t-states own (3.45 %) |
-| Runs (the other recordings) | 11,228 calls (`stage1/level3` 2,926, `stage1/level2` 2,864, `stage1/level1` 2,166 and 3 more) |
+| Runs (the other recordings) | 41,991 calls (`stage1/level3` 2,926, `stage1/level2` 2,864, `stage1/level1` 2,166 and 48 more) |
 | Called from | `ScrollViewDown`, `ScrollViewUp`, `CheckGameComplete` |
-| Reads | `$A237` (`FrameTicks`) |
+| Reads | `$83FF`-`$8400` (`Im2Table+255`); `$A237` (`FrameTicks`) |
 | Writes | `$A237` (`FrameTicks`) |
 
 ### `Im2Handler` (`$FEFE`)
@@ -81,16 +83,16 @@ Saves AF, BC, DE, HL, IX, IY; `$A237` + 1; CALL `$E49B`; at `$FF11` three NOPs i
 
 `$A081` has run; restores, EI, RET.
 
-Witness: L1 111926 (beeper48, c1, controls, emptygun, ending2, gameover, l1end, l1z1left, spotL2Z4-34, spotL3Z7-51, spotL4Z8-69, L1Z1-L1Z6, L2Z1-L2Z7, L3Z1-L3Z12, L4Z1-L4Z9, level1-level4, spotL1Z4-43, spotL1Z4-44, spotL1Z4-47).
+Witness: L1 113425 (beeper48, c1, controls, emptygun, ending, ending2, gameover, l1end, l1z1left, spotL2Z4-34, spotL3Z7-51, spotL4Z8-69, L1Z1-L1Z6, L2Z1-L2Z7, L3Z1-L3Z12, L4Z1-L4Z9, level1-level4, spotL1Z4-43, spotL1Z4-44, spotL1Z4-47).
 
 | | |
 | --- | --- |
 | Runs (c1: power-on, the original tape at ROM speed on the 128K, the control menu and play on level 1; from the entry `$AB4D` (frame 19 010, T 70 483)) | 14,301 calls, 3,203,424 t-states own (0.31 %) |
-| Runs (the other recordings) | 27,693 calls (`stage1/level3` 5,921, `stage1/level2` 5,870, `stage1/level1` 5,822 and 3 more) |
-| Entered by | the interrupt, 41,994 times in 54 routines |
+| Runs (the other recordings) | 99,124 calls (`stage1/level3` 5,921, `stage1/level2` 5,870, `stage1/level1` 5,822 and 49 more) |
+| Entered by | the interrupt, 113,395 times in 75 routines |
 | Calls | `SoundTick`, `FrameTick` |
-| Reads | `$69E1`-`$69FA` (`MusicImage+3041`); `$7723`-`$7726` (`CharSet0+1571`); `$80BE`-`$80BF` (`CharSet1+1726`); `$81EA`-`$81EB` (`CharSet1+2026`); `$83FF`-`$8400` (`Im2Table+255`); `$A237` (`FrameTicks`) |
-| Writes | `$A237` (`FrameTicks`); `$FFEE`-`$FFFF` (`GameStack`) |
+| Reads | `$69E1`-`$69FA` (`MusicImage+3041`); `$6CFF`-`$6D00` (`LowZeros+95`); `$6DFF`-`$6E00` (`LowZeros+351`, `CellFlagsRow16`); `$7723`-`$7726` (`CharSet0+1571`); `$7A50`-`$7A56` (`CharSet1+80`); `$7B70`-`$7B72` (`CharSet1+368`); 6 more ranges |
+| Writes | `$A237` (`FrameTicks`); `$FFEC`-`$FFFF` (`UdgResidue+148`, `GameStack`) |
 
 ## sound
 
@@ -109,8 +111,9 @@ Witness: L1 6022 (beeper48, c1, controls, emptygun, ending2, gameover, l1z1left,
 | | |
 | --- | --- |
 | Runs (c1: power-on, the original tape at ROM speed on the 128K, the control menu and play on level 1; from the entry `$AB4D` (frame 19 010, T 70 483)) | 158 calls, 33,101 t-states own (0.00 %) |
-| Runs (the other recordings) | 1,746 calls (`stage1/level2` 539, `stage1/level3` 451, `stage1/level1` 311 and 3 more) |
-| Called from | `DynamiteObj`, `TreasureObj`, `TrapTriggers`, `KillEnemy`, `BonusTrigger`, `LandRick`, `FireClearPokeLatch`, `NoFire`, `KillRickNow`, `ChooseRickFrame` |
+| Runs (the other recordings) | 5,864 calls (`stage1/level2` 539, `stage1/level3` 451, `stage1/level1` 311 and 47 more) |
+| Called from | `DynamiteObj`, `AmmoBoxObj`, `TreasureObj`, `TrapTriggers`, `KillEnemy`, `BonusTrigger`, `LandRick`, `FireClearPokeLatch`, `NoFire`, `KillRickNow`, `ChooseRickFrame` |
+| Calls | `BeeperEffect` |
 | Reads | `$A08D` (`Is48K`) |
 | Ports out | `$7FFD` |
 
@@ -124,13 +127,13 @@ The tunes the callers start: 5 the title (`$E220`), 0 the game start (`$E324`), 
 
 Output: AF, BC, D changed.
 
-Witness: L1 31 (beeper48, c1, controls, ending2, gameover, l1end, L3Z12, level1).
+Witness: L1 34 (beeper48, c1, controls, ending, ending2, gameover, l1end, L3Z12, level1).
 
 | | |
 | --- | --- |
 | Runs (c1: power-on, the original tape at ROM speed on the 128K, the control menu and play on level 1; from the entry `$AB4D` (frame 19 010, T 70 483)) | 4 calls, 491 t-states own (0.00 %) |
-| Runs (the other recordings) | 20 calls (`stage1/controls` 12, `stage1/level1` 5, `stage1/gameover` 3) |
-| Called from | `Menu`, `NewGame`, `GameOver`, `BonusCollect` |
+| Runs (the other recordings) | 30 calls (`stage1/controls` 12, `stage1/level1` 5, `stage1/ending` 3 and 5 more) |
+| Called from | `LevelEnd`, `Menu`, `NewGame`, `GameOver`, `BonusCollect` |
 | Reads | `$A08D` (`Is48K`) |
 | Ports out | `$7FFD` |
 
@@ -142,12 +145,12 @@ Pages RAM 1, calls AyTick `$C46C`, pages RAM 0 back and enables interrupts. Call
 
 Output: AF, BC changed (the handler saves every register).
 
-Witness: L1 110335 (c1, controls, emptygun, ending2, gameover, l1end, l1z1left, spotL2Z4-34, spotL3Z7-51, spotL4Z8-69, L1Z1-L1Z6, L2Z1-L2Z7, L3Z1-L3Z12, L4Z1-L4Z9, level1-level4, spotL1Z4-43, spotL1Z4-44, spotL1Z4-47).
+Witness: L1 111834 (c1, controls, emptygun, ending, ending2, gameover, l1end, l1z1left, spotL2Z4-34, spotL3Z7-51, spotL4Z8-69, L1Z1-L1Z6, L2Z1-L2Z7, L3Z1-L3Z12, L4Z1-L4Z9, level1-level4, spotL1Z4-43, spotL1Z4-44, spotL1Z4-47).
 
 | | |
 | --- | --- |
 | Runs (c1: power-on, the original tape at ROM speed on the 128K, the control menu and play on level 1; from the entry `$AB4D` (frame 19 010, T 70 483)) | 14,301 calls, 1,287,090 t-states own (0.13 %) |
-| Runs (the other recordings) | 27,693 calls (`stage1/level3` 5,921, `stage1/level2` 5,870, `stage1/level1` 5,822 and 3 more) |
+| Runs (the other recordings) | 97,533 calls (`stage1/level3` 5,921, `stage1/level2` 5,870, `stage1/level1` 5,822 and 48 more) |
 | Called from | `Im2Handler` |
 | Ports out | `$7FFD` |
 
@@ -167,7 +170,9 @@ Witness: L1 98 (beeper48).
 
 | | |
 | --- | --- |
-| Runs | not reached in the recordings |
+| Runs | not reached in `stage2/c1g`; in the other recordings 98 calls (`stage2/beeper48` 98) |
+| Called from | `PlayEffect` |
+| Calls | `BeeperTone` (falls into) |
 
 ### `BeeperTone` (`$A0F6`)
 
@@ -179,7 +184,9 @@ Witness: L1 999 (beeper48).
 
 | | |
 | --- | --- |
-| Runs | not reached in the recordings |
+| Runs | not reached in `stage2/c1g`; in the other recordings 999 calls (`stage2/beeper48` 999) |
+| Called from | `BeeperEffect` (falls into) |
+| Ports out | `$FE00`, `$FE02`, `$FE03`, `$FE04`, `$FE06`, `$FE0A`, `$FE0B` |
 
 ## setup
 
@@ -215,7 +222,7 @@ Witness: L1 1 (c1).
 
 | | |
 | --- | --- |
-| Runs | not reached in the recordings |
+| Runs (c1: power-on, the original tape at ROM speed on the 128K, the control menu and play on level 1; from the entry `$AB4D` (frame 19 010, T 70 483)) | 1 run of its first instruction (entered by a jump or by running on, no routine of its own in the L1) |
 
 ### `Start` (`$AB4D`)
 
@@ -227,7 +234,7 @@ Witness: L1 1 (c1).
 
 | | |
 | --- | --- |
-| Runs (c1: power-on, the original tape at ROM speed on the 128K, the control menu and play on level 1; from the entry `$AB4D` (frame 19 010, T 70 483)) | run into, not called, 41,901 t-states own (0.00 %) |
+| Runs (c1: power-on, the original tape at ROM speed on the 128K, the control menu and play on level 1; from the entry `$AB4D` (frame 19 010, T 70 483)) | 1 run of its first instruction (entered by a jump or by running on, no routine of its own in the L1), 41,901 t-states own (0.00 %) |
 | Calls | `DetectPaging`, `SetUpInterrupts`, `Menu` (tail) |
 | Reads | `$6BA4`-`$6C9F` (`Kind16Frame`, `Kind19Frame`) |
 | Writes | `$5B00`-`$5BFF` (`RomPagingRoutines`, `Rom128Variables`); `$6A80`-`$6AFD` (`MusicImage+3200`); `$7080`-`$70FD` (`GraphicSlot19`) |
@@ -243,12 +250,12 @@ Witness: L1 1 (c1).
 
 Reads port `$F7FE` (keys 1-5) and tests bit 0. Output: A, BC, F. Title only (`$E273`): selects the keyboard (method 0).
 
-Witness: L1 6595 (beeper48, c1, controls, ending2, gameover, level1).
+Witness: L1 6741 (beeper48, c1, controls, ending, ending2, gameover, level1).
 
 | | |
 | --- | --- |
 | Runs (c1: power-on, the original tape at ROM speed on the 128K, the control menu and play on level 1; from the entry `$AB4D` (frame 19 010, T 70 483)) | 5,724 calls, 228,960 t-states own (0.02 %) |
-| Runs (the other recordings) | 674 calls (`stage1/controls` 268, `stage1/level1` 249, `stage1/gameover` 157) |
+| Runs (the other recordings) | 1,017 calls (`stage1/controls` 268, `stage1/level1` 249, `stage1/gameover` 157 and 3 more) |
 | Called from | `Menu` |
 | Ports in | `$F7FE` |
 
@@ -258,12 +265,12 @@ Witness: L1 6595 (beeper48, c1, controls, ending2, gameover, level1).
 
 Port `$F7FE` bit 1. Title (`$E289`): selects the Kempston (method 1).
 
-Witness: L1 6595 (beeper48, c1, controls, ending2, gameover, level1).
+Witness: L1 6741 (beeper48, c1, controls, ending, ending2, gameover, level1).
 
 | | |
 | --- | --- |
 | Runs (c1: power-on, the original tape at ROM speed on the 128K, the control menu and play on level 1; from the entry `$AB4D` (frame 19 010, T 70 483)) | 5,724 calls, 228,960 t-states own (0.02 %) |
-| Runs (the other recordings) | 674 calls (`stage1/controls` 268, `stage1/level1` 249, `stage1/gameover` 157) |
+| Runs (the other recordings) | 1,017 calls (`stage1/controls` 268, `stage1/level1` 249, `stage1/gameover` 157 and 3 more) |
 | Called from | `Menu` |
 | Ports in | `$F7FE` |
 
@@ -273,12 +280,12 @@ Witness: L1 6595 (beeper48, c1, controls, ending2, gameover, level1).
 
 Port `$F7FE` bit 2. Title (`$E2A1`): selects the cursor keys (method 2).
 
-Witness: L1 6595 (beeper48, c1, controls, ending2, gameover, level1).
+Witness: L1 6741 (beeper48, c1, controls, ending, ending2, gameover, level1).
 
 | | |
 | --- | --- |
 | Runs (c1: power-on, the original tape at ROM speed on the 128K, the control menu and play on level 1; from the entry `$AB4D` (frame 19 010, T 70 483)) | 5,724 calls, 228,960 t-states own (0.02 %) |
-| Runs (the other recordings) | 674 calls (`stage1/controls` 268, `stage1/level1` 249, `stage1/gameover` 157) |
+| Runs (the other recordings) | 1,017 calls (`stage1/controls` 268, `stage1/level1` 249, `stage1/gameover` 157 and 3 more) |
 | Called from | `Menu` |
 | Ports in | `$F7FE` |
 
@@ -288,12 +295,12 @@ Witness: L1 6595 (beeper48, c1, controls, ending2, gameover, level1).
 
 Port `$F7FE` bit 3. Title (`$E2B9`): selects the Sinclair joystick (method 3).
 
-Witness: L1 6595 (beeper48, c1, controls, ending2, gameover, level1).
+Witness: L1 6741 (beeper48, c1, controls, ending, ending2, gameover, level1).
 
 | | |
 | --- | --- |
 | Runs (c1: power-on, the original tape at ROM speed on the 128K, the control menu and play on level 1; from the entry `$AB4D` (frame 19 010, T 70 483)) | 5,724 calls, 228,960 t-states own (0.02 %) |
-| Runs (the other recordings) | 674 calls (`stage1/controls` 268, `stage1/level1` 249, `stage1/gameover` 157) |
+| Runs (the other recordings) | 1,017 calls (`stage1/controls` 268, `stage1/level1` 249, `stage1/gameover` 157 and 3 more) |
 | Called from | `Menu` |
 | Ports in | `$F7FE` |
 
@@ -305,13 +312,13 @@ Tests ENTER (port `$BFFE` bit 0), then bit 7 of port `$FEFE` (no key: 1 on a sta
 
 Callers: the title (`$E219`, `$E2D1`, `$E2D7`), the level text (`$E327`, `$E32C`), the game over (`$E389`, `$E38E`) and the level's end (`$AC38`, `$AC3D`); each waits for the release first, then for the press.
 
-Witness: L1 1149386 (beeper48, c1, controls, ending2, gameover, l1end, level1-level4).
+Witness: L1 1340688 (beeper48, c1, controls, ending, ending2, gameover, l1end, level1-level4).
 
 | | |
 | --- | --- |
 | Runs (c1: power-on, the original tape at ROM speed on the 128K, the control menu and play on level 1; from the entry `$AB4D` (frame 19 010, T 70 483)) | 57,833 calls, 6,930,203 t-states own (0.68 %) |
-| Runs (the other recordings) | 417,125 calls (`stage1/controls` 180,117, `stage1/gameover` 116,736, `stage1/level1` 116,295 and 3 more) |
-| Called from | `Menu`, `NewGame`, `StartLevel`, `GameOver` |
+| Runs (the other recordings) | 1,282,854 calls (`docs/integrate/l1end` 410,192, `stage2/ending2` 236,745, `stage1/ending` 191,302 and 7 more) |
+| Called from | `LevelEnd`, `Menu`, `NewGame`, `StartLevel`, `GameOver` |
 | Calls | `ReadInput` |
 | Reads | `$A14D` (`InputBits`) |
 | Ports in | `$BFFE`, `$FEFE` |
@@ -327,7 +334,7 @@ Witness: L1 43345 (beeper48, c1, controls, emptygun, ending2, gameover, l1end, l
 | | |
 | --- | --- |
 | Runs (c1: power-on, the original tape at ROM speed on the 128K, the control menu and play on level 1; from the entry `$AB4D` (frame 19 010, T 70 483)) | 1,073 calls, 44,173 t-states own (0.00 %) |
-| Runs (the other recordings) | 11,222 calls (`stage1/level3` 2,927, `stage1/level2` 2,845, `stage1/level1` 2,152 and 3 more) |
+| Runs (the other recordings) | 42,272 calls (`stage1/level3` 2,927, `stage1/level2` 2,845, `stage1/level1` 2,152 and 48 more) |
 | Called from | `MainLoop` |
 | Ports in | `$FBFE` |
 
@@ -342,7 +349,7 @@ Witness: L1 244986 (beeper48, c1, controls, emptygun, ending2, gameover, l1end, 
 | | |
 | --- | --- |
 | Runs (c1: power-on, the original tape at ROM speed on the 128K, the control menu and play on level 1; from the entry `$AB4D` (frame 19 010, T 70 483)) | 160,872 calls, 6,613,630 t-states own (0.65 %) |
-| Runs (the other recordings) | 22,374 calls (`stage1/level3` 5,849, `stage1/level2` 5,687, `stage1/level1` 4,288 and 3 more) |
+| Runs (the other recordings) | 84,114 calls (`stage1/level3` 5,849, `stage1/level2` 5,687, `stage1/level1` 4,288 and 48 more) |
 | Called from | `MainLoop`, `CheckGameComplete` |
 | Ports in | `$DFFE` |
 
@@ -356,14 +363,14 @@ Input: none. Output: A, BC, F; HL preserved. Called by StartPressed and by Rick'
 
 The keyboard ran in c1, controls, gameover and ending; the Kempston in controls (and 30 times in c1); the cursor keys in c1, controls and the four level recordings; the Sinclair in c1 and controls.
 
-Witness: L1 1145688 (beeper48, c1, controls, emptygun, ending2, gameover, l1end, l1z1left, spotL2Z4-34, spotL3Z7-51, spotL4Z8-69, L1Z1-L1Z6, L2Z1-L2Z7, L3Z1-L3Z12, L4Z1-L4Z9, level1-level4, spotL1Z4-43, spotL1Z4-44, spotL1Z4-47).
+Witness: L1 1332994 (beeper48, c1, controls, emptygun, ending, ending2, gameover, l1end, l1z1left, spotL2Z4-34, spotL3Z7-51, spotL4Z8-69, L1Z1-L1Z6, L2Z1-L2Z7, L3Z1-L3Z12, L4Z1-L4Z9, level1-level4, spotL1Z4-43, spotL1Z4-44, spotL1Z4-47).
 
 [Animation: `ReadInput` at work](img/routines/ReadInput.gif)
 
 | | |
 | --- | --- |
 | Runs (c1: power-on, the original tape at ROM speed on the 128K, the control menu and play on level 1; from the entry `$AB4D` (frame 19 010, T 70 483)) | 58,844 calls, 15,810,079 t-states own (1.55 %) |
-| Runs (the other recordings) | 393,460 calls (`stage1/controls` 154,181, `stage1/level1` 118,103, `stage1/gameover` 110,714 and 3 more) |
+| Runs (the other recordings) | 1,274,149 calls (`docs/integrate/l1end` 410,192, `stage2/ending2` 232,866, `stage1/ending` 187,306 and 49 more) |
 | Called from | `StartPressed`, `MoveRick` |
 | Calls | `InputKempston` (tail) |
 | Reads | `$A14C`-`$A14D` (`ControlMethod`, `InputBits`) |
@@ -376,7 +383,8 @@ Witness: L1 1145688 (beeper48, c1, controls, emptygun, ending2, gameover, l1end,
 
 | | |
 | --- | --- |
-| Runs | not reached in `stage2/c1g`; in the other recordings 128,566 calls (`stage1/level1` 118,103, `stage1/level2` 4,348, `stage1/level3` 4,043 and 1 more) |
+| Runs (c1: power-on, the original tape at ROM speed on the 128K, the control menu and play on level 1; from the entry `$AB4D` (frame 19 010, T 70 483)) | 53,272 runs of its first instruction (entered by a jump or by running on, no routine of its own in the L1) |
+| Runs (the other recordings) | 794,037 calls (`docs/integrate/l1end` 410,192, `stage2/ending2` 232,866, `stage1/level1` 118,103 and 45 more) |
 | Called from | `ReadInput` (tail) |
 | Reads | `$A14D` (`InputBits`) |
 | Writes | `$A14D` (`InputBits`) |
@@ -394,13 +402,13 @@ Pushes `$0101` 384 times with SP = `$6F00`, interrupts off, then restores SP and
 
 Callers: LoadScreen (`$ACF7`), the level's end (`$ABD8`) and the end of the last level (`$AC4C`). Output: B, HL changed.
 
-Witness: L1 442 (beeper48, c1, controls, ending2, gameover, l1end, spotL3Z7-51, L1Z1-L1Z6, L2Z1-L2Z7, L3Z1-L3Z12, L4Z1-L4Z9, level1-level4, spotL1Z4-43).
+Witness: L1 443 (beeper48, c1, controls, ending, ending2, gameover, l1end, spotL3Z7-51, L1Z1-L1Z6, L2Z1-L2Z7, L3Z1-L3Z12, L4Z1-L4Z9, level1-level4, spotL1Z4-43).
 
 | | |
 | --- | --- |
 | Runs (c1: power-on, the original tape at ROM speed on the 128K, the control menu and play on level 1; from the entry `$AB4D` (frame 19 010, T 70 483)) | 7 calls, 37,588 t-states own (0.00 %) |
-| Runs (the other recordings) | 79 calls (`stage1/level4` 30, `stage1/level1` 19, `stage1/controls` 11 and 3 more) |
-| Called from | `LoadScreen` |
+| Runs (the other recordings) | 436 calls (`stage1/level4` 30, `stage2/zones/L3Z9` 26, `stage2/zones/L3Z7` 22 and 43 more) |
+| Called from | `LevelEnd`, `LoadScreen` |
 | Writes | `$A259`-`$A25A` (`MarkAllDirtySP+1`) |
 
 ### `DrawDirtyCells` (`$A25D`)
@@ -413,16 +421,16 @@ The screen address follows from the flag's: the low byte is the cell's, the thir
 
 Callers: the frame loop (`$E41F`), the game over (`$E360`) and the end of each scroll (`$ADEC`, `$AE21`). Output: AF, BC, DE, HL changed.
 
-Witness: L1 43013 (beeper48, c1, controls, emptygun, ending2, gameover, l1end, l1z1left, spotL2Z4-34, spotL3Z7-51, spotL4Z8-69, L1Z1-L1Z6, L2Z1-L2Z7, L3Z1-L3Z12, L4Z1-L4Z9, level1-level4, spotL1Z4-43, spotL1Z4-44, spotL1Z4-47).
+Witness: L1 43014 (beeper48, c1, controls, emptygun, ending, ending2, gameover, l1end, l1z1left, spotL2Z4-34, spotL3Z7-51, spotL4Z8-69, L1Z1-L1Z6, L2Z1-L2Z7, L3Z1-L3Z12, L4Z1-L4Z9, level1-level4, spotL1Z4-43, spotL1Z4-44, spotL1Z4-47).
 
 | | |
 | --- | --- |
 | Runs (c1: power-on, the original tape at ROM speed on the 128K, the control menu and play on level 1; from the entry `$AB4D` (frame 19 010, T 70 483)) | 1,082 calls, 30,919,392 t-states own (3.03 %) |
-| Runs (the other recordings) | 11,195 calls (`stage1/level3` 2,923, `stage1/level2` 2,852, `stage1/level1` 2,151 and 3 more) |
+| Runs (the other recordings) | 41,932 calls (`stage1/level3` 2,923, `stage1/level2` 2,852, `stage1/level1` 2,151 and 49 more) |
 | Called from | `ScrollViewDown`, `ScrollViewUp`, `GameOver`, `CheckGameComplete` |
 | Calls | `MaskHudCells` |
-| Reads | `$5D00`-`$6087` (`LoaderStage2`, `LoaderStack`, `MusicImage`); `$6605`-`$68FB` (`MusicImage+2053`); `$6C00`-`$6F00` (`Kind16Frame+92`, `Kind19Frame`, `LowZeros`, `CellFlagsRow16` and 1 more); `$7100`-`$713F` (`CharSet0`); `$71C8`-`$73BF` (`CharSet0+200`); `$73F0`-`$73F7` (`CharSet0+752`); 16 more ranges |
-| Writes | `$4005`-`$57FB` (screen); `$6C05`-`$6F00` (`Kind16Frame+97`, `Kind19Frame`, `LowZeros`, `CellFlagsRow16` and 1 more) |
+| Reads | `$5D00`-`$6087` (`LoaderStage2`, `LoaderStack`, `MusicImage`); `$6600`-`$68FF` (`MusicImage+2048`); `$6C00`-`$6F00` (`Kind16Frame+92`, `Kind19Frame`, `LowZeros`, `CellFlagsRow16` and 1 more); `$7100`-`$73BF` (`CharSet0`); `$73D8`-`$73F7` (`CharSet0+728`); `$7440`-`$7447` (`CharSet0+832`); 19 more ranges |
+| Writes | `$4000`-`$57FF` (screen); `$6C00`-`$6F00` (`Kind16Frame+92`, `Kind19Frame`, `LowZeros`, `CellFlagsRow16` and 1 more) |
 
 ### `ComposeObject` (`$A2EC`)
 
@@ -441,10 +449,10 @@ Witness: L1 225623 (beeper48, c1, controls, emptygun, ending2, gameover, l1end, 
 | | |
 | --- | --- |
 | Runs (c1: power-on, the original tape at ROM speed on the 128K, the control menu and play on level 1; from the entry `$AB4D` (frame 19 010, T 70 483)) | 4,101 calls, 30,339,764 t-states own (2.97 %) |
-| Runs (the other recordings) | 53,508 calls (`stage1/level4` 16,596, `stage1/level2` 13,715, `stage1/level3` 12,532 and 3 more) |
+| Runs (the other recordings) | 221,522 calls (`stage1/level4` 16,596, `stage1/level2` 13,715, `stage1/level3` 12,532 and 48 more) |
 | Called from | `ComposeObjects` |
 | Calls | `ComposeCell` |
-| Reads | `$5B00`-`$5BFF` (`RomPagingRoutines`, `Rom128Variables`); `$5D00`-`$6087` (`LoaderStage2`, `LoaderStack`, `MusicImage`); `$EA8F`-`$EAD0` (`ObjectTable+1`, `RickObject`, `RickX`, `RickY` and 6 more); `$EAE9`-`$EB48` (`DynamiteX`, `ZoneObjects`); `$EB61`-`$EB66` (`ZoneObjects+91`); `$EB7F`-`$EB84` (`ZoneObjects+121`); 3 more ranges |
+| Reads | `$5B00`-`$5BFF` (`RomPagingRoutines`, `Rom128Variables`); `$5D00`-`$6087` (`LoaderStage2`, `LoaderStack`, `MusicImage`); `$EA8F`-`$EB66` (`ObjectTable+1`, `RickObject`, `RickX`, `RickY` and 9 more); `$EB7F`-`$EB84` (`ZoneObjects+121`); `$EB9D`-`$EBA2` (`ZoneObjects+151`); `$EBBB`-`$EBC0` (`ZoneObjects+181`); 1 more ranges |
 | Writes | `$5D00`-`$6087` (`LoaderStage2`, `LoaderStack`, `MusicImage`); `$A442`-`$A443` (`SpriteAlignedJump+1`); `$A458`-`$A459` (`SpriteAlignedPair+1`); `$A472`-`$A487` (`SpriteAlignedCol2In+2`, `SpriteAlignedCol2Out`, `SpriteAlignedCol3In`, `SpriteAlignedCol3Out` and 1 more); `$A605`-`$A606` (`SpriteShiftedJump+1`); `$A61B`-`$A61C` (`SpriteShiftedPair+1`); 2 more ranges |
 
 ### `ComposeCell` (`$A6D0`)
@@ -462,10 +470,10 @@ Witness: L1 1823882 (beeper48, c1, controls, emptygun, ending2, gameover, l1end,
 | | |
 | --- | --- |
 | Runs (c1: power-on, the original tape at ROM speed on the 128K, the control menu and play on level 1; from the entry `$AB4D` (frame 19 010, T 70 483)) | 31,048 calls, 12,692,610 t-states own (1.24 %) |
-| Runs (the other recordings) | 414,262 calls (`stage1/level4` 148,302, `stage1/level3` 97,578, `stage1/level2` 78,132 and 3 more) |
+| Runs (the other recordings) | 1,792,834 calls (`stage1/level4` 148,302, `stage1/level3` 97,578, `stage1/level2` 78,132 and 48 more) |
 | Called from | `ComposeObject` |
-| Reads | `$5C00`-`$5C6E` (`SystemVariables`); `$5C7F`-`$5C93` (`SystemVariables+127`); `$5CB0`-`$5F2F` (`SystemVariables+176`, `ChannelInfo`, `BasicLeft`, `LoaderStage2` and 2 more); `$5F58`-`$5F6F` (`MusicImage+344`); `$5F88`-`$5F97` (`MusicImage+392`); `$6140`-`$6147` (`MusicImage+832`); 19 more ranges |
-| Writes | `$5D00`-`$6087` (`LoaderStage2`, `LoaderStack`, `MusicImage`); `$6B0E`-`$6B10` (`MusicImage+3342`); `$6B2B`-`$6F5B` (`MusicImage+3371`, `Kind16Frame`, `Kind19Frame`, `LowZeros` and 2 more); `$6F74`-`$6FFB` (`CellFlagsRow24+116`); `$A73C` (`ComposeCount`) |
+| Reads | `$5C00`-`$5F9F` (`SystemVariables`, `ChannelInfo`, `BasicLeft`, `LoaderStage2` and 2 more); `$6060`-`$6147` (`MusicImage+608`); `$6240`-`$6357` (`MusicImage+1088`); `$63F0`-`$63F7` (`MusicImage+1520`); `$6428`-`$64EF` (`MusicImage+1576`); `$650E`-`$6517` (`MusicImage+1806`); 12 more ranges |
+| Writes | `$5D00`-`$6087` (`LoaderStage2`, `LoaderStack`, `MusicImage`); `$6B0E`-`$6B14` (`MusicImage+3342`); `$6B2B`-`$6FFB` (`MusicImage+3371`, `Kind16Frame`, `Kind19Frame`, `LowZeros` and 2 more); `$7018`-`$701B` (`Unused7001+23`); `$7039`-`$703B` (`Unused7001+56`); `$A73C` (`ComposeCount`) |
 
 ### `ComposeObjects` (`$A73F`)
 
@@ -480,7 +488,7 @@ Witness: L1 43008 (beeper48, c1, controls, emptygun, ending2, gameover, l1end, l
 | | |
 | --- | --- |
 | Runs (c1: power-on, the original tape at ROM speed on the 128K, the control menu and play on level 1; from the entry `$AB4D` (frame 19 010, T 70 483)) | 1,082 calls, 1,093,811 t-states own (0.11 %) |
-| Runs (the other recordings) | 11,199 calls (`stage1/level3` 2,924, `stage1/level2` 2,853, `stage1/level1` 2,152 and 3 more) |
+| Runs (the other recordings) | 41,926 calls (`stage1/level3` 2,924, `stage1/level2` 2,853, `stage1/level1` 2,152 and 48 more) |
 | Called from | `ClearOffscreenFlags`, `Quit`, `CheckGameComplete` |
 | Calls | `ComposeObject` |
 | Reads | `$EA8E`-`$EB42` (`ObjectTable`, `RickObject`, `RickX`, `RickY` and 9 more); `$EB60` (`ZoneObjects+90`); `$EB7E` (`ZoneObjects+120`); `$EB9C` (`ZoneObjects+150`); `$EBBA` (`ZoneObjects+180`); `$EBD8` (`ZoneObjects+210`); 1 more ranges |
@@ -506,13 +514,13 @@ Saves the sentinel byte `$6F00` (into RedrawSentinel) and the 30 flags `$6C21-$6
 
 Callers: LoadScreen (`$ACFA`), the level's end (`$ABE8`) and each scroll step (`$ADD8`, `$AE0F`). Output: everything.
 
-Witness: L1 613 (beeper48, c1, controls, ending2, gameover, l1end, spotL3Z7-51, L1Z1-L1Z6, L2Z1-L2Z7, L3Z1-L3Z12, L4Z1-L4Z9, level1-level4, spotL1Z4-43).
+Witness: L1 614 (beeper48, c1, controls, ending, ending2, gameover, l1end, spotL3Z7-51, L1Z1-L1Z6, L2Z1-L2Z7, L3Z1-L3Z12, L4Z1-L4Z9, level1-level4, spotL1Z4-43).
 
 | | |
 | --- | --- |
 | Runs (c1: power-on, the original tape at ROM speed on the 128K, the control menu and play on level 1; from the entry `$AB4D` (frame 19 010, T 70 483)) | 35 calls, 40,111 t-states own (0.00 %) |
-| Runs (the other recordings) | 151 calls (`stage1/level1` 49, `stage1/level4` 34, `stage1/level2` 27 and 3 more) |
-| Called from | `LoadScreen`, `ScrollViewDown`, `ScrollViewUp` |
+| Runs (the other recordings) | 579 calls (`stage1/level1` 49, `stage1/level4` 34, `stage2/zones/L3Z9` 28 and 43 more) |
+| Called from | `LevelEnd`, `LoadScreen`, `ScrollViewDown`, `ScrollViewUp` |
 | Calls | `DrawAllDirtyCells` |
 | Reads | `$6C21`-`$6C3E` (`Kind16Frame+125`, `Kind19Frame`); `$6F00` (`CellFlagsRow24`); `$A814`-`$A831` (`SavedHudCells`) |
 | Writes | `$6C21`-`$6C3E` (`Kind16Frame+125`, `Kind19Frame`); `$6F00` (`CellFlagsRow24`); `$A80F`-`$A831` (`RedrawSentinel+1`, `SavedHudCells`) |
@@ -525,15 +533,15 @@ Like DrawDirtyCells, and each cell's attribute is set from the attribute table (
 
 Called by RedrawScreen only. Output: everything.
 
-Witness: L1 613 (beeper48, c1, controls, ending2, gameover, l1end, spotL3Z7-51, L1Z1-L1Z6, L2Z1-L2Z7, L3Z1-L3Z12, L4Z1-L4Z9, level1-level4, spotL1Z4-43).
+Witness: L1 614 (beeper48, c1, controls, ending, ending2, gameover, l1end, spotL3Z7-51, L1Z1-L1Z6, L2Z1-L2Z7, L3Z1-L3Z12, L4Z1-L4Z9, level1-level4, spotL1Z4-43).
 
 | | |
 | --- | --- |
 | Runs (c1: power-on, the original tape at ROM speed on the 128K, the control menu and play on level 1; from the entry `$AB4D` (frame 19 010, T 70 483)) | 35 calls, 9,380,803 t-states own (0.92 %) |
-| Runs (the other recordings) | 151 calls (`stage1/level1` 49, `stage1/level4` 34, `stage1/level2` 27 and 3 more) |
+| Runs (the other recordings) | 579 calls (`stage1/level1` 49, `stage1/level4` 34, `stage2/zones/L3Z9` 28 and 43 more) |
 | Called from | `RedrawScreen` |
 | Calls | `MaskHudCells` |
-| Reads | `$5D00`-`$5E6F` (`LoaderStage2`, `LoaderStack`, `MusicImage`); `$5EA0`-`$5FEF` (`MusicImage+160`); `$6600`-`$68FF` (`MusicImage+2048`); `$6C00`-`$6F00` (`Kind16Frame+92`, `Kind19Frame`, `LowZeros`, `CellFlagsRow16` and 1 more); `$7100`-`$713F` (`CharSet0`); `$71B8`-`$7447` (`CharSet0+184`); 16 more ranges |
+| Reads | `$5D00`-`$5FEF` (`LoaderStage2`, `LoaderStack`, `MusicImage`); `$6600`-`$68FF` (`MusicImage+2048`); `$6C00`-`$6F00` (`Kind16Frame+92`, `Kind19Frame`, `LowZeros`, `CellFlagsRow16` and 1 more); `$7100`-`$7627` (`CharSet0`); `$7680`-`$78EF` (`CharSet0+1408`); `$7900`-`$7C57` (`CharAttr0`, `CharSet1`); 3 more ranges |
 | Writes | `$4000`-`$5AFF` (screen); `$6C00`-`$6F00` (`Kind16Frame+92`, `Kind19Frame`, `LowZeros`, `CellFlagsRow16` and 1 more) |
 
 ### `ScrollViewDown` (`$ADB9`)
@@ -551,7 +559,7 @@ Witness: L1 71 (beeper48, c1, gameover, L1Z1, L1Z2, L1Z4-L1Z6, L2Z6, L3Z6, L3Z8,
 | | |
 | --- | --- |
 | Runs (c1: power-on, the original tape at ROM speed on the 128K, the control menu and play on level 1; from the entry `$AB4D` (frame 19 010, T 70 483)) | 14 calls, 6,286 t-states own (0.00 %) |
-| Runs (the other recordings) | 25 calls (`stage1/level1` 15, `stage1/gameover` 6, `stage1/level3` 2 and 1 more) |
+| Runs (the other recordings) | 57 calls (`stage1/level1` 15, `stage2/zones/L1Z6` 8, `stage1/gameover` 6 and 14 more) |
 | Called from | `CheckGameComplete` |
 | Calls | `WaitFrames`, `DrawDirtyCells`, `RedrawScreen`, `BuildScreenMap`, `ShiftMapUp`, `ShiftMarksUp`, `ShiftObjects`, `ClearOffscreenFlags`, `SpawnObjects` |
 | Reads | `$ADB7` (`ViewTopRow`) |
@@ -567,7 +575,7 @@ Witness: L1 16 (L1Z4, L2Z2, L3Z8, L3Z9, level2).
 
 | | |
 | --- | --- |
-| Runs | not reached in `stage2/c1g`; in the other recordings 11 calls (`stage1/level2` 11) |
+| Runs | not reached in `stage2/c1g`; in the other recordings 16 calls (`stage1/level2` 11, `stage2/zones/L3Z8` 2, `stage2/zones/L1Z4` 1 and 2 more) |
 | Called from | `CheckGameComplete` |
 | Calls | `WaitFrames`, `DrawDirtyCells`, `RedrawScreen`, `BuildScreenMap`, `ShiftMapDown`, `ShiftMarksDown`, `ShiftObjects`, `ClearOffscreenFlags`, `SpawnObjects` |
 | Reads | `$ADB7` (`ViewTopRow`) |
@@ -584,7 +592,7 @@ Witness: L1 141 (beeper48, c1, gameover, L1Z1, L1Z2, L1Z4-L1Z6, L2Z6, L3Z6, L3Z8
 | | |
 | --- | --- |
 | Runs (c1: power-on, the original tape at ROM speed on the 128K, the control menu and play on level 1; from the entry `$AB4D` (frame 19 010, T 70 483)) | 28 calls, 2,047,720 t-states own (0.20 %) |
-| Runs (the other recordings) | 50 calls (`stage1/level1` 30, `stage1/gameover` 12, `stage1/level3` 4 and 1 more) |
+| Runs (the other recordings) | 113 calls (`stage1/level1` 30, `stage2/zones/L1Z6` 16, `stage1/gameover` 12 and 14 more) |
 | Called from | `ScrollViewDown` |
 | Reads | `$6600`-`$6A00` (`MusicImage+2048`); `$6C00`-`$6F7F` (`Kind16Frame+92`, `Kind19Frame`, `LowZeros`, `CellFlagsRow16` and 1 more) |
 | Writes | `$6600`-`$697F` (`MusicImage+2048`); `$6A00` (`MusicImage+3072`); `$6A80` (`MusicImage+3200`); `$6C00`-`$6F7F` (`Kind16Frame+92`, `Kind19Frame`, `LowZeros`, `CellFlagsRow16` and 1 more) |
@@ -599,7 +607,7 @@ Witness: L1 32 (L1Z4, L2Z2, L3Z8, L3Z9, level2).
 
 | | |
 | --- | --- |
-| Runs | not reached in `stage2/c1g`; in the other recordings 22 calls (`stage1/level2` 22) |
+| Runs | not reached in `stage2/c1g`; in the other recordings 32 calls (`stage1/level2` 22, `stage2/zones/L3Z8` 4, `stage2/zones/L3Z9` 2 and 2 more) |
 | Called from | `ScrollViewUp` |
 | Reads | `$64FF`-`$68FF` (`MusicImage+1791`); `$6B80`-`$6EFE` (`MusicImage+3456`, `Kind16Frame`, `Kind19Frame`, `LowZeros` and 1 more) |
 | Writes | `$647F` (`MusicImage+1663`); `$64FF` (`MusicImage+1791`); `$6580`-`$68FE` (`MusicImage+1920`); `$6B80`-`$6EFE` (`MusicImage+3456`, `Kind16Frame`, `Kind19Frame`, `LowZeros` and 1 more) |
@@ -615,10 +623,10 @@ Witness: L1 141 (beeper48, c1, gameover, L1Z1, L1Z2, L1Z4-L1Z6, L2Z6, L3Z6, L3Z8
 | | |
 | --- | --- |
 | Runs (c1: power-on, the original tape at ROM speed on the 128K, the control menu and play on level 1; from the entry `$AB4D` (frame 19 010, T 70 483)) | 28 calls, 1,009,192 t-states own (0.10 %) |
-| Runs (the other recordings) | 50 calls (`stage1/level1` 30, `stage1/gameover` 12, `stage1/level3` 4 and 1 more) |
+| Runs (the other recordings) | 113 calls (`stage1/level1` 30, `stage2/zones/L1Z6` 16, `stage1/gameover` 12 and 14 more) |
 | Called from | `ScrollViewDown` |
 | Reads | `$6C01`-`$7000` (`Kind16Frame+93`, `Kind19Frame`, `LowZeros`, `CellFlagsRow16` and 2 more) |
-| Writes | `$6BA7`-`$6BEA` (`Kind16Frame+3`); `$6C27`-`$6C92` (`Kind19Frame+5`); `$6CA7`-`$6EFB` (`LowZeros+7`, `CellFlagsRow16`); `$6F24`-`$6F7B` (`CellFlagsRow24+36`); `$6FA4`-`$7000` (`CellFlagsRow24+164`, `CellFlagsEnd`) |
+| Writes | `$6B8E`-`$6EFB` (`MusicImage+3470`, `Kind16Frame`, `Kind19Frame`, `LowZeros` and 1 more); `$6F21`-`$6F7B` (`CellFlagsRow24+33`); `$6FA1`-`$7000` (`CellFlagsRow24+161`, `CellFlagsEnd`) |
 
 ### `ShiftMarksDown` (`$AE9A`)
 
@@ -630,10 +638,10 @@ Witness: L1 32 (L1Z4, L2Z2, L3Z8, L3Z9, level2).
 
 | | |
 | --- | --- |
-| Runs | not reached in `stage2/c1g`; in the other recordings 22 calls (`stage1/level2` 22) |
+| Runs | not reached in `stage2/c1g`; in the other recordings 32 calls (`stage1/level2` 22, `stage2/zones/L3Z8` 4, `stage2/zones/L3Z9` 2 and 2 more) |
 | Called from | `ScrollViewUp` |
 | Reads | `$6AFF`-`$6EFF` (`MusicImage+3327`, `Kind16Frame`, `Kind19Frame`, `LowZeros` and 1 more) |
-| Writes | `$6AFF` (`MusicImage+3327`); `$6B2B`-`$6B7B` (`MusicImage+3371`); `$6BA5`-`$6BFB` (`Kind16Frame+1`); `$6C25`-`$6E1A` (`Kind19Frame+3`, `LowZeros`, `CellFlagsRow16`); `$6E54`-`$6E9A` (`CellFlagsRow16+84`); `$6ED9`-`$6EFB` (`CellFlagsRow16+217`); 3 more ranges |
+| Writes | `$6AFF` (`MusicImage+3327`); `$6B2B`-`$6B7B` (`MusicImage+3371`); `$6BA5`-`$6BFB` (`Kind16Frame+1`); `$6C25`-`$6E1A` (`Kind19Frame+3`, `LowZeros`, `CellFlagsRow16`); `$6E2D`-`$6E32` (`CellFlagsRow16+45`); `$6E4D`-`$6E9A` (`CellFlagsRow16+77`); 5 more ranges |
 
 ### `ClearOffscreenFlags` (`$AF18`)
 
@@ -646,7 +654,7 @@ Witness: L1 87 (beeper48, c1, gameover, L1Z1, L1Z2, L1Z4-L1Z6, L2Z2, L2Z6, L3Z6,
 | | |
 | --- | --- |
 | Runs (c1: power-on, the original tape at ROM speed on the 128K, the control menu and play on level 1; from the entry `$AB4D` (frame 19 010, T 70 483)) | 14 calls, 52,434 t-states own (0.01 %) |
-| Runs (the other recordings) | 36 calls (`stage1/level1` 15, `stage1/level2` 11, `stage1/gameover` 6 and 2 more) |
+| Runs (the other recordings) | 73 calls (`stage1/level1` 15, `stage1/level2` 11, `stage2/zones/L1Z6` 8 and 17 more) |
 | Called from | `ScrollViewDown`, `ScrollViewUp` |
 | Calls | `ComposeObjects` |
 | Writes | `$AF4F`-`$AF50` (`ClearFlagsSP+1`) |
@@ -665,12 +673,12 @@ When Bullets is 0 the JP Z at `$A8CF` lands in the clearing loop with HL = 0 and
 
 Callers: DrawDirtyCells and DrawAllDirtyCells. Output: AF, B, HL changed.
 
-Witness: L1 43626 (beeper48, c1, controls, emptygun, ending2, gameover, l1end, l1z1left, spotL2Z4-34, spotL3Z7-51, spotL4Z8-69, L1Z1-L1Z6, L2Z1-L2Z7, L3Z1-L3Z12, L4Z1-L4Z9, level1-level4, spotL1Z4-43, spotL1Z4-44, spotL1Z4-47).
+Witness: L1 43628 (beeper48, c1, controls, emptygun, ending, ending2, gameover, l1end, l1z1left, spotL2Z4-34, spotL3Z7-51, spotL4Z8-69, L1Z1-L1Z6, L2Z1-L2Z7, L3Z1-L3Z12, L4Z1-L4Z9, level1-level4, spotL1Z4-43, spotL1Z4-44, spotL1Z4-47).
 
 | | |
 | --- | --- |
 | Runs (c1: power-on, the original tape at ROM speed on the 128K, the control menu and play on level 1; from the entry `$AB4D` (frame 19 010, T 70 483)) | 1,117 calls, 697,693 t-states own (0.07 %) |
-| Runs (the other recordings) | 11,346 calls (`stage1/level3` 2,934, `stage1/level2` 2,879, `stage1/level1` 2,200 and 3 more) |
+| Runs (the other recordings) | 42,511 calls (`stage1/level3` 2,934, `stage1/level2` 2,879, `stage1/level1` 2,200 and 49 more) |
 | Called from | `DrawDirtyCells`, `DrawAllDirtyCells` |
 | Reads | `$A958`-`$A976` (`Lives`, `DrawDynamite`, `Dynamite`, `DrawBullets` and 1 more) |
 | Writes | `$6C21`-`$6C3E` (`Kind16Frame+125`, `Kind19Frame`) |
@@ -683,15 +691,15 @@ Compares Bullets, Dynamite and Lives with OldHudCounts and calls DrawBullets, Dr
 
 Callers: the frame loop (`$E422`), the game over (`$E35D`) and the level's end (`$ABF3`). Output: everything.
 
-Witness: L1 42930 (beeper48, c1, controls, emptygun, ending2, gameover, l1end, l1z1left, spotL2Z4-34, spotL3Z7-51, spotL4Z8-69, L1Z1-L1Z6, L2Z1-L2Z7, L3Z1-L3Z12, L4Z1-L4Z9, level1-level4, spotL1Z4-43, spotL1Z4-44, spotL1Z4-47).
+Witness: L1 42932 (beeper48, c1, controls, emptygun, ending, ending2, gameover, l1end, l1z1left, spotL2Z4-34, spotL3Z7-51, spotL4Z8-69, L1Z1-L1Z6, L2Z1-L2Z7, L3Z1-L3Z12, L4Z1-L4Z9, level1-level4, spotL1Z4-43, spotL1Z4-44, spotL1Z4-47).
 
 [Animation: `UpdateHud` at work](img/routines/UpdateHud.gif)
 
 | | |
 | --- | --- |
 | Runs (c1: power-on, the original tape at ROM speed on the 128K, the control menu and play on level 1; from the entry `$AB4D` (frame 19 010, T 70 483)) | 1,068 calls, 169,912 t-states own (0.02 %) |
-| Runs (the other recordings) | 11,159 calls (`stage1/level3` 2,921, `stage1/level2` 2,841, `stage1/level1` 2,136 and 3 more) |
-| Called from | `GameOver`, `CheckGameComplete` |
+| Runs (the other recordings) | 41,864 calls (`stage1/level3` 2,921, `stage1/level2` 2,841, `stage1/level1` 2,136 and 49 more) |
+| Called from | `LevelEnd`, `GameOver`, `CheckGameComplete` |
 | Calls | `DrawLives` (tail), `DrawDynamite`, `DrawBullets` |
 | Reads | `$A93A`-`$A93C` (`OldHudCounts`, `OldDynamite`, `OldLives`); `$A958`-`$A976` (`Lives`, `DrawDynamite`, `Dynamite`, `DrawBullets` and 1 more) |
 | Writes | `$A93A`-`$A93C` (`OldHudCounts`, `OldDynamite`, `OldLives`) |
@@ -707,7 +715,7 @@ Witness: L1 331 (beeper48, c1, controls, gameover, spotL3Z7-51, L1Z1-L1Z6, L2Z1-
 | | |
 | --- | --- |
 | Runs (c1: power-on, the original tape at ROM speed on the 128K, the control menu and play on level 1; from the entry `$AB4D` (frame 19 010, T 70 483)) | 4 calls, 312 t-states own (0.00 %) |
-| Runs (the other recordings) | 71 calls (`stage1/level4` 29, `stage1/level1` 14, `stage1/controls` 11 and 3 more) |
+| Runs (the other recordings) | 327 calls (`stage1/level4` 29, `stage2/zones/L3Z9` 24, `stage2/zones/L3Z7` 16 and 40 more) |
 | Called from | `NewGame`, `NewLife` |
 | Calls | `DrawLives`, `DrawDynamite`, `DrawBullets`, `DrawScore` |
 
@@ -722,7 +730,7 @@ Witness: L1 370 (beeper48, c1, controls, gameover, spotL3Z7-51, L1Z1-L1Z6, L2Z1-
 | | |
 | --- | --- |
 | Runs (c1: power-on, the original tape at ROM speed on the 128K, the control menu and play on level 1; from the entry `$AB4D` (frame 19 010, T 70 483)) | 7 calls, 448 t-states own (0.00 %) |
-| Runs (the other recordings) | 100 calls (`stage1/level4` 30, `stage1/level1` 27, `stage1/controls` 17 and 3 more) |
+| Runs (the other recordings) | 363 calls (`stage1/level4` 30, `stage1/level1` 27, `stage2/zones/L3Z9` 24 and 40 more) |
 | Called from | `UpdateHud` (tail), `DrawHud` |
 | Calls | `DrawCounter` |
 | Reads | `$A958` (`Lives`) |
@@ -738,7 +746,7 @@ Witness: L1 393 (beeper48, c1, controls, gameover, spotL3Z7-51, L1Z1-L1Z6, L2Z1-
 | | |
 | --- | --- |
 | Runs (c1: power-on, the original tape at ROM speed on the 128K, the control menu and play on level 1; from the entry `$AB4D` (frame 19 010, T 70 483)) | 5 calls, 320 t-states own (0.00 %) |
-| Runs (the other recordings) | 85 calls (`stage1/level4` 30, `stage1/level1` 15, `stage1/level3` 13 and 3 more) |
+| Runs (the other recordings) | 388 calls (`stage1/level4` 30, `stage2/zones/L3Z9` 24, `stage2/zones/L4Z2` 18 and 40 more) |
 | Called from | `UpdateHud`, `DrawHud` |
 | Calls | `DrawCounter` |
 | Reads | `$A967` (`Dynamite`) |
@@ -754,7 +762,7 @@ Witness: L1 413 (beeper48, c1, controls, emptygun, gameover, spotL3Z7-51, L1Z1-L
 | | |
 | --- | --- |
 | Runs (c1: power-on, the original tape at ROM speed on the 128K, the control menu and play on level 1; from the entry `$AB4D` (frame 19 010, T 70 483)) | 10 calls, 640 t-states own (0.00 %) |
-| Runs (the other recordings) | 104 calls (`stage1/level4` 34, `stage1/level1` 24, `stage1/level3` 15 and 3 more) |
+| Runs (the other recordings) | 403 calls (`stage1/level4` 34, `stage1/level1` 24, `stage2/zones/L3Z9` 24 and 41 more) |
 | Called from | `UpdateHud`, `DrawHud` |
 | Calls | `DrawCounter` |
 | Reads | `$A976` (`Bullets`) |
@@ -767,12 +775,12 @@ For each digit of Score: its 8 bytes from the font at `$9E95` + 8 digit, one pix
 
 Callers: DrawHud and AddScore (a tail jump). Output: everything.
 
-Witness: L1 369 (beeper48, c1, controls, ending2, gameover, spotL3Z7-51, L1Z1-L1Z6, L2Z1-L2Z7, L3Z1-L3Z12, L4Z1-L4Z9, level1-level4, spotL1Z4-43).
+Witness: L1 370 (beeper48, c1, controls, ending, ending2, gameover, spotL3Z7-51, L1Z1-L1Z6, L2Z1-L2Z7, L3Z1-L3Z12, L4Z1-L4Z9, level1-level4, spotL1Z4-43).
 
 | | |
 | --- | --- |
 | Runs (c1: power-on, the original tape at ROM speed on the 128K, the control menu and play on level 1; from the entry `$AB4D` (frame 19 010, T 70 483)) | 14 calls, 33,017 t-states own (0.00 %) |
-| Runs (the other recordings) | 88 calls (`stage1/level4` 31, `stage1/level1` 24, `stage1/controls` 11 and 3 more) |
+| Runs (the other recordings) | 354 calls (`stage1/level4` 31, `stage1/level1` 24, `stage2/zones/L3Z9` 24 and 40 more) |
 | Called from | `DrawHud`, `AddScore` (tail) |
 | Reads | `$9E95`-`$9EE4` (`Font`); `$A9BE`-`$A9C3` (`Score`) |
 | Writes | `$4021`-`$4026` (screen); `$4121`-`$4126` (screen); `$4221`-`$4226` (screen); `$4321`-`$4326` (screen); `$4421`-`$4426` (screen); `$4521`-`$4526` (screen); 3 more ranges |
@@ -785,16 +793,16 @@ Input: DE the last (units) digit of the award. Adds the five digits to Score's l
 
 Callers: `$EDF6` (500), `$F190` (50), `$F52C` (the award at `$E49A`) and the end of the last level (`$AC35`). Output: everything.
 
-Witness: L1 38 (c1, ending2, L1Z3, L2Z6, L3Z2, L3Z6, L3Z11, L3Z12, L4Z2, level1, level2, level4).
+Witness: L1 39 (c1, ending, ending2, L1Z3, L2Z6, L3Z2, L3Z6, L3Z11, L3Z12, L4Z2, level1, level2, level4).
 
 | | |
 | --- | --- |
 | Runs (c1: power-on, the original tape at ROM speed on the 128K, the control menu and play on level 1; from the entry `$AB4D` (frame 19 010, T 70 483)) | 10 calls, 4,075 t-states own (0.00 %) |
-| Runs (the other recordings) | 17 calls (`stage1/level1` 10, `stage1/level2` 5, `stage1/level4` 2) |
-| Called from | `TreasureObj`, `KillEnemy`, `BonusCollect` |
+| Runs (the other recordings) | 29 calls (`stage1/level1` 10, `stage1/level2` 5, `stage2/zones/L3Z6` 3 and 9 more) |
+| Called from | `LevelEnd`, `TreasureObj`, `KillEnemy`, `BonusCollect` |
 | Calls | `DrawScore` (tail) |
-| Reads | `$A9BE`-`$A9DD` (`Score`, `ScorePad`, `Award1`, `Award10` and 3 more); `$E496`-`$E49A` (`BonusDigits`) |
-| Writes | `$A9BE`-`$A9C3` (`Score`) |
+| Reads | `$9E95`-`$9E9C` (`Font`); `$9ECD`-`$9ED4` (`Font+56`); `$A9BE`-`$A9E7` (`Score`, `ScorePad`, `Award1`, `Award10` and 5 more); `$E496`-`$E49A` (`BonusDigits`) |
+| Writes | `$4021`-`$4026` (screen); `$4121`-`$4126` (screen); `$4221`-`$4226` (screen); `$4321`-`$4326` (screen); `$4421`-`$4426` (screen); `$4521`-`$4526` (screen); 4 more ranges |
 
 ### `DrawCounter` (`$AA0E`)
 
@@ -811,9 +819,9 @@ Witness: L1 1176 (beeper48, c1, controls, emptygun, gameover, spotL3Z7-51, L1Z1-
 | | |
 | --- | --- |
 | Runs (c1: power-on, the original tape at ROM speed on the 128K, the control menu and play on level 1; from the entry `$AB4D` (frame 19 010, T 70 483)) | 22 calls, 47,596 t-states own (0.00 %) |
-| Runs (the other recordings) | 289 calls (`stage1/level4` 94, `stage1/level1` 66, `stage1/controls` 41 and 3 more) |
+| Runs (the other recordings) | 1,154 calls (`stage1/level4` 94, `stage2/zones/L3Z9` 72, `stage1/level1` 66 and 41 more) |
 | Called from | `DrawLives`, `DrawDynamite`, `DrawBullets` |
-| Reads | `$6629`-`$663E` (`MusicImage+2089`); `$6B00` (`MusicImage+3328`); `$7900` (`CharAttr0`); `$792B`-`$7940` (`CharAttr0+43`); `$7952` (`CharAttr0+82`); `$79DB`-`$79F1` (`CharAttr0+219`); 3 more ranges |
+| Reads | `$6629`-`$663E` (`MusicImage+2089`); `$6B00` (`MusicImage+3328`); `$7900` (`CharAttr0`); `$792B`-`$7940` (`CharAttr0+43`); `$7952` (`CharAttr0+82`); `$79DB`-`$79F1` (`CharAttr0+219`); 4 more ranges |
 | Writes | `$4029`-`$403E` (screen); `$4129`-`$413E` (screen); `$4229`-`$423E` (screen); `$4329`-`$433E` (screen); `$4429`-`$443E` (screen); `$4529`-`$453E` (screen); 5 more ranges |
 
 ### `PrintText` (`$AA8D`)
@@ -824,17 +832,17 @@ One char a cell, `$FF` ends. A space (`$20`) prints SpaceGlyph; any other byte b
 
 Output: HL on the `$FF`, DE past the text, AF changed. Callers: PrintLines and the game over text (`$E36B-$E381`).
 
-Witness: L1 4504 (beeper48, c1, controls, ending2, gameover, l1end, level1).
+Witness: L1 4941 (beeper48, c1, controls, ending, ending2, gameover, l1end, level1).
 
 [Animation: `PrintText` at work](img/routines/PrintText.gif)
 
 | | |
 | --- | --- |
 | Runs (c1: power-on, the original tape at ROM speed on the 128K, the control menu and play on level 1; from the entry `$AB4D` (frame 19 010, T 70 483)) | 30 calls, 197,108 t-states own (0.02 %) |
-| Runs (the other recordings) | 194 calls (`stage1/controls` 120, `stage1/level1` 44, `stage1/gameover` 30) |
+| Runs (the other recordings) | 276 calls (`stage1/controls` 120, `stage1/level1` 44, `stage1/gameover` 30 and 4 more) |
 | Called from | `PrintLines`, `GameOver` |
-| Reads | `$9E9D`-`$9EBC` (`Font+8`); `$9ED5`-`$9FB4` (`Font+64`, `FontLetters`); `$9FCD`-`$9FE4` (`FontPunctuation`); `$AAE1`-`$AAE8` (`SpaceGlyph`); `$E397`-`$E3AE` (`GameOverBlankText`, `GameOverText`); `$E4E5`-`$E5FA` (`SouthAmericaText`); 1 more ranges |
-| Writes | `$4041`-`$405E` (screen); `$40A1`-`$40B5` (screen); `$40EA`-`$40F5` (screen); `$4141`-`$415E` (screen); `$41A1`-`$41B5` (screen); `$41EA`-`$41F5` (screen); 42 more ranges |
+| Reads | `$9E9D`-`$9EBC` (`Font+8`); `$9ED5`-`$9FB4` (`Font+64`, `FontLetters`); `$9FCD`-`$9FE4` (`FontPunctuation`); `$AAE1`-`$AAE8` (`SpaceGlyph`); `$E397`-`$E3AE` (`GameOverBlankText`, `GameOverText`); `$E4E5`-`$E708` (`SouthAmericaText`, `EgyptText`); 1 more ranges |
+| Writes | `$4041`-`$405E` (screen); `$40A1`-`$40B5` (screen); `$40E1`-`$40FB` (screen); `$4141`-`$415E` (screen); `$41A1`-`$41B5` (screen); `$41E1`-`$41FB` (screen); 36 more ranges |
 
 ### `PrintLines` (`$AAE9`)
 
@@ -844,15 +852,15 @@ Input: HL the texts, each ending in `$FF`, the list ending in `$FE`; DE the firs
 
 Callers: the title (`$E22F-$E241`), the level texts (`$E31A`, `$AC1A`). Output: everything.
 
-Witness: L1 287 (beeper48, c1, controls, ending2, gameover, l1end, level1).
+Witness: L1 315 (beeper48, c1, controls, ending, ending2, gameover, l1end, level1).
 
 | | |
 | --- | --- |
 | Runs (c1: power-on, the original tape at ROM speed on the 128K, the control menu and play on level 1; from the entry `$AB4D` (frame 19 010, T 70 483)) | 4 calls, 2,980 t-states own (0.00 %) |
-| Runs (the other recordings) | 25 calls (`stage1/controls` 16, `stage1/level1` 5, `stage1/gameover` 4) |
-| Called from | `Menu`, `NewGame` |
+| Runs (the other recordings) | 35 calls (`stage1/controls` 16, `stage1/level1` 5, `stage1/gameover` 4 and 4 more) |
+| Called from | `LevelEnd`, `Menu`, `NewGame` |
 | Calls | `PrintText` |
-| Reads | `$E4E5`-`$E4FD` (`SouthAmericaText`); `$E51C`-`$E539` (`SouthAmericaText+55`); `$E557`-`$E56B` (`SouthAmericaText+114`); `$E588` (`SouthAmericaText+163`); `$E5A7`-`$E5C2` (`SouthAmericaText+194`); `$E5E0`-`$E5FB` (`SouthAmericaText+251`); 2 more ranges |
+| Reads | `$E4E5`-`$E4FD` (`SouthAmericaText`); `$E51C`-`$E539` (`SouthAmericaText+55`); `$E557`-`$E56B` (`SouthAmericaText+114`); `$E588` (`SouthAmericaText+163`); `$E5A7`-`$E5C2` (`SouthAmericaText+194`); `$E5E0`-`$E616` (`SouthAmericaText+251`, `EgyptText`); 15 more ranges |
 
 ### `ClearScreen` (`$AB03`)
 
@@ -860,12 +868,12 @@ Witness: L1 287 (beeper48, c1, controls, ending2, gameover, l1end, level1).
 
 Callers: the title (`$E223`) and the game start (`$E2DC`). Output: BC, DE, HL.
 
-Witness: L1 17 (beeper48, c1, controls, ending2, gameover, level1).
+Witness: L1 18 (beeper48, c1, controls, ending, ending2, gameover, level1).
 
 | | |
 | --- | --- |
 | Runs (c1: power-on, the original tape at ROM speed on the 128K, the control menu and play on level 1; from the entry `$AB4D` (frame 19 010, T 70 483)) | 2 calls, 368,684 t-states own (0.04 %) |
-| Runs (the other recordings) | 13 calls (`stage1/controls` 8, `stage1/level1` 3, `stage1/gameover` 2) |
+| Runs (the other recordings) | 16 calls (`stage1/controls` 8, `stage1/level1` 3, `stage1/gameover` 2 and 3 more) |
 | Called from | `Menu`, `NewGame` |
 | Reads | `$4000`-`$5AFE` (screen) |
 | Writes | `$4000`-`$5AFF` (screen) |
@@ -878,12 +886,12 @@ Input: A the number of cells, HL the table (written into CycleTablePtr), DE the 
 
 Output: AF, BC, DE, HL changed, AF' used.
 
-Witness: L1 6603 (beeper48, c1, controls, ending2, gameover, level1).
+Witness: L1 6749 (beeper48, c1, controls, ending, ending2, gameover, level1).
 
 | | |
 | --- | --- |
 | Runs (c1: power-on, the original tape at ROM speed on the 128K, the control menu and play on level 1; from the entry `$AB4D` (frame 19 010, T 70 483)) | 5,728 calls, 4,120,896 t-states own (0.40 %) |
-| Runs (the other recordings) | 677 calls (`stage1/controls` 271, `stage1/level1` 249, `stage1/gameover` 157) |
+| Runs (the other recordings) | 1,021 calls (`stage1/controls` 271, `stage1/level1` 249, `stage1/gameover` 157 and 3 more) |
 | Called from | `Menu` |
 | Reads | `$AB3C`-`$AB4C` (`CyclePhase`, `CycleColours`, `PlainColours`) |
 | Writes | `$58EE`-`$58F5` (screen); `$592E`-`$5935` (screen); `$596E`-`$5973` (screen); `$59AE`-`$59B5` (screen); `$AB2B`-`$AB3C` (`CycleTablePtr+1`, `CyclePhase`) |
@@ -904,7 +912,8 @@ Witness: L1 2 (ending2, l1end).
 
 | | |
 | --- | --- |
-| Runs | not reached in the recordings |
+| Runs | not reached in `stage2/c1g`; in the other recordings 2 runs of its first instruction, entered by a jump (`docs/integrate/l1end` 1, `stage2/ending2` 1) |
+| Calls | `StartTune`, `StartPressed`, `MarkAllDirty`, `RedrawScreen`, `UpdateHud`, `AddScore`, `PrintLines`, `ClearPlayArea` |
 
 ### `ClearPlayArea` (`$AF56`)
 
@@ -912,11 +921,14 @@ Witness: L1 2 (ending2, l1end).
 
 Called once, after the last level (`$AC49`), before the game over.
 
-Witness: L1 1 (ending2).
+Witness: L1 2 (ending, ending2).
 
 | | |
 | --- | --- |
-| Runs | not reached in the recordings |
+| Runs | not reached in `stage2/c1g`; in the other recordings 2 calls (`stage1/ending` 1, `stage2/ending2` 1) |
+| Called from | `LevelEnd` |
+| Reads | `$6600`-`$68FE` (`MusicImage+2048`) |
+| Writes | `$6600`-`$68FF` (`MusicImage+2048`) |
 
 ### `BonusCountdown` (`$E466`)
 
@@ -931,7 +943,7 @@ Witness: L1 43339 (beeper48, c1, controls, emptygun, ending2, gameover, l1end, l
 | | |
 | --- | --- |
 | Runs (c1: power-on, the original tape at ROM speed on the 128K, the control menu and play on level 1; from the entry `$AB4D` (frame 19 010, T 70 483)) | 1,072 calls, 40,840 t-states own (0.00 %) |
-| Runs (the other recordings) | 11,218 calls (`stage1/level3` 2,927, `stage1/level2` 2,845, `stage1/level1` 2,152 and 3 more) |
+| Runs (the other recordings) | 42,267 calls (`stage1/level3` 2,927, `stage1/level2` 2,845, `stage1/level1` 2,152 and 48 more) |
 | Called from | `MainLoop` |
 | Reads | `$E495`-`$E499` (`BonusDivider`, `BonusDigits`); `$FD6C` (`BonusActive`) |
 | Writes | `$E495`-`$E499` (`BonusDivider`, `BonusDigits`) |
@@ -953,10 +965,11 @@ Witness: L1 107 (c1, ending2, l1end, L1Z2-L1Z4, L1Z6, L2Z2-L2Z7, L3Z2-L3Z12, L4Z
 | | |
 | --- | --- |
 | Runs (c1: power-on, the original tape at ROM speed on the 128K, the control menu and play on level 1; from the entry `$AB4D` (frame 19 010, T 70 483)) | 3 calls, 279 t-states own (0.00 %) |
-| Runs (the other recordings) | 5 calls (`stage1/level1` 5) |
+| Runs (the other recordings) | 104 calls (`stage2/zones/L2Z5` 8, `stage2/zones/L2Z2` 7, `stage2/zones/L4Z8` 6 and 27 more) |
 | Called from | `MainLoop` |
 | Calls | `ExitScan` (falls into) |
-| Reads | `$ADB7` (`ViewTopRow`); `$EAAE` (`RickY`); `$FD62` (`ExitSide`) |
+| Reads | `$6600`-`$68FE` (`MusicImage+2048`); `$A958` (`Lives`); `$ADB7` (`ViewTopRow`); `$D681`-`$D68B` (`Exits+55`); `$D6AD`-`$D6BC` (`Level2Exits+33`); `$D7A4`-`$D7BE` (`Level4Exits+11`); 5 more ranges |
+| Writes | `$6600`-`$68FF` (`MusicImage+2048`); `$7900` (`CharAttr0`); `$A967`-`$A976` (`Dynamite`, `DrawBullets`, `Bullets`); `$A9E3` (`LevelBonus`); `$E440` (`GameComplete`); `$E4AD` (`Level`) |
 
 ### `ExitScan` (`$ABAA`)
 
@@ -965,10 +978,10 @@ Witness: L1 107 (c1, ending2, l1end, L1Z2-L1Z4, L1Z6, L2Z2-L2Z7, L3Z2-L3Z12, L4Z
 | | |
 | --- | --- |
 | Runs (c1: power-on, the original tape at ROM speed on the 128K, the control menu and play on level 1; from the entry `$AB4D` (frame 19 010, T 70 483)) | 5 calls, 672 t-states own (0.00 %) |
-| Runs (the other recordings) | 8 calls (`stage1/level1` 8) |
+| Runs (the other recordings) | 145 calls (`stage2/zones/L3Z10` 15, `stage2/zones/L3Z7` 12, `stage2/zones/L2Z2` 11 and 21 more) |
 | Called from | `CheckScreenExit` (falls into), `ExitNoMatch` (tail) |
 | Calls | `ExitToScreen` (tail), `ExitNoMatch` (tail) |
-| Reads | `$ADB7` (`ViewTopRow`); `$D64A`-`$D664` (`Exits`) |
+| Reads | `$ADB7` (`ViewTopRow`); `$D64A`-`$D7D9` (`Exits`, `Level2Exits`, `Level3Exits`, `Level4Exits`) |
 
 ### `ExitToScreen` (`$AC72`)
 
@@ -981,7 +994,7 @@ Witness: L1 104 (c1, L1Z2-L1Z4, L1Z6, L2Z2-L2Z7, L3Z2-L3Z12, L4Z2-L4Z6, L4Z8, le
 | | |
 | --- | --- |
 | Runs (c1: power-on, the original tape at ROM speed on the 128K, the control menu and play on level 1; from the entry `$AB4D` (frame 19 010, T 70 483)) | 3 calls, 105 t-states own (0.00 %) |
-| Runs (the other recordings) | 5 calls (`stage1/level1` 5) |
+| Runs (the other recordings) | 101 calls (`stage2/zones/L2Z5` 8, `stage2/zones/L2Z2` 7, `stage2/zones/L2Z7` 6 and 25 more) |
 | Called from | `ExitScan` (tail) |
 | Calls | `LoadScreen` (tail) |
 
@@ -992,7 +1005,7 @@ Witness: L1 104 (c1, L1Z2-L1Z4, L1Z6, L2Z2-L2Z7, L3Z2-L3Z12, L4Z2-L4Z6, L4Z8, le
 | | |
 | --- | --- |
 | Runs (c1: power-on, the original tape at ROM speed on the 128K, the control menu and play on level 1; from the entry `$AB4D` (frame 19 010, T 70 483)) | 2 calls, 94 t-states own (0.00 %) |
-| Runs (the other recordings) | 3 calls (`stage1/level1` 3) |
+| Runs (the other recordings) | 53 calls (`stage2/zones/L3Z10` 9, `stage2/zones/L3Z8` 4, `stage2/zones/L2Z2` 4 and 20 more) |
 | Called from | `ExitScan` (tail) |
 | Calls | `ExitScan` (tail) |
 
@@ -1013,10 +1026,10 @@ Witness: L1 439 (beeper48, c1, controls, gameover, spotL3Z7-51, L1Z1-L1Z6, L2Z1-
 | | |
 | --- | --- |
 | Runs (c1: power-on, the original tape at ROM speed on the 128K, the control menu and play on level 1; from the entry `$AB4D` (frame 19 010, T 70 483)) | 7 calls, 4,023 t-states own (0.00 %) |
-| Runs (the other recordings) | 79 calls (`stage1/level4` 30, `stage1/level1` 19, `stage1/controls` 11 and 3 more) |
+| Runs (the other recordings) | 432 calls (`stage1/level4` 30, `stage2/zones/L3Z9` 26, `stage2/zones/L3Z7` 22 and 40 more) |
 | Called from | `ExitToScreen` (tail), `RestartScreen` (tail), `StartLevel` |
 | Calls | `MarkAllDirty`, `RedrawScreen`, `SaveRestartPoint`, `BuildScreenMap`, `ResetObjects`, `BuildCharProps`, `SpawnObjects` |
-| Reads | `$ADB7` (`ViewTopRow`); `$D55C`-`$D570` (`Zones`); `$D586`-`$D58C` (`Level2Zones`); `$D5B7`-`$D5BD` (`Level3Zones`); `$D60B`-`$D611` (`Level4Zones`) |
+| Reads | `$ADB7` (`ViewTopRow`); `$D55C`-`$D649` (`Zones`, `Level2Zones`, `Level3Zones`, `Level4Zones`) |
 | Writes | `$A73D`-`$A73E` (`CharsetBase`); `$A853` (`DrawAllScan+19`); `$AA80` (`CounterAttrTableHigh+1`); `$AB95`-`$AB96` (`CheckScreenExit+2`); `$AD27`-`$AD28` (`RestartScreenRecord`); `$ADB5`-`$ADB8` (`MapBlockTable`, `ViewTopRow`); 2 more ranges |
 
 ### `SaveRestartPoint` (`$AD01`)
@@ -1030,7 +1043,7 @@ Witness: L1 438 (beeper48, c1, controls, gameover, spotL3Z7-51, L1Z1-L1Z6, L2Z1-
 | | |
 | --- | --- |
 | Runs (c1: power-on, the original tape at ROM speed on the 128K, the control menu and play on level 1; from the entry `$AB4D` (frame 19 010, T 70 483)) | 7 calls, 1,064 t-states own (0.00 %) |
-| Runs (the other recordings) | 79 calls (`stage1/level4` 30, `stage1/level1` 19, `stage1/controls` 11 and 3 more) |
+| Runs (the other recordings) | 431 calls (`stage1/level4` 30, `stage2/zones/L3Z9` 26, `stage2/zones/L3Z7` 22 and 40 more) |
 | Called from | `LoadScreen` |
 | Reads | `$ADB7`-`$ADB8` (`ViewTopRow`); `$EAAD`-`$EAB2` (`RickX`, `RickY`, `RickMirror`); `$FD5A` (`Crawling`) |
 | Writes | `$AD20`-`$AD26` (`RestartPoint`, `RestartX`, `RestartY`, `RestartFlags` and 1 more) |
@@ -1048,7 +1061,7 @@ Witness: L1 323 (beeper48, c1, controls, gameover, spotL3Z7-51, L1Z1-L1Z6, L2Z1-
 | | |
 | --- | --- |
 | Runs (c1: power-on, the original tape at ROM speed on the 128K, the control menu and play on level 1; from the entry `$AB4D` (frame 19 010, T 70 483)) | 3 calls, 2,529 t-states own (0.00 %) |
-| Runs (the other recordings) | 64 calls (`stage1/level4` 29, `stage1/level1` 12, `stage1/controls` 7 and 3 more) |
+| Runs (the other recordings) | 320 calls (`stage1/level4` 29, `stage2/zones/L3Z9` 24, `stage2/zones/L3Z7` 16 and 40 more) |
 | Called from | `NewLife` |
 | Calls | `LoadScreen` (tail) |
 | Reads | `$AD20`-`$AD28` (`RestartPoint`, `RestartX`, `RestartY`, `RestartFlags` and 2 more) |
@@ -1069,9 +1082,9 @@ Witness: L1 525 (beeper48, c1, controls, gameover, spotL3Z7-51, L1Z1-L1Z6, L2Z1-
 | | |
 | --- | --- |
 | Runs (c1: power-on, the original tape at ROM speed on the 128K, the control menu and play on level 1; from the entry `$AB4D` (frame 19 010, T 70 483)) | 21 calls, 1,184,936 t-states own (0.12 %) |
-| Runs (the other recordings) | 115 calls (`stage1/level1` 34, `stage1/level4` 32, `stage1/level2` 16 and 3 more) |
+| Runs (the other recordings) | 504 calls (`stage1/level1` 34, `stage1/level4` 32, `stage2/zones/L3Z9` 27 and 40 more) |
 | Called from | `LoadScreen`, `ScrollViewDown`, `ScrollViewUp` |
-| Reads | `$ADB5`-`$ADB7` (`MapBlockTable`, `ViewTopRow`); `$AF74`-`$B12B` (`LevelMaps+16`, `Level1Map2`, `Level1Map3`, `Level1Map4`); `$B344`-`$B44B` (`Level2Map+32`, `Level2Map2`); `$B84C`-`$B8C3` (`Level3Map+32`, `Level3Map2`); `$BDF4`-`$BE5B` (`Level4Map+32`, `Level4Map2`); `$C32C`-`$C42B` (`Tiles+16`); 29 more ranges |
+| Reads | `$ADB5`-`$ADB7` (`MapBlockTable`, `ViewTopRow`); `$AF74`-`$B1E3` (`LevelMaps+16`, `Level1Map2`, `Level1Map3`, `Level1Map4`); `$B214`-`$B323` (`Level1Map5+16`, `Level1Map6`); `$B334`-`$B48B` (`Level2Map+16`, `Level2Map2`); `$B4B4`-`$B583` (`Level2Map2+144`, `Level2Map3`, `Level2Map4`); `$B5A4`-`$B6B3` (`Level2Map4+64`, `Level2Map5`, `Level2Map6`); 14 more ranges |
 | Writes | `$6500`-`$6A7F` (`MusicImage+1792`); `$ADA1`-`$ADB2` (`BuildMapSource+1`, `BuildMapSP`) |
 
 ### `StartLevel` (`$E32C`)
@@ -1086,7 +1099,8 @@ Witness: L1 134127 (beeper48, c1, controls, gameover, level1-level4).
 
 | | |
 | --- | --- |
-| Runs | not reached in `stage2/c1g`; in the other recordings run into, not called (`stage1/level3`, `stage1/level2`, `stage1/level4`) |
+| Runs (c1: power-on, the original tape at ROM speed on the 128K, the control menu and play on level 1; from the entry `$AB4D` (frame 19 010, T 70 483)) | 4,630 runs of its first instruction (entered by a jump or by running on, no routine of its own in the L1) |
+| Runs (the other recordings) | 129,497 runs of its first instruction, entered by a jump (`stage1/controls` 52,491, `stage1/level1` 38,772, `stage2/beeper48` 23,388 and 4 more) |
 | Calls | `StartPressed`, `LoadScreen` |
 | Reads | `$A958` (`Lives`); `$E410` (`MainLoopHalt+1`); `$E4B3`-`$E4B8` (`LevelRickX`, `LevelRickY`, `LevelZone`, `LevelViewTop`); `$EAAE`-`$EAAF` (`RickY`); `$FD61`-`$FD69` (`ZoneChange`, `ExitSide`, `Poking`, `PokeX` and 4 more) |
 | Writes | `$A237` (`FrameTicks`); `$A958`-`$A976` (`Lives`, `DrawDynamite`, `Dynamite`, `DrawBullets` and 1 more); `$EAAC`-`$EAB4` (`RickObject`, `RickX`, `RickY`, `RickMirror` and 2 more); `$FD68`-`$FD69` (`Dying`, `DeathDone`) |
@@ -1126,10 +1140,10 @@ Witness: L1 1403 (beeper48, c1, controls, gameover, spotL3Z7-51, L1Z1-L1Z6, L2Z1
 | | |
 | --- | --- |
 | Runs (c1: power-on, the original tape at ROM speed on the 128K, the control menu and play on level 1; from the entry `$AB4D` (frame 19 010, T 70 483)) | 35 calls, 59,450 t-states own (0.01 %) |
-| Runs (the other recordings) | 273 calls (`stage1/level4` 92, `stage1/level1` 72, `stage1/controls` 33 and 3 more) |
+| Runs (the other recordings) | 1,368 calls (`stage1/level4` 92, `stage2/zones/L3Z9` 79, `stage1/level1` 72 and 40 more) |
 | Called from | `LoadScreen`, `ScrollViewDown`, `ScrollViewUp` |
 | Calls | `FindSlotHighKind`, `FindSlotLowKind` |
-| Reads | `$ADB7` (`ViewTopRow`); `$D33C`-`$D381` (`ObjectKinds+32`); `$D394`-`$D399` (`ObjectKinds+120`); `$D3AC`-`$D421` (`ObjectKinds+144`); `$D46C`-`$D471` (`ObjectKinds+336`); `$D4C4`-`$D4E9` (`ObjectKinds+424`); 10 more ranges |
+| Reads | `$ADB7` (`ViewTopRow`); `$D33C`-`$D429` (`ObjectKinds+32`); `$D43C`-`$D551` (`ObjectKinds+288`); `$D7FC`-`$D8B0` (`Objects`); `$D8D3`-`$DAAE` (`Objects+215`, `Level2Objects`); `$DAE5`-`$DEB4` (`Level3Objects`, `Level4Objects`); 6 more ranges |
 | Writes | `$EA8E`-`$EAAB` (`ObjectTable`); `$EB06`-`$EBF5` (`ZoneObjects`) |
 
 ### `FindSlotHighKind` (`$FEA1`)
@@ -1143,7 +1157,7 @@ Witness: L1 1386 (beeper48, c1, controls, gameover, spotL3Z7-51, L1Z1-L1Z6, L2Z1
 | | |
 | --- | --- |
 | Runs (c1: power-on, the original tape at ROM speed on the 128K, the control menu and play on level 1; from the entry `$AB4D` (frame 19 010, T 70 483)) | 21 calls, 1,549 t-states own (0.00 %) |
-| Runs (the other recordings) | 280 calls (`stage1/level4` 150, `stage1/level1` 45, `stage1/level3` 29 and 3 more) |
+| Runs (the other recordings) | 1,365 calls (`stage1/level4` 150, `stage2/zones/L3Z9` 129, `stage2/zones/L2Z7` 73 and 40 more) |
 | Called from | `SpawnObjects` |
 | Reads | `$EB06` (`ZoneObjects`); `$EB24` (`ZoneObjects+30`); `$EB42` (`ZoneObjects+60`); `$EB60` (`ZoneObjects+90`); `$EB7E` (`ZoneObjects+120`) |
 
@@ -1162,9 +1176,9 @@ Witness: L1 734 (c1, spotL3Z7-51, L1Z2-L1Z6, L2Z2-L2Z7, L3Z2-L3Z12, L4Z1-L4Z9, l
 | | |
 | --- | --- |
 | Runs (c1: power-on, the original tape at ROM speed on the 128K, the control menu and play on level 1; from the entry `$AB4D` (frame 19 010, T 70 483)) | 13 calls, 4,336 t-states own (0.00 %) |
-| Runs (the other recordings) | 121 calls (`stage1/level4` 90, `stage1/level1` 24, `stage1/level2` 6 and 1 more) |
+| Runs (the other recordings) | 721 calls (`stage1/level4` 90, `stage2/zones/L3Z3` 66, `stage2/zones/L2Z5` 45 and 34 more) |
 | Called from | `SpawnObjects` |
-| Reads | `$EB9C`-`$EBA5` (`ZoneObjects+150`); `$EBBA`-`$EBC3` (`ZoneObjects+180`); `$EBD8` (`ZoneObjects+210`) |
+| Reads | `$EB9C`-`$EBA5` (`ZoneObjects+150`); `$EBBA`-`$EBC3` (`ZoneObjects+180`); `$EBD8`-`$EBE1` (`ZoneObjects+210`) |
 
 ## objects
 
@@ -1181,7 +1195,7 @@ Witness: L1 172 (beeper48, c1, gameover, L1Z1, L1Z2, L1Z4-L1Z6, L2Z2, L2Z6, L3Z6
 | | |
 | --- | --- |
 | Runs (c1: power-on, the original tape at ROM speed on the 128K, the control menu and play on level 1; from the entry `$AB4D` (frame 19 010, T 70 483)) | 28 calls, 55,949 t-states own (0.01 %) |
-| Runs (the other recordings) | 72 calls (`stage1/level1` 30, `stage1/level2` 22, `stage1/gameover` 12 and 2 more) |
+| Runs (the other recordings) | 144 calls (`stage1/level1` 30, `stage1/level2` 22, `stage2/zones/L1Z6` 16 and 17 more) |
 | Called from | `ScrollViewDown`, `ScrollViewUp` |
 | Reads | `$EA8E`-`$EBF6` (`ObjectTable`, `RickObject`, `RickX`, `RickY` and 10 more) |
 | Writes | `$EA8E`-`$EABD` (`ObjectTable`, `RickObject`, `RickX`, `RickY` and 3 more); `$EB06`-`$EBE9` (`ZoneObjects`) |
@@ -1197,7 +1211,7 @@ Witness: L1 439 (beeper48, c1, controls, gameover, spotL3Z7-51, L1Z1-L1Z6, L2Z1-
 | | |
 | --- | --- |
 | Runs (c1: power-on, the original tape at ROM speed on the 128K, the control menu and play on level 1; from the entry `$AB4D` (frame 19 010, T 70 483)) | 7 calls, 5,833 t-states own (0.00 %) |
-| Runs (the other recordings) | 79 calls (`stage1/level4` 30, `stage1/level1` 19, `stage1/controls` 11 and 3 more) |
+| Runs (the other recordings) | 432 calls (`stage1/level4` 30, `stage2/zones/L3Z9` 26, `stage2/zones/L3Z7` 22 and 40 more) |
 | Called from | `LoadScreen` |
 | Reads | `$EA8E`-`$EB24` (`ObjectTable`, `RickObject`, `RickX`, `RickY` and 9 more); `$EB42` (`ZoneObjects+60`); `$EB60` (`ZoneObjects+90`); `$EB7E` (`ZoneObjects+120`); `$EB9C` (`ZoneObjects+150`); `$EBBA` (`ZoneObjects+180`); 2 more ranges |
 | Writes | `$EA8E`-`$EB24` (`ObjectTable`, `RickObject`, `RickX`, `RickY` and 9 more); `$EB42` (`ZoneObjects+60`); `$EB60` (`ZoneObjects+90`); `$EB7E` (`ZoneObjects+120`); `$EB9C` (`ZoneObjects+150`); `$EBBA` (`ZoneObjects+180`); 3 more ranges |
@@ -1213,7 +1227,7 @@ Witness: L1 43340 (beeper48, c1, controls, emptygun, ending2, gameover, l1end, l
 | | |
 | --- | --- |
 | Runs (c1: power-on, the original tape at ROM speed on the 128K, the control menu and play on level 1; from the entry `$AB4D` (frame 19 010, T 70 483)) | 1,072 calls, 15,027 t-states own (0.00 %) |
-| Runs (the other recordings) | 11,218 calls (`stage1/level3` 2,927, `stage1/level2` 2,845, `stage1/level1` 2,152 and 3 more) |
+| Runs (the other recordings) | 42,268 calls (`stage1/level3` 2,927, `stage1/level2` 2,845, `stage1/level1` 2,152 and 48 more) |
 | Called from | `MainLoop` |
 | Calls | `UpdateObjectSlot` (falls into) |
 
@@ -1228,9 +1242,9 @@ Witness: L1 563418 (beeper48, c1, controls, emptygun, ending2, gameover, l1end, 
 | | |
 | --- | --- |
 | Runs (c1: power-on, the original tape at ROM speed on the 128K, the control menu and play on level 1; from the entry `$AB4D` (frame 19 010, T 70 483)) | 13,936 calls, 950,253 t-states own (0.09 %) |
-| Runs (the other recordings) | 145,834 calls (`stage1/level3` 38,051, `stage1/level2` 36,985, `stage1/level1` 27,976 and 3 more) |
+| Runs (the other recordings) | 549,482 calls (`stage1/level3` 38,051, `stage1/level2` 36,985, `stage1/level1` 27,976 and 48 more) |
 | Called from | `UpdateObjects` (falls into), `NextObject` (tail) |
-| Calls | `NextObject` (tail), `DynamiteObj`, `BulletObj`, `TreasureObj`, `TrapObj` (tail), `PatrolObj`, `TrackerObj`, `DyingEnemyObj` (tail), `ClimberObj`, `BonusTrigger`, `BonusCollect`, `RickHandler` |
+| Calls | `NextObject` (tail), `DynamiteObj`, `BulletObj`, `AmmoBoxObj`, `TreasureObj`, `TrapObj` (tail), `PatrolObj`, `TrackerObj`, `DyingEnemyObj` (tail), `ClimberObj`, `BonusTrigger`, `BonusCollect`, `RickHandler` |
 | Reads | `$EA8E`-`$EB42` (`ObjectTable`, `RickObject`, `RickX`, `RickY` and 9 more); `$EB60` (`ZoneObjects+90`); `$EB7E` (`ZoneObjects+120`); `$EB9C` (`ZoneObjects+150`); `$EBBA` (`ZoneObjects+180`); `$EBD8` (`ZoneObjects+210`); 2 more ranges |
 
 ### `NextObject` (`$EC3B`)
@@ -1242,8 +1256,8 @@ Witness: L1 520078 (beeper48, c1, controls, emptygun, ending2, gameover, l1end, 
 | | |
 | --- | --- |
 | Runs (c1: power-on, the original tape at ROM speed on the 128K, the control menu and play on level 1; from the entry `$AB4D` (frame 19 010, T 70 483)) | 12,864 calls, 475,987 t-states own (0.05 %) |
-| Runs (the other recordings) | 134,616 calls (`stage1/level3` 35,124, `stage1/level2` 34,140, `stage1/level1` 25,824 and 3 more) |
-| Called from | `UpdateObjectSlot` (tail), `DynamiteObj`, `BulletObj`, `MarkObjectDone`, `TreasureObj`, `TrapObj`, `EnemyCommon`, `KillEnemy`, `DyingEnemyObj`, `ClimberObj`, `BonusTrigger`, `BonusCollect`, `KillRickNow`, `ChooseRickFrame` |
+| Runs (the other recordings) | 507,214 calls (`stage1/level3` 35,124, `stage1/level2` 34,140, `stage1/level1` 25,824 and 48 more) |
+| Called from | `UpdateObjectSlot` (tail), `DynamiteObj`, `BulletObj`, `AmmoBoxObj`, `MarkObjectDone`, `TreasureObj`, `TrapObj`, `EnemyCommon`, `KillEnemy`, `DyingEnemyObj`, `ClimberObj`, `BonusTrigger`, `BonusCollect`, `KillRick`, `KillRickNow`, `ChooseRickFrame` |
 | Calls | `UpdateObjectSlot` (tail) |
 
 ### `KillObject` (`$EC42`)
@@ -1270,7 +1284,11 @@ Witness: L1 5675 (spotL3Z7-51, spotL4Z8-69, L1Z4-L1Z6, L2Z5-L2Z7, L3Z2, L3Z3, L3
 
 | | |
 | --- | --- |
-| Runs | not reached in the recordings |
+| Runs | not reached in `stage2/c1g`; in the other recordings 5,675 runs of its first instruction, entered by a jump (`stage2/zones/L3Z2` 1,230, `stage2/zones/L2Z7` 957, `stage2/zones/L1Z4` 736 and 10 more) |
+| Called from | `UpdateObjectSlot` |
+| Calls | `PlayEffect`, `NextObject`, `RickTouches`, `PointInObject`, `InBlast` |
+| Reads | `$D87F` (`Objects+131`); `$DDAC` (`Level4Objects+166`); `$EACA` (`BulletObject`); `$EB06`-`$EB2E` (`ZoneObjects`); `$EB42` (`ZoneObjects+60`); `$EB7E` (`ZoneObjects+120`); 3 more ranges |
+| Writes | `$A976` (`Bullets`); `$D87F` (`Objects+131`); `$DDAC` (`Level4Objects+166`); `$EACA` (`BulletObject`); `$EB06`-`$EB0B` (`ZoneObjects`); `$EB1E`-`$EB24` (`ZoneObjects+24`) |
 
 ### `MarkObjectDone` (`$EDDC`)
 
@@ -1282,7 +1300,8 @@ Witness: L1 15 (c1, L1Z3, L1Z4, L3Z6, L4Z4, level1, level2).
 
 | | |
 | --- | --- |
-| Runs | ran within another entry's routine (reached by a jump or by running on, its calls below), no runs of its own counted |
+| Runs (c1: power-on, the original tape at ROM speed on the 128K, the control menu and play on level 1; from the entry `$AB4D` (frame 19 010, T 70 483)) | 4 runs of its first instruction (entered by a jump or by running on, no routine of its own in the L1) |
+| Runs (the other recordings) | 11 runs of its first instruction, entered by a jump (`stage1/level1` 4, `stage2/zones/L3Z6` 3, `stage1/level2` 1 and 3 more) |
 | Calls | `NextObject` |
 
 ### `TreasureObj` (`$EDE6`)
@@ -1297,12 +1316,12 @@ Witness: L1 10293 (c1, L1Z2-L1Z5, L2Z1, L2Z5, L3Z5-L3Z7, L3Z9, L4Z1-L4Z3, level1
 
 | | |
 | --- | --- |
-| Runs (c1: power-on, the original tape at ROM speed on the 128K, the control menu and play on level 1; from the entry `$AB4D` (frame 19 010, T 70 483)) | run into, not called, 8,104 t-states own (0.00 %) |
-| Runs (the other recordings) | run into, not called (`stage1/level4`, `stage1/level1`, `stage1/level2`) |
+| Runs (c1: power-on, the original tape at ROM speed on the 128K, the control menu and play on level 1; from the entry `$AB4D` (frame 19 010, T 70 483)) | 269 runs of its first instruction (entered by a jump or by running on, no routine of its own in the L1), 8,104 t-states own (0.00 %) |
+| Runs (the other recordings) | 10,024 runs of its first instruction, entered by a jump (`stage1/level4` 1,887, `stage2/zones/L3Z5` 1,310, `stage2/zones/L2Z1` 987 and 15 more) |
 | Called from | `UpdateObjectSlot` |
 | Calls | `PlayEffect`, `AddScore`, `NextObject`, `RickTouches` |
-| Reads | `$D816` (`Objects+26`); `$D834` (`Objects+56`); `$D848` (`Objects+76`); `$D86B` (`Objects+111`); `$D965` (`Level2Objects+76`); `$EB0F`-`$EB10` (`ZoneObjects+9`); 2 more ranges |
-| Writes | `$D816` (`Objects+26`); `$D834` (`Objects+56`); `$D848` (`Objects+76`); `$D86B` (`Objects+111`); `$D965` (`Level2Objects+76`); `$EB06` (`ZoneObjects`); 2 more ranges |
+| Reads | `$D816` (`Objects+26`); `$D834` (`Objects+56`); `$D848` (`Objects+76`); `$D86B` (`Objects+111`); `$D965` (`Level2Objects+76`); `$DBDB`-`$DBEA` (`Level3Objects+246`); 4 more ranges |
+| Writes | `$D816` (`Objects+26`); `$D834` (`Objects+56`); `$D848` (`Objects+76`); `$D86B` (`Objects+111`); `$D965` (`Level2Objects+76`); `$DBDB`-`$DBEA` (`Level3Objects+246`); 4 more ranges |
 
 ### `TrapObj` (`$EDFC`)
 
@@ -1319,7 +1338,7 @@ Witness: L1 98254 (beeper48, c1, controls, emptygun, ending2, gameover, l1end, l
 | | |
 | --- | --- |
 | Runs (c1: power-on, the original tape at ROM speed on the 128K, the control menu and play on level 1; from the entry `$AB4D` (frame 19 010, T 70 483)) | 1,299 calls, 70,660 t-states own (0.01 %) |
-| Runs (the other recordings) | 27,633 calls (`stage1/level3` 9,162, `stage1/level4` 7,548, `stage1/level2` 7,377 and 3 more) |
+| Runs (the other recordings) | 96,955 calls (`stage1/level3` 9,162, `stage1/level4` 7,548, `stage1/level2` 7,377 and 45 more) |
 | Called from | `UpdateObjectSlot` (tail) |
 | Calls | `NextObject`, `TrapMove`, `RickTouches`, `KillRick` (tail) |
 | Reads | `$EA8E` (`ObjectTable`); `$EB06` (`ZoneObjects`); `$EB24` (`ZoneObjects+30`); `$EB42` (`ZoneObjects+60`); `$EB60` (`ZoneObjects+90`); `$EB7E` (`ZoneObjects+120`) |
@@ -1339,10 +1358,10 @@ Witness: L1 98404 (beeper48, c1, controls, emptygun, ending2, gameover, l1end, l
 | | |
 | --- | --- |
 | Runs (c1: power-on, the original tape at ROM speed on the 128K, the control menu and play on level 1; from the entry `$AB4D` (frame 19 010, T 70 483)) | 1,299 calls, 655,192 t-states own (0.06 %) |
-| Runs (the other recordings) | 27,633 calls (`stage1/level3` 9,162, `stage1/level4` 7,548, `stage1/level2` 7,377 and 3 more) |
+| Runs (the other recordings) | 96,955 calls (`stage1/level3` 9,162, `stage1/level4` 7,548, `stage1/level2` 7,377 and 45 more) |
 | Called from | `TrapObj` |
 | Calls | `TrapStepMove` (tail), `TrapTriggers` (tail) |
-| Reads | `$DF24`-`$DF44` (`AnimLists+7`); `$DF57`-`$DF65` (`AnimLists+58`); `$DF7D`-`$DF96` (`AnimLists+96`, `ObjectScripts`); `$DFAF`-`$DFB1` (`ObjectScripts+44`); `$E023`-`$E03D` (`ObjectScripts+160`); `$E0AA`-`$E0AF` (`ObjectScripts+295`); 5 more ranges |
+| Reads | `$DF1D`-`$DF98` (`AnimLists`, `ObjectScripts`); `$DFAF`-`$DFD6` (`ObjectScripts+44`); `$E01B`-`$E06E` (`ObjectScripts+152`); `$E082`-`$E08D` (`ObjectScripts+255`); `$E0AA`-`$E0AF` (`ObjectScripts+295`); `$E0E7`-`$E101` (`ObjectScripts+356`); 5 more ranges |
 | Writes | `$EA8E`-`$EAA7` (`ObjectTable`); `$EB06`-`$EB97` (`ZoneObjects`) |
 
 ### `TrapStepMove` (`$EEE2`)
@@ -1353,10 +1372,11 @@ Witness: L1 10822 (beeper48, c1, controls, gameover, spotL3Z7-51, L1Z1, L1Z5, L1
 
 | | |
 | --- | --- |
-| Runs | not reached in `stage2/c1g`; in the other recordings 294 calls (`stage1/controls` 294) |
+| Runs (c1: power-on, the original tape at ROM speed on the 128K, the control menu and play on level 1; from the entry `$AB4D` (frame 19 010, T 70 483)) | 268 runs of its first instruction (entered by a jump or by running on, no routine of its own in the L1) |
+| Runs (the other recordings) | 1,326 calls (`stage1/controls` 294, `stage2/zones/L2Z7` 288, `stage2/zones/L3Z8` 240 and 5 more) |
 | Called from | `TrapMove` (tail) |
-| Reads | `$E024`-`$E025` (`ObjectScripts+161`); `$EB25`-`$EB27` (`ZoneObjects+31`) |
-| Writes | `$EB25`-`$EB27` (`ZoneObjects+31`); `$EB3D` (`ZoneObjects+55`) |
+| Reads | `$DF99`-`$DF9A` (`ObjectScripts+22`); `$E01C`-`$E025` (`ObjectScripts+153`); `$E0F8`-`$E0F9` (`ObjectScripts+373`); `$EB07`-`$EB09` (`ZoneObjects+1`); `$EB25`-`$EB27` (`ZoneObjects+31`); `$EB61`-`$EB63` (`ZoneObjects+91`); 1 more ranges |
+| Writes | `$EB07`-`$EB09` (`ZoneObjects+1`); `$EB1F`-`$EB27` (`ZoneObjects+25`); `$EB3D` (`ZoneObjects+55`); `$EB61`-`$EB63` (`ZoneObjects+91`); `$EB79`-`$EB81` (`ZoneObjects+115`); `$EB97` (`ZoneObjects+145`) |
 
 ### `TrapTriggers` (`$EF2E`)
 
@@ -1370,11 +1390,12 @@ Witness: L1 87578 (beeper48, c1, controls, emptygun, ending2, gameover, l1end, l
 
 | | |
 | --- | --- |
-| Runs | not reached in `stage2/c1g`; in the other recordings 203 calls (`stage1/controls` 203) |
+| Runs (c1: power-on, the original tape at ROM speed on the 128K, the control menu and play on level 1; from the entry `$AB4D` (frame 19 010, T 70 483)) | 1,033 runs of its first instruction (entered by a jump or by running on, no routine of its own in the L1) |
+| Runs (the other recordings) | 38,115 calls (`stage2/zones/L4Z9` 4,512, `stage2/zones/L3Z9` 4,458, `stage2/zones/L3Z8` 4,202 and 26 more) |
 | Called from | `TrapMove` (tail) |
 | Calls | `PlayEffect`, `PointInTrigger` |
-| Reads | `$EAAD`-`$EAAE` (`RickX`, `RickY`); `$EB24`-`$EB39` (`ZoneObjects+30`); `$FD68` (`Dying`) |
-| Writes | `$EB24` (`ZoneObjects+30`); `$EB3A`-`$EB3D` (`ZoneObjects+52`) |
+| Reads | `$EA99` (`ObjectTable+11`); `$EAAD`-`$EAAE` (`RickX`, `RickY`); `$EACA` (`BulletObject`); `$EB06`-`$EB39` (`ZoneObjects`); `$EB4D` (`ZoneObjects+71`); `$EB60`-`$EB93` (`ZoneObjects+90`); 2 more ranges |
+| Writes | `$EB06` (`ZoneObjects`); `$EB1C`-`$EB24` (`ZoneObjects+22`); `$EB3A`-`$EB3D` (`ZoneObjects+52`); `$EB60` (`ZoneObjects+90`); `$EB76`-`$EB7E` (`ZoneObjects+112`); `$EB94`-`$EB97` (`ZoneObjects+142`) |
 
 ### `PatrolObj` (`$EFCF`)
 
@@ -1386,11 +1407,11 @@ Witness: L1 25331 (c1, ending2, spotL3Z7-51, spotL4Z8-69, L1Z2-L1Z6, L2Z2, L2Z4,
 
 | | |
 | --- | --- |
-| Runs (c1: power-on, the original tape at ROM speed on the 128K, the control menu and play on level 1; from the entry `$AB4D` (frame 19 010, T 70 483)) | run into, not called, 18,711 t-states own (0.00 %) |
-| Runs (the other recordings) | run into, not called (`stage1/level4`, `stage1/level1`, `stage1/level2`) |
+| Runs (c1: power-on, the original tape at ROM speed on the 128K, the control menu and play on level 1; from the entry `$AB4D` (frame 19 010, T 70 483)) | 693 runs of its first instruction (entered by a jump or by running on, no routine of its own in the L1), 18,711 t-states own (0.00 %) |
+| Runs (the other recordings) | 24,638 runs of its first instruction, entered by a jump (`stage2/zones/L3Z10` 2,103, `stage1/level4` 1,887, `stage2/zones/L1Z2` 1,709 and 35 more) |
 | Called from | `UpdateObjectSlot` |
 | Calls | `EnemyCommon` (tail) |
-| Reads | `$EACA`-`$EACD` (`BulletObject`, `BulletX`, `BulletY`); `$ECF1` (`BlastOn`); `$ED3F` (`BulletDx`); `$FD63` (`Poking`) |
+| Reads | `$EACA`-`$EACD` (`BulletObject`, `BulletX`, `BulletY`); `$ECF1` (`BlastOn`); `$ED3F` (`BulletDx`); `$FD63`-`$FD66` (`Poking`, `PokeX`, `PokeY`) |
 | Writes | `$F173` (`TracksRick`) |
 
 ### `TrackerObj` (`$EFD6`)
@@ -1403,10 +1424,11 @@ Witness: L1 14644 (c1, L1Z3, L1Z4, L2Z5, L2Z6, L3Z2-L3Z4, L3Z6-L3Z9, L3Z11, L3Z1
 
 | | |
 | --- | --- |
-| Runs (c1: power-on, the original tape at ROM speed on the 128K, the control menu and play on level 1; from the entry `$AB4D` (frame 19 010, T 70 483)) | run into, not called, 3,560 t-states own (0.00 %) |
-| Runs (the other recordings) | run into, not called (`stage1/level1`, `stage1/level2`) |
+| Runs (c1: power-on, the original tape at ROM speed on the 128K, the control menu and play on level 1; from the entry `$AB4D` (frame 19 010, T 70 483)) | 178 runs of its first instruction (entered by a jump or by running on, no routine of its own in the L1), 3,560 t-states own (0.00 %) |
+| Runs (the other recordings) | 14,466 runs of its first instruction, entered by a jump (`stage2/zones/L3Z12` 2,061, `stage2/zones/L2Z6` 1,619, `stage2/zones/L1Z3` 1,522 and 19 more) |
 | Called from | `UpdateObjectSlot` |
 | Calls | `EnemyCommon` (falls into) |
+| Reads | `$EACA` (`BulletObject`); `$ECF1` (`BlastOn`); `$FD63` (`Poking`) |
 | Writes | `$F173` (`TracksRick`) |
 
 ### `EnemyCommon` (`$EFDB`)
@@ -1420,7 +1442,7 @@ Witness: L1 39975 (c1, ending2, spotL3Z7-51, spotL4Z8-69, L1Z2-L1Z6, L2Z2, L2Z4-
 | | |
 | --- | --- |
 | Runs (c1: power-on, the original tape at ROM speed on the 128K, the control menu and play on level 1; from the entry `$AB4D` (frame 19 010, T 70 483)) | 871 calls, 113,160 t-states own (0.01 %) |
-| Runs (the other recordings) | 2,604 calls (`stage1/level1` 1,681, `stage1/level2` 923) |
+| Runs (the other recordings) | 25,797 calls (`stage2/zones/L3Z3` 2,394, `stage2/zones/L3Z12` 2,163, `stage2/zones/L4Z4` 2,035 and 18 more) |
 | Called from | `PatrolObj` (tail), `TrackerObj` (falls into) |
 | Calls | `NextObject`, `EnemyFall`, `KillEnemy` (tail), `PointInObject`, `InBlast`, `HitsObstacle` |
 | Reads | `$EACA`-`$EACD` (`BulletObject`, `BulletX`, `BulletY`); `$ECF1` (`BlastOn`); `$ED3F` (`BulletDx`); `$FD63`-`$FD66` (`Poking`, `PokeX`, `PokeY`) |
@@ -1439,11 +1461,11 @@ Witness: L1 39975 (c1, ending2, spotL3Z7-51, spotL4Z8-69, L1Z2-L1Z6, L2Z2, L2Z4-
 | | |
 | --- | --- |
 | Runs (c1: power-on, the original tape at ROM speed on the 128K, the control menu and play on level 1; from the entry `$AB4D` (frame 19 010, T 70 483)) | 871 calls, 699,587 t-states own (0.07 %) |
-| Runs (the other recordings) | 4,491 calls (`stage1/level4` 1,887, `stage1/level1` 1,681, `stage1/level2` 923) |
+| Runs (the other recordings) | 39,104 calls (`stage2/zones/L3Z3` 2,394, `stage2/zones/L3Z12` 2,163, `stage2/zones/L3Z10` 2,103 and 36 more) |
 | Called from | `EnemyCommon` |
-| Calls | `ProbeBox`, `RickTouches`, `KillRick` |
+| Calls | `ProbeBox`, `RickTouches`, `KillRick` (tail) |
 | Reads | `$EAAD` (`RickX`); `$EB9D`-`$EBF5` (`ZoneObjects+151`); `$F173`-`$F17B` (`TracksRick`, `EnemyWalkFrames`); `$F6A8` (`ProbeResult`) |
-| Writes | `$EB9D`-`$EBA2` (`ZoneObjects+151`); `$EBB4`-`$EBC0` (`ZoneObjects+174`); `$EBD2`-`$EBDE` (`ZoneObjects+204`); `$EBF0`-`$EBF4` (`ZoneObjects+234`) |
+| Writes | `$EB9C`-`$EBA2` (`ZoneObjects+150`); `$EBB4`-`$EBC0` (`ZoneObjects+174`); `$EBD2`-`$EBDE` (`ZoneObjects+204`); `$EBF0`-`$EBF5` (`ZoneObjects+234`) |
 
 ### `KillEnemy` (`$F17C`)
 
@@ -1458,11 +1480,11 @@ Witness: L1 21 (c1, L2Z6, L3Z2, L3Z11, L4Z2, level1, level2, level4).
 | | |
 | --- | --- |
 | Runs (c1: power-on, the original tape at ROM speed on the 128K, the control menu and play on level 1; from the entry `$AB4D` (frame 19 010, T 70 483)) | 5 calls, 1,039 t-states own (0.00 %) |
-| Runs (the other recordings) | 11 calls (`stage1/level1` 5, `stage1/level2` 4, `stage1/level4` 2) |
+| Runs (the other recordings) | 16 calls (`stage1/level1` 5, `stage1/level2` 4, `stage1/level4` 2 and 4 more) |
 | Called from | `EnemyCommon` (tail), `ClimberObj` (tail) |
 | Calls | `PlayEffect`, `AddScore`, `NextObject` |
-| Reads | `$EB9D`-`$EBA7` (`ZoneObjects+151`); `$EBBB`-`$EBC5` (`ZoneObjects+181`); `$EBD9`-`$EBE3` (`ZoneObjects+211`) |
-| Writes | `$EB9C` (`ZoneObjects+150`); `$EBB4`-`$EBBA` (`ZoneObjects+174`); `$EBD2`-`$EBD8` (`ZoneObjects+204`); `$EBF0`-`$EBF4` (`ZoneObjects+234`) |
+| Reads | `$DB0E` (`Level3Objects+41`); `$EB9D`-`$EBA7` (`ZoneObjects+151`); `$EBBB`-`$EBC5` (`ZoneObjects+181`); `$EBD9`-`$EBE3` (`ZoneObjects+211`) |
+| Writes | `$DB0E` (`Level3Objects+41`); `$EB9C` (`ZoneObjects+150`); `$EBB4`-`$EBBA` (`ZoneObjects+174`); `$EBD2`-`$EBD8` (`ZoneObjects+204`); `$EBF0`-`$EBF4` (`ZoneObjects+234`) |
 
 ### `DyingEnemyObj` (`$F1B7`)
 
@@ -1475,7 +1497,7 @@ Witness: L1 582 (c1, L2Z6, L3Z2, L3Z11, L4Z2, level1, level2, level4).
 | | |
 | --- | --- |
 | Runs (c1: power-on, the original tape at ROM speed on the 128K, the control menu and play on level 1; from the entry `$AB4D` (frame 19 010, T 70 483)) | 145 calls, 80,880 t-states own (0.01 %) |
-| Runs (the other recordings) | 337 calls (`stage1/level1` 145, `stage1/level2` 132, `stage1/level4` 60) |
+| Runs (the other recordings) | 437 calls (`stage1/level1` 145, `stage1/level2` 132, `stage1/level4` 60 and 4 more) |
 | Called from | `UpdateObjectSlot` (tail) |
 | Calls | `NextObject` |
 | Reads | `$EB9D`-`$EBF4` (`ZoneObjects+151`) |
@@ -1493,8 +1515,8 @@ Witness: L1 15799 (c1, L1Z3, L1Z4, L2Z2-L2Z6, L3Z2, L3Z5, L3Z11, L4Z1-L4Z8, leve
 
 | | |
 | --- | --- |
-| Runs (c1: power-on, the original tape at ROM speed on the 128K, the control menu and play on level 1; from the entry `$AB4D` (frame 19 010, T 70 483)) | run into, not called, 8,818 t-states own (0.00 %) |
-| Runs (the other recordings) | run into, not called (`stage1/level4`, `stage1/level2`, `stage1/level1` and 1 more) |
+| Runs (c1: power-on, the original tape at ROM speed on the 128K, the control menu and play on level 1; from the entry `$AB4D` (frame 19 010, T 70 483)) | 89 runs of its first instruction (entered by a jump or by running on, no routine of its own in the L1), 8,818 t-states own (0.00 %) |
+| Runs (the other recordings) | 15,710 runs of its first instruction, entered by a jump (`stage1/level4` 3,517, `stage2/zones/L2Z4` 2,175, `stage2/zones/L4Z1` 1,294 and 19 more) |
 | Called from | `UpdateObjectSlot` |
 | Calls | `NextObject`, `KillEnemy` (tail), `ClimberMove`, `RickTouches`, `PointInObject`, `HitsObstacle`, `KillRick` |
 | Reads | `$EACA`-`$EACD` (`BulletObject`, `BulletX`, `BulletY`); `$ED3F` (`BulletDx`) |
@@ -1512,11 +1534,11 @@ Witness: L1 15799 (c1, L1Z3, L1Z4, L2Z2-L2Z6, L3Z2, L3Z5, L3Z11, L4Z1-L4Z8, leve
 | | |
 | --- | --- |
 | Runs (c1: power-on, the original tape at ROM speed on the 128K, the control menu and play on level 1; from the entry `$AB4D` (frame 19 010, T 70 483)) | 89 calls, 10,680 t-states own (0.00 %) |
-| Runs (the other recordings) | 4,598 calls (`stage1/level4` 3,517, `stage1/level2` 548, `stage1/level1` 439 and 1 more) |
+| Runs (the other recordings) | 15,710 calls (`stage1/level4` 3,517, `stage2/zones/L2Z4` 2,175, `stage2/zones/L4Z1` 1,294 and 19 more) |
 | Called from | `ClimberObj` |
-| Calls | `ClimberFall` (tail), `ProbeBox`, `InBlast` |
-| Reads | `$EAAD`-`$EAAF` (`RickX`, `RickY`); `$EBB4`-`$EBF5` (`ZoneObjects+174`); `$ECF1` (`BlastOn`); `$F174`-`$F17B` (`EnemyWalkFrames`); `$F6A8` (`ProbeResult`); `$FD63` (`Poking`) |
-| Writes | `$EBBB`-`$EBC0` (`ZoneObjects+181`); `$EBD2`-`$EBDE` (`ZoneObjects+204`); `$EBF0`-`$EBF4` (`ZoneObjects+234`) |
+| Calls | `ClimberFall` (tail), `ProbeBox`, `PointInObject`, `InBlast` |
+| Reads | `$EAAD`-`$EAAF` (`RickX`, `RickY`); `$EB9D`-`$EBF5` (`ZoneObjects+151`); `$ECF1` (`BlastOn`); `$F174`-`$F17B` (`EnemyWalkFrames`); `$F6A8` (`ProbeResult`); `$FD63`-`$FD66` (`Poking`, `PokeX`, `PokeY`) |
+| Writes | `$EB9D`-`$EBA2` (`ZoneObjects+151`); `$EBB4`-`$EBC0` (`ZoneObjects+174`); `$EBD2`-`$EBDE` (`ZoneObjects+204`); `$EBF0`-`$EBF5` (`ZoneObjects+234`) |
 
 ### `ClimberFall` (`$F362`)
 
@@ -1529,7 +1551,7 @@ Witness: L1 11684 (c1, L1Z3, L1Z4, L2Z2-L2Z6, L3Z2, L3Z5, L3Z11, L4Z1-L4Z8, leve
 | | |
 | --- | --- |
 | Runs (c1: power-on, the original tape at ROM speed on the 128K, the control menu and play on level 1; from the entry `$AB4D` (frame 19 010, T 70 483)) | 89 calls, 66,254 t-states own (0.01 %) |
-| Runs (the other recordings) | 1,081 calls (`stage1/level2` 548, `stage1/level1` 439, `stage1/level3` 94) |
+| Runs (the other recordings) | 2,528 calls (`stage2/zones/L1Z3` 761, `stage1/level2` 548, `stage1/level1` 439 and 5 more) |
 | Called from | `ClimberMove` (tail) |
 | Calls | `Random`, `ProbeBox` |
 | Reads | `$EAAE`-`$EAAF` (`RickY`); `$EB9D`-`$EBF5` (`ZoneObjects+151`); `$F174`-`$F17B` (`EnemyWalkFrames`); `$F6A8` (`ProbeResult`) |
@@ -1555,12 +1577,12 @@ Witness: L1 5910 (beeper48, c1, controls, gameover, spotL2Z4-34, L1Z1, L1Z3, L1Z
 
 | | |
 | --- | --- |
-| Runs (c1: power-on, the original tape at ROM speed on the 128K, the control menu and play on level 1; from the entry `$AB4D` (frame 19 010, T 70 483)) | run into, not called, 11,035 t-states own (0.00 %) |
-| Runs (the other recordings) | run into, not called (`stage1/level2`, `stage1/level1`, `stage1/controls` and 1 more) |
+| Runs (c1: power-on, the original tape at ROM speed on the 128K, the control menu and play on level 1; from the entry `$AB4D` (frame 19 010, T 70 483)) | 90 runs of its first instruction (entered by a jump or by running on, no routine of its own in the L1), 11,035 t-states own (0.00 %) |
+| Runs (the other recordings) | 5,820 runs of its first instruction, entered by a jump (`stage1/level2` 1,189, `stage2/zones/L2Z2` 824, `stage2/zones/L1Z3` 761 and 15 more) |
 | Called from | `UpdateObjectSlot` |
 | Calls | `PlayEffect`, `NextObject`, `PointInTrigger` |
 | Reads | `$EAAD`-`$EAAE` (`RickX`, `RickY`) |
-| Writes | `$E496`-`$E49A` (`BonusDigits`); `$EB06`-`$EB0B` (`ZoneObjects`); `$EB24`-`$EB29` (`ZoneObjects+30`); `$FD6C` (`BonusActive`) |
+| Writes | `$E496`-`$E49A` (`BonusDigits`); `$EB06`-`$EB0B` (`ZoneObjects`); `$EB24`-`$EB29` (`ZoneObjects+30`); `$EB60`-`$EB65` (`ZoneObjects+90`); `$FD6C` (`BonusActive`) |
 
 ### `BonusCollect` (`$F502`)
 
@@ -1584,12 +1606,12 @@ Witness: L1 5972 (c1, spotL2Z4-34, L1Z2-L1Z4, L2Z2-L2Z5, L2Z7, L3Z6, L3Z7, L3Z12
 
 | | |
 | --- | --- |
-| Runs (c1: power-on, the original tape at ROM speed on the 128K, the control menu and play on level 1; from the entry `$AB4D` (frame 19 010, T 70 483)) | run into, not called, 25,556 t-states own (0.00 %) |
-| Runs (the other recordings) | run into, not called (`stage1/level1`, `stage1/level2`) |
+| Runs (c1: power-on, the original tape at ROM speed on the 128K, the control menu and play on level 1; from the entry `$AB4D` (frame 19 010, T 70 483)) | 226 runs of its first instruction (entered by a jump or by running on, no routine of its own in the L1), 25,556 t-states own (0.00 %) |
+| Runs (the other recordings) | 5,746 runs of its first instruction, entered by a jump (`stage2/zones/L3Z6` 770, `stage2/zones/L1Z3` 761, `stage2/zones/L2Z4` 725 and 14 more) |
 | Called from | `UpdateObjectSlot` |
 | Calls | `StartTune`, `AddScore`, `NextObject`, `PointInTrigger` |
 | Reads | `$EAAD`-`$EAAE` (`RickX`, `RickY`); `$FD6C` (`BonusActive`) |
-| Writes | `$EB06`-`$EB0B` (`ZoneObjects`); `$EB28`-`$EB29` (`ZoneObjects+34`); `$FD6C` (`BonusActive`) |
+| Writes | `$EB06`-`$EB0B` (`ZoneObjects`); `$EB28`-`$EB29` (`ZoneObjects+34`); `$EB42`-`$EB47` (`ZoneObjects+60`); `$EB64`-`$EB65` (`ZoneObjects+94`); `$EB82`-`$EB83` (`ZoneObjects+124`); `$FD6C` (`BonusActive`) |
 
 ### `IsSolidAt` (`$F535`)
 
@@ -1610,10 +1632,10 @@ Witness: L1 542 (beeper48, c1, emptygun, L1Z5, L2Z1, L2Z6, L3Z x7, L4Z3, L4Z4, L
 | | |
 | --- | --- |
 | Runs (c1: power-on, the original tape at ROM speed on the 128K, the control menu and play on level 1; from the entry `$AB4D` (frame 19 010, T 70 483)) | 25 calls, 5,210 t-states own (0.00 %) |
-| Runs (the other recordings) | 182 calls (`stage1/level3` 84, `stage1/level4` 48, `stage1/level1` 32 and 1 more) |
+| Runs (the other recordings) | 517 calls (`docs/integrate/emptygun` 150, `stage1/level3` 84, `stage1/level4` 48 and 17 more) |
 | Called from | `BulletObj` |
 | Calls | `PointInObject` |
-| Reads | `$5C00` (`SystemVariables`); `$5C15`-`$5C23` (`SystemVariables+21`); `$5C41`-`$5C54` (`SystemVariables+65`); `$5C7F`-`$5C80` (`SystemVariables+127`); `$5CDC`-`$5CF3` (`BasicLeft+17`); `$66CC` (`MusicImage+2252`); 3 more ranges |
+| Reads | `$5C00`-`$5C54` (`SystemVariables`); `$5C7F`-`$5C80` (`SystemVariables+127`); `$5CCB`-`$5CF5` (`BasicLeft`); `$66CC` (`MusicImage+2252`); `$6740`-`$676C` (`MusicImage+2368`); `$6795`-`$6797` (`MusicImage+2453`); 3 more ranges |
 
 ### `ProbeLow` (`$F56D`)
 
@@ -1638,10 +1660,10 @@ Witness: L1 6062 (beeper48, c1, L1Z1-L1Z6, L2Z1-L2Z7, L3Z1-L3Z12, L4Z1-L4Z9, lev
 | | |
 | --- | --- |
 | Runs (c1: power-on, the original tape at ROM speed on the 128K, the control menu and play on level 1; from the entry `$AB4D` (frame 19 010, T 70 483)) | 37 calls, 12,853 t-states own (0.00 %) |
-| Runs (the other recordings) | 1,558 calls (`stage1/level2` 1,091, `stage1/level3` 250, `stage1/level4` 154 and 1 more) |
+| Runs (the other recordings) | 6,025 calls (`stage1/level2` 1,091, `stage2/zones/L4Z6` 448, `stage2/zones/L4Z7` 268 and 36 more) |
 | Called from | `MoveRick`, `WalkRick` |
 | Calls | `ProbeBoxAligned` (tail), `ProbeBoxUnaligned` (tail) |
-| Reads | `$5C00` (`SystemVariables`); `$5C16`-`$5C54` (`SystemVariables+22`); `$5C68` (`SystemVariables+104`); `$5CDF`-`$5CF7` (`BasicLeft+20`); `$66A4`-`$66B4` (`MusicImage+2212`); `$6720`-`$6746` (`MusicImage+2336`); 4 more ranges |
+| Reads | `$5C00`-`$5C68` (`SystemVariables`); `$5C92`-`$5C93` (`SystemVariables+146`); `$5CB2`-`$5CB5` (`SystemVariables+178`); `$5CCB`-`$5CF7` (`BasicLeft`); `$66A4`-`$66B4` (`MusicImage+2212`); `$6701`-`$6702` (`MusicImage+2305`); 4 more ranges |
 | Writes | `$F6A7` (`ProbeLowResult`) |
 
 ### `ProbeBox` (`$F5D5`)
@@ -1665,11 +1687,11 @@ Witness: L1 142633 (beeper48, c1, controls, emptygun, ending2, gameover, l1z1lef
 | | |
 | --- | --- |
 | Runs (c1: power-on, the original tape at ROM speed on the 128K, the control menu and play on level 1; from the entry `$AB4D` (frame 19 010, T 70 483)) | 3,257 calls, 642,755 t-states own (0.06 %) |
-| Runs (the other recordings) | 28,896 calls (`stage1/level4` 10,104, `stage1/level1` 6,298, `stage1/level2` 5,902 and 3 more) |
+| Runs (the other recordings) | 139,376 calls (`stage1/level4` 10,104, `stage1/level1` 6,298, `stage1/level2` 5,902 and 47 more) |
 | Called from | `EnemyFall`, `ClimberMove`, `ClimberFall`, `MoveRick`, `WalkRick`, `ClimbRick`, `ClimbSideProbe` |
 | Calls | `ProbeBoxAligned` (falls into), `ProbeBoxUnaligned` (tail) |
-| Reads | `$5C00` (`SystemVariables`); `$5C35`-`$5C48` (`SystemVariables+53`); `$5CD5`-`$5CDA` (`BasicLeft+10`); `$5CED`-`$5CF3` (`BasicLeft+34`); `$66E7`-`$67DC` (`MusicImage+2279`); `$67FA`-`$67FC` (`MusicImage+2554`); 6 more ranges |
-| Writes | `$F6A8` (`ProbeResult`) |
+| Reads | `$5C00`-`$5C03` (`SystemVariables`); `$5C15`-`$5C5B` (`SystemVariables+21`); `$5C70`-`$5C74` (`SystemVariables+112`); `$5C89`-`$5C90` (`SystemVariables+137`); `$5CAE`-`$5CFD` (`SystemVariables+174`, `ChannelInfo`, `BasicLeft`); `$65A9`-`$660E` (`MusicImage+1961`); 10 more ranges |
+| Writes | `$F68A`-`$F68C` (`ProbeRecord+1`); `$F6A8` (`ProbeResult`) |
 
 ### `ProbeBoxAligned` (`$F602`)
 
@@ -1684,10 +1706,10 @@ Witness: L1 105462 (beeper48, c1, controls, ending2, gameover, l1z1left, spotL3Z
 | | |
 | --- | --- |
 | Runs (c1: power-on, the original tape at ROM speed on the 128K, the control menu and play on level 1; from the entry `$AB4D` (frame 19 010, T 70 483)) | 852 calls, 292,251 t-states own (0.03 %) |
-| Runs (the other recordings) | 8,810 calls (`stage1/level4` 2,953, `stage1/level2` 2,370, `stage1/level3` 1,784 and 1 more) |
+| Runs (the other recordings) | 37,842 calls (`stage1/level4` 2,953, `stage1/level2` 2,370, `stage1/level3` 1,784 and 35 more) |
 | Called from | `ProbeLow` (tail), `ProbeBox` (falls into) |
 | Calls | `ProbeBoxObject0` (falls into) |
-| Reads | `$5C00` (`SystemVariables`); `$5C15`-`$5C6E` (`SystemVariables+21`); `$5C7F`-`$5C80` (`SystemVariables+127`); `$5C92`-`$5C93` (`SystemVariables+146`); `$5CB0`-`$5CFD` (`SystemVariables+176`, `ChannelInfo`, `BasicLeft`); `$652D`-`$653B` (`MusicImage+1837`); 3 more ranges |
+| Reads | `$5C00`-`$5CFD` (`SystemVariables`, `ChannelInfo`, `BasicLeft`); `$652D`-`$653B` (`MusicImage+1837`); `$654D`-`$655B` (`MusicImage+1869`); `$656D`-`$694D` (`MusicImage+1901`); `$696C`-`$696D` (`MusicImage+2924`); `$698C`-`$698D` (`MusicImage+2956`); 1 more ranges |
 | Writes | `$F6A8` (`ProbeResult`) |
 
 ### `ProbeBoxObject0` (`$F624`)
@@ -1707,7 +1729,7 @@ Witness: L1 148695 (beeper48, c1, controls, emptygun, ending2, gameover, l1z1lef
 | | |
 | --- | --- |
 | Runs (c1: power-on, the original tape at ROM speed on the 128K, the control menu and play on level 1; from the entry `$AB4D` (frame 19 010, T 70 483)) | 3,294 calls, 184,786 t-states own (0.02 %) |
-| Runs (the other recordings) | 28,268 calls (`stage1/level4` 10,258, `stage1/level2` 6,993, `stage1/level1` 6,361 and 1 more) |
+| Runs (the other recordings) | 138,655 calls (`stage1/level4` 10,258, `stage1/level2` 6,993, `stage1/level1` 6,361 and 36 more) |
 | Called from | `ProbeBoxAligned` (falls into), `ProbeBoxUnaligned` (tail) |
 | Calls | `ObjectsOverlap` |
 | Reads | `$EA8E` (`ObjectTable`); `$F6A8` (`ProbeResult`) |
@@ -1726,10 +1748,10 @@ Witness: L1 267099 (beeper48, c1, controls, emptygun, ending2, gameover, l1z1lef
 | | |
 | --- | --- |
 | Runs (c1: power-on, the original tape at ROM speed on the 128K, the control menu and play on level 1; from the entry `$AB4D` (frame 19 010, T 70 483)) | 2,442 calls, 1,218,468 t-states own (0.12 %) |
-| Runs (the other recordings) | 19,458 calls (`stage1/level4` 7,305, `stage1/level1` 4,658, `stage1/level2` 4,623 and 1 more) |
+| Runs (the other recordings) | 99,614 calls (`stage1/level4` 7,305, `stage1/level1` 4,658, `stage1/level2` 4,623 and 36 more) |
 | Called from | `ProbeLow` (tail), `ProbeBox` (tail) |
 | Calls | `ProbeBoxObject0` (tail) |
-| Reads | `$5C00`-`$5C01` (`SystemVariables`); `$5C15`-`$5C6E` (`SystemVariables+21`); `$5C7F`-`$5C80` (`SystemVariables+127`); `$5C92`-`$5C93` (`SystemVariables+146`); `$5CB0`-`$5CFD` (`SystemVariables+176`, `ChannelInfo`, `BasicLeft`); `$652C`-`$691B` (`MusicImage+1836`); 2 more ranges |
+| Reads | `$5C00`-`$5CFD` (`SystemVariables`, `ChannelInfo`, `BasicLeft`); `$652C`-`$693B` (`MusicImage+1836`); `$6974`-`$6976` (`MusicImage+2932`); `$6994`-`$6A1B` (`MusicImage+2964`) |
 | Writes | `$F6A8` (`ProbeResult`) |
 
 ### `BuildCharProps` (`$F6A9`)
@@ -1751,7 +1773,7 @@ Witness: L1 439 (beeper48, c1, controls, gameover, spotL3Z7-51, L1Z1-L1Z6, L2Z1-
 | | |
 | --- | --- |
 | Runs (c1: power-on, the original tape at ROM speed on the 128K, the control menu and play on level 1; from the entry `$AB4D` (frame 19 010, T 70 483)) | 7 calls, 46,926 t-states own (0.00 %) |
-| Runs (the other recordings) | 79 calls (`stage1/level4` 30, `stage1/level1` 19, `stage1/controls` 11 and 3 more) |
+| Runs (the other recordings) | 432 calls (`stage1/level4` 30, `stage2/zones/L3Z9` 26, `stage2/zones/L3Z7` 22 and 40 more) |
 | Called from | `LoadScreen` |
 | Reads | `$F6C0`-`$F6DF` (`CharPropsSet0`, `CharPropsSet1`) |
 | Writes | `$5C00`-`$5CFF` (`SystemVariables`, `ChannelInfo`, `BasicLeft`) |
@@ -1771,10 +1793,10 @@ Witness: L1 113605 (beeper48, c1, controls, ending2, gameover, l1end, spotL2Z4-3
 | | |
 | --- | --- |
 | Runs (c1: power-on, the original tape at ROM speed on the 128K, the control menu and play on level 1; from the entry `$AB4D` (frame 19 010, T 70 483)) | 1,491 calls, 52,692 t-states own (0.01 %) |
-| Runs (the other recordings) | 24,744 calls (`stage1/level4` 12,952, `stage1/level2` 4,224, `stage1/level3` 3,414 and 3 more) |
-| Called from | `TreasureObj`, `TrapObj`, `EnemyFall`, `ClimberObj` |
+| Runs (the other recordings) | 112,114 calls (`stage1/level4` 12,952, `stage2/zones/L4Z1` 4,529, `stage1/level2` 4,224 and 46 more) |
+| Called from | `AmmoBoxObj`, `TreasureObj`, `TrapObj`, `EnemyFall`, `ClimberObj` |
 | Calls | `ObjectsOverlap` (falls into) |
-| Reads | `$EAAC`-`$EAAF` (`RickObject`, `RickX`, `RickY`); `$EB25`-`$EB2C` (`ZoneObjects+31`); `$FD5A`-`$FD68` (`Crawling`, `Airborne`, `AnimStep`, `FireLatch` and 9 more) |
+| Reads | `$EA8F`-`$EA95` (`ObjectTable+1`); `$EAAC`-`$EAAF` (`RickObject`, `RickX`, `RickY`); `$EB07`-`$EB0E` (`ZoneObjects+1`); `$EB25`-`$EB2C` (`ZoneObjects+31`); `$EB43`-`$EB4A` (`ZoneObjects+61`); `$EB61`-`$EB68` (`ZoneObjects+91`); 5 more ranges |
 
 ### `ObjectsOverlap` (`$F6E9`)
 
@@ -1791,7 +1813,7 @@ Witness: L1 142755 (beeper48, c1, controls, ending2, gameover, spotL2Z4-34, spot
 | | |
 | --- | --- |
 | Runs (c1: power-on, the original tape at ROM speed on the 128K, the control menu and play on level 1; from the entry `$AB4D` (frame 19 010, T 70 483)) | 1,447 calls, 189,298 t-states own (0.02 %) |
-| Runs (the other recordings) | 35,242 calls (`stage1/level4` 22,594, `stage1/level2` 6,565, `stage1/level3` 3,532 and 1 more) |
+| Runs (the other recordings) | 120,508 calls (`stage1/level4` 22,594, `stage2/zones/L4Z1` 7,470, `stage2/zones/L4Z9` 7,275 and 28 more) |
 | Called from | `ProbeBoxObject0`, `RickTouches` (falls into), `HitsObstacle` |
 | Reads | `$EA8F`-`$EA96` (`ObjectTable+1`); `$EAAC`-`$EAAF` (`RickObject`, `RickX`, `RickY`); `$EB07`-`$EB0E` (`ZoneObjects+1`); `$EB25`-`$EB2C` (`ZoneObjects+31`); `$EB43`-`$EB4A` (`ZoneObjects+61`); `$EB61`-`$EB68` (`ZoneObjects+91`); 6 more ranges |
 
@@ -1808,9 +1830,9 @@ Witness: L1 718 (c1, L1Z4, L2Z1, L3Z x7, L4Z3-L4Z6, L4Z9, level1, level2, level4
 | | |
 | --- | --- |
 | Runs (c1: power-on, the original tape at ROM speed on the 128K, the control menu and play on level 1; from the entry `$AB4D` (frame 19 010, T 70 483)) | 34 calls, 3,370 t-states own (0.00 %) |
-| Runs (the other recordings) | 230 calls (`stage1/level4` 138, `stage1/level2` 49, `stage1/level1` 43) |
-| Called from | `EnemyCommon`, `ClimberObj`, `IsSolidAt` |
-| Reads | `$EA8F` (`ObjectTable+1`); `$EB9D`-`$EBA4` (`ZoneObjects+151`); `$EBBB`-`$EBC2` (`ZoneObjects+181`); `$EBD9`-`$EBE0` (`ZoneObjects+211`) |
+| Runs (the other recordings) | 684 calls (`stage1/level4` 138, `stage2/zones/L3Z10` 88, `stage2/zones/L4Z3` 86 and 14 more) |
+| Called from | `AmmoBoxObj`, `EnemyCommon`, `ClimberObj`, `ClimberMove`, `IsSolidAt` |
+| Reads | `$EA8F`-`$EA96` (`ObjectTable+1`); `$EB07`-`$EB0E` (`ZoneObjects+1`); `$EB25`-`$EB2B` (`ZoneObjects+31`); `$EB43`-`$EB49` (`ZoneObjects+61`); `$EB9D`-`$EBA4` (`ZoneObjects+151`); `$EBBB`-`$EBC2` (`ZoneObjects+181`); 1 more ranges |
 
 ### `InBlast` (`$F76F`)
 
@@ -1826,9 +1848,9 @@ Witness: L1 1181 (beeper48, L1Z1, L1Z2, L2Z1, L2Z2, L2Z6, L2Z7, L3Z2, L3Z6, L3Z1
 
 | | |
 | --- | --- |
-| Runs | not reached in `stage2/c1g`; in the other recordings 150 calls (`stage1/level3` 96, `stage1/level2` 54) |
-| Called from | `DynamiteObj`, `EnemyCommon`, `ClimberMove` |
-| Reads | `$EAAD`-`$EAB3` (`RickX`, `RickY`, `RickMirror`, `RickWidth`); `$EAE9`-`$EAEB` (`DynamiteX`); `$EB9D`-`$EBA4` (`ZoneObjects+151`); `$EBBB` (`ZoneObjects+181`) |
+| Runs | not reached in `stage2/c1g`; in the other recordings 1,181 calls (`stage2/zones/L2Z2` 153, `stage2/zones/L3Z2` 111, `stage2/zones/L4Z9` 108 and 14 more) |
+| Called from | `DynamiteObj`, `AmmoBoxObj`, `EnemyCommon`, `ClimberMove` |
+| Reads | `$EAAD`-`$EAB4` (`RickX`, `RickY`, `RickMirror`, `RickWidth` and 1 more); `$EAE9`-`$EAEB` (`DynamiteX`); `$EB07` (`ZoneObjects+1`); `$EB25`-`$EB2B` (`ZoneObjects+31`); `$EB43` (`ZoneObjects+61`); `$EB9D`-`$EBA4` (`ZoneObjects+151`); 2 more ranges |
 
 ### `PointInTrigger` (`$F7C3`)
 
@@ -1849,9 +1871,9 @@ Witness: L1 55292 (beeper48, c1, controls, emptygun, gameover, l1z1left, spotL2Z
 | | |
 | --- | --- |
 | Runs (c1: power-on, the original tape at ROM speed on the 128K, the control menu and play on level 1; from the entry `$AB4D` (frame 19 010, T 70 483)) | 1,200 calls, 185,581 t-states own (0.02 %) |
-| Runs (the other recordings) | 17,294 calls (`stage1/level2` 7,238, `stage1/level3` 5,296, `stage1/level4` 2,557 and 3 more) |
+| Runs (the other recordings) | 54,092 calls (`stage1/level2` 7,238, `stage1/level3` 5,296, `stage2/zones/L4Z8` 3,238 and 42 more) |
 | Called from | `TrapTriggers`, `BonusTrigger`, `BonusCollect` |
-| Reads | `$D3D2`-`$D423` (`ObjectKinds+182`); `$D472`-`$D473` (`ObjectKinds+342`); `$D4CA`-`$D4CB` (`ObjectKinds+430`); `$D4EA`-`$D4EB` (`ObjectKinds+462`); `$D51A`-`$D51B` (`ObjectKinds+510`); `$D532`-`$D533` (`ObjectKinds+534`); 2 more ranges |
+| Reads | `$D3D2`-`$D4CB` (`ObjectKinds+182`); `$D4E2`-`$D533` (`ObjectKinds+454`); `$D54A`-`$D553` (`ObjectKinds+558`); `$EA8E`-`$EA9C` (`ObjectTable`); `$EB06`-`$EB8C` (`ZoneObjects`) |
 
 ### `HitsObstacle` (`$F812`)
 
@@ -1870,7 +1892,7 @@ Witness: L1 55773 (c1, ending2, spotL3Z7-51, spotL4Z8-69, L1Z2-L1Z6, L2Z2-L2Z7, 
 | | |
 | --- | --- |
 | Runs (c1: power-on, the original tape at ROM speed on the 128K, the control menu and play on level 1; from the entry `$AB4D` (frame 19 010, T 70 483)) | 960 calls, 543,288 t-states own (0.05 %) |
-| Runs (the other recordings) | 9,089 calls (`stage1/level4` 5,404, `stage1/level1` 2,120, `stage1/level2` 1,471 and 1 more) |
+| Runs (the other recordings) | 54,813 calls (`stage1/level4` 5,404, `stage2/zones/L4Z7` 2,676, `stage2/zones/L2Z4` 2,412 and 38 more) |
 | Called from | `EnemyCommon`, `ClimberObj` |
 | Calls | `ObjectsOverlap` |
 | Reads | `$EA8E` (`ObjectTable`); `$EB06` (`ZoneObjects`); `$EB24` (`ZoneObjects+30`); `$EB42` (`ZoneObjects+60`); `$EB60` (`ZoneObjects+90`); `$EB7E` (`ZoneObjects+120`) |
@@ -1889,13 +1911,13 @@ Then, every two frames, it lights the attribute row of the chosen method (DE the
 
 Seen in c1, controls (all four methods), gameover, level1 and ending; the menu screen is work/images/menu.*.bin. The `LD DE,$780A` at `$E229` is dead: the next instruction loads DE again.
 
-Witness: L1 26072 (c1, controls, ending2, gameover, level1).
+Witness: L1 30069 (c1, controls, ending, ending2, gameover, level1).
 
 | | |
 | --- | --- |
 | Runs (c1: power-on, the original tape at ROM speed on the 128K, the control menu and play on level 1; from the entry `$AB4D` (frame 19 010, T 70 483)) | 1 call, 827,112,311 t-states own (81.07 %) |
-| Runs (the other recordings) | run into, not called (`stage1/level1`, `stage1/controls`, `stage1/gameover`) |
-| Called from | `Start` (tail) |
+| Runs (the other recordings) | 2 calls (`stage2/ending2` 1, `stage1/ending` 1) |
+| Called from | `Start` (tail), `GameOver` (tail) |
 | Calls | `StartTune`, `Key1Pressed`, `Key2Pressed`, `Key3Pressed`, `Key4Pressed`, `StartPressed`, `PrintLines`, `ClearScreen`, `CycleAttributes` |
 | Reads | `$A14C` (`ControlMethod`); `$A958` (`Lives`); `$D7FD`-`$DF19` (`Objects+1`, `Level2Objects`, `Level3Objects`, `Level4Objects`); `$E268`-`$E269` (`MenuFrame+1`); `$E410` (`MainLoopHalt+1`); `$E440` (`GameComplete`); 3 more ranges |
 | Writes | `$7900` (`CharAttr0`); `$A14C` (`ControlMethod`); `$A237` (`FrameTicks`); `$A958`-`$A976` (`Lives`, `DrawDynamite`, `Dynamite`, `DrawBullets` and 1 more); `$A9BE`-`$A9C3` (`Score`); `$D7FD`-`$DF19` (`Objects+1`, `Level2Objects`, `Level3Objects`, `Level4Objects`); 4 more ranges |
@@ -1914,7 +1936,8 @@ Witness: L1 9 (beeper48, c1, controls, gameover, level1).
 
 | | |
 | --- | --- |
-| Runs | ran within another entry's routine (reached by a jump or by running on, its calls below), no runs of its own counted |
+| Runs (c1: power-on, the original tape at ROM speed on the 128K, the control menu and play on level 1; from the entry `$AB4D` (frame 19 010, T 70 483)) | 1 run of its first instruction (entered by a jump or by running on, no routine of its own in the L1) |
+| Runs (the other recordings) | 8 runs of its first instruction, entered by a jump (`stage1/controls` 4, `stage1/level1` 2, `stage1/gameover` 1 and 1 more) |
 | Calls | `StartTune`, `StartPressed`, `DrawHud`, `PrintLines`, `ClearScreen` |
 
 ### `Quit` (`$E35A`)
@@ -1929,7 +1952,8 @@ Witness: L1 8 (beeper48, c1, controls, gameover, level1).
 
 | | |
 | --- | --- |
-| Runs | ran within another entry's routine (reached by a jump or by running on, its calls below), no runs of its own counted |
+| Runs (c1: power-on, the original tape at ROM speed on the 128K, the control menu and play on level 1; from the entry `$AB4D` (frame 19 010, T 70 483)) | 1 run of its first instruction (entered by a jump or by running on, no routine of its own in the L1) |
+| Runs (the other recordings) | 7 runs of its first instruction, entered by a jump (`stage1/controls` 4, `stage1/gameover` 1, `stage1/level1` 1 and 1 more) |
 | Calls | `ComposeObjects` |
 
 ### `GameOver` (`$E35D`)
@@ -1940,12 +1964,14 @@ Calls `$A90F` and `$A25D`, prints GameOverBlankText `$E397`, GameOverText `$E3A3
 
 Also the end of the game: CheckGameComplete `$E406` jumps here after the ending (the ending recording shows GAME OVER after the closing text).
 
-Witness: L1 9 (beeper48, c1, controls, ending2, gameover, level1).
+Witness: L1 10 (beeper48, c1, controls, ending, ending2, gameover, level1).
 
 | | |
 | --- | --- |
-| Runs | ran within another entry's routine (reached by a jump or by running on, its calls below), no runs of its own counted |
-| Calls | `StartTune`, `StartPressed`, `DrawDirtyCells`, `UpdateHud`, `PrintText` |
+| Runs (c1: power-on, the original tape at ROM speed on the 128K, the control menu and play on level 1; from the entry `$AB4D` (frame 19 010, T 70 483)) | 1 run of its first instruction (entered by a jump or by running on, no routine of its own in the L1) |
+| Runs (the other recordings) | 1 call (`stage1/ending` 1) |
+| Called from | `CheckGameComplete` (tail) |
+| Calls | `StartTune`, `StartPressed`, `DrawDirtyCells`, `UpdateHud`, `PrintText`, `Menu` (tail) |
 
 ## mainloop
 
@@ -1963,8 +1989,11 @@ Witness: L1 323 (beeper48, c1, controls, gameover, spotL3Z7-51, L1Z1-L1Z6, L2Z1-
 
 | | |
 | --- | --- |
-| Runs | ran within another entry's routine (reached by a jump or by running on, its calls below), no runs of its own counted |
+| Runs (c1: power-on, the original tape at ROM speed on the 128K, the control menu and play on level 1; from the entry `$AB4D` (frame 19 010, T 70 483)) | 3 runs of its first instruction (entered by a jump or by running on, no routine of its own in the L1) |
+| Runs (the other recordings) | 320 runs of its first instruction, entered by a jump (`stage1/level4` 29, `stage2/zones/L3Z9` 24, `stage2/zones/L3Z7` 16 and 40 more) |
 | Calls | `DrawHud`, `RestartScreen` |
+| Reads | `$A958` (`Lives`); `$E410` (`MainLoopHalt+1`); `$E440` (`GameComplete`); `$EAAE`-`$EAAF` (`RickY`); `$FD61`-`$FD69` (`ZoneChange`, `ExitSide`, `Poking`, `PokeX` and 4 more) |
+| Writes | `$A237` (`FrameTicks`); `$A958`-`$A976` (`Lives`, `DrawDynamite`, `Dynamite`, `DrawBullets` and 1 more); `$EAAC` (`RickObject`); `$FD68`-`$FD69` (`Dying`, `DeathDone`) |
 
 ### `MainLoop` (`$E3C9`)
 
@@ -1982,8 +2011,11 @@ Witness: L1 43345 (beeper48, c1, controls, emptygun, ending2, gameover, l1end, l
 
 | | |
 | --- | --- |
-| Runs | ran within another entry's routine (reached by a jump or by running on, its calls below), no runs of its own counted |
+| Runs (c1: power-on, the original tape at ROM speed on the 128K, the control menu and play on level 1; from the entry `$AB4D` (frame 19 010, T 70 483)) | 1,073 runs of its first instruction (entered by a jump or by running on, no routine of its own in the L1) |
+| Runs (the other recordings) | 42,272 runs of its first instruction, entered by a jump (`stage1/level3` 2,927, `stage1/level2` 2,845, `stage1/level1` 2,152 and 48 more) |
 | Calls | `QuitPressed`, `PausePressed`, `CheckScreenExit`, `BonusCountdown`, `UpdateObjects` |
+| Reads | `$E410` (`MainLoopHalt+1`); `$EAAE`-`$EAAF` (`RickY`); `$FD61`-`$FD69` (`ZoneChange`, `ExitSide`, `Poking`, `PokeX` and 4 more) |
+| Writes | `$A237` (`FrameTicks`) |
 
 ### `CheckGameComplete` (`$E406`)
 
@@ -1993,12 +2025,15 @@ GameComplete `$E440` set (`$AC52`, after the closing text of the ending) goes to
 
 MainLoopHalt is the frame's HALT, reached from CheckZone when no zone change is pending. After it: `$A237` = 0, `$A73F`, `$A144`, `$A22A` (C = 1), `$A25D`, `$A90F`, then the vertical scroll unless `$FD68` (Rick dying): RickY `$EAAE` >= `$CC`: `$ADB9` (c1 14, level1 15); RickY < `$60`: `$ADF0` (only level2, 11 times).
 
-Witness: L1 106 (c1, ending2, l1end, L1Z2-L1Z4, L1Z6, L2Z2-L2Z7, L3Z2-L3Z12, L4Z2-L4Z6, L4Z8, level1).
+Witness: L1 107 (c1, ending, ending2, l1end, L1Z2-L1Z4, L1Z6, L2Z2-L2Z7, L3Z2-L3Z12, L4Z2-L4Z6, L4Z8, level1).
 
 | | |
 | --- | --- |
-| Runs | ran within another entry's routine (reached by a jump or by running on, its calls below), no runs of its own counted |
-| Calls | `PausePressed`, `WaitFrames`, `DrawDirtyCells`, `ComposeObjects`, `UpdateHud`, `ScrollViewDown`, `ScrollViewUp` |
+| Runs (c1: power-on, the original tape at ROM speed on the 128K, the control menu and play on level 1; from the entry `$AB4D` (frame 19 010, T 70 483)) | 3 runs of its first instruction (entered by a jump or by running on, no routine of its own in the L1) |
+| Runs (the other recordings) | 104 runs of its first instruction, entered by a jump (`stage2/zones/L2Z5` 8, `stage2/zones/L2Z2` 7, `stage2/zones/L2Z7` 6 and 28 more) |
+| Calls | `PausePressed`, `WaitFrames`, `DrawDirtyCells`, `ComposeObjects`, `UpdateHud`, `ScrollViewDown`, `ScrollViewUp`, `GameOver` (tail) |
+| Reads | `$83FF`-`$8400` (`Im2Table+255`); `$A958` (`Lives`); `$E410` (`MainLoopHalt+1`); `$E440` (`GameComplete`); `$EAAE`-`$EAAF` (`RickY`); `$FD61`-`$FD69` (`ZoneChange`, `ExitSide`, `Poking`, `PokeX` and 4 more) |
+| Writes | `$A237` (`FrameTicks`); `$A958`-`$A976` (`Lives`, `DrawDynamite`, `Dynamite`, `DrawBullets` and 1 more); `$EAAC` (`RickObject`); `$FD68`-`$FD69` (`Dying`, `DeathDone`) |
 
 ### `Random` (`$E441`)
 
@@ -2013,7 +2048,7 @@ Witness: L1 519 (c1, L1Z3, L1Z4, L2Z2-L2Z5, L3Z2, L3Z5, L3Z11, L4Z1-L4Z3, L4Z5, 
 | | |
 | --- | --- |
 | Runs (c1: power-on, the original tape at ROM speed on the 128K, the control menu and play on level 1; from the entry `$AB4D` (frame 19 010, T 70 483)) | 3 calls, 573 t-states own (0.00 %) |
-| Runs (the other recordings) | 201 calls (`stage1/level4` 137, `stage1/level2` 32, `stage1/level1` 19 and 1 more) |
+| Runs (the other recordings) | 516 calls (`stage1/level4` 137, `stage2/zones/L4Z1` 50, `stage2/zones/L4Z2` 44 and 16 more) |
 | Called from | `ClimberFall` |
 | Reads | `$E460`-`$E465` (`RandomState`, `FrameCount`, `FrameCountHigh`) |
 | Writes | `$E460`-`$E461` (`RandomState`) |
@@ -2024,12 +2059,12 @@ Witness: L1 519 (c1, L1Z3, L1Z4, L2Z2-L2Z5, L3Z2, L3Z5, L3Z11, L4Z1-L4Z3, L4Z5, 
 
 FrameCount `$E462` + 1, carried into FrameCountHigh `$E464`. Called by the IM 2 handler once a frame (its counts equal the handler's: c1 14301, ending 1499).
 
-Witness: L1 111926 (beeper48, c1, controls, emptygun, ending2, gameover, l1end, l1z1left, spotL2Z4-34, spotL3Z7-51, spotL4Z8-69, L1Z1-L1Z6, L2Z1-L2Z7, L3Z1-L3Z12, L4Z1-L4Z9, level1-level4, spotL1Z4-43, spotL1Z4-44, spotL1Z4-47).
+Witness: L1 113425 (beeper48, c1, controls, emptygun, ending, ending2, gameover, l1end, l1z1left, spotL2Z4-34, spotL3Z7-51, spotL4Z8-69, L1Z1-L1Z6, L2Z1-L2Z7, L3Z1-L3Z12, L4Z1-L4Z9, level1-level4, spotL1Z4-43, spotL1Z4-44, spotL1Z4-47).
 
 | | |
 | --- | --- |
 | Runs (c1: power-on, the original tape at ROM speed on the 128K, the control menu and play on level 1; from the entry `$AB4D` (frame 19 010, T 70 483)) | 14,301 calls, 815,157 t-states own (0.08 %) |
-| Runs (the other recordings) | 27,693 calls (`stage1/level3` 5,921, `stage1/level2` 5,870, `stage1/level1` 5,822 and 3 more) |
+| Runs (the other recordings) | 99,124 calls (`stage1/level3` 5,921, `stage1/level2` 5,870, `stage1/level1` 5,822 and 49 more) |
 | Called from | `Im2Handler` |
 | Reads | `$E462`-`$E463` (`FrameCount`) |
 | Writes | `$E462`-`$E463` (`FrameCount`) |
@@ -2052,9 +2087,9 @@ Witness: L1 1523 (beeper48, L1Z1, L1Z2, L2Z1, L2Z2, L2Z6, L2Z7, L3Z2, L3Z6, L3Z1
 
 | | |
 | --- | --- |
-| Runs | not reached in `stage2/c1g`; in the other recordings run into, not called (`stage1/level3`, `stage1/level2`) |
+| Runs | not reached in `stage2/c1g`; in the other recordings 1,523 runs of its first instruction, entered by a jump (`stage1/level3` 300, `stage2/zones/L2Z2` 196, `stage2/zones/L2Z7` 150 and 15 more) |
 | Called from | `UpdateObjectSlot` |
-| Calls | `PlayEffect`, `NextObject`, `InBlast` |
+| Calls | `PlayEffect`, `NextObject`, `InBlast`, `KillRick` (tail) |
 | Reads | `$EAE9`-`$EAEB` (`DynamiteX`); `$ECED`-`$ECFF` (`DynFuse`, `BlastX`, `BlastY`, `BlastOn` and 1 more) |
 | Writes | `$EAE8`-`$EAEE` (`DynamiteObject`, `DynamiteX`); `$ECED`-`$ECF1` (`DynFuse`, `BlastX`, `BlastY`, `BlastOn`) |
 
@@ -2070,8 +2105,8 @@ Witness: L1 546 (beeper48, c1, emptygun, L1Z5, L2Z1, L2Z6, L3Z x7, L4Z3, L4Z4, L
 
 | | |
 | --- | --- |
-| Runs (c1: power-on, the original tape at ROM speed on the 128K, the control menu and play on level 1; from the entry `$AB4D` (frame 19 010, T 70 483)) | run into, not called, 5,183 t-states own (0.00 %) |
-| Runs (the other recordings) | run into, not called (`stage1/level3`, `stage1/level4`, `stage1/level1` and 1 more) |
+| Runs (c1: power-on, the original tape at ROM speed on the 128K, the control menu and play on level 1; from the entry `$AB4D` (frame 19 010, T 70 483)) | 25 runs of its first instruction (entered by a jump or by running on, no routine of its own in the L1), 5,183 t-states own (0.00 %) |
+| Runs (the other recordings) | 521 runs of its first instruction, entered by a jump (`docs/integrate/emptygun` 150, `stage1/level3` 84, `stage1/level4` 48 and 17 more) |
 | Called from | `UpdateObjectSlot` |
 | Calls | `NextObject`, `IsSolidAt` |
 | Reads | `$EACB`-`$EACD` (`BulletX`, `BulletY`); `$ED3F` (`BulletDx`) |
@@ -2089,8 +2124,8 @@ Witness: L1 43340 (beeper48, c1, controls, emptygun, ending2, gameover, l1end, l
 
 | | |
 | --- | --- |
-| Runs (c1: power-on, the original tape at ROM speed on the 128K, the control menu and play on level 1; from the entry `$AB4D` (frame 19 010, T 70 483)) | run into, not called, 56,816 t-states own (0.01 %) |
-| Runs (the other recordings) | run into, not called (`stage1/level3`, `stage1/level2`, `stage1/level1` and 3 more) |
+| Runs (c1: power-on, the original tape at ROM speed on the 128K, the control menu and play on level 1; from the entry `$AB4D` (frame 19 010, T 70 483)) | 1,072 runs of its first instruction (entered by a jump or by running on, no routine of its own in the L1), 56,816 t-states own (0.01 %) |
+| Runs (the other recordings) | 42,268 runs of its first instruction, entered by a jump (`stage1/level3` 2,927, `stage1/level2` 2,845, `stage1/level1` 2,152 and 48 more) |
 | Called from | `UpdateObjectSlot` |
 | Calls | `MoveRick`, `ChooseRickFrame` (tail) |
 | Reads | `$FD5A` (`Crawling`) |
@@ -2117,9 +2152,9 @@ Witness: L1 43340 (beeper48, c1, controls, emptygun, ending2, gameover, l1end, l
 | | |
 | --- | --- |
 | Runs (c1: power-on, the original tape at ROM speed on the 128K, the control menu and play on level 1; from the entry `$AB4D` (frame 19 010, T 70 483)) | 1,072 calls, 428,664 t-states own (0.04 %) |
-| Runs (the other recordings) | 11,218 calls (`stage1/level3` 2,927, `stage1/level2` 2,845, `stage1/level1` 2,152 and 3 more) |
+| Runs (the other recordings) | 42,268 calls (`stage1/level3` 2,927, `stage1/level2` 2,845, `stage1/level1` 2,152 and 48 more) |
 | Called from | `RickHandler` |
-| Calls | `ReadInput`, `ProbeLow`, `ProbeBox`, `WalkRick` (falls into), `LandRick` (tail), `ClimbRick` (tail), `DeathFall` (tail) |
+| Calls | `ReadInput`, `ProbeLow`, `ProbeBox`, `WalkRick` (falls into), `LandRick` (tail), `ClimbRick` (tail), `KillRick` (tail), `DeathFall` (tail) |
 | Reads | `$A14D` (`InputBits`); `$A967`-`$A976` (`Dynamite`, `DrawBullets`, `Bullets`); `$EAAD`-`$EAAF` (`RickX`, `RickY`); `$EACA` (`BulletObject`); `$EAE8` (`DynamiteObject`); `$F6A7`-`$F6A8` (`ProbeLowResult`, `ProbeResult`); 1 more ranges |
 | Writes | `$A967`-`$A976` (`Dynamite`, `DrawBullets`, `Bullets`); `$EAAD`-`$EAAF` (`RickX`, `RickY`); `$EACA`-`$EAD0` (`BulletObject`, `BulletX`, `BulletY`); `$EAE8`-`$EAEB` (`DynamiteObject`, `DynamiteX`); `$ECED` (`DynFuse`); `$ED3F` (`BulletDx`); 1 more ranges |
 
@@ -2140,9 +2175,9 @@ Witness: L1 31458 (beeper48, c1, controls, emptygun, ending2, gameover, l1z1left
 | | |
 | --- | --- |
 | Runs (c1: power-on, the original tape at ROM speed on the 128K, the control menu and play on level 1; from the entry `$AB4D` (frame 19 010, T 70 483)) | 919 calls, 224,209 t-states own (0.02 %) |
-| Runs (the other recordings) | 2,024 calls (`stage1/level4` 878, `stage1/gameover` 754, `stage1/controls` 392) |
+| Runs (the other recordings) | 22,044 calls (`stage1/level4` 878, `stage2/zones/L4Z6` 873, `stage2/zones/L2Z1` 860 and 40 more) |
 | Called from | `MoveRick` (falls into), `LandRick` (tail), `NoFire` (tail) |
-| Calls | `ProbeLow`, `ProbeBox`, `ExitLeft` (tail), `ExitRight` (tail) |
+| Calls | `ProbeLow`, `ProbeBox`, `ExitLeft` (tail), `ExitRight` (tail), `KillRick` (tail) |
 | Reads | `$A14D` (`InputBits`); `$EAAD`-`$EAAF` (`RickX`, `RickY`); `$F6A8` (`ProbeResult`); `$FD5A` (`Crawling`) |
 | Writes | `$EAAD` (`RickX`); `$FD58`-`$FD5C` (`Facing`, `Climbing`, `Crawling`, `Airborne` and 1 more) |
 
@@ -2169,11 +2204,11 @@ Witness: L1 22412 (beeper48, c1, controls, emptygun, ending2, gameover, l1z1left
 | | |
 | --- | --- |
 | Runs (c1: power-on, the original tape at ROM speed on the 128K, the control menu and play on level 1; from the entry `$AB4D` (frame 19 010, T 70 483)) | 610 calls, 126,168 t-states own (0.01 %) |
-| Runs (the other recordings) | 1,418 calls (`stage1/gameover` 586, `stage1/level4` 486, `stage1/controls` 346) |
+| Runs (the other recordings) | 15,352 calls (`stage2/zones/L4Z6` 774, `stage2/zones/L2Z1` 709, `stage2/zones/L2Z2` 649 and 40 more) |
 | Called from | `MoveRick` (tail) |
 | Calls | `PlayEffect`, `WalkRick` (tail), `FireNoStick` (tail), `NoFire` (tail) |
-| Reads | `$A14D` (`InputBits`); `$EAAD`-`$EAAF` (`RickX`, `RickY`); `$FD57`-`$FD60` (`YVelocity+1`, `Facing`, `Climbing`, `Crawling` and 5 more) |
-| Writes | `$EAAE` (`RickY`); `$FD55`-`$FD66` (`YFraction`, `YVelocity`, `Facing`, `Climbing` and 11 more) |
+| Reads | `$A14D` (`InputBits`); `$A976` (`Bullets`); `$EAAD`-`$EAAF` (`RickX`, `RickY`); `$EACA` (`BulletObject`); `$FD56`-`$FD60` (`YVelocity`, `Facing`, `Climbing`, `Crawling` and 5 more) |
+| Writes | `$A976` (`Bullets`); `$EAAE` (`RickY`); `$EACA`-`$EAD0` (`BulletObject`, `BulletX`, `BulletY`); `$ED3F` (`BulletDx`); `$FD55`-`$FD67` (`YFraction`, `YVelocity`, `Facing`, `Climbing` and 12 more) |
 
 ### `FireNoStick` (`$FA1E`)
 
@@ -2186,10 +2221,10 @@ Witness: L1 464 (beeper48, c1, emptygun, L1Z1, L1Z2, L1Z5, L2Z1, L2Z2, L2Z6, L2Z
 | | |
 | --- | --- |
 | Runs (c1: power-on, the original tape at ROM speed on the 128K, the control menu and play on level 1; from the entry `$AB4D` (frame 19 010, T 70 483)) | 34 calls, 5,042 t-states own (0.00 %) |
-| Runs (the other recordings) | 34 calls (`stage1/level4` 34) |
+| Runs (the other recordings) | 141 calls (`stage1/level4` 34, `docs/integrate/emptygun` 32, `stage2/zones/L2Z1` 10 and 16 more) |
 | Called from | `LandRick` (tail) |
-| Reads | `$A976` (`Bullets`); `$EAAD`-`$EAAE` (`RickX`, `RickY`); `$EACA` (`BulletObject`); `$FD58`-`$FD5E` (`Facing`, `Climbing`, `Crawling`, `Airborne` and 2 more) |
-| Writes | `$A976` (`Bullets`); `$EACA`-`$EAD0` (`BulletObject`, `BulletX`, `BulletY`); `$ED3F` (`BulletDx`); `$FD5C`-`$FD67` (`AnimStep`, `FireLatch`, `PrevCrawl`, `PokeLatch` and 6 more) |
+| Reads | `$A967`-`$A976` (`Dynamite`, `DrawBullets`, `Bullets`); `$EAAD`-`$EAAE` (`RickX`, `RickY`); `$EACA` (`BulletObject`); `$EAE8` (`DynamiteObject`); `$FD58`-`$FD5E` (`Facing`, `Climbing`, `Crawling`, `Airborne` and 2 more) |
+| Writes | `$A967`-`$A976` (`Dynamite`, `DrawBullets`, `Bullets`); `$EACA`-`$EAD0` (`BulletObject`, `BulletX`, `BulletY`); `$EAE8`-`$EAEB` (`DynamiteObject`, `DynamiteX`); `$ECED` (`DynFuse`); `$ED3F` (`BulletDx`); `$FD5C`-`$FD67` (`AnimStep`, `FireLatch`, `PrevCrawl`, `PokeLatch` and 6 more) |
 
 ### `FireClearPokeLatch` (`$FA1F`)
 
@@ -2209,8 +2244,9 @@ Witness: L1 464 (beeper48, c1, emptygun, L1Z1, L1Z2, L1Z5, L2Z1, L2Z2, L2Z6, L2Z
 
 | | |
 | --- | --- |
-| Runs | ran within another entry's routine (reached by a jump or by running on, its calls below), no runs of its own counted |
-| Calls | `PlayEffect` |
+| Runs (c1: power-on, the original tape at ROM speed on the 128K, the control menu and play on level 1; from the entry `$AB4D` (frame 19 010, T 70 483)) | 34 runs of its first instruction (entered by a jump or by running on, no routine of its own in the L1) |
+| Runs (the other recordings) | 430 runs of its first instruction, entered by a jump (`stage1/level3` 161, `stage1/level2` 61, `stage1/level1` 50 and 24 more) |
+| Calls | `PlayEffect`, `FireNotUp` (tail) |
 
 ### `FireNotUp` (`$FA8C`)
 
@@ -2228,7 +2264,11 @@ Witness: L1 368 (beeper48, c1, emptygun, L1Z1, L1Z2, L2Z1, L2Z2, L2Z6, L2Z7, L3Z
 
 | | |
 | --- | --- |
-| Runs | not reached in the recordings |
+| Runs (c1: power-on, the original tape at ROM speed on the 128K, the control menu and play on level 1; from the entry `$AB4D` (frame 19 010, T 70 483)) | 27 runs of its first instruction (entered by a jump or by running on, no routine of its own in the L1) |
+| Runs (the other recordings) | 27 calls (`stage2/zones/L2Z7` 7, `stage2/zones/L2Z2` 6, `stage2/zones/L4Z2` 5 and 4 more) |
+| Called from | `FireClearPokeLatch` (tail) |
+| Reads | `$A967` (`Dynamite`); `$EAAD`-`$EAAE` (`RickX`, `RickY`); `$EAE8` (`DynamiteObject`) |
+| Writes | `$A967` (`Dynamite`); `$EAE8`-`$EAEB` (`DynamiteObject`, `DynamiteX`); `$ECED` (`DynFuse`); `$FD5C`-`$FD5E` (`AnimStep`, `FireLatch`) |
 
 ### `NoFire` (`$FAC3`)
 
@@ -2249,7 +2289,7 @@ Witness: L1 21348 (beeper48, c1, controls, emptygun, ending2, gameover, l1z1left
 | | |
 | --- | --- |
 | Runs (c1: power-on, the original tape at ROM speed on the 128K, the control menu and play on level 1; from the entry `$AB4D` (frame 19 010, T 70 483)) | 574 calls, 22,317 t-states own (0.00 %) |
-| Runs (the other recordings) | 1,357 calls (`stage1/gameover` 586, `stage1/level4` 437, `stage1/controls` 334) |
+| Runs (the other recordings) | 14,911 calls (`stage2/zones/L4Z6` 762, `stage2/zones/L2Z1` 686, `stage2/zones/L2Z2` 641 and 40 more) |
 | Called from | `LandRick` (tail) |
 | Calls | `PlayEffect`, `WalkRick` (tail) |
 | Reads | `$EAAD` (`RickX`) |
@@ -2274,11 +2314,11 @@ Witness: L1 1197 (c1, L1Z5, L2Z2, L2Z3, L3Z8, L3Z9, L3Z11, L3Z12, L4Z3, L4Z4, L4
 | | |
 | --- | --- |
 | Runs (c1: power-on, the original tape at ROM speed on the 128K, the control menu and play on level 1; from the entry `$AB4D` (frame 19 010, T 70 483)) | 55 calls, 19,082 t-states own (0.00 %) |
-| Runs (the other recordings) | 46 calls (`stage1/level4` 46) |
+| Runs (the other recordings) | 656 calls (`stage2/zones/L3Z8` 216, `stage2/zones/L2Z2` 113, `stage2/zones/L2Z3` 82 and 8 more) |
 | Called from | `MoveRick` (tail) |
 | Calls | `ProbeBox` |
 | Reads | `$A14D` (`InputBits`); `$EAAD`-`$EAAF` (`RickX`, `RickY`); `$F6A8` (`ProbeResult`) |
-| Writes | `$EAAD`-`$EAAF` (`RickX`, `RickY`); `$FD59`-`$FD5C` (`Climbing`, `Crawling`, `Airborne`, `AnimStep`) |
+| Writes | `$EAAD`-`$EAAF` (`RickX`, `RickY`); `$FD56`-`$FD5C` (`YVelocity`, `Facing`, `Climbing`, `Crawling` and 2 more) |
 
 ### `ClimbMove` (`$FB5E`)
 
@@ -2290,7 +2330,8 @@ Witness: L1 778 (c1, L1Z5, L2Z2, L2Z3, L3Z8, L3Z9, L3Z11, L3Z12, L4Z3, L4Z4, L4Z
 
 | | |
 | --- | --- |
-| Runs | not reached in the recordings |
+| Runs (c1: power-on, the original tape at ROM speed on the 128K, the control menu and play on level 1; from the entry `$AB4D` (frame 19 010, T 70 483)) | 51 runs of its first instruction (entered by a jump or by running on, no routine of its own in the L1) |
+| Runs (the other recordings) | 727 runs of its first instruction, entered by a jump (`stage1/level2` 221, `stage2/zones/L3Z8` 98, `stage1/level3` 78 and 11 more) |
 
 ### `ClimbSideways` (`$FB82`)
 
@@ -2304,7 +2345,8 @@ Witness: L1 1004 (c1, L1Z5, L2Z2, L2Z3, L3Z8, L3Z9, L3Z11, L3Z12, L4Z3, L4Z4, L4
 
 | | |
 | --- | --- |
-| Runs | not reached in the recordings |
+| Runs (c1: power-on, the original tape at ROM speed on the 128K, the control menu and play on level 1; from the entry `$AB4D` (frame 19 010, T 70 483)) | 54 runs of its first instruction (entered by a jump or by running on, no routine of its own in the L1) |
+| Runs (the other recordings) | 950 runs of its first instruction, entered by a jump (`stage1/level2` 280, `stage2/zones/L3Z8` 180, `stage2/zones/L2Z2` 99 and 11 more) |
 
 ### `ClimbRight` (`$FB9A`)
 
@@ -2316,7 +2358,8 @@ Witness: L1 236 (c1, L1Z5, L2Z2, L2Z3, L3Z8, L3Z12, L4Z3, L4Z4, L4Z7, level1-lev
 
 | | |
 | --- | --- |
-| Runs | not reached in the recordings |
+| Runs (c1: power-on, the original tape at ROM speed on the 128K, the control menu and play on level 1; from the entry `$AB4D` (frame 19 010, T 70 483)) | 5 runs of its first instruction (entered by a jump or by running on, no routine of its own in the L1) |
+| Runs (the other recordings) | 231 runs of its first instruction, entered by a jump (`stage2/zones/L3Z8` 83, `stage2/zones/L2Z3` 56, `stage1/level2` 38 and 9 more) |
 
 ### `ClimbSideProbe` (`$FBA1`)
 
@@ -2328,7 +2371,8 @@ Witness: L1 297 (c1, L1Z5, L2Z2, L2Z3, L3Z8, L3Z12, L4Z3, L4Z4, L4Z7, level1-lev
 
 | | |
 | --- | --- |
-| Runs | ran within another entry's routine (reached by a jump or by running on, its calls below), no runs of its own counted |
+| Runs (c1: power-on, the original tape at ROM speed on the 128K, the control menu and play on level 1; from the entry `$AB4D` (frame 19 010, T 70 483)) | 10 runs of its first instruction (entered by a jump or by running on, no routine of its own in the L1) |
+| Runs (the other recordings) | 287 runs of its first instruction, entered by a jump (`stage2/zones/L3Z8` 85, `stage1/level2` 64, `stage2/zones/L2Z3` 56 and 9 more) |
 | Calls | `ProbeBox` |
 
 ### `ExitLeft` (`$FBCF`)
@@ -2346,6 +2390,7 @@ Witness: L1 54 (c1, L1Z2-L1Z4, L1Z6, L2Z2-L2Z7, L3Z2-L3Z12, L4Z2-L4Z6, L4Z8, lev
 | | |
 | --- | --- |
 | Runs (c1: power-on, the original tape at ROM speed on the 128K, the control menu and play on level 1; from the entry `$AB4D` (frame 19 010, T 70 483)) | 1 call, 69 t-states own (0.00 %) |
+| Runs (the other recordings) | 51 calls (`stage2/zones/L2Z2` 4, `stage2/zones/L2Z5` 4, `stage2/zones/L2Z7` 3 and 24 more) |
 | Called from | `WalkRick` (tail) |
 | Writes | `$EAAD` (`RickX`); `$FD61`-`$FD62` (`ZoneChange`, `ExitSide`) |
 
@@ -2360,6 +2405,7 @@ Witness: L1 51 (c1, ending2, L1Z2-L1Z4, L1Z6, L2Z2, L2Z4-L2Z7, L3Z2-L3Z12, L4Z x
 | | |
 | --- | --- |
 | Runs (c1: power-on, the original tape at ROM speed on the 128K, the control menu and play on level 1; from the entry `$AB4D` (frame 19 010, T 70 483)) | 2 calls, 138 t-states own (0.00 %) |
+| Runs (the other recordings) | 46 calls (`stage2/zones/L2Z5` 4, `stage2/zones/L2Z2` 3, `stage2/zones/L2Z7` 3 and 23 more) |
 | Called from | `WalkRick` (tail) |
 | Writes | `$EAAD` (`RickX`); `$FD61`-`$FD62` (`ZoneChange`, `ExitSide`) |
 
@@ -2376,8 +2422,9 @@ Witness: L1 400 (beeper48, c1, controls, gameover, spotL3Z7-51, L1Z1-L1Z6, L2Z1-
 | | |
 | --- | --- |
 | Runs (c1: power-on, the original tape at ROM speed on the 128K, the control menu and play on level 1; from the entry `$AB4D` (frame 19 010, T 70 483)) | 2 calls, 304 t-states own (0.00 %) |
-| Runs (the other recordings) | 57 calls (`stage1/level4` 29, `stage1/level1` 11, `stage1/gameover` 6 and 3 more) |
-| Called from | `TrapObj` (tail), `EnemyFall`, `ClimberObj` |
+| Runs (the other recordings) | 398 calls (`stage1/level4` 29, `stage2/zones/L3Z9` 25, `stage2/zones/L2Z2` 22 and 40 more) |
+| Called from | `DynamiteObj` (tail), `TrapObj` (tail), `EnemyFall` (tail), `ClimberObj`, `MoveRick` (tail), `WalkRick` (tail) |
+| Calls | `NextObject` |
 | Reads | `$EAAD` (`RickX`); `$FD68` (`Dying`) |
 | Writes | `$FD56`-`$FD57` (`YVelocity`); `$FD68`-`$FD6A` (`Dying`, `DeathDone`, `DeathDrift`) |
 
@@ -2397,7 +2444,8 @@ Witness: L1 323 (beeper48, c1, controls, gameover, spotL3Z7-51, L1Z1-L1Z6, L2Z1-
 
 | | |
 | --- | --- |
-| Runs | ran within another entry's routine (reached by a jump or by running on, its calls below), no runs of its own counted |
+| Runs (c1: power-on, the original tape at ROM speed on the 128K, the control menu and play on level 1; from the entry `$AB4D` (frame 19 010, T 70 483)) | 2 runs of its first instruction (entered by a jump or by running on, no routine of its own in the L1) |
+| Runs (the other recordings) | 321 runs of its first instruction, entered by a jump (`stage1/level4` 29, `stage2/zones/L3Z9` 25, `stage2/zones/L3Z7` 16 and 40 more) |
 | Calls | `PlayEffect`, `NextObject` |
 
 ### `DeathFall` (`$FC16`)
@@ -2417,7 +2465,7 @@ Witness: L1 9927 (beeper48, c1, controls, gameover, l1end, spotL3Z7-51, L1Z1-L1Z
 | | |
 | --- | --- |
 | Runs (c1: power-on, the original tape at ROM speed on the 128K, the control menu and play on level 1; from the entry `$AB4D` (frame 19 010, T 70 483)) | 61 calls, 19,250 t-states own (0.00 %) |
-| Runs (the other recordings) | 1,771 calls (`stage1/level4` 928, `stage1/level1` 344, `stage1/level3` 157 and 3 more) |
+| Runs (the other recordings) | 9,866 calls (`stage1/level4` 928, `stage2/zones/L3Z9` 768, `stage2/zones/L3Z1` 457 and 41 more) |
 | Called from | `MoveRick` (tail) |
 | Reads | `$EAAD`-`$EAAF` (`RickX`, `RickY`); `$FD55`-`$FD57` (`YFraction`, `YVelocity`); `$FD6A` (`DeathDrift`) |
 | Writes | `$EAAC`-`$EAAF` (`RickObject`, `RickX`, `RickY`); `$FD55`-`$FD57` (`YFraction`, `YVelocity`); `$FD69` (`DeathDone`) |
@@ -2441,7 +2489,7 @@ Witness: L1 43340 (beeper48, c1, controls, emptygun, ending2, gameover, l1end, l
 | | |
 | --- | --- |
 | Runs (c1: power-on, the original tape at ROM speed on the 128K, the control menu and play on level 1; from the entry `$AB4D` (frame 19 010, T 70 483)) | 1,072 calls, 355,202 t-states own (0.03 %) |
-| Runs (the other recordings) | 11,218 calls (`stage1/level3` 2,927, `stage1/level2` 2,845, `stage1/level1` 2,152 and 3 more) |
+| Runs (the other recordings) | 42,268 calls (`stage1/level3` 2,927, `stage1/level2` 2,845, `stage1/level1` 2,152 and 48 more) |
 | Called from | `RickHandler` (tail) |
 | Calls | `PlayEffect`, `NextObject` |
 | Reads | `$EAAD`-`$EAB2` (`RickX`, `RickY`, `RickMirror`); `$FD58`-`$FD7C` (`Facing`, `WalkFrames`) |
@@ -2771,7 +2819,7 @@ Witness: L1 1 (c1).
 
 | | |
 | --- | --- |
-| Runs | not reached in the recordings |
+| Runs (c1: power-on, the original tape at ROM speed on the 128K, the whole load (the loader runs in frames 0-19 010)) | 1 run of its first instruction (entered by a jump or by running on, no routine of its own in the L1) |
 
 
 ## LoadGroup, the loader of groups 2 and 3 (`src/loader/loadgroup.json`)
@@ -3077,7 +3125,7 @@ entries are `src/music/<module>.asm`, written from `src/music/music.ann` by `kit
 src/music/music.json`; the recordings: `work/stage2/c1g` (c1: power-on, the original tape at ROM speed on the 128K,
 the control menu and play on level 1; from the entry `$AB4D` (frame 19 010, T 70 483)), and `work/stage1/controls`,
 `work/stage1/gameover`, `work/stage1/level1`, `work/stage1/level2`, `work/stage1/level3`, `work/stage1/level4`,
-`work/stage1/c1`, `work/stage1/ending`.
+`work/stage1/ending`, `work/stage1/c1`, `work/stage2/zones/L1Z4`, `work/stage2/ending2`, `work/stage2/beeper48`.
 
 | Module | Entries | Code entries |
 | --- | --- | --- |
@@ -3103,7 +3151,7 @@ Witness: L1 5524 (L1Z4, c1, controls, ending, ending2, gameover, level1-level4).
 | | |
 | --- | --- |
 | Runs (c1: power-on, the original tape at ROM speed on the 128K, the control menu and play on level 1; from the entry `$AB4D` (frame 19 010, T 70 483)) | 830 calls, 500,452 t-states own (0.05 %) |
-| Runs (the other recordings) | 4,978 calls (`stage1/level1` 922, `stage1/c1` 830, `stage1/level2` 790 and 5 more) |
+| Runs (the other recordings) | 5,524 calls (`stage1/level1` 922, `stage1/c1` 830, `stage1/level2` 790 and 7 more) |
 | Called from | `TrackStep` (tail), `AyPlayEffect` |
 | Reads | `$C0AA`-`$C0D1` (`MixerShadow`, `ChannelA`, `ChannelB`, `ChannelC`); `$CCBD`-`$CCDF` (`Instruments+5`); `$CD0D`-`$CD11` (`EffectTable+5`); `$CD27`-`$CD45` (`Effect2+5`, `Effect3`, `Effect4`); `$CD5B`-`$CD5F` (`Effect6+5`); `$CD82`-`$CDA0` (`Effect9+5`, `Effect10`, `Effect11`) |
 | Writes | `$C0AA`-`$C0E0` (`MixerShadow`, `ChannelA`, `ChannelB`, `ChannelC`) |
@@ -3119,7 +3167,7 @@ Witness: L1 30 (c1, controls, ending, ending2, gameover, level1).
 | | |
 | --- | --- |
 | Runs (c1: power-on, the original tape at ROM speed on the 128K, the control menu and play on level 1; from the entry `$AB4D` (frame 19 010, T 70 483)) | 4 calls, 1,714 t-states own (0.00 %) |
-| Runs (the other recordings) | 27 calls (`stage1/controls` 12, `stage1/level1` 5, `stage1/c1` 4 and 2 more) |
+| Runs (the other recordings) | 30 calls (`stage1/controls` 12, `stage1/level1` 5, `stage1/c1` 4 and 3 more) |
 | Called from | `AyPlayTune` |
 | Calls | `SoundHookStart`, `SoundHookEnd` (tail), `WriteAy` |
 | Reads | `$C0AA` (`MixerShadow`) |
@@ -3136,7 +3184,7 @@ Witness: L1 47434 (L1Z4, c1, controls, ending, ending2, gameover, level1-level4)
 | | |
 | --- | --- |
 | Runs (c1: power-on, the original tape at ROM speed on the 128K, the control menu and play on level 1; from the entry `$AB4D` (frame 19 010, T 70 483)) | 14,301 calls, 4,713,275 t-states own (0.46 %) |
-| Runs (the other recordings) | 43,493 calls (`stage1/c1` 14,301, `stage1/level3` 5,921, `stage1/level2` 5,870 and 5 more) |
+| Runs (the other recordings) | 47,434 calls (`stage1/c1` 14,301, `stage1/level3` 5,921, `stage1/level2` 5,870 and 7 more) |
 | Called from | `AyTick` |
 | Calls | `ChannelStep`, `SoundHookStart`, `SoundHookEnd` (tail), `WriteAy` |
 | Reads | `$C0AA`-`$C0E1` (`MixerShadow`, `ChannelA`, `ChannelB`, `ChannelC` and 1 more) |
@@ -3153,7 +3201,7 @@ Witness: L1 99282 (L1Z4, c1, controls, ending, ending2, gameover, level1-level4)
 | | |
 | --- | --- |
 | Runs (c1: power-on, the original tape at ROM speed on the 128K, the control menu and play on level 1; from the entry `$AB4D` (frame 19 010, T 70 483)) | 15,546 calls, 3,537,184 t-states own (0.35 %) |
-| Runs (the other recordings) | 90,015 calls (`stage1/c1` 15,546, `stage1/level2` 15,357, `stage1/level1` 15,075 and 5 more) |
+| Runs (the other recordings) | 99,282 calls (`stage1/c1` 15,546, `stage1/level2` 15,357, `stage1/level1` 15,075 and 7 more) |
 | Called from | `UpdateAy` |
 | Calls | `AttackStep`, `DecayStep`, `SustainStep`, `ReleaseStep`, `VibratoStep` |
 | Reads | `$C0AA`-`$C0DF` (`MixerShadow`, `ChannelA`, `ChannelB`, `ChannelC`); `$CCC1`-`$CCDF` (`Instruments+9`); `$CD11` (`EffectTable+9`); `$CD2B`-`$CD45` (`Effect2+9`, `Effect3`, `Effect4`); `$CD5F` (`Effect6+9`); `$CD86`-`$CDA0` (`Effect9+9`, `Effect10`, `Effect11`) |
@@ -3167,8 +3215,8 @@ Witness: L1 6357 (L1Z4, c1, controls, ending, ending2, gameover, level1-level4).
 
 | | |
 | --- | --- |
-| Runs (c1: power-on, the original tape at ROM speed on the 128K, the control menu and play on level 1; from the entry `$AB4D` (frame 19 010, T 70 483)) | run into, not called, 139,887 t-states own (0.01 %) |
-| Runs (the other recordings) | run into, not called (`stage1/level1`, `stage1/c1`, `stage1/level2` and 5 more) |
+| Runs (c1: power-on, the original tape at ROM speed on the 128K, the control menu and play on level 1; from the entry `$AB4D` (frame 19 010, T 70 483)) | 867 runs of its first instruction (entered by a jump or by running on, no routine of its own in the L1), 139,887 t-states own (0.01 %) |
+| Runs (the other recordings) | 6,357 runs of its first instruction, entered by a jump (`stage1/level1` 1,009, `stage1/level2` 883, `stage1/c1` 867 and 7 more) |
 | Called from | `ChannelStep` |
 | Reads | `$C0B0` (`ChannelA+5`); `$C0C2` (`ChannelB+5`); `$C0D4` (`ChannelC+5`); `$CCB8`-`$CCDA` (`Instruments`); `$CD08`-`$CD0C` (`EffectTable`); `$CD22`-`$CD40` (`Effect2`, `Effect3`, `Effect4`); 2 more ranges |
 | Writes | `$C0B0`-`$C0DD` (`ChannelA+5`, `ChannelB`, `ChannelC`) |
@@ -3181,8 +3229,8 @@ Witness: L1 37089 (L1Z4, c1, controls, ending, ending2, gameover, level1-level4)
 
 | | |
 | --- | --- |
-| Runs (c1: power-on, the original tape at ROM speed on the 128K, the control menu and play on level 1; from the entry `$AB4D` (frame 19 010, T 70 483)) | run into, not called, 608,215 t-states own (0.06 %) |
-| Runs (the other recordings) | run into, not called (`stage1/level1`, `stage1/level2`, `stage1/c1` and 5 more) |
+| Runs (c1: power-on, the original tape at ROM speed on the 128K, the control menu and play on level 1; from the entry `$AB4D` (frame 19 010, T 70 483)) | 5,474 runs of its first instruction (entered by a jump or by running on, no routine of its own in the L1), 608,215 t-states own (0.06 %) |
+| Runs (the other recordings) | 37,089 runs of its first instruction, entered by a jump (`stage1/level1` 5,966, `stage1/level2` 5,585, `stage1/c1` 5,474 and 7 more) |
 | Called from | `ChannelStep` |
 | Reads | `$C0B0` (`ChannelA+5`); `$C0C2` (`ChannelB+5`); `$C0D4` (`ChannelC+5`); `$CCB9`-`$CCD8` (`Instruments+1`); `$CD09`-`$CD0A` (`EffectTable+1`); `$CD23`-`$CD3E` (`Effect2+1`, `Effect3`, `Effect4`); 2 more ranges |
 | Writes | `$C0B0`-`$C0DD` (`ChannelA+5`, `ChannelB`, `ChannelC`) |
@@ -3195,8 +3243,8 @@ Witness: L1 15122 (L1Z4, c1, controls, ending, ending2, gameover, level1-level4)
 
 | | |
 | --- | --- |
-| Runs (c1: power-on, the original tape at ROM speed on the 128K, the control menu and play on level 1; from the entry `$AB4D` (frame 19 010, T 70 483)) | run into, not called, 224,882 t-states own (0.02 %) |
-| Runs (the other recordings) | run into, not called (`stage1/c1`, `stage1/level1`, `stage1/controls` and 5 more) |
+| Runs (c1: power-on, the original tape at ROM speed on the 128K, the control menu and play on level 1; from the entry `$AB4D` (frame 19 010, T 70 483)) | 5,747 runs of its first instruction (entered by a jump or by running on, no routine of its own in the L1), 224,882 t-states own (0.02 %) |
+| Runs (the other recordings) | 15,122 runs of its first instruction, entered by a jump (`stage1/c1` 5,747, `stage1/controls` 1,811, `stage1/level1` 1,721 and 7 more) |
 | Called from | `ChannelStep` |
 | Reads | `$C0B1` (`ChannelA+6`); `$C0C3` (`ChannelB+6`); `$C0D5` (`ChannelC+6`) |
 | Writes | `$C0B8`-`$C0B9` (`ChannelA+13`); `$C0CA`-`$C0CB` (`ChannelB+13`); `$C0DC`-`$C0DD` (`ChannelC+13`) |
@@ -3211,8 +3259,8 @@ Witness: L1 7788 (L1Z4, c1, controls, ending, ending2, gameover, level1-level4).
 
 | | |
 | --- | --- |
-| Runs (c1: power-on, the original tape at ROM speed on the 128K, the control menu and play on level 1; from the entry `$AB4D` (frame 19 010, T 70 483)) | run into, not called, 74,331 t-states own (0.01 %) |
-| Runs (the other recordings) | run into, not called (`stage1/level2`, `stage1/level3`, `stage1/level1` and 5 more) |
+| Runs (c1: power-on, the original tape at ROM speed on the 128K, the control menu and play on level 1; from the entry `$AB4D` (frame 19 010, T 70 483)) | 847 runs of its first instruction (entered by a jump or by running on, no routine of its own in the L1), 74,331 t-states own (0.01 %) |
+| Runs (the other recordings) | 7,788 runs of its first instruction, entered by a jump (`stage1/level2` 1,725, `stage1/level3` 1,478, `stage1/level4` 1,215 and 7 more) |
 | Called from | `ChannelStep` |
 | Reads | `$C0AA`-`$C0E0` (`MixerShadow`, `ChannelA`, `ChannelB`, `ChannelC`); `$CCBB` (`Instruments+3`); `$CCCF`-`$CCD9` (`Instruments+23`); `$CD0B` (`EffectTable+3`); `$CD25`-`$CD3F` (`Effect2+3`, `Effect3`, `Effect4`); `$CD59` (`Effect6+3`); 1 more ranges |
 | Writes | `$C0AA`-`$C0E0` (`MixerShadow`, `ChannelA`, `ChannelB`, `ChannelC`) |
@@ -3228,7 +3276,7 @@ Witness: L1 66356 (L1Z4, c1, controls, ending, ending2, gameover, level1-level4)
 | | |
 | --- | --- |
 | Runs (c1: power-on, the original tape at ROM speed on the 128K, the control menu and play on level 1; from the entry `$AB4D` (frame 19 010, T 70 483)) | 12,935 calls, 788,546 t-states own (0.08 %) |
-| Runs (the other recordings) | 59,908 calls (`stage1/c1` 12,935, `stage1/level1` 9,848, `stage1/level2` 8,845 and 5 more) |
+| Runs (the other recordings) | 66,356 calls (`stage1/c1` 12,935, `stage1/level1` 9,848, `stage1/level2` 8,845 and 7 more) |
 | Called from | `ChannelStep` |
 | Reads | `$C0B2`-`$C0DB` (`ChannelA+7`, `ChannelB`, `ChannelC`); `$CD0E` (`EffectTable+6`); `$CD28`-`$CD35` (`Effect2+6`, `Effect3`); `$CD5C` (`Effect6+6`); `$CD83` (`Effect9+6`); `$CD9D` (`Effect11+6`) |
 | Writes | `$C0B2`-`$C0DB` (`ChannelA+7`, `ChannelB`, `ChannelC`) |
@@ -3242,7 +3290,7 @@ Witness: L1 33124 (L1Z4, c1, controls, ending, ending2, gameover, level1-level4)
 | | |
 | --- | --- |
 | Runs (c1: power-on, the original tape at ROM speed on the 128K, the control menu and play on level 1; from the entry `$AB4D` (frame 19 010, T 70 483)) | 5,186 calls, 51,888 t-states own (0.01 %) |
-| Runs (the other recordings) | 30,032 calls (`stage1/c1` 5,186, `stage1/level2` 5,119, `stage1/level1` 5,030 and 5 more) |
+| Runs (the other recordings) | 33,124 calls (`stage1/c1` 5,186, `stage1/level2` 5,119, `stage1/level1` 5,030 and 7 more) |
 | Called from | `SilenceAll`, `UpdateAy` |
 
 #### `SoundHookEnd` (`$C346`)
@@ -3254,7 +3302,7 @@ Witness: L1 33124 (L1Z4, c1, controls, ending, ending2, gameover, level1-level4)
 | | |
 | --- | --- |
 | Runs (c1: power-on, the original tape at ROM speed on the 128K, the control menu and play on level 1; from the entry `$AB4D` (frame 19 010, T 70 483)) | 5,186 calls, 51,860 t-states own (0.01 %) |
-| Runs (the other recordings) | 30,032 calls (`stage1/c1` 5,186, `stage1/level2` 5,119, `stage1/level1` 5,030 and 5 more) |
+| Runs (the other recordings) | 33,124 calls (`stage1/c1` 5,186, `stage1/level2` 5,119, `stage1/level1` 5,030 and 7 more) |
 | Called from | `SilenceAll` (tail), `UpdateAy` (tail) |
 
 #### `WriteAy` (`$C347`)
@@ -3266,7 +3314,7 @@ Witness: L1 364244 (L1Z4, c1, controls, ending, ending2, gameover, level1-level4
 | | |
 | --- | --- |
 | Runs (c1: power-on, the original tape at ROM speed on the 128K, the control menu and play on level 1; from the entry `$AB4D` (frame 19 010, T 70 483)) | 57,030 calls, 4,334,929 t-states own (0.42 %) |
-| Runs (the other recordings) | 330,244 calls (`stage1/c1` 57,030, `stage1/level2` 56,309, `stage1/level1` 55,310 and 5 more) |
+| Runs (the other recordings) | 364,244 calls (`stage1/c1` 57,030, `stage1/level2` 56,309, `stage1/level1` 55,310 and 7 more) |
 | Called from | `SilenceAll`, `UpdateAy` |
 | Ports out | `$BFFD`, `$FFFD` |
 
@@ -3335,9 +3383,9 @@ Witness: L1 30 (c1, controls, ending, ending2, gameover, level1).
 | | |
 | --- | --- |
 | Runs (c1: power-on, the original tape at ROM speed on the 128K, the control menu and play on level 1; from the entry `$AB4D` (frame 19 010, T 70 483)) | 4 calls, 6,769 t-states own (0.00 %) |
-| Runs (the other recordings) | 27 calls (`stage1/controls` 12, `stage1/level1` 5, `stage1/c1` 4 and 2 more) |
+| Runs (the other recordings) | 30 calls (`stage1/controls` 12, `stage1/level1` 5, `stage1/c1` 4 and 3 more) |
 | Calls | `SilenceAll` |
-| Reads | `$CA8F`-`$CA94` (`TuneTable`); `$CAAD`-`$CABE` (`TuneTable+30`) |
+| Reads | `$CA8F`-`$CA94` (`TuneTable`); `$CAA7`-`$CABE` (`TuneTable+24`) |
 | Writes | `$C35A` (`MusicOn`); `$C38E`-`$C3E3` (`Track0+1`, `Track1`, `Track2`, `InstrumentMap`) |
 
 #### `AyTick` (`$C46C`)
@@ -3353,7 +3401,7 @@ Witness: L1 47434 (L1Z4, c1, controls, ending, ending2, gameover, level1-level4)
 | | |
 | --- | --- |
 | Runs (c1: power-on, the original tape at ROM speed on the 128K, the control menu and play on level 1; from the entry `$AB4D` (frame 19 010, T 70 483)) | 14,301 calls, 1,366,721 t-states own (0.13 %) |
-| Runs (the other recordings) | 43,493 calls (`stage1/c1` 14,301, `stage1/level3` 5,921, `stage1/level2` 5,870 and 5 more) |
+| Runs (the other recordings) | 47,434 calls (`stage1/c1` 14,301, `stage1/level3` 5,921, `stage1/level2` 5,870 and 7 more) |
 | Calls | `UpdateAy`, `TrackStep` (falls into) |
 | Reads | `$C0AA` (`MixerShadow`); `$C35A` (`MusicOn`); `$C39A` (`Track0+13`); `$C3AF` (`Track1+13`); `$C3C4` (`Track2+13`) |
 | Writes | `$C35A` (`MusicOn`) |
@@ -3371,10 +3419,10 @@ Witness: L1 43833 (L1Z4, c1, controls, ending, ending2, gameover, level1-level4)
 | | |
 | --- | --- |
 | Runs (c1: power-on, the original tape at ROM speed on the 128K, the control menu and play on level 1; from the entry `$AB4D` (frame 19 010, T 70 483)) | 11,253 calls, 2,441,631 t-states own (0.24 %) |
-| Runs (the other recordings) | 38,019 calls (`stage1/c1` 11,253, `stage1/controls` 7,464, `stage1/level1` 6,591 and 5 more) |
+| Runs (the other recordings) | 43,833 calls (`stage1/c1` 11,253, `stage1/controls` 7,464, `stage1/level1` 6,591 and 7 more) |
 | Called from | `AyTick` (falls into) |
 | Calls | `StartNote` (tail), `PatternCommand`, `OrnamentStep` |
-| Reads | `$C016`-`$C087` (`PeriodTable+22`); `$C0BC` (`ChannelA+17`); `$C0CE` (`ChannelB+17`); `$C0E0` (`ChannelC+17`); `$C38E`-`$C3C6` (`Track0+1`, `Track1`, `Track2`); `$C6E5`-`$C7B8` (`Patterns`); 5 more ranges |
+| Reads | `$C016`-`$C087` (`PeriodTable+22`); `$C0BC` (`ChannelA+17`); `$C0CE` (`ChannelB+17`); `$C0E0` (`ChannelC+17`); `$C38E`-`$C3C6` (`Track0+1`, `Track1`, `Track2`); `$C6E5`-`$C7B8` (`Patterns`); 7 more ranges |
 | Writes | `$C38E`-`$C3CB` (`Track0+1`, `Track1`, `Track2`) |
 
 #### `PatternCommand` (`$C5BB`)
@@ -3388,9 +3436,9 @@ Witness: L1 1892 (L1Z4, c1, controls, ending, ending2, gameover, level1-level4).
 | | |
 | --- | --- |
 | Runs (c1: power-on, the original tape at ROM speed on the 128K, the control menu and play on level 1; from the entry `$AB4D` (frame 19 010, T 70 483)) | 458 calls, 50,462 t-states own (0.00 %) |
-| Runs (the other recordings) | 1,692 calls (`stage1/c1` 458, `stage1/level1` 335, `stage1/controls` 246 and 5 more) |
+| Runs (the other recordings) | 1,892 calls (`stage1/c1` 458, `stage1/level1` 335, `stage1/controls` 246 and 7 more) |
 | Called from | `TrackStep` |
-| Reads | `$C38D` (`Track0`); `$C3A2` (`Track1`); `$C3B7` (`Track2`); `$C3CC`-`$C3DE` (`InstrumentMap`); `$C6E5`-`$C709` (`Patterns`); `$C74A`-`$C793` (`Patterns+101`); 4 more ranges |
+| Reads | `$C38D` (`Track0`); `$C3A2` (`Track1`); `$C3B7` (`Track2`); `$C3CC`-`$C3DE` (`InstrumentMap`); `$C6E5`-`$C709` (`Patterns`); `$C74A`-`$C793` (`Patterns+101`); 6 more ranges |
 | Writes | `$C394`-`$C398` (`Track0+7`); `$C3A9`-`$C3AD` (`Track1+7`); `$C3BE`-`$C3C2` (`Track2+7`) |
 
 #### `OrnamentStep` (`$C5F5`)
@@ -3404,7 +3452,7 @@ Witness: L1 43833 (L1Z4, c1, controls, ending, ending2, gameover, level1-level4)
 | | |
 | --- | --- |
 | Runs (c1: power-on, the original tape at ROM speed on the 128K, the control menu and play on level 1; from the entry `$AB4D` (frame 19 010, T 70 483)) | 11,253 calls, 736,491 t-states own (0.07 %) |
-| Runs (the other recordings) | 38,019 calls (`stage1/c1` 11,253, `stage1/controls` 7,464, `stage1/level1` 6,591 and 5 more) |
+| Runs (the other recordings) | 43,833 calls (`stage1/c1` 11,253, `stage1/controls` 7,464, `stage1/level1` 6,591 and 7 more) |
 | Called from | `TrackStep` |
 | Reads | `$C0BC` (`ChannelA+17`); `$C0CE` (`ChannelB+17`); `$C0E0` (`ChannelC+17`); `$C3A1` (`Track0+20`); `$C3B6` (`Track1+20`); `$C3CB` (`Track2+20`) |
 | Writes | `$C3A1` (`Track0+20`); `$C3B6` (`Track1+20`); `$C3CB` (`Track2+20`) |
@@ -3424,7 +3472,7 @@ Witness: L1 2042 (L1Z4, c1, controls, ending2, gameover, level1-level4).
 | | |
 | --- | --- |
 | Runs (c1: power-on, the original tape at ROM speed on the 128K, the control menu and play on level 1; from the entry `$AB4D` (frame 19 010, T 70 483)) | 158 calls, 90,554 t-states own (0.01 %) |
-| Runs (the other recordings) | 1,904 calls (`stage1/level2` 539, `stage1/level3` 451, `stage1/level1` 311 and 4 more) |
+| Runs (the other recordings) | 2,042 calls (`stage1/level2` 539, `stage1/level3` 451, `stage1/level1` 311 and 6 more) |
 | Calls | `StartNote` |
 | Reads | `$C6E4` (`EffectChannel`); `$CD12`-`$CD14` (`EffectTable+10`); `$CD2C`-`$CD48` (`Effect2+10`, `Effect3`, `Effect4`); `$CD60`-`$CD62` (`Effect6+10`); `$CD87`-`$CDA3` (`Effect9+10`, `Effect10`, `Effect11`) |
 | Writes | `$C6E4` (`EffectChannel`) |

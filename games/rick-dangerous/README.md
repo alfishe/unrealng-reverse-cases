@@ -1,7 +1,7 @@
 # Rick Dangerous (Firebird, 1989)
 
-State: docs written, in review (integrated 2026-11-13). 12 documents, 55 figures (PNG), 24 animations (GIF), 52 mermaid
-diagrams and 26 audio files (13 MP3, 13 short WAV; 5.3 MB, 5 281 446 bytes; `du -sh` prints 5.1M), counted on 2026-11-13 with:
+State: complete (2026-11-14; two review rounds, kit gaps fixed). 12 documents, 55 figures (PNG), 24 animations (GIF), 53 mermaid
+diagrams and 26 audio files (13 MP3, 13 short WAV; 5.3 MB, 5 281 446 bytes; `du -sh` prints 5.1M), counted on 2026-11-14 with:
 
 ```sh
 ls docs/[0-9][0-9]-*.md | wc -l; find docs/img -name '*.png' | wc -l; find docs/img -name '*.gif' | wc -l

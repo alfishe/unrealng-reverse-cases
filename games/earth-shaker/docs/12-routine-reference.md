@@ -6,7 +6,9 @@ Runs count the calls of the entry itself; the time is its own t-states (callees 
 of the recording. Memory ranges name the label at or below their first byte (inner labels too, `Label+offset`)
 and the entries they cover. The interrupt's acceptance (the vector read, the return address pushed) is
 the handler's, not the interrupted routine's. An entry no recording reached says so; one the case's other
-recordings ran gives their calls.
+recordings ran gives their calls. An entry no routine of a recording starts at (entered by a jump, a table jump or
+by running on: L1 books its time to the routine it runs in) gives the runs of its first instruction, as its witness
+line counts them.
 Written by `kit/refdocs.py`; edit `src/game/game.ann`, then run `kit/mkgame.py --case . --install`
 (see [3. Build and load](03-build-and-load.md)) and `kit/refdocs.py --case .`.
 
@@ -378,7 +380,8 @@ Witness: L1 1004824 (c1, rzx01-rzx30, rzx32).
 
 | | |
 | --- | --- |
-| Runs | not reached in the recordings |
+| Runs (c1: power-on, the covertape side at ROM speed, the menu and play) | 8,636 runs of its first instruction (entered by a jump or by running on, no routine of its own in the L1) |
+| Runs (the other recordings) | 996,696 runs of its first instruction, entered by a jump (`stage1/rzx05` 54,102, `stage1/rzx20` 54,102, `stage1/rzx32` 53,848 and 29 more) |
 
 ### `DeathLoop` (`$8630`)
 
@@ -390,7 +393,8 @@ Witness: L1 255 (c1).
 
 | | |
 | --- | --- |
-| Runs | not reached in the recordings |
+| Runs (c1: power-on, the covertape side at ROM speed, the menu and play) | 255 runs of its first instruction (entered by a jump or by running on, no routine of its own in the L1) |
+| Runs (the other recordings) | 510 runs of its first instruction, entered by a jump (`stage2/death-crush` 255, `stage2/death-fire` 255) |
 
 ### `ExitOpenSound` (`$9072`)
 
@@ -644,7 +648,8 @@ Witness: L1 15918 (c1, hiscore, rzx01-rzx32).
 
 | | |
 | --- | --- |
-| Runs | ran within another entry's routine (reached by a jump or by running on, its calls below), no runs of its own counted |
+| Runs (c1: power-on, the covertape side at ROM speed, the menu and play) | 2 runs of its first instruction (entered by a jump or by running on, no routine of its own in the L1) |
+| Runs (the other recordings) | 15,917 runs of its first instruction, entered by a jump (`stage1/rzx22` 1,990, `stage1/rzx24` 1,226, `stage1/rzx08` 985 and 31 more) |
 | Calls | `Crush` (tail) |
 
 ### `LandOnSwitch` (`$810E`)
@@ -657,7 +662,8 @@ Witness: L1 15901 (c1, hiscore, rzx01-rzx32).
 
 | | |
 | --- | --- |
-| Runs | not reached in the recordings |
+| Runs (c1: power-on, the covertape side at ROM speed, the menu and play) | 2 runs of its first instruction (entered by a jump or by running on, no routine of its own in the L1) |
+| Runs (the other recordings) | 15,899 runs of its first instruction, entered by a jump (`stage1/rzx22` 1,987, `stage1/rzx24` 1,224, `stage1/rzx08` 985 and 30 more) |
 
 ### `AntiGravSound` (`$8156`)
 
@@ -1140,7 +1146,7 @@ Witness: L1 580 (timer).
 
 | | |
 | --- | --- |
-| Runs | ran within another entry's routine (reached by a jump or by running on, its calls below), no runs of its own counted |
+| Runs | not reached in `stage1/c1`; in the other recordings 580 runs of its first instruction, entered by a jump (`stage1/timer` 580) |
 | Calls | `MapCellGlyph` |
 
 ### `ColourMapCells` (`$81CC`)
@@ -1493,7 +1499,8 @@ Witness: L1 46 (c1, hiscore, lives, timer, rzx01-rzx31).
 
 | | |
 | --- | --- |
-| Runs | not reached in `stage1/c1`; in the other recordings 33 calls (`stage1/rzx07` 1, `stage1/rzx06` 1, `stage1/rzx08` 1 and 30 more) |
+| Runs (c1: power-on, the covertape side at ROM speed, the menu and play) | 3 runs of its first instruction (entered by a jump or by running on, no routine of its own in the L1) |
+| Runs (the other recordings) | 33 calls (`stage1/rzx07` 1, `stage1/rzx06` 1, `stage1/rzx08` 1 and 30 more) |
 | Called from | `NextCave` (tail) |
 | Calls | `ClearScreen`, `CavePlay` |
 | Reads | `$FD84`-`$FD93` (`CaveDone`, `ExitOpen`, `PlayerFacing`, `Continuation` and 9 more) |
@@ -1509,7 +1516,8 @@ Witness: L1 46 (c1, hiscore, lives, timer, rzx01-rzx32).
 
 | | |
 | --- | --- |
-| Runs | not reached in `stage1/c1`; in the other recordings run into, not called (`stage1/rzx08`, `stage1/rzx16`, `stage1/rzx18` and 31 more) |
+| Runs (c1: power-on, the covertape side at ROM speed, the menu and play) | 2 runs of its first instruction (entered by a jump or by running on, no routine of its own in the L1) |
+| Runs (the other recordings) | 46 runs of its first instruction, entered by a jump (`stage1/hiscore` 6, `stage1/lives` 5, `stage1/rzx01` 1 and 34 more) |
 | Calls | `IncDigits`, `CaveStart` (tail), `WinGame` |
 | Reads | `$FD84`-`$FD93` (`CaveDone`, `ExitOpen`, `PlayerFacing`, `Continuation` and 9 more) |
 | Writes | `$FD91`-`$FD93` (`CaveNumber`, `GemCount`, `Lives`) |
@@ -2141,7 +2149,8 @@ Witness: L1 4366 (c1, rzx01-rzx32).
 
 | | |
 | --- | --- |
-| Runs | not reached in `stage1/c1`; in the other recordings 3,981 calls (`stage1/rzx32` 486, `stage1/rzx26` 400, `stage1/rzx29` 206 and 29 more) |
+| Runs (c1: power-on, the covertape side at ROM speed, the menu and play) | 1 run of its first instruction (entered by a jump or by running on, no routine of its own in the L1) |
+| Runs (the other recordings) | 3,981 calls (`stage1/rzx32` 486, `stage1/rzx26` 400, `stage1/rzx29` 206 and 29 more) |
 | Called from | `TryLeft` (falls into), `Continue`, `LeftSpecial` (tail), `TeleportLeft` |
 | Reads | `$FD9C`-`$FD9D` (`PlayerIndex`) |
 | Writes | `$FD9C`-`$FFFF` (`PlayerIndex`, `GemsNeededDigits`, `EarthGraphic`, `WallGraphic` and 5 more) |
@@ -2323,7 +2332,7 @@ Witness: L1 304 (rzx x15); the push `$87BA` ran 30 times (rzx x6: rzx09, 16, 24,
 
 | | |
 | --- | --- |
-| Runs | ran within another entry's routine (reached by a jump or by running on, its calls below), no runs of its own counted |
+| Runs | not reached in `stage1/c1`; in the other recordings 304 runs of its first instruction, entered by a jump (`stage1/rzx24` 127, `stage1/rzx21` 53, `stage1/rzx27` 46 and 12 more) |
 | Calls | `ThudSound` |
 
 ### `FireRight` (`$87C3`)
@@ -2711,7 +2720,7 @@ Witness: L1 24 (rzx x11).
 
 | | |
 | --- | --- |
-| Runs | not reached in `stage1/c1`; in the other recordings run into, not called (`stage1/rzx18`, `stage1/rzx25`, `stage1/rzx23` and 6 more) |
+| Runs | not reached in `stage1/c1`; in the other recordings 24 runs of its first instruction, entered by a jump (`stage1/rzx24` 5, `stage1/rzx18` 4, `stage1/rzx23` 3 and 8 more) |
 | Called from | `Continue` |
 
 ### `CollectLeft` (`$9621`)
@@ -2736,7 +2745,7 @@ Witness: L1 1 (rzx24).
 
 | | |
 | --- | --- |
-| Runs | not reached in `stage1/c1`; in the other recordings run into, not called (`stage1/rzx24`) |
+| Runs | not reached in `stage1/c1`; in the other recordings 1 run of its first instruction, entered by a jump (`stage1/rzx24` 1) |
 | Called from | `Continue` |
 | Reads | `$FD89`-`$FD8A` (`SavedCell`) |
 | Writes | `$FDC2` (`CaveGrid+26`) |
@@ -2763,7 +2772,7 @@ Witness: L1 2 (rzx24).
 
 | | |
 | --- | --- |
-| Runs | not reached in `stage1/c1`; in the other recordings run into, not called (`stage1/rzx24`) |
+| Runs | not reached in `stage1/c1`; in the other recordings 2 runs of its first instruction, entered by a jump (`stage1/rzx24` 2) |
 | Called from | `Continue` |
 | Reads | `$FD89`-`$FD8A` (`SavedCell`) |
 | Writes | `$FDC4` (`CaveGrid+28`); `$FE47` (`CaveGrid+159`) |
@@ -2790,7 +2799,7 @@ Witness: L1 1 (rzx24).
 
 | | |
 | --- | --- |
-| Runs | not reached in `stage1/c1`; in the other recordings run into, not called (`stage1/rzx24`) |
+| Runs | not reached in `stage1/c1`; in the other recordings 1 run of its first instruction, entered by a jump (`stage1/rzx24` 1) |
 | Called from | `Continue` |
 | Reads | `$FD89`-`$FD8A` (`SavedCell`) |
 | Writes | `$FF14` (`CaveGrid+364`) |
@@ -2817,7 +2826,7 @@ Witness: L1 2 (rzx22, rzx24).
 
 | | |
 | --- | --- |
-| Runs | not reached in `stage1/c1`; in the other recordings run into, not called (`stage1/rzx22`, `stage1/rzx24`) |
+| Runs | not reached in `stage1/c1`; in the other recordings 2 runs of its first instruction, entered by a jump (`stage1/rzx22` 1, `stage1/rzx24` 1) |
 | Called from | `Continue` |
 | Reads | `$FD89`-`$FD8A` (`SavedCell`) |
 | Writes | `$FDE1` (`CaveGrid+57`); `$FF2F` (`CaveGrid+391`) |
@@ -3054,7 +3063,8 @@ Witness: L1 11 (c1, lives, menu, rzx01).
 
 | | |
 | --- | --- |
-| Runs | not reached in `stage1/c1`; in the other recordings run into, not called (`stage1/lives`, `stage1/rzx01`) |
+| Runs (c1: power-on, the covertape side at ROM speed, the menu and play) | 4 runs of its first instruction (entered by a jump or by running on, no routine of its own in the L1) |
+| Runs (the other recordings) | 7 runs of its first instruction, entered by a jump (`stage1/menu` 5, `stage1/lives` 1, `stage1/rzx01` 1) |
 | Calls | `GameEntry` (tail), `NewGame`, `RedefineKeys`, `ShowHiScores`, `ChooseControl` (tail) |
 | Ports in | `$F7FE` |
 | Ports out | `$F7FF` |

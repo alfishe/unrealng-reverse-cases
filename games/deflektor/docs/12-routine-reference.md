@@ -1,12 +1,14 @@
 # 12. Routine reference
 
 Every code entry of the game, in address order by module (`src/game/<module>.asm`). The name, the title and
-the description are the source's (`src/game/game.ann`); the rest is what the recordings saw: `work/stage1/c1g` (c1g: the c1 recording's game window, from the jump to `$8382` (frame 15752 T 33930): the menu and play), and the case's other recordings (`case.json` `read_builds`, `code_builds`): their calls in a Runs row of their own, their callers, callees, reads and writes (`read_builds` only) with the others'. They are local, not in the repository; the WALKTHROUGH's commands rebuild them.
+the description are the source's (`src/game/game.ann`); the rest is what the recordings saw: `work/stage1/c1g` (c1g: the c1 recording's game window, from the jump to `$8382` (frame 15752 T 33930): the menu and play), and the case's other recordings (`case.json` `read_builds`, `code_builds`, `witness_builds`): their calls in a Runs row of their own, their callers, callees, reads and writes (`read_builds` only) with the others'. They are local, not in the repository; the WALKTHROUGH's commands rebuild them.
 Runs count the calls of the entry itself; the time is its own t-states (callees excluded) and their share
 of the recording. Memory ranges name the label at or below their first byte (inner labels too, `Label+offset`)
 and the entries they cover. The interrupt's acceptance (the vector read, the return address pushed) is
 the handler's, not the interrupted routine's. An entry no recording reached says so; one the case's other
-recordings ran gives their calls.
+recordings ran gives their calls. An entry no routine of a recording starts at (entered by a jump, a table jump or
+by running on: L1 books its time to the routine it runs in) gives the runs of its first instruction, as its witness
+line counts them.
 Written by `kit/refdocs.py`; edit `src/game/game.ann`, then run `kit/mkgame.py --case . --install`
 (see [3. Build and load](03-build-and-load.md)) and `kit/refdocs.py --case .`.
 The parts of the medium (`case.json` `ref_parts`: The tape, The loader's second stage, The main block) follow the
@@ -88,7 +90,8 @@ Witness: L1 11 (c1, c1g, controls, energy, energy-out, kempston, menu, practice)
 
 | | |
 | --- | --- |
-| Runs | not reached in `stage1/c1g`; in the other recordings run into, not called (`stage1/kempston`, `stage1/energy`, `stage2/rec/energy-out` and 1 more) |
+| Runs (c1g: the c1 recording's game window, from the jump to `$8382` (frame 15752 T 33930): the menu and play) | 1 run of its first instruction (entered by a jump or by running on, no routine of its own in the L1) |
+| Runs (the other recordings) | 10 runs of its first instruction, entered by a jump (`stage1/controls` 3, `stage1/menu` 2, `docs/dfA/rec/practice` 1 and 4 more) |
 | Calls | `WipeInScreen`, `PutGlyph`, `TwoTone` |
 | Reads | `$81FD` (`ControlMethod`); `$8E32`-`$8E33` (`RandomSeed`); `$9B7A`-`$9B7B` (`NamePointer`) |
 | Writes | `$5921`-`$592C` (screen); `$5941`-`$594C` (screen); `$59C1`-`$59CC` (screen); `$5A01`-`$5A0C` (screen); `$81FD` (`ControlMethod`); `$8407` (`PracticeFlag`); 4 more ranges |
@@ -132,7 +135,7 @@ Witness: L1 13 (energy, energy-out, hof, nameedit, rzx053912, rzx227686).
 
 | | |
 | --- | --- |
-| Runs | ran within another entry's routine (reached by a jump or by running on, its calls below), no runs of its own counted |
+| Runs | not reached in `stage1/c1g`; in the other recordings 13 runs of its first instruction, entered by a jump (`docs/integrate/rec/nameedit` 3, `stage2/rec/energy-out` 3, `stage2/rec/hof` 3 and 3 more) |
 | Calls | `TitleLoop` (tail), `SetUpLevel` (tail), `Delay`, `TwoTone`, `PlaySound` |
 
 ### `AddScore` (`$9AF3`)
@@ -145,7 +148,7 @@ Witness: L1 31837 (corner, ending, hof, nameedit, L x20, rzx x60).
 
 | | |
 | --- | --- |
-| Runs | not reached in `stage1/c1g`; in the other recordings 4,810 calls (`stage1/rzx/r045895` 153, `stage1/rzx/r183540` 151, `stage1/rzx/r340213` 151 and 80 more) |
+| Runs | not reached in `stage1/c1g`; in the other recordings 4,812 calls (`stage1/rzx/r045895` 153, `stage1/rzx/r183540` 151, `stage1/rzx/r340213` 151 and 81 more) |
 | Called from | `PassEnd`, `LevelCompletePause`, `BeamStep`, `CursorFire` |
 | Calls | `PrintScore` (falls into) |
 | Reads | `$9B3D`-`$9B43` (`ScoreText+2`, `ScoreDigits`); `$D282`-`$D2CE` (`Font+130`) |
@@ -162,7 +165,7 @@ Witness: L1 5012 (c1, c1g, cheat, controls, corner, ending, energy, energy-out, 
 | | |
 | --- | --- |
 | Runs (c1g: the c1 recording's game window, from the jump to `$8382` (frame 15752 T 33930): the menu and play) | 1 call, 20 t-states own (0.00 %) |
-| Runs (the other recordings) | 4,928 calls (`stage1/rzx/r045895` 154, `stage1/rzx/r183540` 154, `stage1/rzx/r340213` 152 and 87 more) |
+| Runs (the other recordings) | 4,931 calls (`stage1/rzx/r045895` 154, `stage1/rzx/r183540` 154, `stage1/rzx/r340213` 152 and 88 more) |
 | Called from | `SetUpLevel`, `AddScore` (falls into) |
 | Calls | `PrintDigitsBack` (falls into) |
 
@@ -177,7 +180,7 @@ Witness: L1 33565 (c1, c1g, cheat, controls, corner, ending, energy, energy-out,
 | | |
 | --- | --- |
 | Runs (c1g: the c1 recording's game window, from the jump to `$8382` (frame 15752 T 33930): the menu and play) | 2 calls, 2,069 t-states own (0.00 %) |
-| Runs (the other recordings) | 5,124 calls (`stage1/rzx/r183540` 157, `stage1/rzx/r045895` 155, `stage1/rzx/r340213` 153 and 87 more) |
+| Runs (the other recordings) | 5,130 calls (`stage1/rzx/r183540` 157, `stage1/rzx/r045895` 155, `stage1/rzx/r340213` 153 and 88 more) |
 | Called from | `PrintScore` (falls into), `PrintHighScore` (tail) |
 | Reads | `$9B3D`-`$9B52` (`ScoreText+2`, `ScoreDigits`, `SavedScore`, `HighScoreText`); `$D282`-`$D2CE` (`Font+130`) |
 | Writes | `$53BA`-`$53FF` (screen); `$54BA`-`$54FF` (screen); `$55BA`-`$55FF` (screen); `$56BA`-`$56BF` (screen); `$56FB`-`$56FF` (screen); `$57BA`-`$57BF` (screen); 1 more ranges |
@@ -208,7 +211,7 @@ Witness: L1 200 (c1, c1g, cheat, controls, energy, energy-out, hof, kempston, me
 | | |
 | --- | --- |
 | Runs (c1g: the c1 recording's game window, from the jump to `$8382` (frame 15752 T 33930): the menu and play) | 1 call, 228 t-states own (0.00 %) |
-| Runs (the other recordings) | 196 calls (`stage1/menu` 61, `docs/integrate/rec/nameedit` 3, `stage1/controls` 3 and 87 more) |
+| Runs (the other recordings) | 199 calls (`stage1/menu` 61, `docs/integrate/rec/nameedit` 3, `stage1/controls` 3 and 88 more) |
 | Called from | `SetUpLevel` |
 | Calls | `PrintDigitsBack` (tail) |
 | Reads | `$9FEE`-`$9FF2` (`HallOfFameScores+3`) |
@@ -253,7 +256,7 @@ Witness: L1 200 (c1, c1g, cheat, controls, energy, energy-out, hof, kempston, me
 | | |
 | --- | --- |
 | Runs (c1g: the c1 recording's game window, from the jump to `$8382` (frame 15752 T 33930): the menu and play) | 1 call, 2,241 t-states own (0.00 %) |
-| Runs (the other recordings) | 196 calls (`stage1/menu` 61, `docs/integrate/rec/nameedit` 3, `stage2/rec/hof` 3 and 87 more) |
+| Runs (the other recordings) | 199 calls (`stage1/menu` 61, `docs/integrate/rec/nameedit` 3, `stage2/rec/hof` 3 and 88 more) |
 | Called from | `SetUpLevel` |
 | Reads | `$8170`-`$8189` (`BeamDeltas`); `$96C3`-`$96C4` (`CursorVars`, `CursorY`); `$FD23`-`$FDB9` (`work space $FD23+`) |
 | Writes | `$8374`-`$8378` (`HighlightX`, `HighlightY`, `BeamStartX`, `BeamStartY` and 1 more); `$96C3`-`$96C4` (`CursorVars`, `CursorY`) |
@@ -296,7 +299,7 @@ Witness: L1 112689 (c1, c1g, cheat, controls, corner, energy, energy-out, hof, k
 | | |
 | --- | --- |
 | Runs (c1g: the c1 recording's game window, from the jump to `$8382` (frame 15752 T 33930): the menu and play) | 1,012 calls, 30,360 t-states own (0.01 %) |
-| Runs (the other recordings) | 110,903 calls (`stage2/rec/energy-out` 6,205, `stage1/energy` 6,171, `docs/integrate/rec/nameedit` 5,056 and 87 more) |
+| Runs (the other recordings) | 111,677 calls (`stage2/rec/energy-out` 6,205, `stage1/energy` 6,171, `docs/integrate/rec/nameedit` 5,056 and 89 more) |
 | Called from | `MainLoop` |
 | Calls | `BeamStep` (falls into) |
 | Reads | `$8170`-`$818F` (`BeamDeltas`); `$81B8`-`$81CC` (`ExplosionSlots`); `$8374`-`$8381` (`HighlightX`, `HighlightY`, `BeamStartX`, `BeamStartY` and 10 more); `$8914`-`$8917` (`CharMapPointer`, `PixelPointer`); `$8EBF`-`$8ED1` (`BeamSteps`, `BeamAtCentre`, `BeamReflected`, `BeamDirection` and 3 more); `$A8A6` (`SoundFlags`); 1 more ranges |
@@ -335,7 +338,7 @@ Witness: L1 1251228 (c1, c1g, cheat, controls, corner, energy, energy-out, hof, 
 | | |
 | --- | --- |
 | Runs (c1g: the c1 recording's game window, from the jump to `$8382` (frame 15752 T 33930): the menu and play) | 13,658 calls, 3,657,123 t-states own (1.09 %) |
-| Runs (the other recordings) | 1,170,175 calls (`stage1/rzx/r172483` 32,670, `stage2/rec/energy-out` 32,667, `stage1/energy` 32,429 and 82 more) |
+| Runs (the other recordings) | 1,179,301 calls (`stage1/rzx/r172483` 32,670, `stage2/rec/energy-out` 32,667, `stage1/energy` 32,429 and 84 more) |
 | Called from | `TraceBeam` (falls into), `BeamMove` (tail) |
 | Calls | `BeamAtLaser` (tail), `HighlightCell` (tail), `BeamMirror` (tail), `PrismTurn` (tail), `FibreEntry` (tail), `BeamVertex` (tail), `AddScore` |
 | Reads | `$81B8`-`$81CC` (`ExplosionSlots`); `$8ECB`-`$8ECE` (`BeamDirection`, `BeamNextDirection`, `BeamX`, `BeamY`); `$A8A6` (`SoundFlags`); `$FD11`-`$FDCB` (`work space $FD11+`) |
@@ -406,7 +409,7 @@ Witness: L1 218110 (c1, c1g, cheat, controls, energy, energy-out, hof, kempston,
 | | |
 | --- | --- |
 | Runs (c1g: the c1 recording's game window, from the jump to `$8382` (frame 15752 T 33930): the menu and play) | 1,012 calls, 98,392 t-states own (0.03 %) |
-| Runs (the other recordings) | 211,797 calls (`stage1/rzx/r146186` 7,058, `stage1/rzx/r254939` 6,252, `stage2/rec/energy-out` 6,205 and 82 more) |
+| Runs (the other recordings) | 212,229 calls (`stage1/rzx/r146186` 7,058, `stage1/rzx/r254939` 6,252, `stage2/rec/energy-out` 6,205 and 83 more) |
 | Called from | `BeamStep` (tail) |
 | Calls | `BeamVertex` (tail) |
 | Reads | `$8ECB` (`BeamDirection`) |
@@ -471,7 +474,7 @@ Witness: L1 1276460 (c1, c1g, cheat, controls, corner, energy, energy-out, hof, 
 | | |
 | --- | --- |
 | Runs (c1g: the c1 recording's game window, from the jump to `$8382` (frame 15752 T 33930): the menu and play) | 13,784 calls, 25,765,186 t-states own (7.67 %) |
-| Runs (the other recordings) | 1,196,939 calls (`stage1/rzx/r172483` 33,901, `stage2/rec/energy-out` 32,667, `stage1/energy` 32,429 and 82 more) |
+| Runs (the other recordings) | 1,206,402 calls (`stage1/rzx/r172483` 33,901, `stage2/rec/energy-out` 32,667, `stage1/energy` 32,429 and 84 more) |
 | Called from | `BeamStep` (tail), `BeamMirror` (tail), `FibreEntry` (falls into), `BeamReflectOut` (tail) |
 | Calls | `BeamBackToLaser` (tail), `BeamInChar`, `BeamCornerChar`, `BeamOutChar` |
 | Reads | `$8170`-`$818F` (`BeamDeltas`); `$8381` (`BeamGlyphSet`); `$8914`-`$8917` (`CharMapPointer`, `PixelPointer`); `$8EBF`-`$8ED1` (`BeamSteps`, `BeamAtCentre`, `BeamReflected`, `BeamDirection` and 3 more) |
@@ -489,7 +492,8 @@ Witness: L1 1108934 (c1, c1g, cheat, controls, corner, energy, energy-out, hof, 
 
 | | |
 | --- | --- |
-| Runs | not reached in `stage1/c1g`; in the other recordings 10,204 calls (`stage1/rzx/r107497` 2,446, `stage1/rzx/r118129` 1,948, `stage1/rzx/r286796` 1,224 and 21 more) |
+| Runs (c1g: the c1 recording's game window, from the jump to `$8382` (frame 15752 T 33930): the menu and play) | 11,760 runs of its first instruction (entered by a jump or by running on, no routine of its own in the L1) |
+| Runs (the other recordings) | 10,204 calls (`stage1/rzx/r107497` 2,446, `stage1/rzx/r118129` 1,948, `stage1/rzx/r286796` 1,224 and 21 more) |
 | Called from | `PrismTurn` (tail) |
 | Calls | `BeamMove` (falls into) |
 | Reads | `$8170`-`$818F` (`BeamDeltas`); `$8EBF`-`$8ECE` (`BeamSteps`, `BeamAtCentre`, `BeamReflected`, `BeamDirection` and 3 more) |
@@ -510,7 +514,7 @@ Witness: L1 1139437 (c1, c1g, cheat, controls, corner, energy, energy-out, hof, 
 | | |
 | --- | --- |
 | Runs (c1g: the c1 recording's game window, from the jump to `$8382` (frame 15752 T 33930): the menu and play) | 12,646 calls, 2,655,869 t-states own (0.79 %) |
-| Runs (the other recordings) | 699,850 calls (`stage1/rzx/r172483` 31,573, `stage1/rzx/r004833` 28,063, `stage1/rzx/r268227` 25,565 and 42 more) |
+| Runs (the other recordings) | 708,202 calls (`stage1/rzx/r172483` 31,573, `stage1/rzx/r004833` 28,063, `stage1/rzx/r268227` 25,565 and 44 more) |
 | Called from | `BeamNewDirection` (falls into), `BeamReflectIn` (tail) |
 | Calls | `BeamStep` (tail), `BeamBackToLaser` |
 | Reads | `$8144`-`$818F` (`InBounceTable+4`, `BeamDeltas`); `$8EBF`-`$8ECE` (`BeamSteps`, `BeamAtCentre`, `BeamReflected`, `BeamDirection` and 3 more) |
@@ -529,7 +533,7 @@ Witness: L1 4870383 (c1, c1g, cheat, controls, corner, energy, energy-out, hof, 
 | | |
 | --- | --- |
 | Runs (c1g: the c1 recording's game window, from the jump to `$8382` (frame 15752 T 33930): the menu and play) | 53,746 calls, 20,924,389 t-states own (6.23 %) |
-| Runs (the other recordings) | 4,780,310 calls (`stage2/rec/energy-out` 130,668, `stage1/energy` 129,716, `stage1/rzx/r172483` 129,173 and 87 more) |
+| Runs (the other recordings) | 4,816,637 calls (`stage2/rec/energy-out` 130,668, `stage1/energy` 129,716, `stage1/rzx/r172483` 129,173 and 89 more) |
 | Called from | `BeamVertex` |
 | Calls | `BeamPlotGlyph` (falls into), `BeamInNext` (tail), `BeamAbsorbIn` (tail), `BeamReflectIn` (tail) |
 | Reads | `$8000`-`$807F` (`BeamGlyphBytes`); `$8143`-`$816D` (`InBounceTable+3`); `$8190`-`$81B7` (`GrazeOffsets`, `PolariserCells`); `$8914`-`$8917` (`CharMapPointer`, `PixelPointer`); `$8EC1`-`$8ED1` (`BeamAtCentre`, `BeamReflected`, `BeamDirection`, `BeamNextDirection` and 2 more); `$D508`-`$D51F` (`BeamGlyphs+8`); 4 more ranges |
@@ -547,7 +551,8 @@ Witness: L1 1533825 (c1, c1g, cheat, controls, corner, energy, energy-out, hof, 
 
 | | |
 | --- | --- |
-| Runs | not reached in `stage1/c1g`; in the other recordings 191,589 calls (`stage1/rzx/r053912` 30,118, `stage1/rzx/r227686` 29,051, `stage1/rzx/r204297` 26,361 and 8 more) |
+| Runs (c1g: the c1 recording's game window, from the jump to `$8382` (frame 15752 T 33930): the menu and play) | 14,923 runs of its first instruction (entered by a jump or by running on, no routine of its own in the L1) |
+| Runs (the other recordings) | 191,589 calls (`stage1/rzx/r053912` 30,118, `stage1/rzx/r227686` 29,051, `stage1/rzx/r204297` 26,361 and 8 more) |
 | Called from | `BeamInChar` (falls into), `BeamInNext` (tail) |
 | Calls | `BeamInNext` (falls into) |
 | Reads | `$8916`-`$8917` (`PixelPointer`); `$D508`-`$D51F` (`BeamGlyphs+8`); `$D530`-`$D597` (`BeamGlyphs+48`); `$D5B8`-`$D637` (`BeamGlyphs+184`); `$E900`-`$FCFD` (`work space $E900+`) |
@@ -567,7 +572,8 @@ Witness: L1 4831391 (c1, c1g, cheat, controls, corner, energy, energy-out, hof, 
 
 | | |
 | --- | --- |
-| Runs | not reached in `stage1/c1g`; in the other recordings 1,993,905 calls (`stage1/rzx/r172483` 127,439, `stage1/rzx/r004833` 115,079, `stage1/rzx/r227686` 100,880 and 25 more) |
+| Runs (c1g: the c1 recording's game window, from the jump to `$8382` (frame 15752 T 33930): the menu and play) | 51,975 runs of its first instruction (entered by a jump or by running on, no routine of its own in the L1) |
+| Runs (the other recordings) | 1,993,905 calls (`stage1/rzx/r172483` 127,439, `stage1/rzx/r004833` 115,079, `stage1/rzx/r227686` 100,880 and 25 more) |
 | Called from | `BeamInChar` (tail), `BeamPlotGlyph` (falls into), `BeamAbsorbIn` (tail), `BeamReflectIn` (tail) |
 | Calls | `BeamPlotGlyph` (tail), `BeamReflectIn` (tail) |
 | Reads | `$8914`-`$8915` (`CharMapPointer`); `$8EC2`-`$8ED1` (`BeamReflected`, `BeamDirection`, `BeamNextDirection`, `BeamX` and 1 more) |
@@ -587,7 +593,8 @@ Witness: L1 9309 (c1, c1g, L x10, rzx x29).
 
 | | |
 | --- | --- |
-| Runs | not reached in `stage1/c1g`; in the other recordings 4,125 calls (`stage1/rzx/r239803` 1,182, `stage1/rzx/r107497` 1,128, `stage1/rzx/r311752` 605 and 16 more) |
+| Runs (c1g: the c1 recording's game window, from the jump to `$8382` (frame 15752 T 33930): the menu and play) | 885 runs of its first instruction (entered by a jump or by running on, no routine of its own in the L1) |
+| Runs (the other recordings) | 4,125 calls (`stage1/rzx/r239803` 1,182, `stage1/rzx/r107497` 1,128, `stage1/rzx/r311752` 605 and 16 more) |
 | Called from | `BeamInChar` (tail) |
 | Calls | `BeamInNext` (tail) |
 | Reads | `$8190`-`$819D` (`GrazeOffsets`); `$8EC3`-`$8ECB` (`BeamReflected+1`, `BeamDirection`); `$E045` (`work space $E045+`); `$E05A` (`work space $E05A+`); `$E0D0` (`work space $E0D0+`); `$E104`-`$E10C` (`work space $E104+`); 8 more ranges |
@@ -609,7 +616,8 @@ Witness: L1 35456 (c1, c1g, cheat, corner, hof, nameedit, L x9, rzx x33).
 
 | | |
 | --- | --- |
-| Runs | not reached in `stage1/c1g`; in the other recordings 26,076 calls (`docs/integrate/rec/nameedit` 2,944, `stage2/rec/hof` 2,944, `stage1/rzx/r172483` 2,140 and 26 more) |
+| Runs (c1g: the c1 recording's game window, from the jump to `$8382` (frame 15752 T 33930): the menu and play) | 886 runs of its first instruction (entered by a jump or by running on, no routine of its own in the L1) |
+| Runs (the other recordings) | 26,555 calls (`docs/integrate/rec/nameedit` 2,944, `stage2/rec/hof` 2,944, `stage1/rzx/r172483` 2,140 and 28 more) |
 | Called from | `BeamInChar` (tail), `BeamInNext` (tail) |
 | Calls | `BeamBackToLaser` (tail), `BeamMove` (tail), `BeamInNext` (tail) |
 | Reads | `$8143`-`$816D` (`InBounceTable+3`); `$8190`-`$819F` (`GrazeOffsets`); `$8EC3`-`$8ECB` (`BeamReflected+1`, `BeamDirection`); `$E027`-`$E02E` (`work space $E027+`); `$E048`-`$E0F2` (`work space $E048+`); `$E106`-`$E218` (`work space $E106+`); 1 more ranges |
@@ -628,7 +636,7 @@ Witness: L1 4597599 (c1, c1g, cheat, controls, corner, energy, energy-out, hof, 
 | | |
 | --- | --- |
 | Runs (c1g: the c1 recording's game window, from the jump to `$8382` (frame 15752 T 33930): the menu and play) | 47,544 calls, 18,948,800 t-states own (5.64 %) |
-| Runs (the other recordings) | 4,517,137 calls (`stage1/rzx/r172483` 121,811, `stage2/rec/energy-out` 118,258, `stage1/energy` 117,373 and 87 more) |
+| Runs (the other recordings) | 4,550,055 calls (`stage1/rzx/r172483` 121,811, `stage2/rec/energy-out` 118,258, `stage1/energy` 117,373 and 89 more) |
 | Called from | `BeamVertex` |
 | Reads | `$8000`-`$80D7` (`BeamGlyphBytes`, `OutBounceTable`); `$80EF`-`$80FF` (`OutBounceTable+111`); `$8914`-`$8917` (`CharMapPointer`, `PixelPointer`); `$8EC1`-`$8ECB` (`BeamAtCentre`, `BeamReflected`, `BeamDirection`); `$D500`-`$D507` (`BeamGlyphs`); `$D520`-`$D52F` (`BeamGlyphs+32`); 7 more ranges |
 | Writes | `$8EC5`-`$8ECC` (`BeamReflected+3`, `BeamDirection`, `BeamNextDirection`); `$E300`-`$E57F` (`work space $E300+`); `$E600`-`$E87F` (`work space $E600+`); `$E900`-`$FCFF` (`work space $E900+`) |
@@ -644,7 +652,7 @@ Witness: L1 4498406 (c1, c1g, cheat, controls, corner, energy, energy-out, hof, 
 | | |
 | --- | --- |
 | Runs (c1g: the c1 recording's game window, from the jump to `$8382` (frame 15752 T 33930): the menu and play) | 47,670 calls, 17,155,368 t-states own (5.11 %) |
-| Runs (the other recordings) | 4,418,477 calls (`stage1/rzx/r172483` 122,970, `stage1/rzx/r004833` 111,650, `stage2/rec/energy-out` 105,848 and 87 more) |
+| Runs (the other recordings) | 4,450,736 calls (`stage1/rzx/r172483` 122,970, `stage1/rzx/r004833` 111,650, `stage2/rec/energy-out` 105,848 and 89 more) |
 | Called from | `BeamVertex` |
 | Calls | `BeamOutPlot` (falls into), `BeamOutNext` (tail), `BeamAbsorbOut` (tail), `BeamReflectOut` (tail) |
 | Reads | `$8000`-`$80FE` (`BeamGlyphBytes`, `OutBounceTable`); `$8190`-`$81B7` (`GrazeOffsets`, `PolariserCells`); `$8914`-`$8917` (`CharMapPointer`, `PixelPointer`); `$8EC0`-`$8ED1` (`BeamSteps+1`, `BeamAtCentre`, `BeamReflected`, `BeamDirection` and 3 more); `$D508`-`$D51F` (`BeamGlyphs+8`); `$D530`-`$D597` (`BeamGlyphs+48`); 3 more ranges |
@@ -660,7 +668,8 @@ Witness: L1 1357897 (c1, c1g, cheat, controls, corner, energy, energy-out, hof, 
 
 | | |
 | --- | --- |
-| Runs | not reached in `stage1/c1g`; in the other recordings 86,067 calls (`stage1/rzx/r227686` 27,794, `stage1/rzx/r204297` 24,847, `stage1/rzx/r063909` 23,051 and 1 more) |
+| Runs (c1g: the c1 recording's game window, from the jump to `$8382` (frame 15752 T 33930): the menu and play) | 13,784 runs of its first instruction (entered by a jump or by running on, no routine of its own in the L1) |
+| Runs (the other recordings) | 86,067 calls (`stage1/rzx/r227686` 27,794, `stage1/rzx/r204297` 24,847, `stage1/rzx/r063909` 23,051 and 1 more) |
 | Called from | `BeamOutChar` (falls into), `BeamOutNext` (tail) |
 | Calls | `BeamOutNext` (falls into) |
 | Reads | `$8916`-`$8917` (`PixelPointer`); `$D508`-`$D51F` (`BeamGlyphs+8`); `$D530`-`$D597` (`BeamGlyphs+48`); `$D5B8`-`$D5C7` (`BeamGlyphs+184`); `$D5D8`-`$D61F` (`BeamGlyphs+216`); `$D630`-`$D637` (`BeamGlyphs+304`); 1 more ranges |
@@ -676,7 +685,8 @@ Witness: L1 4448984 (c1, c1g, cheat, controls, corner, energy, energy-out, hof, 
 
 | | |
 | --- | --- |
-| Runs | not reached in `stage1/c1g`; in the other recordings 1,270,483 calls (`stage1/rzx/r172483` 121,548, `stage1/rzx/r004833` 110,852, `stage1/rzx/r227686` 99,203 and 14 more) |
+| Runs (c1g: the c1 recording's game window, from the jump to `$8382` (frame 15752 T 33930): the menu and play) | 47,418 runs of its first instruction (entered by a jump or by running on, no routine of its own in the L1) |
+| Runs (the other recordings) | 1,270,483 calls (`stage1/rzx/r172483` 121,548, `stage1/rzx/r004833` 110,852, `stage1/rzx/r227686` 99,203 and 14 more) |
 | Called from | `BeamOutChar` (tail), `BeamOutPlot` (falls into), `BeamAbsorbOut` (tail), `BeamReflectOut` (tail) |
 | Calls | `BeamOutPlot` (tail), `BeamReflectOut` (tail) |
 | Reads | `$8914`-`$8915` (`CharMapPointer`); `$8ED1` (`BeamY+3`) |
@@ -694,7 +704,8 @@ Witness: L1 5864 (c1, c1g, practice, L x17, rzx x36).
 
 | | |
 | --- | --- |
-| Runs | not reached in `stage1/c1g`; in the other recordings 2,352 calls (`docs/dfA/rec/practice` 582, `stage1/rzx/r327592` 558, `stage1/rzx/r107497` 276 and 28 more) |
+| Runs (c1g: the c1 recording's game window, from the jump to `$8382` (frame 15752 T 33930): the menu and play) | 126 runs of its first instruction (entered by a jump or by running on, no routine of its own in the L1) |
+| Runs (the other recordings) | 2,352 calls (`docs/dfA/rec/practice` 582, `stage1/rzx/r327592` 558, `stage1/rzx/r107497` 276 and 28 more) |
 | Called from | `BeamOutChar` (tail) |
 | Calls | `BeamOutNext` (tail) |
 | Reads | `$8190`-`$819D` (`GrazeOffsets`); `$8EC7`-`$8ECC` (`BeamReflected+5`, `BeamDirection`, `BeamNextDirection`); `$E04B` (`work space $E04B+`); `$E06A` (`work space $E06A+`); `$E10A` (`work space $E10A+`); `$E182`-`$E18C` (`work space $E182+`); 5 more ranges |
@@ -710,7 +721,8 @@ Witness: L1 50666 (c1, c1g, cheat, hof, nameedit, L x9, rzx x31).
 
 | | |
 | --- | --- |
-| Runs | not reached in `stage1/c1g`; in the other recordings 32,912 calls (`stage1/rzx/r004833` 5,161, `stage1/rzx/r063909` 4,629, `stage1/rzx/r268227` 2,918 and 19 more) |
+| Runs (c1g: the c1 recording's game window, from the jump to `$8382` (frame 15752 T 33930): the menu and play) | 126 runs of its first instruction (entered by a jump or by running on, no routine of its own in the L1) |
+| Runs (the other recordings) | 33,259 calls (`stage1/rzx/r004833` 5,161, `stage1/rzx/r063909` 4,629, `stage1/rzx/r268227` 2,918 and 20 more) |
 | Called from | `BeamOutChar` (tail), `BeamOutNext` (tail) |
 | Calls | `BeamBackToLaser` (tail), `BeamVertex` (tail), `BeamOutNext` (tail) |
 | Reads | `$8088`-`$80FE` (`OutBounceTable+8`); `$8190`-`$819F` (`GrazeOffsets`); `$8914`-`$8915` (`CharMapPointer`); `$8EC0`-`$8ECC` (`BeamSteps+1`, `BeamAtCentre`, `BeamReflected`, `BeamDirection` and 1 more); `$D700`-`$D707` (`CellGraphics`); `$E024`-`$E25C` (`work space $E024+`) |
@@ -748,7 +760,8 @@ Witness: L1 50258 (c1, c1g, controls, kempston, menu, L x20, rzx x58).
 
 | | |
 | --- | --- |
-| Runs | not reached in the recordings |
+| Runs (c1g: the c1 recording's game window, from the jump to `$8382` (frame 15752 T 33930): the menu and play) | 25 runs of its first instruction (entered by a jump or by running on, no routine of its own in the L1) |
+| Runs (the other recordings) | 50,233 runs of its first instruction, entered by a jump (`stage1/rzx/r183540` 1,915, `stage1/rzx/r215327` 1,872, `stage1/rzx/r154293` 1,727 and 79 more) |
 
 ### `MarkCursorCells` (`$999F`)
 
@@ -761,7 +774,7 @@ Witness: L1 117260 (c1, c1g, cheat, controls, corner, energy, energy-out, hof, k
 | | |
 | --- | --- |
 | Runs (c1g: the c1 recording's game window, from the jump to `$8382` (frame 15752 T 33930): the menu and play) | 1,044 calls, 222,372 t-states own (0.07 %) |
-| Runs (the other recordings) | 115,346 calls (`stage2/rec/energy-out` 6,304, `stage1/energy` 6,269, `docs/integrate/rec/nameedit` 5,155 and 87 more) |
+| Runs (the other recordings) | 116,216 calls (`stage2/rec/energy-out` 6,304, `stage1/energy` 6,269, `docs/integrate/rec/nameedit` 5,155 and 89 more) |
 | Called from | `MainLoop` |
 | Reads | `$96C3`-`$96C4` (`CursorVars`, `CursorY`) |
 | Writes | `$E321`-`$E55E` (`work space $E321+`) |
@@ -777,7 +790,7 @@ Witness: L1 117171 (c1, c1g, cheat, controls, corner, energy, energy-out, hof, k
 | | |
 | --- | --- |
 | Runs (c1g: the c1 recording's game window, from the jump to `$8382` (frame 15752 T 33930): the menu and play) | 1,043 calls, 259,430 t-states own (0.08 %) |
-| Runs (the other recordings) | 115,259 calls (`stage2/rec/energy-out` 6,304, `stage1/energy` 6,268, `docs/integrate/rec/nameedit` 5,155 and 87 more) |
+| Runs (the other recordings) | 116,128 calls (`stage2/rec/energy-out` 6,304, `stage1/energy` 6,268, `docs/integrate/rec/nameedit` 5,155 and 89 more) |
 | Called from | `MainLoop` |
 | Calls | `InvertColour` (falls into), `DrawCursorSquare` (tail) |
 | Reads | `$96C3`-`$96C6` (`CursorVars`, `CursorY`, `ControlBits`, `CursorMode`) |
@@ -793,7 +806,7 @@ Witness: L1 259824 (c1, c1g, cheat, controls, corner, energy, energy-out, hof, k
 | | |
 | --- | --- |
 | Runs (c1g: the c1 recording's game window, from the jump to `$8382` (frame 15752 T 33930): the menu and play) | 4,068 calls, 460,121 t-states own (0.14 %) |
-| Runs (the other recordings) | 252,280 calls (`stage2/rec/energy-out` 25,216, `stage1/energy` 25,072, `docs/integrate/rec/nameedit` 20,620 and 87 more) |
+| Runs (the other recordings) | 255,756 calls (`stage2/rec/energy-out` 25,216, `stage1/energy` 25,072, `docs/integrate/rec/nameedit` 20,620 and 89 more) |
 | Called from | `DrawCursor` (falls into) |
 | Reads | `$E621`-`$E85E` (`work space $E621+`) |
 | Writes | `$E621`-`$E85E` (`work space $E621+`) |
@@ -846,8 +859,9 @@ Witness: L1 200 (c1, c1g, cheat, controls, energy, energy-out, hof, kempston, me
 
 | | |
 | --- | --- |
-| Runs | not reached in `stage1/c1g`; in the other recordings 86 calls (`stage1/menu` 61, `docs/integrate/rec/nameedit` 3, `stage2/rec/hof` 3 and 8 more) |
-| Called from | `LevelPanel` (falls into), `MainLoop` (tail), `LoseLifeDrained` (tail) |
+| Runs (c1g: the c1 recording's game window, from the jump to `$8382` (frame 15752 T 33930): the menu and play) | 1 run of its first instruction (entered by a jump or by running on, no routine of its own in the L1) |
+| Runs (the other recordings) | 89 calls (`stage1/menu` 61, `stage2/rec/cheat` 3, `docs/integrate/rec/nameedit` 3 and 9 more) |
+| Called from | `LevelPanel` (falls into), `MainLoop` (tail), `LoseLifeDrained` (tail), `LevelCheat` (tail) |
 | Calls | `BuildLevel`, `FindLaser`, `WipeInPlayArea`, `PrintScore`, `ClearSavedScore`, `PrintHighScore`, `ResetBars` |
 | Reads | `$81FF` (`Level`); `$8385`-`$8407` (`LevelSettings`, `PracticeFlag`); `$88B0`-`$88FF` (`LevelDigits`); `$8912`-`$8913` (`LevelAddress`); `$9B44`-`$9B48` (`SavedScore`); `$B000`-`$CFA3` (`LevelData`) |
 | Writes | `$50A6`-`$50A7` (screen); `$51A6`-`$51A7` (screen); `$52A6`-`$52A7` (screen); `$53A6`-`$53A7` (screen); `$53BA`-`$53BF` (screen); `$5486`-`$5487` (screen); 16 more ranges |
@@ -872,8 +886,8 @@ Witness: L1 117268 (c1, c1g, cheat, controls, corner, energy, energy-out, hof, k
 
 | | |
 | --- | --- |
-| Runs (c1g: the c1 recording's game window, from the jump to `$8382` (frame 15752 T 33930): the menu and play) | run into, not called, 974,146 t-states own (0.29 %) |
-| Runs (the other recordings) | run into, not called (`stage2/rec/energy-out`, `stage1/energy`, `docs/integrate/rec/nameedit` and 14 more) |
+| Runs (c1g: the c1 recording's game window, from the jump to `$8382` (frame 15752 T 33930): the menu and play) | 1,044 runs of its first instruction (entered by a jump or by running on, no routine of its own in the L1), 974,146 t-states own (0.29 %) |
+| Runs (the other recordings) | 116,224 runs of its first instruction, entered by a jump (`stage2/rec/energy-out` 6,304, `stage1/energy` 6,269, `docs/integrate/rec/nameedit` 5,155 and 89 more) |
 | Calls | `TitleLoop` (tail), `SetUpLevel` (tail), `Delay`, `RenderGrid`, `CopyPlayArea`, `TraceBeam`, `ReadKeys`, `MarkCursorCells`, `DrawCursor`, `CursorFire`, `UpdateGremlins` |
 | Reads | `$81B8`-`$81D0` (`ExplosionSlots`); `$81FF` (`Level`); `$8376`-`$8380` (`BeamStartX`, `BeamStartY`, `BeamStartDirection`, `DemoFlag` and 7 more); `$8ED2`-`$8ED3` (`LevelDone`, `LifeLost`); `$A509` (`LaserCharging`); `$A8A6` (`SoundFlags`) |
 | Writes | `$81FF` (`Level`); `$837B`-`$8381` (`BurnSoundFlag`, `GremlinSoundFlag`, `Lives`, `EnergyCritical` and 3 more); `$8ECB`-`$8ECE` (`BeamDirection`, `BeamNextDirection`, `BeamX`, `BeamY`); `$A8A6` (`SoundFlags`) |
@@ -900,7 +914,8 @@ Witness: L1 117162 (c1, c1g, cheat, controls, corner, energy, energy-out, gameov
 
 | | |
 | --- | --- |
-| Runs | not reached in `stage1/c1g`; in the other recordings run into, not called (`stage1/gameover`) |
+| Runs (c1g: the c1 recording's game window, from the jump to `$8382` (frame 15752 T 33930): the menu and play) | 1,043 runs of its first instruction (entered by a jump or by running on, no routine of its own in the L1) |
+| Runs (the other recordings) | 116,119 runs of its first instruction, entered by a jump (`stage2/rec/energy-out` 6,304, `stage1/energy` 6,268, `docs/integrate/rec/nameedit` 5,155 and 90 more) |
 | Calls | `LoseLife` (tail), `LevelComplete` (tail), `OpenReceiver`, `AddScore`, `DrainEnergy`, `UpdateOverload`, `PlaySound` |
 | Reads | `$837C` (`GremlinSoundFlag`); `$8ED3` (`LifeLost`) |
 | Writes | `$837B`-`$837C` (`BurnSoundFlag`, `GremlinSoundFlag`) |
@@ -943,7 +958,7 @@ Witness: L1 116 (ending, hof, nameedit, L x20, rzx x60).
 
 | | |
 | --- | --- |
-| Runs | not reached in `stage1/c1g`; in the other recordings run into, not called (`stage2/rec/ending`, `stage1/rzx/r344752`, `stage1/rzx/r166812` and 42 more) |
+| Runs | not reached in `stage1/c1g`; in the other recordings 116 runs of its first instruction, entered by a jump (`stage1/rzx/r004833` 2, `stage1/rzx/r011752` 2, `stage1/rzx/r028919` 2 and 80 more) |
 | Calls | `TitleLoop` (tail), `LevelPanel` (tail), `Delay`, `AddScore`, `TwoTone`, `PlaySound`, `EndingScreen`, `TitleTune` |
 | Reads | `$54F1`-`$54F7` (screen); `$5800`-`$5A7E` (screen); `$81FF` (`Level`); `$837D` (`Lives`); `$9B3E`-`$9B42` (`ScoreDigits`); `$A507`-`$A508` (`EnergyBarPointer`); 1 more ranges |
 | Writes | `$54AA`-`$54AF` (screen); `$54F1`-`$54F7` (screen); `$55AA`-`$55AF` (screen); `$55F1`-`$55F7` (screen); `$56AA`-`$56AF` (screen); `$56F1`-`$56F7` (screen); 5 more ranges |
@@ -982,10 +997,11 @@ Witness: L1 22256 (c1, c1g, cheat, controls, energy, energy-out, hof, kempston, 
 | | |
 | --- | --- |
 | Runs (c1g: the c1 recording's game window, from the jump to `$8382` (frame 15752 T 33930): the menu and play) | 152 calls, 3,648 t-states own (0.00 %) |
-| Runs (the other recordings) | 21,657 calls (`stage1/rzx/r307588` 558, `stage1/rzx/r319697` 544, `stage1/rzx/r024486` 510 and 87 more) |
+| Runs (the other recordings) | 22,104 calls (`stage1/rzx/r307588` 558, `stage1/rzx/r319697` 544, `stage1/rzx/r024486` 510 and 88 more) |
 | Called from | `PlaySound` (tail) |
 | Calls | `TwoTone` (falls into) |
 | Reads | `$81E9`-`$81EA` (`ChargeWarble+1`) |
+| Ports out | `$00FE`, `$18FE` |
 
 ### `TwoTone` (`$A843`)
 
@@ -1023,7 +1039,7 @@ Witness: L1 50108 (c1, c1g, cheat, controls, corner, ending, energy, energy-out,
 | | |
 | --- | --- |
 | Runs (c1g: the c1 recording's game window, from the jump to `$8382` (frame 15752 T 33930): the menu and play) | 1 call, 1,253,676 t-states own (0.37 %) |
-| Runs (the other recordings) | 50,102 calls (`stage1/rzx/r295329` 2,153, `stage1/rzx/r268227` 2,109, `stage1/rzx/r204297` 1,880 and 90 more) |
+| Runs (the other recordings) | 50,107 calls (`stage1/rzx/r295329` 2,153, `stage1/rzx/r268227` 2,109, `stage1/rzx/r204297` 1,880 and 92 more) |
 | Called from | `PlaySound` (tail) |
 | Reads | `$81D5`-`$81FB` (`BurnSound+1`, `MineSound`, `LaserBackSound`, `BurningNoise` and 4 more); `$8661`-`$8669` (`ReceiverOpenSound+1`, `LifeLostSound`); `$8696`-`$8699` (`EnergyDrainedSound+1`) |
 | Ports out | `$00FE`, `$18FE` |
@@ -1042,7 +1058,7 @@ Witness: L1 16546 (corner, L x20, rzx x53).
 
 | | |
 | --- | --- |
-| Runs | not reached in `stage1/c1g`; in the other recordings 16,529 calls (`stage2/rec/L39` 1,018, `stage1/rzx/r183540` 814, `stage1/rzx/r300124` 794 and 70 more) |
+| Runs | not reached in `stage1/c1g`; in the other recordings 16,546 calls (`stage2/rec/L39` 1,018, `stage1/rzx/r183540` 814, `stage1/rzx/r300124` 794 and 71 more) |
 | Called from | `PlaySound` (tail) |
 | Calls | `Random` |
 | Reads | `$81E4`-`$81E7` (`BurningNoise+1`) |
@@ -1062,7 +1078,7 @@ Witness: L1 487506 (c1, c1g, cheat, controls, corner, ending, energy, energy-out
 | | |
 | --- | --- |
 | Runs (c1g: the c1 recording's game window, from the jump to `$8382` (frame 15752 T 33930): the menu and play) | 4,473 calls, 655,577 t-states own (0.20 %) |
-| Runs (the other recordings) | 479,633 calls (`stage2/rec/energy-out` 18,370, `stage1/energy` 18,113, `docs/integrate/rec/nameedit` 17,189 and 90 more) |
+| Runs (the other recordings) | 483,033 calls (`stage2/rec/energy-out` 18,370, `stage1/energy` 18,113, `docs/integrate/rec/nameedit` 17,189 and 92 more) |
 | Called from | `InterruptExit` |
 | Calls | `PlaySound` (falls into) |
 | Reads | `$A8A6` (`SoundFlags`) |
@@ -1080,7 +1096,7 @@ Witness: L1 88910 (c1, c1g, cheat, controls, corner, ending, energy, energy-out,
 | | |
 | --- | --- |
 | Runs (c1g: the c1 recording's game window, from the jump to `$8382` (frame 15752 T 33930): the menu and play) | 153 calls, 4,148 t-states own (0.00 %) |
-| Runs (the other recordings) | 88,288 calls (`stage1/rzx/r268227` 2,658, `stage1/rzx/r183540` 2,406, `stage1/rzx/r327592` 2,350 and 90 more) |
+| Runs (the other recordings) | 88,757 calls (`stage1/rzx/r268227` 2,658, `stage1/rzx/r183540` 2,406, `stage1/rzx/r327592` 2,350 and 92 more) |
 | Called from | `PassEnd`, `LoseLife`, `LoseLifeDrained`, `LevelComplete`, `LevelCompletePause`, `ChargeLaser`, `PlaySoundFlags` (falls into), `EndingScreen` |
 | Calls | `PlayTone` (tail), `PlaySweep` (tail), `PlayNoise` (tail) |
 | Reads | `$81D4`-`$81F7` (`BurnSound`, `MineSound`, `LaserBackSound`, `BurningNoise` and 4 more); `$8660`-`$8665` (`ReceiverOpenSound`, `LifeLostSound`); `$8695` (`EnergyDrainedSound`) |
@@ -1140,7 +1156,7 @@ Witness: L1 1 (controls).
 
 | | |
 | --- | --- |
-| Runs | ran within another entry's routine (reached by a jump or by running on, its calls below), no runs of its own counted |
+| Runs | not reached in `stage1/c1g`; in the other recordings 1 run of its first instruction, entered by a jump (`stage1/controls` 1) |
 | Calls | `TwoTone`, `TitleTune` |
 
 ### `ReadKeys` (`$97F0`)
@@ -1158,7 +1174,7 @@ Witness: L1 117268 (c1, c1g, cheat, controls, corner, energy, energy-out, hof, k
 | | |
 | --- | --- |
 | Runs (c1g: the c1 recording's game window, from the jump to `$8382` (frame 15752 T 33930): the menu and play) | 1,044 calls, 351,798 t-states own (0.10 %) |
-| Runs (the other recordings) | 115,351 calls (`stage2/rec/energy-out` 6,304, `stage1/energy` 6,269, `docs/integrate/rec/nameedit` 5,155 and 87 more) |
+| Runs (the other recordings) | 116,224 calls (`stage2/rec/energy-out` 6,304, `stage1/energy` 6,269, `docs/integrate/rec/nameedit` 5,155 and 89 more) |
 | Called from | `MainLoop` |
 | Calls | `TitleLoop` (tail), `TwoTone` |
 | Reads | `$50E0`-`$50EF` (screen); `$51E0`-`$51EF` (screen); `$52E0`-`$52EF` (screen); `$53E0`-`$53EF` (screen); `$54E0`-`$54EF` (screen); `$81FD` (`ControlMethod`); 12 more ranges |
@@ -1177,7 +1193,8 @@ Witness: L1 531 (cheat).
 
 | | |
 | --- | --- |
-| Runs | not reached in the recordings |
+| Runs | not reached in `stage1/c1g`; in the other recordings 531 runs of its first instruction, entered by a jump (`stage2/rec/cheat` 531) |
+| Calls | `SetUpLevel` (tail) |
 
 ### `ReadControls` (`$9869`)
 
@@ -1191,7 +1208,8 @@ Witness: L1 117259 (c1, c1g, cheat, controls, corner, energy, energy-out, hof, k
 
 | | |
 | --- | --- |
-| Runs | ran within another entry's routine (reached by a jump or by running on, its calls below), no runs of its own counted |
+| Runs (c1g: the c1 recording's game window, from the jump to `$8382` (frame 15752 T 33930): the menu and play) | 1,044 runs of its first instruction (entered by a jump or by running on, no routine of its own in the L1) |
+| Runs (the other recordings) | 116,215 runs of its first instruction, entered by a jump (`stage2/rec/energy-out` 6,304, `stage1/energy` 6,269, `docs/integrate/rec/nameedit` 5,155 and 89 more) |
 | Calls | `ReadKempston` (tail), `MoveCursor` (tail) |
 
 ### `ReadKempston` (`$98D2`)
@@ -1231,7 +1249,7 @@ Witness: L1 117459 (c1, c1g, cheat, controls, corner, energy, energy-out, hof, k
 | | |
 | --- | --- |
 | Runs (c1g: the c1 recording's game window, from the jump to `$8382` (frame 15752 T 33930): the menu and play) | 1,045 calls, 111,191,135 t-states own (33.09 %) |
-| Runs (the other recordings) | 115,541 calls (`stage2/rec/energy-out` 6,307, `stage1/energy` 6,272, `docs/integrate/rec/nameedit` 5,158 and 87 more) |
+| Runs (the other recordings) | 116,414 calls (`stage2/rec/energy-out` 6,307, `stage1/energy` 6,272, `docs/integrate/rec/nameedit` 5,158 and 89 more) |
 | Called from | `MainLoop`, `BuildLevel` (falls into) |
 | Calls | `DrawMarkedChars` (tail) |
 | Reads | `$8200`-`$830B` (`CellTable`); `$831C`-`$8373` (`CellTable+284`); `$8407` (`PracticeFlag`); `$8914`-`$8915` (`CharMapPointer`); `$D700`-`$DAFF` (`CellGraphics`); `$DB80`-`$DD9F` (`CellGraphics+1152`); 12 more ranges |
@@ -1251,7 +1269,8 @@ Witness: L1 117449 (c1, c1g, cheat, controls, corner, energy, energy-out, hof, k
 
 | | |
 | --- | --- |
-| Runs | not reached in `stage1/c1g`; in the other recordings 34,358 calls (`stage1/rzx/r319697` 2,426, `stage1/rzx/r107497` 2,221, `stage1/rzx/r146186` 2,050 and 27 more) |
+| Runs (c1g: the c1 recording's game window, from the jump to `$8382` (frame 15752 T 33930): the menu and play) | 1,045 runs of its first instruction (entered by a jump or by running on, no routine of its own in the L1) |
+| Runs (the other recordings) | 34,358 calls (`stage1/rzx/r319697` 2,426, `stage1/rzx/r107497` 2,221, `stage1/rzx/r146186` 2,050 and 27 more) |
 | Called from | `RenderGrid` (tail) |
 | Calls | `PrintPlay` |
 | Reads | `$8407` (`PracticeFlag`); `$D700`-`$D887` (`CellGraphics`); `$D8C8`-`$D947` (`CellGraphics+456`); `$DA68`-`$DAFF` (`CellGraphics+872`); `$DB80`-`$DD9F` (`CellGraphics+1152`); `$DF00`-`$DF48` (`CellColours`); 11 more ranges |
@@ -1291,7 +1310,7 @@ Witness: L1 117170 (c1, c1g, cheat, controls, corner, energy, energy-out, hof, k
 | | |
 | --- | --- |
 | Runs (c1g: the c1 recording's game window, from the jump to `$8382` (frame 15752 T 33930): the menu and play) | 1,043 calls, 67,445,630 t-states own (20.07 %) |
-| Runs (the other recordings) | 115,258 calls (`stage2/rec/energy-out` 6,304, `stage1/energy` 6,268, `docs/integrate/rec/nameedit` 5,155 and 87 more) |
+| Runs (the other recordings) | 116,127 calls (`stage2/rec/energy-out` 6,304, `stage1/energy` 6,268, `docs/integrate/rec/nameedit` 5,155 and 89 more) |
 | Called from | `MainLoop` |
 | Calls | `CopyPlayAreaThird` (falls into) |
 | Reads | `$E300`-`$E57F` (`work space $E300+`); `$E600`-`$E87F` (`work space $E600+`); `$E900`-`$FCFF` (`work space $E900+`) |
@@ -1307,7 +1326,8 @@ Witness: L1 351508 (c1, c1g, cheat, controls, corner, energy, energy-out, gameov
 
 | | |
 | --- | --- |
-| Runs | not reached in `stage1/c1g`; in the other recordings 1,154 calls (`stage1/mine` 577, `stage1/overload` 577) |
+| Runs (c1g: the c1 recording's game window, from the jump to `$8382` (frame 15752 T 33930): the menu and play) | 3,129 runs of its first instruction (entered by a jump or by running on, no routine of its own in the L1) |
+| Runs (the other recordings) | 3,762 calls (`stage2/rec/cheat` 1,584, `docs/integrate/rec/corner` 1,024, `stage1/mine` 577 and 1 more) |
 | Called from | `CopyPlayArea` (falls into), `CopyPlayAreaNext` (tail) |
 | Calls | `CopyPlayAreaLoop` (falls into) |
 
@@ -1321,7 +1341,8 @@ Witness: L1 74988317 (c1, c1g, cheat, controls, corner, energy, energy-out, game
 
 | | |
 | --- | --- |
-| Runs | not reached in `stage1/c1g`; in the other recordings 246,648 calls (`stage1/mine` 123,324, `stage1/overload` 123,324) |
+| Runs (c1g: the c1 recording's game window, from the jump to `$8382` (frame 15752 T 33930): the menu and play) | 667,520 runs of its first instruction (entered by a jump or by running on, no routine of its own in the L1) |
+| Runs (the other recordings) | 803,353 calls (`stage2/rec/cheat` 338,021, `docs/integrate/rec/corner` 218,684, `stage1/mine` 123,324 and 1 more) |
 | Called from | `CopyPlayAreaThird` (falls into), `CopyPlayAreaNext` (tail) |
 | Calls | `CopyPlayAreaNext` (falls into) |
 | Reads | `$E300`-`$E57F` (`work space $E300+`); `$E900`-`$FCFF` (`work space $E900+`) |
@@ -1337,7 +1358,8 @@ Witness: L1 74988314 (c1, c1g, cheat, controls, corner, energy, energy-out, game
 
 | | |
 | --- | --- |
-| Runs | not reached in `stage1/c1g`; in the other recordings 246,648 calls (`stage1/mine` 123,324, `stage1/overload` 123,324) |
+| Runs (c1g: the c1 recording's game window, from the jump to `$8382` (frame 15752 T 33930): the menu and play) | 667,520 runs of its first instruction (entered by a jump or by running on, no routine of its own in the L1) |
+| Runs (the other recordings) | 803,352 calls (`stage2/rec/cheat` 338,020, `docs/integrate/rec/corner` 218,684, `stage1/mine` 123,324 and 1 more) |
 | Called from | `CopyPlayAreaLoop` (falls into) |
 | Calls | `CopyPlayAreaThird` (tail), `CopyPlayAreaLoop` (tail) |
 | Reads | `$E300`-`$E4BB` (`work space $E300+`); `$E600`-`$E87F` (`work space $E600+`); `$EA15`-`$EA16` (`work space $EA15+`); `$EA35`-`$EA36` (`work space $EA35+`); `$EA55`-`$EA56` (`work space $EA55+`); `$EA75`-`$EA76` (`work space $EA75+`); 44 more ranges |
@@ -1373,7 +1395,7 @@ Witness: L1 200 (c1, c1g, cheat, controls, energy, energy-out, hof, kempston, me
 | | |
 | --- | --- |
 | Runs (c1g: the c1 recording's game window, from the jump to `$8382` (frame 15752 T 33930): the menu and play) | 1 call, 46 t-states own (0.00 %) |
-| Runs (the other recordings) | 196 calls (`stage1/menu` 61, `stage1/rzx/r024486` 3, `stage1/rzx/r183540` 3 and 87 more) |
+| Runs (the other recordings) | 199 calls (`stage1/menu` 61, `stage1/rzx/r024486` 3, `stage2/rec/cheat` 3 and 88 more) |
 | Called from | `SetUpLevel` |
 | Calls | `WipeIn` (falls into) |
 | Reads | `$8C78`-`$8C94` (`WipeSteps`, `WipeRows`, `WipeWidth`, `WipeTable` and 1 more); `$8D95`-`$8DD4` (`PlayAreaWipes`); `$E600`-`$E87F` (`work space $E600+`); `$E900`-`$FCFF` (`work space $E900+`) |
@@ -1411,7 +1433,7 @@ Witness: L1 826505 (c1, c1g, cheat, controls, corner, energy, energy-out, hof, k
 | | |
 | --- | --- |
 | Runs (c1g: the c1 recording's game window, from the jump to `$8382` (frame 15752 T 33930): the menu and play) | 4,322 calls, 635,681 t-states own (0.19 %) |
-| Runs (the other recordings) | 809,152 calls (`docs/integrate/rec/nameedit` 22,245, `stage2/rec/hof` 22,245, `stage1/rzx/r183540` 19,762 and 88 more) |
+| Runs (the other recordings) | 822,183 calls (`docs/integrate/rec/nameedit` 22,245, `stage2/rec/hof` 22,245, `stage1/rzx/r183540` 19,762 and 90 more) |
 | Called from | `WipeIn`, `PrismTurn`, `ChargeLaser`, `PlayNoise`, `GremlinAppear`, `GremlinTurnMirror`, `GremlinMove` |
 | Reads | `$8E32`-`$8E33` (`RandomSeed`) |
 | Writes | `$8E32`-`$8E33` (`RandomSeed`) |
@@ -1467,7 +1489,7 @@ Witness: L1 2 (c1, c1g).
 
 | | |
 | --- | --- |
-| Runs (c1g: the c1 recording's game window, from the jump to `$8382` (frame 15752 T 33930): the menu and play) | run into, not called, 10 t-states own (0.00 %) |
+| Runs (c1g: the c1 recording's game window, from the jump to `$8382` (frame 15752 T 33930): the menu and play) | 1 run of its first instruction (entered by a jump or by running on, no routine of its own in the L1), 10 t-states own (0.00 %) |
 | Runs (the other recordings) | 1 call (`stage1/c1` 1) |
 | Calls | `Start` (tail) |
 
@@ -1502,7 +1524,8 @@ Witness: L1 15 (c1, c1g, controls, energy-out, gameover, hof, kempston, menu, mi
 
 | | |
 | --- | --- |
-| Runs | not reached in `stage1/c1g`; in the other recordings 13 calls (`stage1/controls` 3, `stage1/menu` 2, `docs/integrate/rec/nameedit` 1 and 7 more) |
+| Runs (c1g: the c1 recording's game window, from the jump to `$8382` (frame 15752 T 33930): the menu and play) | 1 run of its first instruction (entered by a jump or by running on, no routine of its own in the L1) |
+| Runs (the other recordings) | 13 calls (`stage1/controls` 3, `stage1/menu` 2, `docs/integrate/rec/nameedit` 1 and 7 more) |
 | Called from | `MainLoop` (tail), `LoseLifeDrained` (tail), `LevelCompletePause` (tail), `ReadKeys` (tail) |
 | Calls | `HallOfFame`, `TitleScreen` |
 | Reads | `$81FF` (`Level`); `$8385`-`$8386` (`LevelSettings`); `$8407` (`PracticeFlag`); `$88B0`-`$88BF` (`LevelDigits`); `$8912`-`$8913` (`LevelAddress`); `$9B44`-`$9B48` (`SavedScore`); 1 more ranges |
@@ -1520,7 +1543,8 @@ Witness: L1 11 (c1, c1g, controls, energy, energy-out, kempston, menu, practice)
 
 | | |
 | --- | --- |
-| Runs | not reached in `stage1/c1g`; in the other recordings run into, not called (`stage2/rec/L01`, `stage1/kempston`, `docs/dfA/rec/practice` and 2 more) |
+| Runs (c1g: the c1 recording's game window, from the jump to `$8382` (frame 15752 T 33930): the menu and play) | 1 run of its first instruction (entered by a jump or by running on, no routine of its own in the L1) |
+| Runs (the other recordings) | 10 runs of its first instruction, entered by a jump (`stage1/controls` 3, `stage1/menu` 2, `docs/dfA/rec/practice` 1 and 4 more) |
 | Calls | `Delay`, `ClearSavedScore` |
 | Reads | `$81B8`-`$81D0` (`ExplosionSlots`); `$81FF` (`Level`); `$8376`-`$8386` (`BeamStartX`, `BeamStartY`, `BeamStartDirection`, `DemoFlag` and 10 more); `$83FD`-`$8407` (`LevelSettings+120`, `PracticeFlag`); `$88B0`-`$88BF` (`LevelDigits`); `$8900`-`$8913` (`LevelDigits+80`, `Delay`, `LevelAddress`); 9 more ranges |
 | Writes | `$50A6`-`$50A7` (screen); `$51A6`-`$51A7` (screen); `$52A6`-`$52A7` (screen); `$53A6`-`$53A7` (screen); `$53BA`-`$53BF` (screen); `$5486`-`$5487` (screen); 31 more ranges |
@@ -1535,7 +1559,8 @@ Witness: L1 92 (c1, c1g, controls, energy, energy-out, hof, kempston, menu, name
 
 | | |
 | --- | --- |
-| Runs | not reached in `stage1/c1g`; in the other recordings 80 calls (`stage1/rzx/r154293` 1, `stage1/rzx/r215327` 1, `stage1/rzx/r183540` 1 and 77 more) |
+| Runs (c1g: the c1 recording's game window, from the jump to `$8382` (frame 15752 T 33930): the menu and play) | 1 run of its first instruction (entered by a jump or by running on, no routine of its own in the L1) |
+| Runs (the other recordings) | 80 calls (`stage1/rzx/r154293` 1, `stage1/rzx/r215327` 1, `stage1/rzx/r183540` 1 and 77 more) |
 | Called from | `LevelCompletePause` (tail) |
 | Calls | `SetUpLevel` (falls into), `DrawPanel` |
 | Reads | `$5800`-`$5A7E` (screen); `$81B8`-`$81D0` (`ExplosionSlots`); `$81FF` (`Level`); `$8376`-`$8407` (`BeamStartX`, `BeamStartY`, `BeamStartDirection`, `DemoFlag` and 11 more); `$88B0`-`$88FF` (`LevelDigits`); `$8912`-`$8913` (`LevelAddress`); 9 more ranges |
@@ -1568,7 +1593,7 @@ Witness: L1 200 (c1, c1g, cheat, controls, energy, energy-out, hof, kempston, me
 | | |
 | --- | --- |
 | Runs (c1g: the c1 recording's game window, from the jump to `$8382` (frame 15752 T 33930): the menu and play) | 1 call, 40,782 t-states own (0.01 %) |
-| Runs (the other recordings) | 196 calls (`stage1/menu` 61, `stage1/rzx/r319697` 3, `stage1/rzx/r307588` 3 and 87 more) |
+| Runs (the other recordings) | 199 calls (`stage1/menu` 61, `stage1/rzx/r319697` 3, `stage1/rzx/r307588` 3 and 88 more) |
 | Called from | `SetUpLevel` |
 | Calls | `RenderGrid` (falls into) |
 | Reads | `$81FF` (`Level`); `$8912`-`$8913` (`LevelAddress`); `$B000`-`$D02A` (`LevelData`); `$E000`-`$E5FE` (`work space $E000+`); `$FD00`-`$FDF9` (`work space $FD00+`) |
@@ -1591,7 +1616,7 @@ Witness: L1 117171 (c1, c1g, cheat, controls, corner, energy, energy-out, hof, k
 | | |
 | --- | --- |
 | Runs (c1g: the c1 recording's game window, from the jump to `$8382` (frame 15752 T 33930): the menu and play) | 1,043 calls, 153,707 t-states own (0.05 %) |
-| Runs (the other recordings) | 115,259 calls (`stage2/rec/energy-out` 6,304, `stage1/energy` 6,268, `docs/integrate/rec/nameedit` 5,155 and 87 more) |
+| Runs (the other recordings) | 116,128 calls (`stage2/rec/energy-out` 6,304, `stage1/energy` 6,268, `docs/integrate/rec/nameedit` 5,155 and 89 more) |
 | Called from | `MainLoop` |
 | Calls | `AddScore` |
 | Reads | `$81FD` (`ControlMethod`); `$96C3`-`$96C5` (`CursorVars`, `CursorY`, `ControlBits`); `$AB67`-`$AB95` (`Gremlins+4`, `GremlinNewX`, `GremlinNewY`, `GremlinCount`) |
@@ -1611,7 +1636,7 @@ Witness: L1 200 (c1, c1g, cheat, controls, energy, energy-out, hof, kempston, me
 | | |
 | --- | --- |
 | Runs (c1g: the c1 recording's game window, from the jump to `$8382` (frame 15752 T 33930): the menu and play) | 1 call, 1,124 t-states own (0.00 %) |
-| Runs (the other recordings) | 196 calls (`stage1/menu` 61, `stage1/controls` 3, `stage1/rzx/r183540` 3 and 87 more) |
+| Runs (the other recordings) | 199 calls (`stage1/menu` 61, `stage1/controls` 3, `stage1/rzx/r183540` 3 and 88 more) |
 | Called from | `SetUpLevel` |
 | Reads | `$81FF` (`Level`); `$8379` (`DemoFlag`) |
 | Writes | `$54B1`-`$54B8` (screen); `$54F1`-`$54F8` (screen); `$55B1`-`$55B8` (screen); `$55F1`-`$55F8` (screen); `$56B1`-`$56B8` (screen); `$56F1`-`$56F8` (screen); 2 more ranges |
@@ -1632,7 +1657,8 @@ Witness: L1 4480 (c1, c1g, cheat, controls, energy, energy-out, hof, kempston, m
 
 | | |
 | --- | --- |
-| Runs | ran within another entry's routine (reached by a jump or by running on, its calls below), no runs of its own counted |
+| Runs (c1g: the c1 recording's game window, from the jump to `$8382` (frame 15752 T 33930): the menu and play) | 32 runs of its first instruction (entered by a jump or by running on, no routine of its own in the L1) |
+| Runs (the other recordings) | 4,448 runs of its first instruction, entered by a jump (`docs/integrate/rec/nameedit` 96, `stage1/controls` 96, `stage1/energy` 96 and 88 more) |
 | Calls | `Random`, `PlaySound` |
 
 ### `DrainEnergy` (`$A613`)
@@ -1654,7 +1680,7 @@ Witness: L1 117106 (c1, c1g, cheat, controls, corner, energy, energy-out, hof, k
 | | |
 | --- | --- |
 | Runs (c1g: the c1 recording's game window, from the jump to `$8382` (frame 15752 T 33930): the menu and play) | 1,043 calls, 769,588 t-states own (0.23 %) |
-| Runs (the other recordings) | 115,193 calls (`stage2/rec/energy-out` 6,301, `stage1/energy` 6,266, `docs/integrate/rec/nameedit` 5,152 and 87 more) |
+| Runs (the other recordings) | 116,063 calls (`stage2/rec/energy-out` 6,301, `stage1/energy` 6,266, `docs/integrate/rec/nameedit` 5,152 and 89 more) |
 | Called from | `PassEnd` |
 | Reads | `$54F1`-`$54F8` (screen); `$837A` (`MirrorCount`); `$A104` (`MessageNumber`); `$A506`-`$A509` (`EnergyTick`, `EnergyBarPointer`, `LaserCharging`); `$A8A6` (`SoundFlags`); `$FD23`-`$FDB9` (`work space $FD23+`) |
 | Writes | `$54F1`-`$54F8` (screen); `$55F1`-`$55F8` (screen); `$56F1`-`$56F8` (screen); `$8378`-`$837E` (`BeamStartDirection`, `DemoFlag`, `MirrorCount`, `BurnSoundFlag` and 3 more); `$8ED3` (`LifeLost`); `$A104`-`$A10F` (`MessageNumber`, `MessageGlyph`, `MessageState`, `MessageText`); 4 more ranges |
@@ -1672,7 +1698,7 @@ Witness: L1 117162 (c1, c1g, cheat, controls, corner, energy, energy-out, gameov
 | | |
 | --- | --- |
 | Runs (c1g: the c1 recording's game window, from the jump to `$8382` (frame 15752 T 33930): the menu and play) | 1,043 calls, 249,665 t-states own (0.07 %) |
-| Runs (the other recordings) | 115,249 calls (`stage2/rec/energy-out` 6,304, `stage1/energy` 6,268, `docs/integrate/rec/nameedit` 5,155 and 88 more) |
+| Runs (the other recordings) | 116,119 calls (`stage2/rec/energy-out` 6,304, `stage1/energy` 6,268, `docs/integrate/rec/nameedit` 5,155 and 90 more) |
 | Called from | `PassEnd` |
 | Calls | `OverloadStep` (falls into), `OverloadAddStep` (tail) |
 | Reads | `$54B1`-`$54B8` (screen); `$8407` (`PracticeFlag`); `$8ED4`-`$8ED5` (`BeamOnMine`, `BeamInLaser`); `$A104` (`MessageNumber`); `$A50A`-`$A50B` (`OverloadBarPointer`); `$A8A6` (`SoundFlags`) |
@@ -1722,7 +1748,8 @@ Witness: L1 108021 (c1, c1g, cheat, controls, corner, energy, energy-out, hof, k
 
 | | |
 | --- | --- |
-| Runs | not reached in the recordings |
+| Runs (c1g: the c1 recording's game window, from the jump to `$8382` (frame 15752 T 33930): the menu and play) | 1,043 runs of its first instruction (entered by a jump or by running on, no routine of its own in the L1) |
+| Runs (the other recordings) | 106,978 runs of its first instruction, entered by a jump (`stage2/rec/energy-out` 6,304, `stage1/energy` 6,268, `docs/integrate/rec/nameedit` 5,153 and 89 more) |
 
 ### `UpdateGremlins` (`$AB9F`)
 
@@ -1739,7 +1766,7 @@ Witness: L1 112691 (c1, c1g, cheat, controls, corner, energy, energy-out, hof, k
 | | |
 | --- | --- |
 | Runs (c1g: the c1 recording's game window, from the jump to `$8382` (frame 15752 T 33930): the menu and play) | 1,011 calls, 83,932 t-states own (0.02 %) |
-| Runs (the other recordings) | 110,907 calls (`stage2/rec/energy-out` 6,208, `stage1/energy` 6,172, `docs/integrate/rec/nameedit` 5,059 and 87 more) |
+| Runs (the other recordings) | 111,680 calls (`stage2/rec/energy-out` 6,208, `stage1/energy` 6,172, `docs/integrate/rec/nameedit` 5,059 and 89 more) |
 | Called from | `MainLoop` |
 | Calls | `GremlinAppear`, `GremlinTurnMirror`, `GremlinMove`, `DrawGremlin` |
 | Reads | `$AB63`-`$AB96` (`Gremlins`, `GremlinNewX`, `GremlinNewY`, `GremlinCount` and 1 more) |
@@ -1992,7 +2019,7 @@ Witness: L1 487506 (c1, c1g, cheat, controls, corner, ending, energy, energy-out
 | | |
 | --- | --- |
 | Runs (c1g: the c1 recording's game window, from the jump to `$8382` (frame 15752 T 33930): the menu and play) | 4,473 calls, 10,019,342 t-states own (2.98 %) |
-| Runs (the other recordings) | 479,633 calls (`stage2/rec/energy-out` 18,370, `stage1/energy` 18,113, `docs/integrate/rec/nameedit` 17,189 and 90 more) |
+| Runs (the other recordings) | 483,033 calls (`stage2/rec/energy-out` 18,370, `stage1/energy` 18,113, `docs/integrate/rec/nameedit` 17,189 and 92 more) |
 | Calls | `InterruptExit` (tail), `MenuScrollerTick` (tail) |
 | Reads | `$50E0`-`$50EF` (screen); `$51A5`-`$51B9` (screen); `$51E0`-`$51EF` (screen); `$52A5`-`$52B9` (screen); `$52E0`-`$52EF` (screen); `$53A5`-`$53B9` (screen); 12 more ranges |
 | Writes | `$50E0`-`$50EF` (screen); `$51A5`-`$51B9` (screen); `$51E0`-`$51EF` (screen); `$52A5`-`$52B9` (screen); `$52E0`-`$52EF` (screen); `$53A5`-`$53B9` (screen); 10 more ranges |
@@ -2007,7 +2034,8 @@ Witness: L1 487506 (c1, c1g, cheat, controls, corner, ending, energy, energy-out
 
 | | |
 | --- | --- |
-| Runs | not reached in `stage1/c1g`; in the other recordings 505 calls (`stage2/rec/ending` 267, `stage1/rzx/r344752` 238) |
+| Runs (c1g: the c1 recording's game window, from the jump to `$8382` (frame 15752 T 33930): the menu and play) | 4,473 runs of its first instruction (entered by a jump or by running on, no routine of its own in the L1) |
+| Runs (the other recordings) | 505 calls (`stage2/rec/ending` 267, `stage1/rzx/r344752` 238) |
 | Called from | `InterruptHandler` (tail), `MenuScrollerTick` (tail) |
 | Calls | `PlaySoundFlags` |
 
@@ -2027,7 +2055,8 @@ Witness: L1 3417 (c1, c1g, controls, energy, energy-out, hof, kempston, menu, na
 
 | | |
 | --- | --- |
-| Runs | not reached in `stage1/c1g`; in the other recordings 28 calls (`stage1/rzx/r344752` 28) |
+| Runs (c1g: the c1 recording's game window, from the jump to `$8382` (frame 15752 T 33930): the menu and play) | 332 runs of its first instruction (entered by a jump or by running on, no routine of its own in the L1) |
+| Runs (the other recordings) | 28 calls (`stage1/rzx/r344752` 28) |
 | Called from | `InterruptHandler` (tail) |
 | Calls | `InterruptExit` (tail) |
 | Reads | `$51A5`-`$51B9` (screen); `$52A5`-`$52B9` (screen); `$53A5`-`$53B9` (screen); `$54A5`-`$54B9` (screen); `$55A5`-`$55B9` (screen); `$A107`-`$A111` (`MessageGlyph+2`, `MessageState`, `MessageText`, `MessagePointer`); 2 more ranges |
@@ -2285,7 +2314,7 @@ Witness: L1 47063 (c1).
 
 | | |
 | --- | --- |
-| Runs | not reached in `stage1/c1g`; in the other recordings run into, not called (`stage1/c1`) |
+| Runs | not reached in `stage1/c1g`; in the other recordings 47,063 runs of its first instruction, entered by a jump (`stage1/c1` 47,063) |
 | Called from | `ScriptStep` (tail), `CodePause` (tail) |
 
 ### The loader's second stage: script
@@ -2407,7 +2436,7 @@ Witness: L1 23 (c1).
 
 | | |
 | --- | --- |
-| Runs | not reached in `stage1/c1g`; in the other recordings run into, not called (`stage1/c1`) |
+| Runs | not reached in `stage1/c1g`; in the other recordings 23 runs of its first instruction, entered by a jump (`stage1/c1` 23) |
 | Called from | `ControlCode` |
 | Calls | `HookWork` (tail) |
 
@@ -2457,7 +2486,7 @@ Witness: L1 86 (c1).
 
 | | |
 | --- | --- |
-| Runs | not reached in `stage1/c1g`; in the other recordings run into, not called (`stage1/c1`) |
+| Runs | not reached in `stage1/c1g`; in the other recordings 86 runs of its first instruction, entered by a jump (`stage1/c1` 86) |
 | Called from | `ControlCode` |
 
 #### `CodeDown` (`$B9BF`)
@@ -2470,7 +2499,7 @@ Witness: L1 86 (c1).
 
 | | |
 | --- | --- |
-| Runs | ran within another entry's routine (reached by a jump or by running on, its calls below), no runs of its own counted |
+| Runs | not reached in `stage1/c1g`; in the other recordings 86 runs of its first instruction, entered by a jump (`stage1/c1` 86) |
 | Calls | `ScriptStep` (tail) |
 
 #### `CodeGlyph` (`$B9C3`)
@@ -2505,7 +2534,7 @@ Witness: L1 1 (c1).
 
 | | |
 | --- | --- |
-| Runs | not reached in `stage1/c1g`; in the other recordings run into, not called (`stage1/c1`) |
+| Runs | not reached in `stage1/c1g`; in the other recordings 1 run of its first instruction, entered by a jump (`stage1/c1` 1) |
 | Called from | `ControlCode` |
 | Calls | `SetAttrBits` (tail) |
 
@@ -2517,7 +2546,7 @@ Witness: L1 33 (c1).
 
 | | |
 | --- | --- |
-| Runs | not reached in `stage1/c1g`; in the other recordings run into, not called (`stage1/c1`) |
+| Runs | not reached in `stage1/c1g`; in the other recordings 33 runs of its first instruction, entered by a jump (`stage1/c1` 33) |
 | Called from | `ControlCode` |
 | Calls | `SetAttrBits` (tail) |
 
@@ -2580,7 +2609,7 @@ Witness: L1 24 (c1).
 
 | | |
 | --- | --- |
-| Runs | not reached in `stage1/c1g`; in the other recordings run into, not called (`stage1/c1`) |
+| Runs | not reached in `stage1/c1g`; in the other recordings 24 runs of its first instruction, entered by a jump (`stage1/c1` 24) |
 | Called from | `ControlCode` |
 | Calls | `Times32` |
 
@@ -2621,7 +2650,7 @@ Witness: L1 2 (c1).
 
 | | |
 | --- | --- |
-| Runs | not reached in `stage1/c1g`; in the other recordings run into, not called (`stage1/c1`) |
+| Runs | not reached in `stage1/c1g`; in the other recordings 2 runs of its first instruction, entered by a jump (`stage1/c1` 2) |
 | Called from | `ControlCode` |
 | Calls | `Times32` |
 
@@ -2635,7 +2664,7 @@ Witness: L1 17 (c1).
 
 | | |
 | --- | --- |
-| Runs | not reached in `stage1/c1g`; in the other recordings run into, not called (`stage1/c1`) |
+| Runs | not reached in `stage1/c1g`; in the other recordings 17 runs of its first instruction, entered by a jump (`stage1/c1` 17) |
 | Called from | `ControlCode` |
 | Calls | `Times32` |
 
@@ -2793,7 +2822,7 @@ Witness: L1 2 (c1).
 
 | | |
 | --- | --- |
-| Runs | not reached in `stage1/c1g`; in the other recordings run into, not called (`stage1/c1`) |
+| Runs | not reached in `stage1/c1g`; in the other recordings 1 run of its first instruction, entered by a jump (`stage1/c1` 1) |
 | Called from | `XorLayer` |
 | Calls | `XorLayer` |
 
@@ -2823,7 +2852,7 @@ Witness: L1 2 (c1).
 
 | | |
 | --- | --- |
-| Runs | not reached in `stage1/c1g`; in the other recordings run into, not called (`stage1/c1`) |
+| Runs | not reached in `stage1/c1g`; in the other recordings 1 run of its first instruction, entered by a jump (`stage1/c1` 1) |
 | Called from | `XorLayer`, `SumLayer1` |
 | Calls | `XorLayer`, `SumLayer1` |
 
@@ -2851,7 +2880,7 @@ Witness: L1 2 (c1).
 
 | | |
 | --- | --- |
-| Runs | not reached in `stage1/c1g`; in the other recordings run into, not called (`stage1/c1`) |
+| Runs | not reached in `stage1/c1g`; in the other recordings 1 run of its first instruction, entered by a jump (`stage1/c1` 1) |
 | Called from | `XorLayer`, `SumLayer1`, `SumLayer2` |
 | Calls | `XorLayer`, `SumLayer1`, `SumLayer2` |
 
@@ -2879,7 +2908,7 @@ Witness: L1 2 (c1).
 
 | | |
 | --- | --- |
-| Runs | not reached in `stage1/c1g`; in the other recordings run into, not called (`stage1/c1`) |
+| Runs | not reached in `stage1/c1g`; in the other recordings 1 run of its first instruction, entered by a jump (`stage1/c1` 1) |
 | Called from | `XorLayer`, `SumLayer1`, `SumLayer2`, `SumLayer3` |
 | Calls | `XorLayer`, `SumLayer1`, `SumLayer2`, `SumLayer3` |
 
@@ -2933,4 +2962,4 @@ Witness: L1 3 (c1).
 
 | | |
 | --- | --- |
-| Runs | not reached in `stage1/c1g`; in the other recordings run into, not called (`stage1/c1`) |
+| Runs | not reached in `stage1/c1g`; in the other recordings 1 run of its first instruction, entered by a jump (`stage1/c1` 1) |

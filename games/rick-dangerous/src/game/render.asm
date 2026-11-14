@@ -38,7 +38,7 @@
 ; Callers: LoadScreen ($ACF7), the level's end ($ABD8) and the end of the last
 ; level ($AC4C). Output: B, HL changed.
 ;
-; Witness: L1 442 (beeper48, c1, controls, ending2, gameover, l1end,
+; Witness: L1 443 (beeper48, c1, controls, ending, ending2, gameover, l1end,
 ; spotL3Z7-51, L1Z1-L1Z6, L2Z1-L2Z7, L3Z1-L3Z12, L4Z1-L4Z9, level1-level4,
 ; spotL1Z4-43).
 MarkAllDirty:
@@ -84,9 +84,10 @@ MarkAllDirtySP:
 ; Callers: the frame loop ($E41F), the game over ($E360) and the end of each
 ; scroll ($ADEC, $AE21). Output: AF, BC, DE, HL changed.
 ;
-; Witness: L1 43013 (beeper48, c1, controls, emptygun, ending2, gameover,
-; l1end, l1z1left, spotL2Z4-34, spotL3Z7-51, spotL4Z8-69, L1Z1-L1Z6, L2Z1-L2Z7,
-; L3Z1-L3Z12, L4Z1-L4Z9, level1-level4, spotL1Z4-43, spotL1Z4-44, spotL1Z4-47).
+; Witness: L1 43014 (beeper48, c1, controls, emptygun, ending, ending2,
+; gameover, l1end, l1z1left, spotL2Z4-34, spotL3Z7-51, spotL4Z8-69, L1Z1-L1Z6,
+; L2Z1-L2Z7, L3Z1-L3Z12, L4Z1-L4Z9, level1-level4, spotL1Z4-43, spotL1Z4-44,
+; spotL1Z4-47).
 DrawDirtyCells:
   LD A,$FF
   LD (CellFlagsRow24),A
@@ -989,7 +990,7 @@ UnusedMirrorByte:
 ; Callers: LoadScreen ($ACFA), the level's end ($ABE8) and each scroll step
 ; ($ADD8, $AE0F). Output: everything.
 ;
-; Witness: L1 613 (beeper48, c1, controls, ending2, gameover, l1end,
+; Witness: L1 614 (beeper48, c1, controls, ending, ending2, gameover, l1end,
 ; spotL3Z7-51, L1Z1-L1Z6, L2Z1-L2Z7, L3Z1-L3Z12, L4Z1-L4Z9, level1-level4,
 ; spotL1Z4-43).
 RedrawScreen:
@@ -1082,7 +1083,7 @@ SavedHudCells:
 ;
 ; Called by RedrawScreen only. Output: everything.
 ;
-; Witness: L1 613 (beeper48, c1, controls, ending2, gameover, l1end,
+; Witness: L1 614 (beeper48, c1, controls, ending, ending2, gameover, l1end,
 ; spotL3Z7-51, L1Z1-L1Z6, L2Z1-L2Z7, L3Z1-L3Z12, L4Z1-L4Z9, level1-level4,
 ; spotL1Z4-43).
 DrawAllDirtyCells:

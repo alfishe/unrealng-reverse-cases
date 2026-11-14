@@ -34,10 +34,13 @@ CellFlagsRow24:
 CellFlagsEnd:
   DEFB $00
 
-; 127 bytes no routine reads in play (0 as loaded)
+; 127 bytes past the cell flags that no instruction names (0 as loaded)
 ;
-; Known only from the code: no instruction names an address in it, and the
-; recordings read and write it only while the tape loads (`c1`).
+; No instruction names an address in it. The recordings read and write it while
+; the tape loads (`c1`) and, in play, only in `L3Z4`: ComposeCell `$A6D0` sets
+; the flags of the map cells `$6A19-$6A1B` and `$6A39-$6A3B` (HL + `$600`)
+; here, at `$7019-$701B` and `$7039-$703B`, for an object drawn past the map
+; window's last row.
 Unused7001:
   DEFS $7F
 

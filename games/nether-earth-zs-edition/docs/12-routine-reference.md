@@ -135,8 +135,8 @@ Reached when the start-up menu returns (START). DI, SP = 0; the IM 2 table `$FE0
 
 | | |
 | --- | --- |
-| Runs (the start-up menu, LOAD MAP, HARD + PHASERS, play) | run into, not called, 33,644 t-states own (0.01 %) |
-| Runs (CRITICAL with every upgrade, several game days) | run into, not called, 33,644 t-states own (0.00 %) |
+| Runs (the start-up menu, LOAD MAP, HARD + PHASERS, play) | 1 run of its first instruction (entered by a jump or by running on, no routine of its own in the L1), 33,644 t-states own (0.01 %) |
+| Runs (CRITICAL with every upgrade, several game days) | 1 run of its first instruction (entered by a jump or by running on, no routine of its own in the L1), 33,644 t-states own (0.00 %) |
 | Reads | `$D7D3`-`$D7FE` (`work space $D7D3+`); `$DA00`-`$DCFE` (`work space $DA00+`); `$FD04`-`$FDFB` (`work space $FD04+`); `$FF01`-`$FFC8` (`work space $FF01+`) |
 | Writes | `$D7D3`-`$D7FF` (`work space $D7D3+`); `$DA00`-`$DCFF` (`work space $DA00+`); `$FD00`-`$FFC9` (`work space $FD00+`) |
 
@@ -152,7 +152,8 @@ The resources: our general resource = 99, the operand at `$A684` (LOAD MAP write
 
 | | |
 | --- | --- |
-| Runs | ran within another entry's routine (reached by a jump or by running on, its calls below), no runs of its own counted |
+| Runs (the start-up menu, LOAD MAP, HARD + PHASERS, play) | 1 run of its first instruction (entered by a jump or by running on, no routine of its own in the L1) |
+| Runs (CRITICAL with every upgrade, several game days) | 1 run of its first instruction (entered by a jump or by running on, no routine of its own in the L1) |
 | Calls | `FillEnemyResources`, `BuildMap` |
 
 #### `EnterPlay` (`$A68E`)
@@ -163,7 +164,8 @@ DrawViewBackground and DrawPlayScreen build the play screen (the view, its frame
 
 | | |
 | --- | --- |
-| Runs | ran within another entry's routine (reached by a jump or by running on, its calls below), no runs of its own counted |
+| Runs (the start-up menu, LOAD MAP, HARD + PHASERS, play) | 1 run of its first instruction (entered by a jump or by running on, no routine of its own in the L1) |
+| Runs (CRITICAL with every upgrade, several game days) | 1 run of its first instruction (entered by a jump or by running on, no routine of its own in the L1) |
 | Calls | `PlayLoop` (falls into), `DrawViewBackground`, `DrawPlayScreen` |
 
 #### `PlayLoop` (`$A69A`)
@@ -180,8 +182,8 @@ Last, the abort key: Input bit 6 (key I in the default KeyTable) abandons the ga
 
 | | |
 | --- | --- |
-| Runs (the bot's game on HARD, built-in level, 30602 frames from START (doc 10)) | run into, not called, 569,581 t-states own (0.03 %) |
-| Runs (the bot's game on HARD with NELEV_00 (LOAD MAP), 24416 frames: fights (doc 10)) | run into, not called, 421,116 t-states own (0.02 %) |
+| Runs (the bot's game on HARD, built-in level, 30602 frames from START (doc 10)) | 2,142 runs of its first instruction (entered by a jump or by running on, no routine of its own in the L1), 569,581 t-states own (0.03 %) |
+| Runs (the bot's game on HARD with NELEV_00 (LOAD MAP), 24416 frames: fights (doc 10)) | 1,939 runs of its first instruction (entered by a jump or by running on, no routine of its own in the L1), 421,116 t-states own (0.02 %) |
 | Runs (the start-up menu, LOAD MAP, HARD + PHASERS, play) | 1 call, 6,414 t-states own (0.00 %) |
 | Runs (CRITICAL with every upgrade, several game days) | 1 call, 153,281 t-states own (0.02 %) |
 | Called from | `EnterPlay` (falls into) |
@@ -271,7 +273,8 @@ CloseRobotMenu (`$A812`) clears the panel, sets `$FD39` = 0 and redraws the stat
 
 | | |
 | --- | --- |
-| Runs (the bot's game on HARD with NELEV_00 (LOAD MAP), 24416 frames: fights (doc 10)) | run into, not called, 793 t-states own (0.00 %) |
+| Runs (the bot's game on HARD, built-in level, 30602 frames from START (doc 10)) | 14 runs of its first instruction (entered by a jump or by running on, no routine of its own in the L1) |
+| Runs (the bot's game on HARD with NELEV_00 (LOAD MAP), 24416 frames: fights (doc 10)) | 26 runs of its first instruction (entered by a jump or by running on, no routine of its own in the L1), 793 t-states own (0.00 %) |
 | Called from | `ListMenu` (tail) |
 | Calls | `ShowStrength`, `OrdersMenu` (tail), `ListMenu`, `Beep`, `ShowStatusPanel`, `ClearPanel` |
 | Writes | `$FD39` (`work space $FD39+`) |
@@ -763,6 +766,8 @@ RadarDirty (`$FD52`) is set when the window moved (`$B017`) and by other code th
 | --- | --- |
 | Runs (the bot's game on HARD, built-in level, 30602 frames from START (doc 10)) | 2,224 calls, 64,534 t-states own (0.00 %) |
 | Runs (the bot's game on HARD with NELEV_00 (LOAD MAP), 24416 frames: fights (doc 10)) | 2,094 calls, 60,745 t-states own (0.00 %) |
+| Runs (the start-up menu, LOAD MAP, HARD + PHASERS, play) | 40 runs of its first instruction (entered by a jump or by running on, no routine of its own in the L1) |
+| Runs (CRITICAL with every upgrade, several game days) | 919 runs of its first instruction (entered by a jump or by running on, no routine of its own in the L1) |
 | Called from | `PutShipOnMap` (falls into), `MenuRadarTick` (tail) |
 | Calls | `BlinkShipDot` (falls into), `BuildRadar` |
 | Reads | `$FD52` (`work space $FD52+`) |
@@ -873,6 +878,8 @@ The common tail of TerrainTop and ObjectTop.
 | --- | --- |
 | Runs (the bot's game on HARD, built-in level, 30602 frames from START (doc 10)) | 26,767 calls, 670,146 t-states own (0.03 %) |
 | Runs (the bot's game on HARD with NELEV_00 (LOAD MAP), 24416 frames: fights (doc 10)) | 53,387 calls, 1,337,210 t-states own (0.08 %) |
+| Runs (the start-up menu, LOAD MAP, HARD + PHASERS, play) | 180 runs of its first instruction (entered by a jump or by running on, no routine of its own in the L1) |
+| Runs (CRITICAL with every upgrade, several game days) | 5,296 runs of its first instruction (entered by a jump or by running on, no routine of its own in the L1) |
 | Called from | `TerrainTop` (tail), `ObjectTop` (falls into) |
 | Calls | `FindBuilding`, `AddAToHL` |
 
@@ -928,6 +935,7 @@ the shot records and strengths at frames 18680-18850 match FireShot and MoveShot
 | | |
 | --- | --- |
 | Runs (the bot's game on HARD, built-in level, 30602 frames from START (doc 10)) | 41,053 calls, 9,964,970 t-states own (0.45 %) |
+| Runs (the bot's game on HARD with NELEV_00 (LOAD MAP), 24416 frames: fights (doc 10)) | 52,159 runs of its first instruction (entered by a jump or by running on, no routine of its own in the L1) |
 | Runs (the start-up menu, LOAD MAP, HARD + PHASERS, play) | 84 calls, 21,174 t-states own (0.01 %) |
 | Runs (CRITICAL with every upgrade, several game days) | 7,717 calls, 1,932,451 t-states own (0.29 %) |
 | Called from | `UpdateRobot` (tail) |
@@ -970,7 +978,10 @@ Masks C with random bytes until exactly one bit is left (CountDirections; when n
 
 | | |
 | --- | --- |
-| Runs | ran within another entry's routine (reached by a jump or by running on, its calls below), no runs of its own counted |
+| Runs (the bot's game on HARD, built-in level, 30602 frames from START (doc 10)) | 2,361 runs of its first instruction (entered by a jump or by running on, no routine of its own in the L1) |
+| Runs (the bot's game on HARD with NELEV_00 (LOAD MAP), 24416 frames: fights (doc 10)) | 1,391 runs of its first instruction (entered by a jump or by running on, no routine of its own in the L1) |
+| Runs (the start-up menu, LOAD MAP, HARD + PHASERS, play) | 3 runs of its first instruction (entered by a jump or by running on, no routine of its own in the L1) |
+| Runs (CRITICAL with every upgrade, several game days) | 532 runs of its first instruction (entered by a jump or by running on, no routine of its own in the L1) |
 | Calls | `CountDirections`, `Random` |
 
 #### `FindTargetBuilding` (`$B34D`)
@@ -1252,6 +1263,7 @@ The shared exit for an unpassable terrain type or a map edge.
 | --- | --- |
 | Runs (the bot's game on HARD, built-in level, 30602 frames from START (doc 10)) | 12,007 calls, 204,176 t-states own (0.01 %) |
 | Runs (the bot's game on HARD with NELEV_00 (LOAD MAP), 24416 frames: fights (doc 10)) | 11,182 calls, 190,132 t-states own (0.01 %) |
+| Runs (the start-up menu, LOAD MAP, HARD + PHASERS, play) | 21 runs of its first instruction (entered by a jump or by running on, no routine of its own in the L1) |
 | Runs (CRITICAL with every upgrade, several game days) | 2,307 calls, 39,219 t-states own (0.01 %) |
 | Called from | `CanMoveDown` (tail), `CanMoveUp` (tail), `TestCell` (tail) |
 
@@ -2445,7 +2457,7 @@ IY = the robot record being designed. Paints the attributes of the parts list (c
 | Runs (the bot's game on HARD with NELEV_00 (LOAD MAP), 24416 frames: fights (doc 10)) | 52 calls, 1,194,824 t-states own (0.07 %) |
 | Called from | `ConstructionMenuSetup`, `ConstructionMenuLoop` |
 | Calls | `DrawRobot`, `ClearViewBuffer`, `NextScreenLine`, `AddAToHL` |
-| Reads | `$6168`-`$667F` (system); `$6690`-`$6693` (system); `$66A4`-`$66A7` (system); `$66B8`-`$66BB` (system); `$66CC`-`$66CF` (system); `$66E0`-`$66E3` (system); 3 more ranges |
+| Reads | `$6168`-`$667F` (`ViewBuffer+1640`); `$6690`-`$6693` (`ViewBuffer+2960`); `$66A4`-`$66A7` (`ViewBuffer+2980`); `$66B8`-`$66BB` (`ViewBuffer+3000`); `$66CC`-`$66CF` (`ViewBuffer+3020`); `$66E0`-`$66E3` (`ViewBuffer+3040`); 3 more ranges |
 | Writes | `$48E0`-`$54E3` (screen); `$5500`-`$55C3` (screen); `$55E0`-`$55E3` (screen); `$5600`-`$56C3` (screen); `$56E0`-`$56E3` (screen); `$5700`-`$57C3` (screen); 10 more ranges |
 
 #### `PlaceRobot` (`$CC7C`)
@@ -2620,6 +2632,7 @@ The drawing order of DrawMapObjects: diagonals by falling x - y, along a diagona
 | --- | --- |
 | Runs (the bot's game on HARD, built-in level, 30602 frames from START (doc 10)) | 543 calls, 50,915 t-states own (0.00 %) |
 | Runs (the bot's game on HARD with NELEV_00 (LOAD MAP), 24416 frames: fights (doc 10)) | 1,470 calls, 140,087 t-states own (0.01 %) |
+| Runs (the start-up menu, LOAD MAP, HARD + PHASERS, play) | 39 runs of its first instruction (entered by a jump or by running on, no routine of its own in the L1) |
 | Called from | `CheckObjectNeighbour`, `CheckBlockNeighbour` (falls into) |
 
 #### `FindRobot` (`$CDD8`)
@@ -2677,7 +2690,8 @@ Robots and shots keep their real position in +`$02`/+`$03` (x) and +`$04` (y) an
 
 | | |
 | --- | --- |
-| Runs | ran within another entry's routine (reached by a jump or by running on, its calls below), no runs of its own counted |
+| Runs (the bot's game on HARD, built-in level, 30602 frames from START (doc 10)) | 13,442 runs of its first instruction (entered by a jump or by running on, no routine of its own in the L1) |
+| Runs (the bot's game on HARD with NELEV_00 (LOAD MAP), 24416 frames: fights (doc 10)) | 3,444 runs of its first instruction (entered by a jump or by running on, no routine of its own in the L1) |
 | Calls | `MapCell`, `FindLatestBlock`, `DrawMoverSprite` (tail) |
 
 #### `DrawMoverSprite` (`$CEC3`)
@@ -2688,6 +2702,7 @@ Records at `$D800` and up are robots: DrawRobot. A shot (records at `$D7D3`) is 
 
 | | |
 | --- | --- |
+| Runs (the bot's game on HARD, built-in level, 30602 frames from START (doc 10)) | 13,442 runs of its first instruction (entered by a jump or by running on, no routine of its own in the L1) |
 | Runs (the bot's game on HARD with NELEV_00 (LOAD MAP), 24416 frames: fights (doc 10)) | 3,058 calls, 142,096 t-states own (0.01 %) |
 | Called from | `DrawMover` (tail) |
 | Calls | `DrawRobot` (tail), `DrawSprite` |
@@ -2738,8 +2753,8 @@ The isometric projection: the half-byte column L = 2E + D - 24, the pixel row of
 | Runs (CRITICAL with every upgrade, several game days) | 34,003 calls, 305,565,307 t-states own (45.15 %) |
 | Called from | `DrawMapObjects`, `DrawCell`, `DrawCellObject`, `DrawMoverSprite`, `DrawRobotPart` |
 | Calls | `TableWord`, `AddAToHL` |
-| Reads | `$5B08`-`$6779` (system); `$6980`-`$8965` (`SprTracksX`, `SprTracksXRows`, `SprTracksXOdd`, `SprTracksXOddRows` and 92 more); `$8CDE`-`$8D45` (`SprShotPhaserXOdd`, `SprShotPhaserXOddRows`); `$8E3A`-`$92F9` (`SprShip`, `SprShipRows`, `SprShipOdd`, `SprShipOddRows` and 11 more); `$9914`-`$9D9B` (`SprBlockLow`, `SprBlockLowRows`, `SprBlockLowOdd`, `SprBlockLowOddRows` and 4 more); `$9EF6`-`$9F8D` (`SprBouldersB`, `SprBouldersBRows`); 1 more ranges |
-| Writes | `$5B08`-`$5FC7` (system); `$5FDA`-`$6169` (system); `$6190`-`$66FC` (system); `$670E`-`$6724` (system); `$6736`-`$6738` (system); `$674B`-`$674C` (system); 1 more ranges |
+| Reads | `$5B08`-`$6779` (`ViewBuffer+8`); `$6980`-`$8965` (`SprTracksX`, `SprTracksXRows`, `SprTracksXOdd`, `SprTracksXOddRows` and 92 more); `$8CDE`-`$8D45` (`SprShotPhaserXOdd`, `SprShotPhaserXOddRows`); `$8E3A`-`$92F9` (`SprShip`, `SprShipRows`, `SprShipOdd`, `SprShipOddRows` and 11 more); `$9914`-`$9D9B` (`SprBlockLow`, `SprBlockLowRows`, `SprBlockLowOdd`, `SprBlockLowOddRows` and 4 more); `$9EF6`-`$9F8D` (`SprBouldersB`, `SprBouldersBRows`); 1 more ranges |
+| Writes | `$5B08`-`$5FC7` (`ViewBuffer+8`); `$5FDA`-`$6169` (`ViewBuffer+1242`); `$6190`-`$66FC` (`ViewBuffer+1680`); `$670E`-`$6724` (`ViewBuffer+3086`); `$6736`-`$6738` (`ViewBuffer+3126`); `$674B`-`$674C` (`ViewBuffer+3147`); 1 more ranges |
 
 #### `DrawViewBackground` (`$CFD7`)
 
@@ -2769,8 +2784,8 @@ Pushes HL = 0 with SP at `$6780` (198 x 16 bytes, SP kept in `$FD08`), then clea
 | Runs (the start-up menu, LOAD MAP, HARD + PHASERS, play) | 41 calls, 851,072 t-states own (0.30 %) |
 | Runs (CRITICAL with every upgrade, several game days) | 920 calls, 19,100,973 t-states own (2.82 %) |
 | Called from | `StartRobot`, `ShowRobotDesign`, `DrawViewBackground` |
-| Reads | `$5B00`-`$5B1E` (system); `$FD08`-`$FD09` (`work space $FD08+`) |
-| Writes | `$5B00`-`$5B1F` (system); `$5B3C`-`$5B3D` (system); `$5B70`-`$5B8B` (system); `$5BA4`-`$5BB9` (system); `$5BCC`-`$5BDD` (system); `$5BF0`-`$5C13` (system); 30 more ranges |
+| Reads | `$5B00`-`$5B1E` (`ViewBuffer`); `$FD08`-`$FD09` (`work space $FD08+`) |
+| Writes | `$5B00`-`$5B1F` (`ViewBuffer`); `$5B3C`-`$5B3D` (`ViewBuffer+60`); `$5B70`-`$5B8B` (`ViewBuffer+112`); `$5BA4`-`$5BB9` (`ViewBuffer+164`); `$5BCC`-`$5BDD` (`ViewBuffer+204`); `$5BF0`-`$5C13` (`ViewBuffer+240`); 30 more ranges |
 
 #### `FillViewCorner` (`$D026`)
 
@@ -2787,7 +2802,7 @@ Pushes HL = 0 with SP at `$6780` (198 x 16 bytes, SP kept in `$FD08`), then clea
 | Called from | `DrawViewBackground` |
 | Calls | `AddAToHL` |
 | Reads | `$D038`-`$D041` (`CornerRowLoop+2`, `CornerByteLoop`) |
-| Writes | `$5B00`-`$5D95` (system); `$5DA8`-`$5DA9` (system); `$5DBC`-`$5DBD` (system); `$5DD0`-`$5DD1` (system); `$5DE4`-`$5DE5` (system); `$5DF8`-`$5DF9` (system); 2 more ranges |
+| Writes | `$5B00`-`$5D95` (`ViewBuffer`); `$5DA8`-`$5DA9` (`ViewBuffer+680`); `$5DBC`-`$5DBD` (`ViewBuffer+700`); `$5DD0`-`$5DD1` (`ViewBuffer+720`); `$5DE4`-`$5DE5` (`ViewBuffer+740`); `$5DF8`-`$5DF9` (`ViewBuffer+760`); 2 more ranges |
 
 #### `DrawEdgeStrips` (`$D057`)
 
@@ -2803,7 +2818,7 @@ The diagonal edge of the map in the view. The patterns are at `$D6A8` (ink on th
 | Runs (CRITICAL with every upgrade, several game days) | 2,760 calls, 8,052,478 t-states own (1.19 %) |
 | Called from | `DrawViewBackground` (tail) |
 | Reads | `$D6A8`-`$D6C7` (`ViewEdgeA`, `ViewEdgeB`) |
-| Writes | `$5B0A`-`$5EAD` (system); `$6512`-`$6717` (system); `$6728`-`$672B` (system); `$673C`-`$673F` (system); `$6750`-`$6753` (system) |
+| Writes | `$5B0A`-`$5EAD` (`ViewBuffer+10`); `$6512`-`$6717` (`ViewBuffer+2578`); `$6728`-`$672B` (`ViewBuffer+3112`); `$673C`-`$673F` (`ViewBuffer+3132`); `$6750`-`$6753` (`ViewBuffer+3152`) |
 
 #### `CopyViewToScreen` (`$D071`)
 
@@ -2818,7 +2833,7 @@ The diagonal edge of the map in the view. The patterns are at `$D6A8` (ink on th
 | Runs (the start-up menu, LOAD MAP, HARD + PHASERS, play) | 39 calls, 2,407,704 t-states own (0.86 %) |
 | Runs (CRITICAL with every upgrade, several game days) | 919 calls, 56,734,985 t-states own (8.38 %) |
 | Called from | `DrawView` (tail) |
-| Reads | `$5B00`-`$677F` (system) |
+| Reads | `$5B00`-`$677F` (`ViewBuffer`) |
 | Writes | `$4021`-`$5194` (screen); `$5201`-`$5294` (screen); `$5301`-`$5394` (screen); `$5401`-`$5494` (screen); `$5501`-`$5594` (screen); `$5601`-`$5694` (screen); 1 more ranges |
 
 ### screen
@@ -2851,7 +2866,11 @@ no code jumps here.
 
 | | |
 | --- | --- |
-| Runs | not reached in the recordings |
+| Runs (the bot's game on HARD, built-in level, 30602 frames from START (doc 10)) | 96,754 runs of its first instruction (entered by a jump or by running on, no routine of its own in the L1) |
+| Runs (the bot's game on HARD with NELEV_00 (LOAD MAP), 24416 frames: fights (doc 10)) | 179,686 runs of its first instruction (entered by a jump or by running on, no routine of its own in the L1) |
+| Runs (the start-up menu, LOAD MAP, HARD + PHASERS, play) | 110,576 runs of its first instruction (entered by a jump or by running on, no routine of its own in the L1) |
+| Runs (CRITICAL with every upgrade, several game days) | 13,822 runs of its first instruction (entered by a jump or by running on, no routine of its own in the L1) |
+| Runs (LOAD MAP: the catalogue and a map loaded) | 20,733 runs of its first instruction (entered by a jump or by running on, no routine of its own in the L1) |
 
 #### `DrawPlayScreen` (`$D0CA`)
 
@@ -3230,6 +3249,8 @@ The operand `$FF9C` is -100 (the source writes it so with @isub; as a label it w
 | --- | --- |
 | Runs (the bot's game on HARD, built-in level, 30602 frames from START (doc 10)) | 139 calls, 63,820 t-states own (0.00 %) |
 | Runs (the bot's game on HARD with NELEV_00 (LOAD MAP), 24416 frames: fights (doc 10)) | 259 calls, 63,531 t-states own (0.00 %) |
+| Runs (the start-up menu, LOAD MAP, HARD + PHASERS, play) | 38 runs of its first instruction (entered by a jump or by running on, no routine of its own in the L1) |
+| Runs (CRITICAL with every upgrade, several game days) | 918 runs of its first instruction (entered by a jump or by running on, no routine of its own in the L1) |
 | Called from | `ShowStrengthValue`, `PrintMenuTotal` (tail) |
 | Calls | `PrintDigit` |
 
@@ -3342,6 +3363,7 @@ In: B = row 0-23, C = column 0-31. PrintAddr = `$4000` + (B AND `$18`) * 256 + (
 | Runs (the bot's game on HARD with NELEV_00 (LOAD MAP), 24416 frames: fights (doc 10)) | 11,388 calls, 1,469,451 t-states own (0.08 %) |
 | Runs (the start-up menu, LOAD MAP, HARD + PHASERS, play) | 380 calls, 49,020 t-states own (0.02 %) |
 | Runs (CRITICAL with every upgrade, several game days) | 2,331 calls, 300,756 t-states own (0.04 %) |
+| Runs (LOAD MAP: the catalogue and a map loaded) | 51 runs of its first instruction (entered by a jump or by running on, no routine of its own in the L1) |
 | Called from | `PrintControl` (tail), `PrintNewline` (tail) |
 | Writes | `$FD04`-`$FD15` (`work space $FD04+`) |
 
@@ -3373,6 +3395,7 @@ Width 1: each glyph line written `$FD16` times (2: a character two rows high, "R
 | Runs (the bot's game on HARD with NELEV_00 (LOAD MAP), 24416 frames: fights (doc 10)) | 299 calls, 766,787 t-states own (0.04 %) |
 | Runs (the start-up menu, LOAD MAP, HARD + PHASERS, play) | 1,471 calls, 2,379,796 t-states own (0.85 %) |
 | Runs (CRITICAL with every upgrade, several game days) | 220 calls, 289,031 t-states own (0.04 %) |
+| Runs (LOAD MAP: the catalogue and a map loaded) | 524 runs of its first instruction (entered by a jump or by running on, no routine of its own in the L1) |
 | Called from | `PrintControl` (tail) |
 | Calls | `NextScreenLine`, `AddAToHL` |
 | Reads | `$6780`-`$6787` (`Font`); `$67B8`-`$67BF` (`Font+56`); `$67E8`-`$67EF` (`Font+104`); `$6800`-`$6857` (`Font+128`); `$6888`-`$6937` (`Font+264`); `$6948`-`$6957` (`Font+456`); 2 more ranges |
@@ -3594,7 +3617,9 @@ Zeroes the robot records `$DA00-$DCFF` (48 x 16), the variables `$FD04-$FDFC` (e
 
 | | |
 | --- | --- |
-| Runs (the bot's '98 game, 30284 frames, 9 game days) | run into, not called, 781,772 t-states own (0.04 %) |
+| Runs (the bot's '98 game, 30284 frames, 9 game days) | 1 run of its first instruction (entered by a jump or by running on, no routine of its own in the L1), 781,772 t-states own (0.04 %) |
+| Runs (r98 4500-5903: the menu, START GAME, play) | 1 run of its first instruction (entered by a jump or by running on, no routine of its own in the L1) |
+| Runs (the menu, LOAD NEW LEVEL, the menu again, START) | 1 run of its first instruction (entered by a jump or by running on, no routine of its own in the L1) |
 | Calls | `FillEnemyResources`, `BuildMap` |
 | Reads | `$D7D3`-`$D7FE` (`Shots`); `$DA00`-`$DCFE` (`work space $DA00+`); `$F114`-`$F119` (`work space $F114+`); `$F314`-`$F316` (`work space $F314+`); `$F512`-`$F516` (`work space $F512+`); `$F712`-`$F716` (`work space $F712+`); 4 more ranges |
 | Writes | `$D7D3`-`$D7FF` (`Shots`); `$DA00`-`$DCFF` (`work space $DA00+`); `$FD04`-`$FDFF` (`work space $FD04+`); `$FF01`-`$FFC9` (`work space $FF01+`) |
@@ -3607,7 +3632,8 @@ DrawViewBackground and DrawPlayScreen build the play screen (the view, its frame
 
 | | |
 | --- | --- |
-| Runs | ran within another entry's routine (reached by a jump or by running on, its calls below), no runs of its own counted |
+| Runs (the bot's '98 game, 30284 frames, 9 game days) | 1 run of its first instruction (entered by a jump or by running on, no routine of its own in the L1) |
+| Runs (r98 4500-5903: the menu, START GAME, play) | 1 run of its first instruction (entered by a jump or by running on, no routine of its own in the L1) |
 | Calls | `PlayLoop` (falls into), `DrawViewBackground`, `DrawPlayScreen` |
 
 #### `PlayLoop` (`$A69A`)
@@ -3624,6 +3650,7 @@ Last, the game keys: Input bit 6 (key I in the default KeyTable) abandons the ga
 
 | | |
 | --- | --- |
+| Runs (the bot's '98 game, 30284 frames, 9 game days) | 2,646 runs of its first instruction (entered by a jump or by running on, no routine of its own in the L1) |
 | Runs (r98 4500-5903: the menu, START GAME, play) | 1 call, 17,043 t-states own (0.02 %) |
 | Called from | `EnterPlay` (falls into) |
 | Calls | `RobotMenu`, `GameTurn`, `MoveShip`, `WorldTurn`, `CountRobots`, `ConstructionMenu`, `ShipCell`, `DrawView`, `FindRobot`, `FindBuilding`, `UpdateStatusPanel`, `WaitKey` |
@@ -3707,7 +3734,7 @@ CloseRobotMenu (`$A812`) clears the panel, sets `$FD39` = 0 and redraws the stat
 
 | | |
 | --- | --- |
-| Runs | ran within another entry's routine (reached by a jump or by running on, its calls below), no runs of its own counted |
+| Runs (the bot's '98 game, 30284 frames, 9 game days) | 8 runs of its first instruction (entered by a jump or by running on, no routine of its own in the L1) |
 | Calls | `ShowStrength`, `OrdersMenu` (tail), `ListMenu`, `Beep`, `ShowStatusPanel`, `ClearPanel` |
 
 #### `ShowStrength` (`$A81D`)
@@ -4160,6 +4187,7 @@ RadarDirty (`$FD52`) is set when the window moved (`$B017`) and by other code th
 | | |
 | --- | --- |
 | Runs (the bot's '98 game, 30284 frames, 9 game days) | 2,694 calls, 78,174 t-states own (0.00 %) |
+| Runs (r98 4500-5903: the menu, START GAME, play) | 99 runs of its first instruction (entered by a jump or by running on, no routine of its own in the L1) |
 | Called from | `PutShipOnMap` (falls into), `MenuRadarTick` (tail) |
 | Calls | `BlinkShipDot` (falls into), `BuildRadar` |
 | Reads | `$FD52` (`work space $FD52+`) |
@@ -4259,6 +4287,7 @@ The common tail of TerrainTop and ObjectTop.
 | | |
 | --- | --- |
 | Runs (the bot's '98 game, 30284 frames, 9 game days) | 66,930 calls, 1,675,034 t-states own (0.08 %) |
+| Runs (r98 4500-5903: the menu, START GAME, play) | 296 runs of its first instruction (entered by a jump or by running on, no routine of its own in the L1) |
 | Called from | `TerrainTop` (tail), `ObjectTop` (falls into) |
 | Calls | `FindBuilding`, `AddAToHL` |
 
@@ -4346,7 +4375,8 @@ Masks C with random bytes until exactly one bit is left (CountDirections); when 
 
 | | |
 | --- | --- |
-| Runs | ran within another entry's routine (reached by a jump or by running on, its calls below), no runs of its own counted |
+| Runs (the bot's '98 game, 30284 frames, 9 game days) | 2,375 runs of its first instruction (entered by a jump or by running on, no routine of its own in the L1) |
+| Runs (r98 4500-5903: the menu, START GAME, play) | 14 runs of its first instruction (entered by a jump or by running on, no routine of its own in the L1) |
 | Calls | `CountDirections`, `Random` |
 
 #### `FindTargetBuilding` (`$B34D`)
@@ -5062,7 +5092,8 @@ The entry of MainMenu after ClearScreen; nothing jumps here (MainMenuKeys key 4 
 
 | | |
 | --- | --- |
-| Runs | ran within another entry's routine (reached by a jump or by running on, its calls below), no runs of its own counted |
+| Runs (r98 4500-5903: the menu, START GAME, play) | 1 run of its first instruction (entered by a jump or by running on, no routine of its own in the L1) |
+| Runs (the menu, LOAD NEW LEVEL, the menu again, START) | 1 run of its first instruction (entered by a jump or by running on, no routine of its own in the L1) |
 | Calls | `PrintTitle` |
 
 #### `MainMenuOptions` (`$C106`)
@@ -5072,6 +5103,8 @@ The entry of MainMenu after ClearScreen; nothing jumps here (MainMenuKeys key 4 
 | | |
 | --- | --- |
 | Runs (the bot's '98 game, 30284 frames, 9 game days) | 1 call, 17 t-states own (0.00 %) |
+| Runs (r98 4500-5903: the menu, START GAME, play) | 1 run of its first instruction (entered by a jump or by running on, no routine of its own in the L1) |
+| Runs (the menu, LOAD NEW LEVEL, the menu again, START) | 1 run of its first instruction (entered by a jump or by running on, no routine of its own in the L1) |
 | Called from | `MainMenuKeys` (tail) |
 | Calls | `PrintInline` |
 
@@ -5162,7 +5195,7 @@ Witness game98/key5 (the menu snapshot of r98 frame 4800, key 5 at frame 50, key
 
 | | |
 | --- | --- |
-| Runs | ran within another entry's routine (reached by a jump or by running on, its calls below), no runs of its own counted |
+| Runs (the menu, LOAD NEW LEVEL, the menu again, START) | 1 run of its first instruction (entered by a jump or by running on, no routine of its own in the L1) |
 | Calls | `Start` (tail) |
 
 #### `SaveGame` (`$C28D`)
@@ -5445,7 +5478,9 @@ The tone loop runs LeadStep and BassStep in turn, about 122 T a turn. A step who
 
 | | |
 | --- | --- |
-| Runs | not reached in the recordings |
+| Runs (the bot's '98 game, 30284 frames, 9 game days) | 9,963 runs of its first instruction (entered by a jump or by running on, no routine of its own in the L1) |
+| Runs (r98 4500-5903: the menu, START GAME, play) | 208,182 runs of its first instruction (entered by a jump or by running on, no routine of its own in the L1) |
+| Runs (the menu, LOAD NEW LEVEL, the menu again, START) | 205,108 runs of its first instruction (entered by a jump or by running on, no routine of its own in the L1) |
 
 #### `LeadStep` (`$C4CB`)
 
@@ -5455,7 +5490,9 @@ D counts the lead voice's period in loop turns. At 0 it reloads D with the note'
 
 | | |
 | --- | --- |
-| Runs | not reached in the recordings |
+| Runs (the bot's '98 game, 30284 frames, 9 game days) | 10,042 runs of its first instruction (entered by a jump or by running on, no routine of its own in the L1) |
+| Runs (r98 4500-5903: the menu, START GAME, play) | 210,032 runs of its first instruction (entered by a jump or by running on, no routine of its own in the L1) |
+| Runs (the menu, LOAD NEW LEVEL, the menu again, START) | 206,881 runs of its first instruction (entered by a jump or by running on, no routine of its own in the L1) |
 
 #### `LeadIdlePadTail` (`$C4E4`)
 
@@ -5465,7 +5502,9 @@ Write Input back and POP AF, then fall into BassStep. NE's recording of NE's wor
 
 | | |
 | --- | --- |
-| Runs | not reached in the recordings |
+| Runs (the bot's '98 game, 30284 frames, 9 game days) | 9,860 runs of its first instruction (entered by a jump or by running on, no routine of its own in the L1) |
+| Runs (r98 4500-5903: the menu, START GAME, play) | 205,747 runs of its first instruction (entered by a jump or by running on, no routine of its own in the L1) |
+| Runs (the menu, LOAD NEW LEVEL, the menu again, START) | 202,599 runs of its first instruction (entered by a jump or by running on, no routine of its own in the L1) |
 
 #### `BassStep` (`$C4E8`)
 
@@ -5475,7 +5514,9 @@ The bass voice's twin of LeadStep: E is its counter, the operands `$C4ED` (perio
 
 | | |
 | --- | --- |
-| Runs | not reached in the recordings |
+| Runs (the bot's '98 game, 30284 frames, 9 game days) | 10,042 runs of its first instruction (entered by a jump or by running on, no routine of its own in the L1) |
+| Runs (r98 4500-5903: the menu, START GAME, play) | 210,031 runs of its first instruction (entered by a jump or by running on, no routine of its own in the L1) |
+| Runs (the menu, LOAD NEW LEVEL, the menu again, START) | 206,880 runs of its first instruction (entered by a jump or by running on, no routine of its own in the L1) |
 
 #### `MenuInterrupt` (`$C4FD`)
 
@@ -5532,9 +5573,9 @@ A table entry of BassCommandTable: command 2 calls a pattern.
 
 | | |
 | --- | --- |
-| Runs (the bot's '98 game, 30284 frames, 9 game days) | run into, not called, 10 t-states own (0.00 %) |
-| Runs (r98 4500-5903: the menu, START GAME, play) | run into, not called, 40 t-states own (0.00 %) |
-| Runs (the menu, LOAD NEW LEVEL, the menu again, START) | run into, not called, 30 t-states own (0.00 %) |
+| Runs (the bot's '98 game, 30284 frames, 9 game days) | 1 run of its first instruction (entered by a jump or by running on, no routine of its own in the L1), 10 t-states own (0.00 %) |
+| Runs (r98 4500-5903: the menu, START GAME, play) | 4 runs of its first instruction (entered by a jump or by running on, no routine of its own in the L1), 40 t-states own (0.00 %) |
+| Runs (the menu, LOAD NEW LEVEL, the menu again, START) | 3 runs of its first instruction (entered by a jump or by running on, no routine of its own in the L1), 30 t-states own (0.00 %) |
 | Called from | `MusicDispatch` |
 | Calls | `BassCall` (tail) |
 
@@ -5546,9 +5587,9 @@ A table entry: command 3 starts another drum track.
 
 | | |
 | --- | --- |
-| Runs (the bot's '98 game, 30284 frames, 9 game days) | run into, not called, 10 t-states own (0.00 %) |
-| Runs (r98 4500-5903: the menu, START GAME, play) | run into, not called, 10 t-states own (0.00 %) |
-| Runs (the menu, LOAD NEW LEVEL, the menu again, START) | run into, not called, 10 t-states own (0.00 %) |
+| Runs (the bot's '98 game, 30284 frames, 9 game days) | 1 run of its first instruction (entered by a jump or by running on, no routine of its own in the L1), 10 t-states own (0.00 %) |
+| Runs (r98 4500-5903: the menu, START GAME, play) | 1 run of its first instruction (entered by a jump or by running on, no routine of its own in the L1), 10 t-states own (0.00 %) |
+| Runs (the menu, LOAD NEW LEVEL, the menu again, START) | 1 run of its first instruction (entered by a jump or by running on, no routine of its own in the L1), 10 t-states own (0.00 %) |
 | Called from | `MusicDispatch` |
 | Calls | `SetDrumTrack` (tail) |
 
@@ -5560,8 +5601,8 @@ A table entry: command 4 turns the bass voice on.
 
 | | |
 | --- | --- |
-| Runs (r98 4500-5903: the menu, START GAME, play) | run into, not called, 60 t-states own (0.00 %) |
-| Runs (the menu, LOAD NEW LEVEL, the menu again, START) | run into, not called, 50 t-states own (0.00 %) |
+| Runs (r98 4500-5903: the menu, START GAME, play) | 6 runs of its first instruction (entered by a jump or by running on, no routine of its own in the L1), 60 t-states own (0.00 %) |
+| Runs (the menu, LOAD NEW LEVEL, the menu again, START) | 5 runs of its first instruction (entered by a jump or by running on, no routine of its own in the L1), 50 t-states own (0.00 %) |
 | Called from | `MusicDispatch` |
 | Calls | `BassOn` (tail) |
 
@@ -5573,9 +5614,9 @@ A table entry: command 5 turns the bass voice off (its notes keep their time, si
 
 | | |
 | --- | --- |
-| Runs (the bot's '98 game, 30284 frames, 9 game days) | run into, not called, 10 t-states own (0.00 %) |
-| Runs (r98 4500-5903: the menu, START GAME, play) | run into, not called, 60 t-states own (0.00 %) |
-| Runs (the menu, LOAD NEW LEVEL, the menu again, START) | run into, not called, 70 t-states own (0.00 %) |
+| Runs (the bot's '98 game, 30284 frames, 9 game days) | 1 run of its first instruction (entered by a jump or by running on, no routine of its own in the L1), 10 t-states own (0.00 %) |
+| Runs (r98 4500-5903: the menu, START GAME, play) | 6 runs of its first instruction (entered by a jump or by running on, no routine of its own in the L1), 60 t-states own (0.00 %) |
+| Runs (the menu, LOAD NEW LEVEL, the menu again, START) | 7 runs of its first instruction (entered by a jump or by running on, no routine of its own in the L1), 70 t-states own (0.00 %) |
 | Called from | `MusicDispatch` |
 | Calls | `BassOff` (tail) |
 
@@ -5587,8 +5628,8 @@ A table entry: command 6 ends a pattern.
 
 | | |
 | --- | --- |
-| Runs (r98 4500-5903: the menu, START GAME, play) | run into, not called, 30 t-states own (0.00 %) |
-| Runs (the menu, LOAD NEW LEVEL, the menu again, START) | run into, not called, 20 t-states own (0.00 %) |
+| Runs (r98 4500-5903: the menu, START GAME, play) | 3 runs of its first instruction (entered by a jump or by running on, no routine of its own in the L1), 30 t-states own (0.00 %) |
+| Runs (the menu, LOAD NEW LEVEL, the menu again, START) | 2 runs of its first instruction (entered by a jump or by running on, no routine of its own in the L1), 20 t-states own (0.00 %) |
 | Called from | `MusicDispatch` |
 | Calls | `BassReturn` (tail) |
 
@@ -5600,7 +5641,9 @@ The lead twin of BassCommand. HL' (the bass position) is pushed so the handlers 
 
 | | |
 | --- | --- |
-| Runs | ran within another entry's routine (reached by a jump or by running on, its calls below), no runs of its own counted |
+| Runs (the bot's '98 game, 30284 frames, 9 game days) | 2 runs of its first instruction (entered by a jump or by running on, no routine of its own in the L1) |
+| Runs (r98 4500-5903: the menu, START GAME, play) | 19 runs of its first instruction (entered by a jump or by running on, no routine of its own in the L1) |
+| Runs (the menu, LOAD NEW LEVEL, the menu again, START) | 19 runs of its first instruction (entered by a jump or by running on, no routine of its own in the L1) |
 | Calls | `MusicDispatch` |
 
 #### `LeadCmd2` (`$C578`)
@@ -5611,9 +5654,9 @@ A table entry of LeadCommandTable: command 2 calls a pattern.
 
 | | |
 | --- | --- |
-| Runs (the bot's '98 game, 30284 frames, 9 game days) | run into, not called, 10 t-states own (0.00 %) |
-| Runs (r98 4500-5903: the menu, START GAME, play) | run into, not called, 40 t-states own (0.00 %) |
-| Runs (the menu, LOAD NEW LEVEL, the menu again, START) | run into, not called, 30 t-states own (0.00 %) |
+| Runs (the bot's '98 game, 30284 frames, 9 game days) | 1 run of its first instruction (entered by a jump or by running on, no routine of its own in the L1), 10 t-states own (0.00 %) |
+| Runs (r98 4500-5903: the menu, START GAME, play) | 4 runs of its first instruction (entered by a jump or by running on, no routine of its own in the L1), 40 t-states own (0.00 %) |
+| Runs (the menu, LOAD NEW LEVEL, the menu again, START) | 3 runs of its first instruction (entered by a jump or by running on, no routine of its own in the L1), 30 t-states own (0.00 %) |
 | Called from | `MusicDispatch` |
 | Calls | `LeadCall` (tail) |
 
@@ -5625,8 +5668,8 @@ A table entry: command 4 turns the lead voice on.
 
 | | |
 | --- | --- |
-| Runs (r98 4500-5903: the menu, START GAME, play) | run into, not called, 60 t-states own (0.00 %) |
-| Runs (the menu, LOAD NEW LEVEL, the menu again, START) | run into, not called, 70 t-states own (0.00 %) |
+| Runs (r98 4500-5903: the menu, START GAME, play) | 6 runs of its first instruction (entered by a jump or by running on, no routine of its own in the L1), 60 t-states own (0.00 %) |
+| Runs (the menu, LOAD NEW LEVEL, the menu again, START) | 7 runs of its first instruction (entered by a jump or by running on, no routine of its own in the L1), 70 t-states own (0.00 %) |
 | Called from | `MusicDispatch` |
 | Calls | `LeadOn` (tail) |
 
@@ -5638,9 +5681,9 @@ A table entry: command 5 turns the lead voice off.
 
 | | |
 | --- | --- |
-| Runs (the bot's '98 game, 30284 frames, 9 game days) | run into, not called, 10 t-states own (0.00 %) |
-| Runs (r98 4500-5903: the menu, START GAME, play) | run into, not called, 60 t-states own (0.00 %) |
-| Runs (the menu, LOAD NEW LEVEL, the menu again, START) | run into, not called, 70 t-states own (0.00 %) |
+| Runs (the bot's '98 game, 30284 frames, 9 game days) | 1 run of its first instruction (entered by a jump or by running on, no routine of its own in the L1), 10 t-states own (0.00 %) |
+| Runs (r98 4500-5903: the menu, START GAME, play) | 6 runs of its first instruction (entered by a jump or by running on, no routine of its own in the L1), 60 t-states own (0.00 %) |
+| Runs (the menu, LOAD NEW LEVEL, the menu again, START) | 7 runs of its first instruction (entered by a jump or by running on, no routine of its own in the L1), 70 t-states own (0.00 %) |
 | Called from | `MusicDispatch` |
 | Calls | `LeadOff` (tail) |
 
@@ -5652,8 +5695,8 @@ A table entry: command 6 ends a pattern.
 
 | | |
 | --- | --- |
-| Runs (r98 4500-5903: the menu, START GAME, play) | run into, not called, 30 t-states own (0.00 %) |
-| Runs (the menu, LOAD NEW LEVEL, the menu again, START) | run into, not called, 20 t-states own (0.00 %) |
+| Runs (r98 4500-5903: the menu, START GAME, play) | 3 runs of its first instruction (entered by a jump or by running on, no routine of its own in the L1), 30 t-states own (0.00 %) |
+| Runs (the menu, LOAD NEW LEVEL, the menu again, START) | 2 runs of its first instruction (entered by a jump or by running on, no routine of its own in the L1), 20 t-states own (0.00 %) |
 | Called from | `MusicDispatch` |
 | Calls | `LeadReturn` (tail) |
 
@@ -6238,7 +6281,7 @@ Robots and shots keep their real position in +`$02`/+`$03` (x) and +`$04` (y) an
 
 | | |
 | --- | --- |
-| Runs | ran within another entry's routine (reached by a jump or by running on, its calls below), no runs of its own counted |
+| Runs (the bot's '98 game, 30284 frames, 9 game days) | 9,441 runs of its first instruction (entered by a jump or by running on, no routine of its own in the L1) |
 | Calls | `MapCell`, `FindLatestBlock`, `DrawMoverSprite` (tail) |
 
 #### `DrawMoverSprite` (`$CEC3`)
@@ -6394,7 +6437,9 @@ An entry only because NE's recording work/game started inside this LDIR; no code
 
 | | |
 | --- | --- |
-| Runs | not reached in the recordings |
+| Runs (the bot's '98 game, 30284 frames, 9 game days) | 62,199 runs of its first instruction (entered by a jump or by running on, no routine of its own in the L1) |
+| Runs (r98 4500-5903: the menu, START GAME, play) | 13,822 runs of its first instruction (entered by a jump or by running on, no routine of its own in the L1) |
+| Runs (the menu, LOAD NEW LEVEL, the menu again, START) | 6,911 runs of its first instruction (entered by a jump or by running on, no routine of its own in the L1) |
 
 #### `DrawPlayScreen` (`$D0CA`)
 
@@ -6727,6 +6772,7 @@ The operand `$FF9C` is -100 (the source writes it so with @isub; as a label it w
 | | |
 | --- | --- |
 | Runs (the bot's '98 game, 30284 frames, 9 game days) | 78 calls, 74,855 t-states own (0.00 %) |
+| Runs (r98 4500-5903: the menu, START GAME, play) | 97 runs of its first instruction (entered by a jump or by running on, no routine of its own in the L1) |
 | Called from | `ShowStrengthValue`, `PrintMenuTotal` (tail) |
 | Calls | `PrintDigit` |
 
@@ -6810,6 +6856,7 @@ PrintRow + 1, then SetPrintPos. Reached by code 3 inside PrintInline and called 
 | --- | --- |
 | Runs (the bot's '98 game, 30284 frames, 9 game days) | 4,783 calls, 258,339 t-states own (0.01 %) |
 | Runs (r98 4500-5903: the menu, START GAME, play) | 315 calls, 17,010 t-states own (0.02 %) |
+| Runs (the menu, LOAD NEW LEVEL, the menu again, START) | 11 runs of its first instruction (entered by a jump or by running on, no routine of its own in the L1) |
 | Called from | `GameTurnEnd`, `PrintResourceValues`, `PrintDigitColumn`, `PrintControl` (tail) |
 | Calls | `SetPrintPos` (tail) |
 | Reads | `$FD31`-`$FD32` (`work space $FD31+`) |
@@ -6825,6 +6872,7 @@ In: B = row 0-23, C = column 0-31. PrintAddr = `$4000` + (B AND `$18`) * 256 + (
 | --- | --- |
 | Runs (the bot's '98 game, 30284 frames, 9 game days) | 8,143 calls, 1,050,713 t-states own (0.05 %) |
 | Runs (r98 4500-5903: the menu, START GAME, play) | 452 calls, 58,327 t-states own (0.06 %) |
+| Runs (the menu, LOAD NEW LEVEL, the menu again, START) | 13 runs of its first instruction (entered by a jump or by running on, no routine of its own in the L1) |
 | Called from | `PrintControl` (tail), `PrintNewline` (tail) |
 | Writes | `$FD04`-`$FD15` (`work space $FD04+`) |
 
@@ -6838,6 +6886,7 @@ The font is at `$6680` + 8*code (`$6780` for the space, right after the view buf
 | --- | --- |
 | Runs (the bot's '98 game, 30284 frames, 9 game days) | 39,354 calls, 19,604,068 t-states own (0.90 %) |
 | Runs (r98 4500-5903: the menu, START GAME, play) | 1,648 calls, 820,951 t-states own (0.82 %) |
+| Runs (the menu, LOAD NEW LEVEL, the menu again, START) | 74 runs of its first instruction (entered by a jump or by running on, no routine of its own in the L1) |
 | Called from | `PrintCharKeep`, `PrintControl` (tail) |
 | Reads | `$6780`-`$678F` (`Font`); `$67A8`-`$67BF` (`Font+40`); `$67E8`-`$6857` (`Font+104`); `$6878`-`$694F` (`Font+248`); `$FD04`-`$FD15` (`work space $FD04+`) |
 | Writes | `$4016`-`$483F` (screen); `$4855`-`$57DF` (screen); `$57F6`-`$57FF` (screen); `$5816`-`$581F` (screen); `$5835`-`$583F` (screen); `$5856`-`$5A1F` (screen); 4 more ranges |
@@ -6852,6 +6901,7 @@ Width 1: each glyph line written `$FD16` times (2: a character two rows high, "R
 | --- | --- |
 | Runs (the bot's '98 game, 30284 frames, 9 game days) | 111 calls, 264,395 t-states own (0.01 %) |
 | Runs (r98 4500-5903: the menu, START GAME, play) | 33 calls, 125,828 t-states own (0.13 %) |
+| Runs (the menu, LOAD NEW LEVEL, the menu again, START) | 27 runs of its first instruction (entered by a jump or by running on, no routine of its own in the L1) |
 | Called from | `PrintControl` (tail) |
 | Calls | `NextScreenLine`, `AddAToHL` |
 | Reads | `$6780`-`$6787` (`Font`); `$67B8`-`$67BF` (`Font+56`); `$67F0`-`$6807` (`Font+112`); `$6840`-`$6857` (`Font+192`); `$6888`-`$68CF` (`Font+264`); `$68E8`-`$68FF` (`Font+360`); 3 more ranges |
@@ -7036,7 +7086,7 @@ HL = the module. The module address into every reader's operand, the delay, the 
 
 | | |
 | --- | --- |
-| Runs | ran within another entry's routine (reached by a jump or by running on, its calls below), no runs of its own counted |
+| Runs (r98's intro window) | 1 run of its first instruction (entered by a jump or by running on, no routine of its own in the L1) |
 | Calls | `InitState` (tail) |
 
 #### `InitState` (`$C30E`)
@@ -7088,7 +7138,7 @@ ChAMute: 0 while the channel sounds, `$FF` when it is off (`$C0`, before the fir
 
 | | |
 | --- | --- |
-| Runs | not reached in the recordings |
+| Runs (r98's intro window) | 2,155 runs of its first instruction (entered by a jump or by running on, no routine of its own in the L1) |
 
 #### `ChBMute` (`$C47F`)
 
@@ -7100,7 +7150,7 @@ ChBMute: 0 while the channel sounds, `$FF` when it is off (`$C0`, before the fir
 
 | | |
 | --- | --- |
-| Runs | not reached in the recordings |
+| Runs (r98's intro window) | 2,155 runs of its first instruction (entered by a jump or by running on, no routine of its own in the L1) |
 
 #### `ChBPortaRun` (`$C559`)
 
@@ -7132,7 +7182,7 @@ ChCMute: 0 while the channel sounds, `$FF` when it is off (`$C0`, before the fir
 
 | | |
 | --- | --- |
-| Runs | not reached in the recordings |
+| Runs (r98's intro window) | 2,155 runs of its first instruction (entered by a jump or by running on, no routine of its own in the L1) |
 
 #### `ChCPortaRun` (`$C677`)
 
@@ -7162,7 +7212,7 @@ The envelope: EnvPeriod (set by the row) + the samples' offsets (IYL, low byte o
 
 | | |
 | --- | --- |
-| Runs | ran within another entry's routine (reached by a jump or by running on, its calls below), no runs of its own counted |
+| Runs (r98's intro window) | 2,155 runs of its first instruction (entered by a jump or by running on, no routine of its own in the L1) |
 | Calls | `WriteAy` (falls into) |
 
 #### `WriteAy` (`$C6E1`)
@@ -7187,7 +7237,7 @@ IY = `$5C3A` for the ROM's interrupt (Pt3Stop patches this opcode to RET). Then 
 
 | | |
 | --- | --- |
-| Runs | ran within another entry's routine (reached by a jump or by running on, its calls below), no runs of its own counted |
+| Runs (r98's intro window) | 2,157 runs of its first instruction (entered by a jump or by running on, no routine of its own in the L1) |
 | Calls | `ChBRowSkip` (tail), `ChCRowSkip` (tail) |
 
 #### `ChARowSkip` (`$C763`)
@@ -7198,7 +7248,7 @@ Channel A's row (two frames before the row). First every staging JR / JP of A is
 
 | | |
 | --- | --- |
-| Runs | ran within another entry's routine (reached by a jump or by running on, its calls below), no runs of its own counted |
+| Runs (r98's intro window) | 431 runs of its first instruction (entered by a jump or by running on, no routine of its own in the L1) |
 | Calls | `ChADecode` |
 
 #### `ChADecode` (`$C7DA`)
@@ -7589,7 +7639,7 @@ The staged row of channel A, applied after channel C's decode. Each block is ski
 
 | | |
 | --- | --- |
-| Runs | not reached in the recordings |
+| Runs (r98's intro window) | 431 runs of its first instruction (entered by a jump or by running on, no routine of its own in the L1) |
 
 #### `ChAOnOffApply` (`$CB8C`)
 
@@ -7609,7 +7659,7 @@ The staged row of channel B: as channel A's.
 
 | | |
 | --- | --- |
-| Runs | not reached in the recordings |
+| Runs (r98's intro window) | 431 runs of its first instruction (entered by a jump or by running on, no routine of its own in the L1) |
 
 #### `ChBNewPortaNote` (`$CBF8`)
 
@@ -7629,7 +7679,7 @@ Its low byte is the target: EnvSlideJr normally (431 entries, every row of the w
 
 | | |
 | --- | --- |
-| Runs | not reached in the recordings |
+| Runs (r98's intro window) | 431 runs of its first instruction (entered by a jump or by running on, no routine of its own in the L1) |
 
 #### `ChBNewOnTime` (`$CC1D`)
 
@@ -7649,7 +7699,7 @@ Once-only blocks, entered when a row set them (their JR / JP retargeted, the blo
 
 | | |
 | --- | --- |
-| Runs | not reached in the recordings |
+| Runs (r98's intro window) | 431 runs of its first instruction (entered by a jump or by running on, no routine of its own in the L1) |
 
 #### `NewEnvSlideStep` (`$CC3A`)
 
@@ -7669,7 +7719,7 @@ JP ChAOrnOffJp normally (431 entries); ChAEffSampleOffset retargets it to ChANew
 
 | | |
 | --- | --- |
-| Runs | not reached in the recordings |
+| Runs (r98's intro window) | 431 runs of its first instruction (entered by a jump or by running on, no routine of its own in the L1) |
 
 #### `ChANewSamplePos` (`$CC50`)
 
@@ -7689,7 +7739,7 @@ JP ChBSampleOffJp normally (431 entries); ChAEffOrnOffset retargets it to ChANew
 
 | | |
 | --- | --- |
-| Runs | not reached in the recordings |
+| Runs (r98's intro window) | 431 runs of its first instruction (entered by a jump or by running on, no routine of its own in the L1) |
 
 #### `ChANewOrnamentPos` (`$CC5D`)
 
@@ -7709,7 +7759,7 @@ JP ChBOrnOffJp normally (431 entries); ChBEffSampleOffset retargets it to ChBNew
 
 | | |
 | --- | --- |
-| Runs | not reached in the recordings |
+| Runs (r98's intro window) | 431 runs of its first instruction (entered by a jump or by running on, no routine of its own in the L1) |
 
 #### `ChBNewSamplePos` (`$CC6A`)
 
@@ -7729,7 +7779,7 @@ JP NewEnvType normally (431 entries); ChBEffOrnOffset retargets it to ChBNewOrna
 
 | | |
 | --- | --- |
-| Runs | not reached in the recordings |
+| Runs (r98's intro window) | 431 runs of its first instruction (entered by a jump or by running on, no routine of its own in the L1) |
 
 #### `ChBNewOrnamentPos` (`$CC77`)
 
@@ -7749,7 +7799,7 @@ The envelope type the row set (0 = none) into EnvType and, if any, NewEnvPeriod 
 
 | | |
 | --- | --- |
-| Runs | not reached in the recordings |
+| Runs (r98's intro window) | 431 runs of its first instruction (entered by a jump or by running on, no routine of its own in the L1) |
 
 #### `ChCDecode` (`$CCA5`)
 
@@ -8057,7 +8107,7 @@ The second half of RobotFrame, an entry of its own because it is reached from th
 
 | | |
 | --- | --- |
-| Runs (r98's intro window) | run into, not called, 1,278,658 t-states own (0.73 %) |
+| Runs (r98's intro window) | 63 runs of its first instruction (entered by a jump or by running on, no routine of its own in the L1), 1,278,658 t-states own (0.73 %) |
 | Reads | `$50B1` (screen); `$51B1` (screen); `$5691` (screen); `$5791` (screen); `$E4B3`-`$E6CB` (`RobotStream`) |
 | Writes | `$502D`-`$50F2` (screen); `$512D`-`$54F2` (screen); `$550D`-`$55D2` (screen); `$55ED`-`$55F2` (screen); `$560D`-`$56D2` (screen); `$56ED`-`$56F2` (screen); 3 more ranges |
 
@@ -8086,7 +8136,7 @@ Entered by the depacker's jump (r99 frame 227). TR-DOS reads (C = 5) 13 sectors 
 | | |
 | --- | --- |
 | Runs (r99's intro window) | 1 call, 57 t-states own (0.00 %) |
-| Reads | `$5CF4`-`$5CF5` (system) |
+| Reads | `$5CF4`-`$5CF5` (`DosNextSector`) |
 
 #### `ReadMusic` (`$61B5`)
 
@@ -8096,8 +8146,8 @@ Sectors 32-44 of NEZSEd99.B. Falls through to IntroMain.
 
 | | |
 | --- | --- |
-| Runs (r99's intro window) | run into, not called, 57 t-states own (0.00 %) |
-| Reads | `$5CF4`-`$5CF5` (system) |
+| Runs (r99's intro window) | 1 run of its first instruction (entered by a jump or by running on, no routine of its own in the L1), 57 t-states own (0.00 %) |
+| Reads | `$5CF4`-`$5CF5` (`DosNextSector`) |
 
 #### `IntroMain` (`$61C2`)
 
@@ -8107,9 +8157,9 @@ Sets IM 2 (table `$B000` of `$B1`, I = `$B0`, JP IM2Handler at `$B1B1`), initial
 
 | | |
 | --- | --- |
-| Runs (r99's intro window) | run into, not called, 31,204,527 t-states own (22.30 %) |
+| Runs (r99's intro window) | 1 run of its first instruction (entered by a jump or by running on, no routine of its own in the L1), 31,204,527 t-states own (22.30 %) |
 | Calls | `RollInPicture`, `DissolveScreen`, `SpiralAttrs` |
-| Reads | `$5CF4`-`$5CF5` (system); `$620E`-`$6213` (`BorderFlash+5`); `$6244`-`$624F` (`ScrollerPause+7`); `$B000`-`$B0FE` (`work space $B000+`) |
+| Reads | `$5CF4`-`$5CF5` (`DosNextSector`); `$620E`-`$6213` (`BorderFlash+5`); `$6244`-`$624F` (`ScrollerPause+7`); `$B000`-`$B0FE` (`work space $B000+`) |
 | Writes | `$5AD0`-`$5ADF` (screen); `$6523`-`$6524` (`PrintFont`); `$7D99`-`$7D9A` (`work space $7D99+`); `$7DD7`-`$7DD8` (`work space $7DD7+`); `$B000`-`$B100` (`work space $B000+`); `$B1B1`-`$B1B3` (`work space $B1B1+`) |
 | Ports in | `$7FFE`, `$BFFE` |
 | Ports out | `$00FE`, `$06FE`, `$07FE` |
@@ -8122,7 +8172,7 @@ From ScrollText: PrintLine prints AT 32,22 and a line up to its CR, INC DE skips
 
 | | |
 | --- | --- |
-| Runs | ran within another entry's routine (reached by a jump or by running on, its calls below), no runs of its own counted |
+| Runs (r99's intro window) | 1 run of its first instruction (entered by a jump or by running on, no routine of its own in the L1) |
 | Calls | `CycleBottomRow`, `CycleLogoColours`, `PrintLine`, `PushOutScreen`, `SpiralAttrs`, `ScrollWindowUp` |
 
 ### effects
@@ -8341,7 +8391,7 @@ HL = PrintFont + 2, back into PrintArgument's store: the first byte (2 left) goe
 
 | | |
 | --- | --- |
-| Runs | not reached in the recordings |
+| Runs (r99's intro window) | 50 runs of its first instruction (entered by a jump or by running on, no routine of its own in the L1) |
 
 #### `PrintControl` (`$64DC`)
 
@@ -8349,7 +8399,7 @@ HL = PrintFont + 2, back into PrintArgument's store: the first byte (2 left) goe
 
 | | |
 | --- | --- |
-| Runs | ran within another entry's routine (reached by a jump or by running on, its calls below), no runs of its own counted |
+| Runs (r99's intro window) | 27 runs of its first instruction (entered by a jump or by running on, no routine of its own in the L1) |
 | Calls | `PrintNewRow` (falls into) |
 
 #### `PrintNewRow` (`$64E0`)
@@ -8371,7 +8421,7 @@ Part of PrintChar's control codes (PrintControl falls here past LF); each sets P
 
 | | |
 | --- | --- |
-| Runs | not reached in the recordings |
+| Runs (r99's intro window) | 26 runs of its first instruction (entered by a jump or by running on, no routine of its own in the L1) |
 
 ### interrupt
 
@@ -8463,7 +8513,7 @@ Selects AY register 12 and writes A = 0, 1, ... 255 to it (MuteLoop, ending when
 
 | | |
 | --- | --- |
-| Runs | ran within another entry's routine (reached by a jump or by running on, its calls below), no runs of its own counted |
+| Runs (r99's intro window) | 1 run of its first instruction (entered by a jump or by running on, no routine of its own in the L1) |
 | Calls | `MuteLoop` (tail) |
 
 #### `InitEntry` (`$C059`)
@@ -8474,7 +8524,7 @@ HL = Module, on to InitModule.
 
 | | |
 | --- | --- |
-| Runs | ran within another entry's routine (reached by a jump or by running on, its calls below), no runs of its own counted |
+| Runs (r99's intro window) | 1 run of its first instruction (entered by a jump or by running on, no routine of its own in the L1) |
 | Calls | `InitModule` (tail) |
 
 #### `PlayEntry` (`$C05F`)
@@ -8483,7 +8533,7 @@ HL = Module, on to InitModule.
 
 | | |
 | --- | --- |
-| Runs | ran within another entry's routine (reached by a jump or by running on, its calls below), no runs of its own counted |
+| Runs (r99's intro window) | 1,845 runs of its first instruction (entered by a jump or by running on, no routine of its own in the L1) |
 | Calls | `PlayFrame` (tail) |
 
 #### `InitModule` (`$C062`)
@@ -8763,10 +8813,11 @@ Part of Stage3Entry; an entry because the recording window r99-s3a starts inside
 
 | | |
 | --- | --- |
-| Runs (r99 2194-2300) | run into, not called, 1,211,838 t-states own (15.95 %) |
-| Runs (the 48 K path) | run into, not called, 1,282,502 t-states own (3.84 %) |
-| Reads | `$4000`-`$5BFF` (screen); `$5C53`-`$5C54` (system); `$5CB0`-`$5CB1` (system); `$61BF`-`$61C0` (`FadeWait+1`) |
-| Writes | `$4000`-`$5C00` (screen); `$5C6B` (system); `$67FC` (`work space $67FC+`) |
+| Runs (r99 2194-2300) | 7 runs of its first instruction (entered by a jump or by running on, no routine of its own in the L1), 1,211,838 t-states own (15.95 %) |
+| Runs (the Scorpion) | 7 runs of its first instruction (entered by a jump or by running on, no routine of its own in the L1) |
+| Runs (the 48 K path) | 7 runs of its first instruction (entered by a jump or by running on, no routine of its own in the L1), 1,282,502 t-states own (3.84 %) |
+| Reads | `$4000`-`$5BFF` (screen); `$5C53`-`$5C54` (`SysProg`); `$5CB0`-`$5CB1` (system); `$61BF`-`$61C0` (`FadeWait+1`) |
+| Writes | `$4000`-`$5C00` (screen); `$5C6B` (`SysDfSz`); `$67FC` (`work space $67FC+`) |
 | Ports out | `$00FE`, `$01FE`, `$02FE`, `$03FE`, `$04FE`, `$05FE`, `$06FE` |
 
 #### `FadeWait` (`$61BE`)
@@ -8775,10 +8826,12 @@ Part of Stage3Entry; an entry because the recording window r99-s3a starts inside
 
 | | |
 | --- | --- |
-| Runs (the Scorpion) | run into, not called, 1,206,965 t-states own (2.32 %) |
+| Runs (r99 2194-2300) | 7 runs of its first instruction (entered by a jump or by running on, no routine of its own in the L1) |
+| Runs (the Scorpion) | 8 runs of its first instruction (entered by a jump or by running on, no routine of its own in the L1), 1,206,965 t-states own (2.32 %) |
+| Runs (the 48 K path) | 8 runs of its first instruction (entered by a jump or by running on, no routine of its own in the L1) |
 | Calls | `ReadTrdosVersion`, `ReadSectors`, `SkipStrings`, `FirstSetBit`, `PrintFF`, `MemoryTest` |
-| Reads | `$4000`-`$5BFF` (screen); `$5C53`-`$5C54` (system); `$5CB0`-`$5CB1` (system); `$61BF`-`$61C0` (`FadeWait+1`) |
-| Writes | `$4000`-`$5C00` (screen); `$5C6B` (system); `$67FC` (`work space $67FC+`) |
+| Reads | `$4000`-`$5BFF` (screen); `$5C53`-`$5C54` (`SysProg`); `$5CB0`-`$5CB1` (system); `$61BF`-`$61C0` (`FadeWait+1`) |
+| Writes | `$4000`-`$5C00` (screen); `$5C6B` (`SysDfSz`); `$67FC` (`work space $67FC+`) |
 | Ports out | `$00FE`, `$01FE`, `$02FE`, `$03FE`, `$04FE`, `$05FE`, `$06FE` |
 
 #### `RunGameBlock` (`$6250`)
@@ -8789,10 +8842,10 @@ An entry because the recording window r99-s3b starts here (frame 2299).
 
 | | |
 | --- | --- |
-| Runs (r99 2194-2300) | run into, not called, 17 t-states own (0.00 %) |
-| Runs (r99 2299-2662) | run into, not called, 78 t-states own (0.00 %) |
-| Runs (the Scorpion) | run into, not called, 106 t-states own (0.00 %) |
-| Runs (the 48 K path) | run into, not called, 78 t-states own (0.00 %) |
+| Runs (r99 2194-2300) | 1 run of its first instruction (entered by a jump or by running on, no routine of its own in the L1), 17 t-states own (0.00 %) |
+| Runs (r99 2299-2662) | 1 run of its first instruction (entered by a jump or by running on, no routine of its own in the L1), 78 t-states own (0.00 %) |
+| Runs (the Scorpion) | 1 run of its first instruction (entered by a jump or by running on, no routine of its own in the L1), 106 t-states own (0.00 %) |
+| Runs (the 48 K path) | 1 run of its first instruction (entered by a jump or by running on, no routine of its own in the L1), 78 t-states own (0.00 %) |
 | Calls | `ReadSectors`, `PrintFF`, `BattleText` |
 
 #### `InstallPatches` (`$6261`)
@@ -8801,11 +8854,11 @@ An entry because the recording window r99-s3b starts here (frame 2299).
 
 | | |
 | --- | --- |
-| Runs (r99 2299-2662) | run into, not called, 8,636 t-states own (0.03 %) |
-| Runs (the Scorpion) | run into, not called, 10,804 t-states own (0.02 %) |
-| Runs (the 48 K path) | run into, not called, 8,636 t-states own (0.03 %) |
+| Runs (r99 2299-2662) | 1 run of its first instruction (entered by a jump or by running on, no routine of its own in the L1), 8,636 t-states own (0.03 %) |
+| Runs (the Scorpion) | 1 run of its first instruction (entered by a jump or by running on, no routine of its own in the L1), 10,804 t-states own (0.02 %) |
+| Runs (the 48 K path) | 1 run of its first instruction (entered by a jump or by running on, no routine of its own in the L1), 8,636 t-states own (0.03 %) |
 | Calls | `InstallOnePage`, `InstallPaged`, `AdvanceSectors`, `ReadSectors`, `PrintFF` |
-| Reads | `$5CB1` (system); `$5CF4`-`$5CF5` (system); `$D800`-`$D973` (`work space $D800+`) |
+| Reads | `$5CB1` (system); `$5CF4`-`$5CF5` (`TrdosNextSector`); `$D800`-`$D973` (`work space $D800+`) |
 | Writes | `$A598`-`$A5D5` (`work space $A598+`); `$C116`-`$C14A` (`work space $C116+`); `$C1FD`-`$C332` (`work space $C1FD+`) |
 
 #### `Stage3Paged` (`$62E7`)
@@ -8816,7 +8869,9 @@ The end of both 128 K routes (disk, and the tape path's JP). Page 0 at `$C000` (
 
 | | |
 | --- | --- |
-| Runs | not reached in the recordings |
+| Runs (r99 2299-2662) | 1 run of its first instruction (entered by a jump or by running on, no routine of its own in the L1) |
+| Runs (the Scorpion) | 1 run of its first instruction (entered by a jump or by running on, no routine of its own in the L1) |
+| Runs (the 48 K path) | 1 run of its first instruction (entered by a jump or by running on, no routine of its own in the L1) |
 
 #### `InstallOnePage` (`$631E`)
 
@@ -8901,7 +8956,7 @@ TR-DOS command 5 (TrdosCommand) from the disk position after the last file read;
 | Runs (the Scorpion) | 4 calls, 240 t-states own (0.00 %) |
 | Runs (the 48 K path) | 4 calls, 176 t-states own (0.00 %) |
 | Called from | `FadeWait`, `RunGameBlock`, `InstallPatches` |
-| Reads | `$5CF4`-`$5CF5` (system) |
+| Reads | `$5CF4`-`$5CF5` (`TrdosNextSector`) |
 
 #### `LoadOk` (`$643C`)
 
@@ -8909,9 +8964,10 @@ TR-DOS command 5 (TrdosCommand) from the disk position after the last file read;
 
 | | |
 | --- | --- |
-| Runs (r99 2194-2300) | run into, not called, 24 t-states own (0.00 %) |
-| Runs (the Scorpion) | run into, not called, 148 t-states own (0.00 %) |
-| Runs (the 48 K path) | run into, not called, 96 t-states own (0.00 %) |
+| Runs (r99 2194-2300) | 1 run of its first instruction (entered by a jump or by running on, no routine of its own in the L1), 24 t-states own (0.00 %) |
+| Runs (r99 2299-2662) | 4 runs of its first instruction (entered by a jump or by running on, no routine of its own in the L1) |
+| Runs (the Scorpion) | 4 runs of its first instruction (entered by a jump or by running on, no routine of its own in the L1), 148 t-states own (0.00 %) |
+| Runs (the 48 K path) | 4 runs of its first instruction (entered by a jump or by running on, no routine of its own in the L1), 96 t-states own (0.00 %) |
 | Calls | `PrintFF` (tail) |
 
 #### `LoadBlock` (`$6443`)
@@ -9061,9 +9117,9 @@ Entered from the stub at `$6700` (page 0, m99 frame 2660). The return address (i
 | --- | --- |
 | Runs (r99 2661-6462) | 1 call, 178 t-states own (0.00 %) |
 | Runs (every item) | 1 call, 178 t-states own (0.00 %) |
-| Runs (REDEFINE) | run into, not called, 89 t-states own (0.00 %) |
+| Runs (REDEFINE) | 1 run of its first instruction (entered by a jump or by running on, no routine of its own in the L1), 89 t-states own (0.00 %) |
 | Calls | `MenuScreen` (falls into) |
-| Writes | `$C1E1`-`$C1E2` (system) |
+| Writes | `$C1E1`-`$C1E2` (`MenuHook`) |
 
 #### `MenuScreen` (`$D813`)
 
@@ -9106,8 +9162,8 @@ After a HALT, SavedAttrs back to `$5940`; PaintBar at column 23 for Controls, co
 | Runs (every item) | 3 calls, 132,642,484 t-states own (48.79 %) |
 | Runs (REDEFINE) | 2 calls, 23,027,118 t-states own (35.34 %) |
 | Calls | `MenuScreen` (tail), `PaintBar`, `DrawPointer`, `SavePointerBg`, `RestorePointerBg`, `ReadMenuKeys` |
-| Reads | `$5942`-`$59B9` (screen); `$59CC` (screen); `$59EC` (screen); `$5A21`-`$5A33` (screen); `$5AC1`-`$5AD2` (screen); `$A5E7` (system); 7 more ranges |
-| Writes | `$5940`-`$59FF` (screen); `$A5E5`-`$A5E7` (system); `$AE41`-`$AE49` (system); `$B87E`-`$B880` (system); `$D2C8`-`$D2CD` (system); `$D3E4` (system); 2 more ranges |
+| Reads | `$5942`-`$59B9` (screen); `$59CC` (screen); `$59EC` (screen); `$5A21`-`$5A33` (screen); `$5AC1`-`$5AD2` (screen); `$A5E7` (`EnemyUpgrade`); 7 more ranges |
+| Writes | `$5940`-`$59FF` (screen); `$A5E5`-`$A5E7` (`EnemyPartsMask`, `EnemyUpgrade`); `$AE41`-`$AE49` (`EnemyProduce`); `$B87E`-`$B880` (`SpawnResources`); `$D2C8`-`$D2CD` (`InsgRobotCount`); `$D3E4` (`Controls`); 2 more ranges |
 
 #### `BottomColumn` (`$DB0A`)
 
@@ -9117,7 +9173,8 @@ LOAD MAP: JP LoadMap (the patches block's catalogue, m99 frames 5600-5960).
 
 | | |
 | --- | --- |
-| Runs | ran within another entry's routine (reached by a jump or by running on, its calls below), no runs of its own counted |
+| Runs (r99 2661-6462) | 2 runs of its first instruction (entered by a jump or by running on, no routine of its own in the L1) |
+| Runs (every item) | 2 runs of its first instruction (entered by a jump or by running on, no routine of its own in the L1) |
 | Calls | `ShowAbout` (tail), `ShowAdvices` (tail), `ShowGreets` (tail) |
 
 #### `DescView` (`$DB4D`)
@@ -9147,6 +9204,7 @@ LOAD MAP: JP LoadMap (the patches block's catalogue, m99 frames 5600-5960).
 | | |
 | --- | --- |
 | Runs (r99 2661-6462) | 4 calls, 212 t-states own (0.00 %) |
+| Runs (every item) | 1 run of its first instruction (entered by a jump or by running on, no routine of its own in the L1) |
 | Called from | `DescView` (tail), `AdvicesView` (tail), `GreetsView` (tail) |
 | Calls | `MenuScreen` (tail), `TextViewer` |
 | Writes | `$DC0E`-`$DC0F` (`ViewerTopLd+1`) |
@@ -9238,7 +9296,8 @@ A = the byte. Keeps BC, DE, HL (the character's work in the alternate set). Colu
 
 | | |
 | --- | --- |
-| Runs | not reached in the recordings |
+| Runs (r99 2661-6462) | 95 runs of its first instruction (entered by a jump or by running on, no routine of its own in the L1) |
+| Runs (every item) | 80 runs of its first instruction (entered by a jump or by running on, no routine of its own in the L1) |
 
 ### menupointer
 
@@ -9402,7 +9461,7 @@ The print address: when it has run into `$41`xx (the first screen third full aft
 | Runs (the start-up menu, LOAD MAP, HARD + PHASERS, play) | 1 call, 14,615,094 t-states own (5.22 %) |
 | Runs (LOAD MAP: the catalogue and a map loaded) | 1 call, 14,125,188 t-states own (2.02 %) |
 | Reads | `$C27F` (`MapCursor+1`); `$C293`-`$C295` (`DiskMapKeys+1`); `$F000`-`$F1FF` (`work space $F000+`); `$F80E`-`$F80F` (`work space $F80E+`); `$F85E`-`$F85F` (`work space $F85E+`); `$FD05` (`work space $FD05+`) |
-| Writes | `$5800`-`$582F` (screen); `$A684` (system); `$ADB4` (system); `$B3E6` (system); `$B817` (system); `$BB1F` (system); 6 more ranges |
+| Writes | `$5800`-`$582F` (screen); `$A684` (`MapGeneral`); `$ADB4` (`CapturePoints`); `$B3E6` (`TargetWarbases`); `$B817` (`SpawnWarbases`); `$BB1F` (`CountPoints`); 6 more ranges |
 
 #### `DiskApplyLevel` (`$C2EB`)
 
@@ -9414,7 +9473,8 @@ The tail stays in the game until the next LOAD MAP: a later START plays the same
 
 | | |
 | --- | --- |
-| Runs | not reached in the recordings |
+| Runs (the start-up menu, LOAD MAP, HARD + PHASERS, play) | 1 run of its first instruction (entered by a jump or by running on, no routine of its own in the L1) |
+| Runs (LOAD MAP: the catalogue and a map loaded) | 1 run of its first instruction (entered by a jump or by running on, no routine of its own in the L1) |
 
 ## The '99 patches block: `paging128` (`src/patches99`)
 
@@ -9534,6 +9594,7 @@ The stack pointer goes into MenuStub's LD SP operand; MenuStub (40 bytes) is cop
 | | |
 | --- | --- |
 | Runs (the start-up menu, LOAD MAP, HARD + PHASERS, play) | 2 calls, 142 t-states own (0.00 %) |
+| Runs (LOAD MAP: the catalogue and a map loaded) | 1 run of its first instruction (entered by a jump or by running on, no routine of its own in the L1) |
 | Called from | `MenuTable128` (tail) |
 | Writes | `$C179`-`$C17A` (`MenuStub+33`) |
 
@@ -9646,7 +9707,8 @@ A tape map file is a headerless block of 512 bytes with the flag byte `$4E`: the
 
 | | |
 | --- | --- |
-| Runs | not reached in the recordings |
+| Runs (the start-up menu, LOAD MAP, HARD + PHASERS, play) | 19 runs of its first instruction (entered by a jump or by running on, no routine of its own in the L1) |
+| Runs (LOAD MAP: the catalogue and a map loaded) | 19 runs of its first instruction (entered by a jump or by running on, no routine of its own in the L1) |
 
 #### `TapeApplyLevel` (`$C248`)
 
@@ -9767,6 +9829,7 @@ The file's position and length are stage 3's operands; A (the tape flag, the dig
 | | |
 | --- | --- |
 | Runs (the start-up menu, LOAD MAP, HARD + PHASERS, play) | 2 calls, 142 t-states own (0.00 %) |
+| Runs (LOAD MAP: the catalogue and a map loaded) | 1 run of its first instruction (entered by a jump or by running on, no routine of its own in the L1) |
 | Called from | `MenuTable48` (tail) |
 | Writes | `$C179`-`$C17A` (`QuietScreen+41`) |
 

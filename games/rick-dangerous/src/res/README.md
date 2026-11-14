@@ -22,7 +22,7 @@ the source INCBINs, `tools/res_formats.py check` proves the round trip.
 
 Each folder's README.md has the addresses, the format and the readers.
 
-Built, not kept here (case.json `built`; tools/build.sh copies them to `build/res`): `loader/stage2.bin`
+Built, not kept here (case.json `built`: the game's sources INCBIN them from `build/`): `loader/stage2.bin`
 (src/loader/stage2.asm) and `music/music.bin` (src/music/music.asm), which the game's module `loader` INCBINs at
 `$5D00` and `$5E00`.
 

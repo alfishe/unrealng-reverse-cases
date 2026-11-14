@@ -93,7 +93,11 @@ what the generator does with it, the part files); every file of a case and the c
 | `bases` | L1 page -> Z80 base of each bank of the image |
 | `read_builds` | the `work/<build>` whose instructions and data reads count; the only recordings mkgame reads with `code_builds` |
 | `code_builds` | the `work/<build>` whose instructions count but not the reads (over a depacker's input), optional |
-| `dest`, `work`, `res_install`, `operands`, `no_entries`, ... | any key of a part file ([ann-format.md 5.2](../docs/ann-format.md#52-part-files)), optional |
+| `no_roots` | builds of `read_builds` / `code_builds` (globs) read as a part file's `{"roots": false}`: a routine that is only the recording's root (a snapshot start's PC) is no entry, optional |
+| `no_entries` | `true` (no recording's routine entries), or a list of builds (globs) whose routines make no entries while their instructions and reads count: a recording started from a snapshot, whose returns and jumps out of the routine it began in look like routine starts (Rick Dangerous: its 45 zone, spot, ending, 48K and integration recordings), optional |
+| `same_bytes`, `overwritten` | as a part file's, with per-build forms: `same_bytes` a list of builds (only their instructions need all bytes the image's), `overwritten` items `[LO, HI, BUILD or [BUILDS]]` (that build's start state holds other code bytes there: its instructions, entries and witness runs there do not count, the walk is free; Rick Dangerous `["ABD8", "ABDB", "stage1/ending"]`), optional |
+| `built` | `{NAME: PATH}`: resources the build makes (a loader stage, a player): the game's `INCBIN "res/NAME"` is installed as `INCBIN "PATH"` and NAME is not installed, optional |
+| `dest`, `work`, `res_install`, `operands`, `mode`, ... | any key of a part file ([ann-format.md 5.2](../docs/ann-format.md#52-part-files)), optional |
 | `ref_builds` | `[key, text]` of the builds docs 11 and 12 report first (each its own Runs row); the other recordings count after them |
 | `witness_skip` | builds of `read_builds` / `code_builds` left out of the `.ann`'s witness counts, optional |
 | `witness_builds` | recordings that count in the witness lines only (a fuel failure, an armour test), optional |
@@ -112,7 +116,9 @@ windows kept inside the recording's folder, `stage1/c1/load`, are `c1`), the lis
 hiscore, rzx x29`; numbered builds of one family by name, a run of three or more as a range: `c1-c4`, `c1, c2, c4`,
 a family that would take more than four items as one, `rzx x29`), and prints each stale line
 (`witness: src/game/game.ann:134 $8040 PrintGlyph: L1 90100 (c1, rzx x32), the builds give L1 90104 (...)`);
-`--fix-witness` rewrites them in the `.ann`, keeps a line that names a recording it did not load, prints each
+`--fix-witness` rewrites them in the `.ann` (a name a build had before `witness_names` renamed it, its own name or
+its path, is that build's: printed as "renamed (witness_names): c1g is c1" and rewritten), keeps a line that names a
+recording it did not load, prints each
 name it drops (`menu, search ran no instruction there`; an entry no build ran stays `L1 0 ()` with no such
 clause, so a data entry is not said to run no instruction), and writes the source again from the rewritten `.ann`, so
 that with `--install` one run leaves the `.ann` and the `.asm` current
@@ -187,12 +193,19 @@ What `refdocs.py` writes, beside the names, titles and descriptions of the `.ann
 - **Callers and callees** are the entries that hold the call's site (L1's `sites`), not the L1 routine's entry: an
   L1 routine runs on through the entries its code falls into and jumps to (Terramex's GameEntry, NewGame, ...
   MainLoop is one), so its entry would be named for a call MainLoop makes. A tail jump is marked "(tail)", running
-  on into the next entry "(falls into)". An entry known only by a call site in it (reached by a jump or by running
-  on, never an L1 routine of its own) says "Runs: ran within another entry's routine ..., no runs of its own
-  counted".
+  on into the next entry "(falls into)". An entry no L1 routine of a recording starts at (entered by a jump, a table
+  jump or by running on; or an L1 "indirect" routine with no entries counted) gets the runs of its first instruction,
+  as its witness line counts them: "Runs (c1: ...): 51 runs of its first instruction (entered by a jump or by running
+  on, no routine of its own in the L1)", and in the other recordings "727 runs of its first instruction, entered by a
+  jump (...)"; doc 12's header then says so (only then: a case without such an entry keeps its header). An entry
+  known only by a call site in it, with no run of its first instruction, says "Runs: ran within another entry's
+  routine ..., no runs of its own counted".
 - **All the recordings.** Docs 11 and 12 read every recording of `case.json`: the `ref_builds` first, then
-  `read_builds` and `code_builds`. Their runs, callers, callees and ports count, their reads and writes only from
-  `ref_builds` and `read_builds` (a `code_builds` recording's reads may be a depacker's input). A routine no
+  `read_builds`, `code_builds` and `witness_builds` (a part: its `l1` sources and its `witness_builds`). Their runs,
+  callers, callees and ports count, their reads and writes only from `ref_builds` and `read_builds` (a `code_builds`
+  recording's reads may be a depacker's input; a `witness_builds` one counts as `code_builds`). A per-build
+  `overwritten` range (`[LO, HI, BUILDS]`) is left out of that build's routines, and a per-build `same_bytes` counts
+  its routines only where their first instruction has the image's bytes. A routine no
   `ref_builds` recording reached says "not reached in `c1`; in the other recordings 648 calls (`rec/growth` 600,
   ...)", one it reached gets a row "Runs (the other recordings)" beside its `ref_builds` rows; "not reached in the
   recordings" only when none ran it.

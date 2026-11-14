@@ -1,12 +1,14 @@
 # 12. Routine reference
 
 Every code entry of the game, in address order by module (`src/game/<module>.asm`). The name, the title and
-the description are the source's (`src/game/game.ann`); the rest is what the recordings saw: `work/stage1/c1` (c1: power-on on a 128K, the load at signal speed, the menu, the intro, a short walk), and the case's other recordings (`case.json` `read_builds`, `code_builds`): their calls in a Runs row of their own, their callers, callees, reads and writes (`read_builds` only) with the others'. They are local, not in the repository; the WALKTHROUGH's commands rebuild them.
+the description are the source's (`src/game/game.ann`); the rest is what the recordings saw: `work/stage1/c1` (c1: power-on on a 128K, the load at signal speed, the menu, the intro, a short walk), and the case's other recordings (`case.json` `read_builds`, `code_builds`, `witness_builds`): their calls in a Runs row of their own, their callers, callees, reads and writes (`read_builds` only) with the others'. They are local, not in the repository; the WALKTHROUGH's commands rebuild them.
 Runs count the calls of the entry itself; the time is its own t-states (callees excluded) and their share
 of the recording. Memory ranges name the label at or below their first byte (inner labels too, `Label+offset`)
 and the entries they cover. The interrupt's acceptance (the vector read, the return address pushed) is
 the handler's, not the interrupted routine's. An entry no recording reached says so; one the case's other
-recordings ran gives their calls.
+recordings ran gives their calls. An entry no routine of a recording starts at (entered by a jump, a table jump or
+by running on: L1 books its time to the routine it runs in) gives the runs of its first instruction, as its witness
+line counts them.
 Written by `kit/refdocs.py`; edit `src/game/game.ann`, then run `kit/mkgame.py --case . --install`
 (see [3. Build and load](03-build-and-load.md)) and `kit/refdocs.py --case .`.
 The parts of the medium (`case.json` `ref_parts`: Bank 4: the AY player, the tunes, the story pages (128K only), The
@@ -46,8 +48,8 @@ Witness: L1 6 (gameover, hiscore, rzx x4). Ran once in gameover.
 
 | | |
 | --- | --- |
-| Runs | not reached in `stage1/c1`; in the other recordings 1 call (`stage1/rec/gameover` 1) |
-| Called from | `LoseEnergy` (tail) |
+| Runs | not reached in `stage1/c1`; in the other recordings 6 calls (`stage2/rzx/r080000` 1, `stage2/rzx/r134000` 1, `stage1/rec/gameover` 1 and 3 more) |
+| Called from | `MainLoopActors` (tail), `LoseEnergy` (tail) |
 | Calls | `IntroScript`, `ShowGameOverWait`, `InsertHighScore` |
 
 ### `NewGame` (`$5C4D`)
@@ -71,7 +73,7 @@ Witness: L1 20 (deaths, gameover, havok, hiscore, menu, throw, c x2, opt x3, rzx
 | | |
 | --- | --- |
 | Runs (c1: power-on on a 128K, the load at signal speed, the menu, the intro, a short walk) | 1 call, 15,792 t-states own (0.00 %) |
-| Runs (the other recordings) | 11 calls (`stage1/rec/menu` 2, `stage1/rec/opt4` 2, `stage1/rec/opt2` 2 and 4 more) |
+| Runs (the other recordings) | 15 calls (`stage1/rec/menu` 2, `stage1/rec/opt4` 2, `stage1/rec/opt2` 2 and 8 more) |
 | Called from | `BuildPageTails` (tail), `IntroGlyphs` (tail) |
 | Calls | `MatchCheatName`, `IntroScript`, `TitleSequence` |
 | Reads | `$5C00`-`$5C37` (`GlobalsInit`, `ScoreLineInit`); `$6D00`-`$6EFE` (`HavokStashB`, `SpriteSetsTail`, `PageTail61`) |
@@ -88,7 +90,7 @@ Witness: L1 150 (deaths, gameover, havok, hiscore, menu, play48, throw, c x1, op
 | | |
 | --- | --- |
 | Runs (c1: power-on on a 128K, the load at signal speed, the menu, the intro, a short walk) | 10 calls, 762 t-states own (0.00 %) |
-| Runs (the other recordings) | 80 calls (`stage1/rec/menu` 20, `stage1/rec/gameover` 20, `stage1/rec/opt3` 10 and 3 more) |
+| Runs (the other recordings) | 140 calls (`stage1/rec/menu` 20, `stage1/rec/gameover` 20, `stage1/rec/opt3` 10 and 9 more) |
 | Called from | `NewGame` |
 | Calls | `ClearScreen`, `FillPlayAttributes`, `PrintScore`, `EnvelopeTimeCount`, `MainLoop` (tail), `EnterRoom`, `InitActor`, `PanelAttrsRoom` |
 | Reads | `$8126`-`$813B` (`HiScoreEntries+9`); `$8150`-`$8165` (`HiScoreEntries+51`); `$817A` (`HiScoreEntries+93`); `$818F` (`HiScoreEntries+114`); `$81A4` (`HiScoreEntries+135`); `$81B9` (`HiScoreEntries+156`); 3 more ranges |
@@ -119,7 +121,8 @@ Witness: L1 11 (deaths, gameover, hiscore, menu, throw, c x2, opt x3, rzx x1).
 
 | | |
 | --- | --- |
-| Runs | not reached in `stage1/c1`; in the other recordings run into, not called (`stage1/rec/opt2`, `stage1/rec/opt3`, `stage1/rec/deaths` and 3 more) |
+| Runs (c1: power-on on a 128K, the load at signal speed, the menu, the intro, a short walk) | 1 run of its first instruction (entered by a jump or by running on, no routine of its own in the L1) |
+| Runs (the other recordings) | 10 runs of its first instruction, entered by a jump (`stage1/rec/c48` 1, `stage1/rec/deaths` 1, `stage1/rec/gameover` 1 and 7 more) |
 | Calls | `BuildPageTails` (falls into), `Intro48` |
 | Reads | `$6B5C`-`$7047` (`PageTailTemplate`, `ItemRecords`, `WalkLists`, `WeaponRecords` and 8 more) |
 | Writes | `$5D82`-`$5FFF` (`Intro48+51`, `IntroScene`, `IntroPictureText`, `IntroText` and 8 more); `$6082`-`$60FF` (`SizeClasses`); `$6182`-`$61FF` (`SizeClasses+256`, `PrintGlyphs`, `PrintGlyphsLoop`, `PrintGlyphsNext` and 1 more); `$6282`-`$62FF` (`IntroAttrsC+63`); `$6382`-`$63FF` (`IntroGlyphs+111`); `$6482`-`$64FF` (`IntroGlyphs+367`, `WeaponTemplate`); 3 more ranges |
@@ -173,7 +176,7 @@ Witness: L1 3 (c x1, rzx x1). Ran in c48 and in the RZX run's 48K intro (r000000
 
 | | |
 | --- | --- |
-| Runs | not reached in `stage1/c1`; in the other recordings 1 call (`stage1/rec/c48` 1) |
+| Runs | not reached in `stage1/c1`; in the other recordings 2 calls (`stage1/rec/c48` 1, `stage2/rzx/r000000` 1) |
 | Called from | `GameEntryIntro` |
 | Calls | `IntroScene`, `IntroPictureText`, `IntroText`, `IntroPictureWait`, `IntroPrint`, `CopyAttrBlock`, `WaitFireLong`, `WaitFireFrames`, `DelayBC`, `ClearScreen` |
 | Ports out | `$00FE`, `$07FE` |
@@ -188,7 +191,7 @@ Witness: L1 9 (c x1, rzx x1). Ran in c48 and in the RZX run's 48K intro (r000000
 
 | | |
 | --- | --- |
-| Runs | not reached in `stage1/c1`; in the other recordings 6 calls (`stage1/rec/c48` 6) |
+| Runs | not reached in `stage1/c1`; in the other recordings 9 calls (`stage1/rec/c48` 6, `stage2/rzx/r000000` 3) |
 | Called from | `Intro48` |
 | Calls | `IntroBox` |
 
@@ -200,7 +203,7 @@ Witness: L1 12 (c x1, rzx x1). Ran in c48 and in the RZX run's 48K intro (r00000
 
 | | |
 | --- | --- |
-| Runs | not reached in `stage1/c1`; in the other recordings 2 calls (`stage1/rec/c48` 2) |
+| Runs | not reached in `stage1/c1`; in the other recordings 3 calls (`stage1/rec/c48` 2, `stage2/rzx/r000000` 1) |
 | Called from | `Intro48` |
 | Calls | `IntroPicture` |
 
@@ -212,7 +215,7 @@ Witness: L1 15 (c x1, rzx x1). Ran in c48 and in the RZX run's 48K intro (r00000
 
 | | |
 | --- | --- |
-| Runs | not reached in `stage1/c1`; in the other recordings 2 calls (`stage1/rec/c48` 2) |
+| Runs | not reached in `stage1/c1`; in the other recordings 3 calls (`stage1/rec/c48` 2, `stage2/rzx/r000000` 1) |
 | Called from | `Intro48` |
 | Calls | `IntroPrint`, `WaitFireLong` (tail) |
 
@@ -226,7 +229,7 @@ Witness: L1 9 (c x1, rzx x1). Ran in c48 and in the RZX run's 48K intro (r000000
 
 | | |
 | --- | --- |
-| Runs | not reached in `stage1/c1`; in the other recordings 6 calls (`stage1/rec/c48` 6) |
+| Runs | not reached in `stage1/c1`; in the other recordings 9 calls (`stage1/rec/c48` 6, `stage2/rzx/r000000` 3) |
 | Called from | `Intro48` |
 | Calls | `IntroPicture`, `WaitFireFrames` (tail) |
 
@@ -240,7 +243,7 @@ Witness: L1 21 (c x1, rzx x1). Ran in c48 and in the RZX run's 48K intro (r00000
 
 | | |
 | --- | --- |
-| Runs | not reached in `stage1/c1`; in the other recordings 14 calls (`stage1/rec/c48` 14) |
+| Runs | not reached in `stage1/c1`; in the other recordings 21 calls (`stage1/rec/c48` 14, `stage2/rzx/r000000` 7) |
 | Called from | `IntroPictureText`, `IntroPictureWait` |
 | Calls | `IntroScriptNext` (tail), `PrintGlyphs` |
 
@@ -252,7 +255,7 @@ Witness: L1 18 (c x1, rzx x1). Ran in c48 and in the RZX run's 48K intro (r00000
 
 | | |
 | --- | --- |
-| Runs | not reached in `stage1/c1`; in the other recordings 12 calls (`stage1/rec/c48` 12) |
+| Runs | not reached in `stage1/c1`; in the other recordings 18 calls (`stage1/rec/c48` 12, `stage2/rzx/r000000` 6) |
 | Called from | `Intro48`, `IntroText` |
 | Calls | `PrintString` |
 
@@ -264,7 +267,7 @@ Witness: L1 39 (c x1, rzx x1). Ran in c48 and in the RZX run's 48K intro (r00000
 
 | | |
 | --- | --- |
-| Runs | not reached in `stage1/c1`; in the other recordings 14 calls (`stage1/rec/c48` 14) |
+| Runs | not reached in `stage1/c1`; in the other recordings 21 calls (`stage1/rec/c48` 14, `stage2/rzx/r000000` 7) |
 | Called from | `IntroPicture` (tail) |
 
 ### `IntroBox` (`$5DFB`)
@@ -277,7 +280,7 @@ Witness: L1 9 (c x1, rzx x1). Ran in c48 and in the RZX run's 48K intro (r000000
 
 | | |
 | --- | --- |
-| Runs | not reached in `stage1/c1`; in the other recordings 6 calls (`stage1/rec/c48` 6) |
+| Runs | not reached in `stage1/c1`; in the other recordings 9 calls (`stage1/rec/c48` 6, `stage2/rzx/r000000` 3) |
 | Called from | `IntroScene` |
 | Calls | `IntroBoxRow`, `IntroBoxSide`, `PrintString` |
 
@@ -289,7 +292,7 @@ Witness: L1 18 (c x1, rzx x1). Ran in c48 and in the RZX run's 48K intro (r00000
 
 | | |
 | --- | --- |
-| Runs | not reached in `stage1/c1`; in the other recordings 12 calls (`stage1/rec/c48` 12) |
+| Runs | not reached in `stage1/c1`; in the other recordings 18 calls (`stage1/rec/c48` 12, `stage2/rzx/r000000` 6) |
 | Called from | `IntroBox` |
 
 ### `IntroBoxSide` (`$5E3F`)
@@ -302,7 +305,7 @@ Witness: L1 99 (c x1, rzx x1). Ran in c48 and in the RZX run's 48K intro (r00000
 
 | | |
 | --- | --- |
-| Runs | not reached in `stage1/c1`; in the other recordings 66 calls (`stage1/rec/c48` 66) |
+| Runs | not reached in `stage1/c1`; in the other recordings 99 calls (`stage1/rec/c48` 66, `stage2/rzx/r000000` 33) |
 | Called from | `IntroBox` |
 
 ### `PrintGlyphs` (`$61E5`)
@@ -317,7 +320,8 @@ Witness: L1 1141 (c x2, rzx x1). Called 14 times in c48 (from `$5DEC`, the `CALL
 
 | | |
 | --- | --- |
-| Runs | not reached in `stage1/c1`; in the other recordings 574 calls (`stage1/rec/c48` 574) |
+| Runs (c1: power-on on a 128K, the load at signal speed, the menu, the intro, a short walk) | 560 runs of its first instruction (entered by a jump or by running on, no routine of its own in the L1) |
+| Runs (the other recordings) | 581 calls (`stage1/rec/c48` 574, `stage2/rzx/r000000` 7) |
 | Called from | `IntroPicture`, `IntroScript` (falls into) |
 | Calls | `IntroScript` (tail), `PrintGlyphsLoop` (falls into), `PrintGlyphsByte`, `SetPrintPosition` |
 
@@ -341,7 +345,8 @@ Witness: L1 1246 (c x2, rzx x1).
 
 | | |
 | --- | --- |
-| Runs | not reached in `stage1/c1`; in the other recordings 724 calls (`stage1/rec/c48` 724) |
+| Runs (c1: power-on on a 128K, the load at signal speed, the menu, the intro, a short walk) | 80 runs of its first instruction (entered by a jump or by running on, no routine of its own in the L1) |
+| Runs (the other recordings) | 724 calls (`stage1/rec/c48` 724) |
 | Called from | `PrintGlyphsLoop` (falls into) |
 | Calls | `IntroScript` (tail), `PrintGlyphsByte` (falls into) |
 
@@ -392,7 +397,8 @@ Witness: L1 2295 (c x2, rzx x1).
 
 | | |
 | --- | --- |
-| Runs | not reached in `stage1/c1`; in the other recordings 1,325 calls (`stage1/rec/c48` 1,325) |
+| Runs (c1: power-on on a 128K, the load at signal speed, the menu, the intro, a short walk) | 615 runs of its first instruction (entered by a jump or by running on, no routine of its own in the L1) |
+| Runs (the other recordings) | 1,325 calls (`stage1/rec/c48` 1,325) |
 | Called from | `PrintGlyphsAddress` (falls into), `PrintGlyphsDone` (falls into), `CopyAttrBlock` (tail) |
 | Calls | `PrintGlyphsLoop` (tail), `PrintGlyphsLine` (falls into) |
 
@@ -404,7 +410,8 @@ Witness: L1 1347 (c x2, rzx x1).
 
 | | |
 | --- | --- |
-| Runs | not reached in `stage1/c1`; in the other recordings 693 calls (`stage1/rec/c48` 693) |
+| Runs (c1: power-on on a 128K, the load at signal speed, the menu, the intro, a short walk) | 615 runs of its first instruction (entered by a jump or by running on, no routine of its own in the L1) |
+| Runs (the other recordings) | 693 calls (`stage1/rec/c48` 693) |
 | Called from | `PrintGlyphsRestore` (falls into) |
 | Calls | `PrintGlyphsDone` (tail), `CopyAttrBlock` (falls into), `SetPrintPosition` |
 
@@ -418,7 +425,8 @@ Witness: L1 1299 (c x2, rzx x1). Ran in c48 and in the RZX run's 48K intro (r000
 
 | | |
 | --- | --- |
-| Runs | not reached in `stage1/c1`; in the other recordings 661 calls (`stage1/rec/c48` 661) |
+| Runs (c1: power-on on a 128K, the load at signal speed, the menu, the intro, a short walk) | 615 runs of its first instruction (entered by a jump or by running on, no routine of its own in the L1) |
+| Runs (the other recordings) | 664 calls (`stage1/rec/c48` 661, `stage2/rzx/r000000` 3) |
 | Called from | `Intro48`, `PrintGlyphsLine` (falls into), `CopyAttrBlockCarry` (tail) |
 | Calls | `PrintGlyphsAddress` (tail), `PrintGlyphsRestore` (tail), `CopyAttrBlockCarry` (falls into) |
 
@@ -445,7 +453,7 @@ Witness: L1 13 (gameover, hiscore, menu, opt x3, rzx x5).
 
 | | |
 | --- | --- |
-| Runs | ran within another entry's routine (reached by a jump or by running on, its calls below), no runs of its own counted |
+| Runs | not reached in `stage1/c1`; in the other recordings 13 runs of its first instruction, entered by a jump (`stage1/rec/menu` 3, `stage1/rec/gameover` 1, `stage1/rec/opt2` 1 and 8 more) |
 | Calls | `PauseLong` (tail), `ActorUpdate`, `InitActor` |
 
 ### `ControlMenu` (`$6A7B`)
@@ -486,7 +494,8 @@ Witness: L1 9813588 (deaths, gameover, hiscore, menu, throw, c x2, opt x3, rzx x
 
 | | |
 | --- | --- |
-| Runs | not reached in `stage1/c1`; in the other recordings run into, not called (`stage1/rec/deaths`, `stage1/rec/gameover`, `stage1/rec/opt4` and 3 more) |
+| Runs (c1: power-on on a 128K, the load at signal speed, the menu, the intro, a short walk) | 635,084 runs of its first instruction (entered by a jump or by running on, no routine of its own in the L1) |
+| Runs (the other recordings) | 9,178,504 runs of its first instruction, entered by a jump (`stage1/rec/c48` 9,052,312, `stage2/rzx/r000000` 126,150, `stage1/rec/deaths` 6 and 7 more) |
 | Reads | `$6B0A`-`$6B4C` (`ControlRecords`) |
 | Writes | `$5C06` (`GlobalsInit+6`); `$84CA` (`TickInput+11`); `$850F`-`$853A` (`DecodeDirection+1`, `ReadInput`, `ReadInputSpace`) |
 | Ports in | `$F7FE` |
@@ -505,7 +514,8 @@ Witness: L1 32 (gameover, havok, hiscore, menu, c x1, rzx x2, rzxroom x1).
 
 | | |
 | --- | --- |
-| Runs | ran within another entry's routine (reached by a jump or by running on, its calls below), no runs of its own counted |
+| Runs | not reached in `stage1/c1`; in the other recordings 3 calls (`stage2/rzx/r000000` 1, `stage2/rec/havok` 1, `stage2/rzx/rooms/e001039` 1) |
+| Called from | `TitleSequence` (tail) |
 | Calls | `WaitFireLong`, `WaitFireFrames`, `ClearScreen`, `PrintStringTall`, `PrintString`, `ReadInput`, `SweepSpanHalf` |
 
 ### `TitleSequence` (`$A73E`)
@@ -527,9 +537,9 @@ Witness: L1 47 (deaths, gameover, havok, hiscore, menu, throw, c x2, opt x3, rzx
 | | |
 | --- | --- |
 | Runs (c1: power-on on a 128K, the load at signal speed, the menu, the intro, a short walk) | 1 call, 436,804 t-states own (0.03 %) |
-| Runs (the other recordings) | 12 calls (`stage1/rec/menu` 2, `stage1/rec/gameover` 2, `stage1/rec/opt2` 2 and 4 more) |
+| Runs (the other recordings) | 19 calls (`stage1/rec/menu` 2, `stage1/rec/gameover` 2, `stage2/rec/hiscore` 2 and 10 more) |
 | Called from | `NewGame` |
-| Calls | `IntroGlyphs`, `ClearScreen`, `ReadInput`, `SweepSpanHalf`, `SetEnvelopeState`, `DrawActors`, `BlitWindow`, `ActorBoxStore`, `AddMove`, `InitActor` |
+| Calls | `IntroGlyphs`, `ClearScreen`, `ReadInput`, `SweepSpanHalf`, `SetEnvelopeState`, `DrawActors`, `BlitWindow`, `ActorBoxStore`, `AddMove`, `InitActor`, `ShowHighScores` (tail) |
 | Reads | `$5D3F`-`$6541` (`BuildBoxPlaceLoop+11`, `Intro48`, `IntroScene`, `IntroPictureText` and 23 more); `$663F`-`$6641` (`WeaponActor+63`); `$66FA`-`$66FF` (`TitleColours`); `$673F`-`$6741` (`TitleColours+69`); `$683F`-`$6841` (`TitleColours+325`); `$693F`-`$6941` (`EnemySlots+99`); 5 more ranges |
 | Writes | `$5D0A`-`$6669` (`BuildPageTails+3`, `Intro48`, `IntroScene`, `IntroPictureText` and 23 more); `$670A` (`TitleColours+16`); `$673F`-`$6769` (`TitleColours+69`); `$680A` (`TitleColours+272`); `$683F`-`$6869` (`TitleColours+325`); `$690A` (`EnemySlots+46`); 11 more ranges |
 
@@ -547,8 +557,9 @@ Witness: L1 8 (gameover, havok, hiscore, rzx x5).
 
 | | |
 | --- | --- |
-| Runs | not reached in `stage1/c1`; in the other recordings 1 call (`stage1/rec/gameover` 1) |
+| Runs | not reached in `stage1/c1`; in the other recordings 8 calls (`stage2/rec/havok` 1, `stage2/rec/hiscore` 1, `stage2/rzx/r140000` 1 and 5 more) |
 | Called from | `GameOver` |
+| Calls | `ClearScreen`, `EnterName` |
 | Reads | `$665B`-`$6662` (`ScoreDigits`); `$811D`-`$81E1` (`HiScoreEntries`) |
 | Writes | `$A8C9` (`EnterNamePut+1`) |
 
@@ -568,7 +579,9 @@ Witness: L1 7 (havok, hiscore, rzx x5).
 
 | | |
 | --- | --- |
-| Runs | not reached in the recordings |
+| Runs | not reached in `stage1/c1`; in the other recordings 7 calls (`stage2/rzx/r140000` 1, `stage2/rec/hiscore` 1, `stage2/rzx/r122000` 1 and 4 more) |
+| Called from | `InsertHighScore` |
+| Calls | `PauseLong`, `DelayBC`, `PrintStringTall`, `PrintString`, `DecodeDirection`, `ReadInput`, `MoveNameBox`, `NameLetterIndex` |
 
 ### `MoveNameBox` (`$A8E2`)
 
@@ -582,7 +595,9 @@ Witness: L1 17934 (hiscore, rzx x5).
 
 | | |
 | --- | --- |
-| Runs | not reached in the recordings |
+| Runs | not reached in `stage1/c1`; in the other recordings 17,934 calls (`stage2/rzx/r122000` 17,212, `stage2/rzx/r134000` 667, `stage2/rzx/r140000` 25 and 3 more) |
+| Called from | `EnterName` |
+| Calls | `PauseLong` (tail), `PrintString`, `NameLetterIndex` |
 
 ### `NameLetterIndex` (`$A91B`)
 
@@ -594,7 +609,9 @@ Witness: L1 87 (havok, hiscore, rzx x5).
 
 | | |
 | --- | --- |
-| Runs | not reached in the recordings |
+| Runs | not reached in `stage1/c1`; in the other recordings 87 calls (`stage2/rzx/r140000` 33, `stage2/rzx/r142000` 18, `stage2/rec/hiscore` 13 and 4 more) |
+| Called from | `EnterName`, `MoveNameBox` |
+| Calls | `Multiply8` |
 
 ## rooms
 
@@ -611,7 +628,7 @@ Witness: L1 424 (bossgate, deaths, gameover, havok, hiscore, menu, play48, rooms
 | | |
 | --- | --- |
 | Runs (c1: power-on on a 128K, the load at signal speed, the menu, the intro, a short walk) | 7 calls, 87,912 t-states own (0.01 %) |
-| Runs (the other recordings) | 47 calls (`stage1/rec/rooms` 14, `stage1/rec/deaths` 13, `stage1/rec/gameover` 5 and 5 more) |
+| Runs (the other recordings) | 417 calls (`stage2/rzx/r092000` 18, `stage2/rzx/r022000` 14, `stage1/rec/rooms` 14 and 100 more) |
 | Called from | `BuildPageTails`, `BuildRoomPlanes`, `DecodeRoom` |
 | Writes | `$6700`-`$6CFF` (`TitleColours+6`, `ControlMenu`, `ControlMenuKey`, `ControlMenuText` and 9 more) |
 
@@ -625,8 +642,8 @@ Witness: L1 206 (bossgate, deaths, gameover, havok, hiscore, menu, play48, rooms
 
 | | |
 | --- | --- |
-| Runs (c1: power-on on a 128K, the load at signal speed, the menu, the intro, a short walk) | run into, not called, 297 t-states own (0.00 %) |
-| Runs (the other recordings) | run into, not called (`stage1/rec/rooms`, `stage1/rec/deaths`, `stage1/rec/menu` and 4 more) |
+| Runs (c1: power-on on a 128K, the load at signal speed, the menu, the intro, a short walk) | 3 runs of its first instruction (entered by a jump or by running on, no routine of its own in the L1), 297 t-states own (0.00 %) |
+| Runs (the other recordings) | 203 runs of its first instruction, entered by a jump (`stage2/rzx/r092000` 9, `stage1/rec/rooms` 7, `stage2/rzx/r022000` 7 and 98 more) |
 | Called from | `JumpViaTable` |
 | Reads | `$6BDD` (`Room`) |
 | Writes | `$6C5A`-`$6C5B` (`PageTail5F+2`); `$6C6E`-`$6C81` (`PageTail5F+22`) |
@@ -652,7 +669,7 @@ Witness: L1 42125 (bossgate, deaths, gameover, havok, hiscore, menu, play48, roo
 | | |
 | --- | --- |
 | Runs (c1: power-on on a 128K, the load at signal speed, the menu, the intro, a short walk) | 235 calls, 61,255 t-states own (0.00 %) |
-| Runs (the other recordings) | 2,113 calls (`stage1/rec/deaths` 949, `stage1/rec/rooms` 576, `stage1/rec/gameover` 144 and 4 more) |
+| Runs (the other recordings) | 41,890 calls (`stage2/rec/havok` 1,114, `stage2/rzx/r138000` 1,064, `stage1/rec/deaths` 949 and 113 more) |
 | Called from | `AnimateAfterMove` (tail) |
 | Calls | `RedrawCellsMasked`, `ActorScreenBox`, `RevealZone`, `SaveRoomState`, `SpawnZoneEnemies` (tail) |
 | Reads | `$5D00`-`$5D02` (`Hiro`); `$5D20` (`BuildOutlineMaskLoop+12`); `$5D3D` (`BuildBoxPlaceLoop+9`); `$6651` (`Invulnerable`); `$69DF`-`$69E0` (`MapRow`, `MapColumn`); `$6BDD` (`Room`) |
@@ -675,7 +692,7 @@ Witness: L1 206 (bossgate, deaths, gameover, havok, hiscore, menu, play48, rooms
 | | |
 | --- | --- |
 | Runs (c1: power-on on a 128K, the load at signal speed, the menu, the intro, a short walk) | 1 call, 804 t-states own (0.00 %) |
-| Runs (the other recordings) | 7 calls (`stage1/rec/menu` 2, `stage1/rec/deaths` 1, `stage1/rec/gameover` 1 and 3 more) |
+| Runs (the other recordings) | 13 calls (`stage1/rec/menu` 2, `stage1/rec/deaths` 1, `stage2/rec/play48` 1 and 9 more) |
 | Called from | `MatchCheatName` |
 | Calls | `RedrawRoomMasked`, `FindRoom`, `RestoreShield`, `BuildRoomPlanes`, `SetupRoomObjects`, `SpawnRoomEnemies` |
 | Reads | `$6651` (`Invulnerable`); `$69DF` (`MapRow`); `$6BDD` (`Room`) |
@@ -692,7 +709,7 @@ Witness: L1 375 (bossgate, deaths, gameover, havok, hiscore, menu, play48, rooms
 | | |
 | --- | --- |
 | Runs (c1: power-on on a 128K, the load at signal speed, the menu, the intro, a short walk) | 3 calls, 645 t-states own (0.00 %) |
-| Runs (the other recordings) | 25 calls (`stage1/rec/rooms` 11, `stage1/rec/deaths` 7, `stage1/rec/menu` 2 and 4 more) |
+| Runs (the other recordings) | 372 calls (`stage2/rzx/r092000` 18, `stage2/rzx/r022000` 14, `stage2/rzx/r110000` 12 and 98 more) |
 | Called from | `EnterRoom` |
 | Reads | `$69E0` (`MapColumn`); `$7048`-`$7062` (`MapColumns`); `$70C7`-`$70DF` (`MapRowCounts`, `MapRowStarts`) |
 
@@ -709,7 +726,7 @@ Witness: L1 206 (bossgate, deaths, gameover, havok, hiscore, menu, play48, rooms
 | | |
 | --- | --- |
 | Runs (c1: power-on on a 128K, the load at signal speed, the menu, the intro, a short walk) | 3 calls, 946 t-states own (0.00 %) |
-| Runs (the other recordings) | 20 calls (`stage1/rec/rooms` 7, `stage1/rec/deaths` 6, `stage1/rec/gameover` 2 and 4 more) |
+| Runs (the other recordings) | 203 calls (`stage2/rzx/r092000` 9, `stage2/rzx/r022000` 7, `stage1/rec/rooms` 7 and 98 more) |
 | Called from | `EnterRoom` |
 | Calls | `ClearRoomCells`, `DecodeRoom` (falls into), `RoomDataAddress` |
 | Reads | `$68C8`-`$68DB` (`TitleColours+462`); `$69C8`-`$69DB` (`EnemySlots+236`); `$6AC8`-`$6ADB` (`ControlMenuPatch+47`, `ControlMenuText`); `$6BC8`-`$6BDD` (`ItemRecords+28`, `PageTail5E`, `RoomAbove`, `Room`); `$A9C6` (`Room4`); `$A9D8` (`Room5`) |
@@ -729,7 +746,8 @@ Witness: L1 279 (bossgate, deaths, gameover, havok, hiscore, menu, play48, rooms
 
 | | |
 | --- | --- |
-| Runs | not reached in `stage1/c1`; in the other recordings 15 calls (`stage1/rec/rooms` 8, `stage1/rec/deaths` 7) |
+| Runs (c1: power-on on a 128K, the load at signal speed, the menu, the intro, a short walk) | 3 runs of its first instruction (entered by a jump or by running on, no routine of its own in the L1) |
+| Runs (the other recordings) | 193 calls (`stage2/rzx/r022000` 11, `stage1/rec/rooms` 8, `stage2/rzx/r126000` 8 and 53 more) |
 | Called from | `BuildRoomPlanes` (falls into) |
 | Calls | `ClearRoomCells`, `NextObjectGroup` (falls into), `OpHighNibble`, `PutTileMarkA` |
 | Reads | `$6BDE` (`Room+1`); `$7300`-`$7344` (`RoomPatternStarts`, `RoomPatterns`, `DrawColumnPos`, `RoomPatternsMore`); `$A928`-`$A930` (`Room1`); `$A97D`-`$A983` (`Room2`); `$A9B0` (`Room3`); `$A9C6` (`Room4`); 8 more ranges |
@@ -746,7 +764,7 @@ Witness: L1 1770 (bossgate, deaths, gameover, havok, hiscore, menu, play48, room
 | | |
 | --- | --- |
 | Runs (c1: power-on on a 128K, the load at signal speed, the menu, the intro, a short walk) | 9 calls, 981 t-states own (0.00 %) |
-| Runs (the other recordings) | 112 calls (`stage1/rec/rooms` 57, `stage1/rec/deaths` 34, `stage1/rec/gameover` 6 and 4 more) |
+| Runs (the other recordings) | 1,761 calls (`stage2/rzx/r022000` 69, `stage2/rzx/r092000` 63, `stage1/rec/rooms` 57 and 98 more) |
 | Called from | `DecodeRoom` (falls into), `ObjectLoop` (tail), `ObjectPattern` (tail), `RoomOpFillBack` (tail) |
 | Calls | `NextObject` (falls into), `OpHighNibble` |
 | Reads | `$A931`-`$A963` (`Room1+9`); `$A984`-`$A99E` (`Room2+7`); `$A9B1`-`$AA3B` (`Room3+1`, `Room4`, `Room5`, `Room6` and 2 more); `$AA54`-`$AA76` (`Room9+15`); `$AAFC`-`$AB29` (`Room11+19`); `$AC08`-`$AC3A` (`Room14+27`); 3 more ranges |
@@ -760,7 +778,8 @@ Witness: L1 5695 (bossgate, deaths, gameover, havok, hiscore, menu, play48, room
 
 | | |
 | --- | --- |
-| Runs | not reached in `stage1/c1`; in the other recordings 236 calls (`stage1/rec/rooms` 167, `stage1/rec/deaths` 69) |
+| Runs (c1: power-on on a 128K, the load at signal speed, the menu, the intro, a short walk) | 9 runs of its first instruction (entered by a jump or by running on, no routine of its own in the L1) |
+| Runs (the other recordings) | 5,644 calls (`stage2/rzx/r092000` 243, `stage2/rzx/r096000` 227, `stage2/rzx/r126000` 219 and 87 more) |
 | Called from | `NextObjectGroup` (falls into), `RoomOpNext` (tail), `RoomOpLedge` (tail) |
 | Calls | `ObjectLoop` (falls into) |
 
@@ -773,7 +792,7 @@ Witness: L1 5736 (bossgate, deaths, gameover, havok, hiscore, menu, play48, room
 | | |
 | --- | --- |
 | Runs (c1: power-on on a 128K, the load at signal speed, the menu, the intro, a short walk) | 12 calls, 1,352 t-states own (0.00 %) |
-| Runs (the other recordings) | 273 calls (`stage1/rec/rooms` 170, `stage1/rec/deaths` 75, `stage1/rec/menu` 8 and 4 more) |
+| Runs (the other recordings) | 514 calls (`stage1/rec/rooms` 170, `stage1/rec/deaths` 75, `stage2/rec/play48` 75 and 16 more) |
 | Called from | `NextObject` (falls into), `BuildSurface` (tail) |
 | Calls | `NextObjectGroup` (tail), `JumpViaTable` (tail) |
 | Reads | `$6AE9`-`$6AEB` (`ZoneRecords+8`); `$73CD`-`$73D0` (`RoomCodeHandlers+6`); `$73E5`-`$73E6` (`ActorKindHandlers`) |
@@ -787,7 +806,7 @@ Witness: L1 183 (bossgate, deaths, play48, rooms, poke-room x8, rzx x19, rzxroom
 
 | | |
 | --- | --- |
-| Runs | not reached in `stage1/c1`; in the other recordings run into, not called (`stage1/rec/deaths`, `stage1/rec/rooms`) |
+| Runs | not reached in `stage1/c1`; in the other recordings 183 runs of its first instruction, entered by a jump (`stage2/rzx/r022000` 31, `stage2/rzx/r012000` 21, `stage2/rzx/r020000` 15 and 35 more) |
 | Called from | `JumpViaTable` |
 | Calls | `JumpViaTable` (falls into) |
 | Reads | `$A956`-`$A958` (`Room1+46`); `$A99A` (`Room2+29`); `$AA2A`-`$AA2E` (`Room8+19`); `$AA6E`-`$AA72` (`Room9+41`); `$AC19`-`$AC1B` (`Room14+44`); `$ADB2` (`Room18+46`) |
@@ -800,9 +819,10 @@ Witness: L1 4889 (bossgate, deaths, gameover, havok, hiscore, menu, play48, room
 
 | | |
 | --- | --- |
-| Runs | not reached in `stage1/c1`; in the other recordings 206 calls (`stage1/rec/rooms` 141, `stage1/rec/deaths` 65) |
+| Runs (c1: power-on on a 128K, the load at signal speed, the menu, the intro, a short walk) | 9 runs of its first instruction (entered by a jump or by running on, no routine of its own in the L1) |
+| Runs (the other recordings) | 1,892 calls (`stage2/rzx/r022000` 195, `stage1/rec/rooms` 141, `stage2/rzx/r020000` 111 and 35 more) |
 | Called from | `ObjectLoop` (tail), `ObjectTypeB` (falls into) |
-| Calls | `RoomPatch`, `ObjectTypeB`, `ObjectPattern`, `BuildSurface`, `ObjectRunH75AD`, `ObjectRunH7511`, `RoomOpStripDown`, `RoomOpStrip69`, `RoomOpStrip6A`, `RoomOpStrip68`, `SubOpPillar`, `SubOpColumn31`, `SubOpColumnTop30`, `SubOpClearMark`, `RoomOpFillBack`, `RoomOpLedge` |
+| Calls | `RoomPatch`, `ObjectTypeB`, `ObjectPattern`, `BuildSurface`, `ObjectRunH75AD`, `ObjectRunH7511`, `ObjectRunV7400`, `RoomOpStripDown`, `RoomOpStrip69`, `RoomOpStrip6A`, `RoomOpStrip68`, `SubOpRun77`, `SubOpPillar`, `SubOpColumn31`, `SubOpColumnTop30`, `SubOpMarkCell`, `SubOpClearMark`, `RoomOpFillBack`, `RoomOpLedge` |
 | Reads | `$73CB`-`$73E6` (`RoomCodeHandlers+4`, `ActorKindHandlers`); `$75F3`-`$75FA` (`RoomCodeHandlersB+4`) |
 
 ### `ObjectPattern` (`$A016`)
@@ -815,8 +835,8 @@ Witness: L1 208 (bossgate, deaths, gameover, havok, hiscore, menu, play48, rooms
 
 | | |
 | --- | --- |
-| Runs (c1: power-on on a 128K, the load at signal speed, the menu, the intro, a short walk) | run into, not called, 1,393 t-states own (0.00 %) |
-| Runs (the other recordings) | run into, not called (`stage1/rec/rooms`, `stage1/rec/deaths`, `stage1/rec/menu` and 4 more) |
+| Runs (c1: power-on on a 128K, the load at signal speed, the menu, the intro, a short walk) | 3 runs of its first instruction (entered by a jump or by running on, no routine of its own in the L1), 1,393 t-states own (0.00 %) |
+| Runs (the other recordings) | 205 runs of its first instruction, entered by a jump (`stage2/rzx/r022000` 14, `stage2/rzx/r020000` 12, `stage1/rec/rooms` 8 and 74 more) |
 | Called from | `JumpViaTable` |
 | Calls | `NextObjectGroup` (tail), `PlotPattern` |
 | Reads | `$A949`-`$A955` (`Room1+33`); `$A98E`-`$A999` (`Room2+17`); `$A9BF`-`$A9DF` (`Room3+15`, `Room4`, `Room5`); `$A9F3`-`$A9F9` (`Room6+15`); `$AA0C`-`$AA10` (`Room7+10`); `$AA31`-`$AA39` (`Room8+26`); 4 more ranges |
@@ -832,7 +852,7 @@ Witness: L1 1316 (bossgate, deaths, gameover, havok, hiscore, menu, play48, room
 | | |
 | --- | --- |
 | Runs (c1: power-on on a 128K, the load at signal speed, the menu, the intro, a short walk) | 12 calls, 1,546 t-states own (0.00 %) |
-| Runs (the other recordings) | 81 calls (`stage1/rec/rooms` 26, `stage1/rec/deaths` 23, `stage1/rec/menu` 10 and 4 more) |
+| Runs (the other recordings) | 604 calls (`stage2/rzx/r022000` 53, `stage2/rzx/r020000` 45, `stage1/rec/rooms` 26 and 74 more) |
 | Called from | `ObjectPattern` |
 | Reads | `$7313`-`$731A` (`RoomPatterns+3`); `$7345`-`$7394` (`RoomShapes`) |
 | Writes | `$6AA4` (`ControlMenuPatch+11`); `$6AB8` (`ControlMenuPatch+31`); `$6B17`-`$6B33` (`ControlRecords+13`); `$6B45`-`$6B47` (`ControlRecords+59`); `$6B59`-`$6B83` (`ControlGap+12`, `PageTailTemplate`); `$6B9F`-`$6BBB` (`PageTailTemplate+67`, `ItemRecords`); 2 more ranges |
@@ -849,8 +869,8 @@ Witness: L1 41 (deaths, gameover, havok, hiscore, menu, play48, rooms, throw, c 
 
 | | |
 | --- | --- |
-| Runs (c1: power-on on a 128K, the load at signal speed, the menu, the intro, a short walk) | run into, not called, 26,427 t-states own (0.00 %) |
-| Runs (the other recordings) | run into, not called (`stage1/rec/deaths`, `stage1/rec/rooms`, `stage1/rec/gameover` and 4 more) |
+| Runs (c1: power-on on a 128K, the load at signal speed, the menu, the intro, a short walk) | 3 runs of its first instruction (entered by a jump or by running on, no routine of its own in the L1), 26,427 t-states own (0.00 %) |
+| Runs (the other recordings) | 38 runs of its first instruction, entered by a jump (`stage1/rec/deaths` 6, `stage2/rec/play48` 6, `stage2/rzx/r002000` 5 and 16 more) |
 | Called from | `JumpViaTable` |
 | Calls | `ObjectLoop` (tail), `NextGroundVariant`, `PutTileMarkPropA` |
 | Reads | `$6BDD` (`Room`); `$74F6`-`$7511` (`RoomStrip`, `StructureSetD`) |
@@ -867,7 +887,7 @@ Witness: L1 2432 (deaths, gameover, havok, hiscore, menu, play48, rooms, throw, 
 | | |
 | --- | --- |
 | Runs (c1: power-on on a 128K, the load at signal speed, the menu, the intro, a short walk) | 120 calls, 9,905 t-states own (0.00 %) |
-| Runs (the other recordings) | 640 calls (`stage1/rec/deaths` 240, `stage1/rec/rooms` 120, `stage1/rec/gameover` 80 and 4 more) |
+| Runs (the other recordings) | 1,520 calls (`stage2/rec/play48` 240, `stage1/rec/deaths` 240, `stage2/rzx/r002000` 200 and 16 more) |
 | Called from | `BuildSurface` |
 
 ### `ObjectRunH75AD` (`$A0B9`)
@@ -878,7 +898,7 @@ Witness: L1 68 (rooms, poke-room x1, rzx x11, rzxroom x4).
 
 | | |
 | --- | --- |
-| Runs | not reached in `stage1/c1`; in the other recordings run into, not called (`stage1/rec/rooms`) |
+| Runs | not reached in `stage1/c1`; in the other recordings 68 runs of its first instruction, entered by a jump (`stage2/rzx/r126000` 10, `stage2/rzx/r134000` 9, `stage2/rzx/r104000` 6 and 14 more) |
 | Called from | `JumpViaTable` |
 | Calls | `ObjectRunH` (tail) |
 
@@ -890,7 +910,7 @@ Witness: L1 1633 (bossgate, deaths, play48, rooms, poke-room x13, rzx x53, rzxro
 
 | | |
 | --- | --- |
-| Runs | not reached in `stage1/c1`; in the other recordings run into, not called (`stage1/rec/deaths`, `stage1/rec/rooms`) |
+| Runs | not reached in `stage1/c1`; in the other recordings 1,633 runs of its first instruction, entered by a jump (`stage2/rzx/r092000` 146, `stage2/rzx/r096000` 142, `stage2/rzx/r126000` 92 and 81 more) |
 | Called from | `JumpViaTable` |
 | Calls | `ObjectRunH` (falls into) |
 
@@ -904,7 +924,7 @@ Witness: L1 1701 (bossgate, deaths, play48, rooms, poke-room x13, rzx x53, rzxro
 
 | | |
 | --- | --- |
-| Runs | not reached in `stage1/c1`; in the other recordings 46 calls (`stage1/rec/rooms` 46) |
+| Runs | not reached in `stage1/c1`; in the other recordings 613 calls (`stage2/rzx/r126000` 102, `stage2/rzx/r100000` 78, `stage2/rzx/r134000` 71 and 14 more) |
 | Called from | `ObjectRunH75AD` (tail), `ObjectRunH7511` (falls into) |
 | Calls | `StripFromRecord` (tail) |
 
@@ -918,7 +938,9 @@ Witness: L1 298 (poke-room x3, rzx x26, rzxroom x7). Not run in the keyed record
 
 | | |
 | --- | --- |
-| Runs | not reached in the recordings |
+| Runs | not reached in `stage1/c1`; in the other recordings 298 runs of its first instruction, entered by a jump (`stage2/rzx/r132000` 37, `stage2/rzx/r100000` 22, `stage2/rzx/r092000` 21 and 33 more) |
+| Called from | `JumpViaTable` |
+| Calls | `RoomOpStripDown` (tail) |
 
 ### `RoomOpStripDown` (`$A0C9`)
 
@@ -932,8 +954,8 @@ Witness: L1 1100 (bossgate, deaths, play48, rooms, poke-room x15, rzx x55, rzxro
 
 | | |
 | --- | --- |
-| Runs | not reached in `stage1/c1`; in the other recordings run into, not called (`stage1/rec/rooms`, `stage1/rec/deaths`) |
-| Called from | `JumpViaTable` |
+| Runs | not reached in `stage1/c1`; in the other recordings 1,100 runs of its first instruction, entered by a jump (`stage2/rzx/r022000` 78, `stage2/rzx/r064000` 39, `stage1/rec/rooms` 38 and 85 more) |
+| Called from | `JumpViaTable`, `ObjectRunV7400` (tail) |
 | Calls | `StripFromRecord` (falls into) |
 
 ### `StripFromRecord` (`$A0CD`)
@@ -948,7 +970,7 @@ Witness: L1 3099 (bossgate, deaths, play48, rooms, poke-room x15, rzx x55, rzxro
 
 | | |
 | --- | --- |
-| Runs | not reached in `stage1/c1`; in the other recordings 109 calls (`stage1/rec/rooms` 84, `stage1/rec/deaths` 25) |
+| Runs | not reached in `stage1/c1`; in the other recordings 3,058 calls (`stage2/rzx/r096000` 184, `stage2/rzx/r092000` 178, `stage2/rzx/r126000` 140 and 79 more) |
 | Called from | `ObjectRunH` (tail), `RoomOpStripDown` (falls into) |
 | Calls | `StripRecordAddress` |
 | Reads | `$7436`-`$745A` (`StructureSetB`); `$746C`-`$7478` (`StructureSetB+54`); `$748A`-`$7490` (`StructureSetB+84`); `$7511`-`$7553` (`StructureSetD`); `$75B3`-`$75BF` (`StructureSetF+6`) |
@@ -963,7 +985,7 @@ Witness: L1 148 (rooms, poke-room x6, rzx x17, rzxroom x7).
 
 | | |
 | --- | --- |
-| Runs | not reached in `stage1/c1`; in the other recordings run into, not called (`stage1/rec/rooms`) |
+| Runs | not reached in `stage1/c1`; in the other recordings 148 runs of its first instruction, entered by a jump (`stage2/rzx/r024000` 16, `stage2/rzx/rooms/e049944` 16, `stage2/rzx/r050000` 12 and 28 more) |
 | Called from | `JumpViaTable` |
 | Calls | `StripOnLayer` (tail) |
 
@@ -977,7 +999,7 @@ Witness: L1 133 (deaths, play48, rooms, poke-room x6, rzx x14, rzxroom x5).
 
 | | |
 | --- | --- |
-| Runs | not reached in `stage1/c1`; in the other recordings run into, not called (`stage1/rec/deaths`, `stage1/rec/rooms`) |
+| Runs | not reached in `stage1/c1`; in the other recordings 133 runs of its first instruction, entered by a jump (`stage2/rzx/r024000` 16, `stage2/rzx/r032000` 13, `stage2/rzx/r036000` 13 and 25 more) |
 | Called from | `JumpViaTable` |
 | Calls | `StripOnLayer` (falls into) |
 
@@ -987,7 +1009,7 @@ Witness: L1 133 (deaths, play48, rooms, poke-room x6, rzx x14, rzxroom x5).
 
 | | |
 | --- | --- |
-| Runs | not reached in `stage1/c1`; in the other recordings 11 calls (`stage1/rec/rooms` 11) |
+| Runs | not reached in `stage1/c1`; in the other recordings 250 calls (`stage2/rzx/r024000` 32, `stage2/rzx/rooms/e049944` 28, `stage2/rzx/rooms/e038301` 22 and 20 more) |
 | Called from | `RoomOpStrip69` (tail), `RoomOpStrip6A` (falls into) |
 | Calls | `StripRecordAddress`, `DrawStrip` (tail) |
 
@@ -1001,7 +1023,7 @@ Witness: L1 106 (rooms, poke-room x1, rzx x14, rzxroom x4).
 
 | | |
 | --- | --- |
-| Runs | not reached in `stage1/c1`; in the other recordings run into, not called (`stage1/rec/rooms`) |
+| Runs | not reached in `stage1/c1`; in the other recordings 106 runs of its first instruction, entered by a jump (`stage2/rzx/r126000` 22, `stage2/rzx/r086000` 16, `stage2/rzx/r084000` 13 and 17 more) |
 | Called from | `JumpViaTable` |
 | Calls | `StripRecordAddress`, `DrawStrip` (tail) |
 
@@ -1019,7 +1041,7 @@ Witness: L1 3486 (bossgate, deaths, play48, rooms, poke-room x15, rzx x55, rzxro
 
 | | |
 | --- | --- |
-| Runs | not reached in `stage1/c1`; in the other recordings 123 calls (`stage1/rec/rooms` 97, `stage1/rec/deaths` 26) |
+| Runs | not reached in `stage1/c1`; in the other recordings 3,486 calls (`stage2/rzx/r096000` 184, `stage2/rzx/r092000` 178, `stage2/rzx/r126000` 162 and 87 more) |
 | Called from | `StripFromRecord`, `StripOnLayer`, `RoomOpStrip68` |
 | Calls | `Multiply8`, `DrawStrip` (falls into), `OpHighNibble` |
 
@@ -1037,7 +1059,7 @@ Witness: L1 3486 (bossgate, deaths, play48, rooms, poke-room x15, rzx x55, rzxro
 
 | | |
 | --- | --- |
-| Runs | not reached in `stage1/c1`; in the other recordings 123 calls (`stage1/rec/rooms` 97, `stage1/rec/deaths` 26) |
+| Runs | not reached in `stage1/c1`; in the other recordings 1,842 calls (`stage2/rzx/r126000` 162, `stage2/rzx/r100000` 140, `stage1/rec/rooms` 97 and 49 more) |
 | Called from | `StripOnLayer` (tail), `RoomOpStrip68` (tail), `StripRecordAddress` (falls into) |
 | Calls | `RoomOpNext` (tail), `ReadRunLen16`, `PutStripTile`, `PutStripTileMark` |
 | Reads | `$6816`-`$68D8` (`TitleColours+284`); `$6BDF` (`StripStep`); `$7438`-`$74AC` (`StructureSetB+2`, `StructureSetC`); `$7512`-`$7558` (`StructureSetD+1`); `$7578`-`$757C` (`StructureSetE+7`); `$75AF`-`$75C4` (`StructureSetF+2`); 1 more ranges |
@@ -1055,7 +1077,9 @@ Witness: L1 21 (bossgate, poke-room x1, rzx x8).
 
 | | |
 | --- | --- |
-| Runs | not reached in the recordings |
+| Runs | not reached in `stage1/c1`; in the other recordings 21 runs of its first instruction, entered by a jump (`stage2/rzx/r044000` 7, `stage2/rzx/r060000` 4, `stage2/rzx/r034000` 2 and 7 more) |
+| Called from | `JumpViaTable` |
+| Calls | `RoomOpNext` (tail), `ReadRunLen16` |
 
 ### `SubOpPillar` (`$A179`)
 
@@ -1067,7 +1091,7 @@ Witness: L1 65 (deaths, play48, rooms, poke-room x5, rzx x9, rzxroom x4).
 
 | | |
 | --- | --- |
-| Runs | not reached in `stage1/c1`; in the other recordings run into, not called (`stage1/rec/deaths`, `stage1/rec/rooms`) |
+| Runs | not reached in `stage1/c1`; in the other recordings 65 runs of its first instruction, entered by a jump (`stage2/rzx/r022000` 12, `stage2/rzx/r020000` 10, `stage2/rzx/r012000` 9 and 18 more) |
 | Called from | `JumpViaTable` |
 | Calls | `RoomOpNext` (tail), `ReadRun`, `PutTileMark` |
 
@@ -1081,8 +1105,8 @@ Witness: L1 50 (rooms, poke-room x6, rzx x8, rzxroom x2).
 
 | | |
 | --- | --- |
-| Runs | not reached in `stage1/c1`; in the other recordings run into, not called (`stage1/rec/rooms`) |
-| Called from | `JumpViaTable` |
+| Runs | not reached in `stage1/c1`; in the other recordings 50 runs of its first instruction, entered by a jump (`stage2/rzx/r022000` 15, `stage2/rzx/r012000` 7, `stage2/rzx/r020000` 5 and 14 more) |
+| Called from | `JumpViaTable`, `SubOpColumnTop30` (tail) |
 | Calls | `RoomOpNext` (tail), `ReadRun`, `PutTileMarkProp`, `PutTileProp` |
 | Writes | `$6BE3` (`CellProperty`) |
 
@@ -1096,9 +1120,9 @@ Witness: L1 11 (deaths, play48, rzx x4, rzxroom x1).
 
 | | |
 | --- | --- |
-| Runs | not reached in `stage1/c1`; in the other recordings run into, not called (`stage1/rec/deaths`) |
+| Runs | not reached in `stage1/c1`; in the other recordings 11 runs of its first instruction, entered by a jump (`stage2/rzx/r022000` 4, `stage2/rzx/r012000` 2, `stage1/rec/deaths` 1 and 4 more) |
 | Called from | `JumpViaTable` |
-| Calls | `ReadRun`, `PutTileMarkProp` |
+| Calls | `SubOpColumn31` (tail), `ReadRun`, `PutTileMarkProp` |
 | Writes | `$6BE3` (`CellProperty`) |
 
 ### `SubOpMarkCell` (`$A1E2`)
@@ -1111,7 +1135,8 @@ Witness: L1 7 (rzx x2, rzxroom x2).
 
 | | |
 | --- | --- |
-| Runs | not reached in the recordings |
+| Runs | not reached in `stage1/c1`; in the other recordings 7 runs of its first instruction, entered by a jump (`stage2/rzx/r130000` 4, `stage2/rzx/r134000` 1, `stage2/rzx/rooms/e131414` 1 and 1 more) |
+| Called from | `JumpViaTable` |
 
 ### `SubOpClearMark` (`$A1E6`)
 
@@ -1123,7 +1148,7 @@ Witness: L1 29 (deaths, play48, rooms, rzx x2, rzxroom x2).
 
 | | |
 | --- | --- |
-| Runs | not reached in `stage1/c1`; in the other recordings run into, not called (`stage1/rec/deaths`, `stage1/rec/rooms`) |
+| Runs | not reached in `stage1/c1`; in the other recordings 29 runs of its first instruction, entered by a jump (`stage1/rec/deaths` 6, `stage2/rec/play48` 6, `stage2/rzx/r002000` 6 and 4 more) |
 | Called from | `JumpViaTable` |
 | Calls | `RoomOpNext` (falls into) |
 | Reads | `$A957`-`$A959` (`Room1+47`); `$AA2B`-`$AA2F` (`Room8+20`) |
@@ -1139,8 +1164,8 @@ Witness: L1 3669 (bossgate, deaths, play48, rooms, poke-room x15, rzx x55, rzxro
 
 | | |
 | --- | --- |
-| Runs | not reached in `stage1/c1`; in the other recordings 138 calls (`stage1/rec/rooms` 103, `stage1/rec/deaths` 35) |
-| Called from | `DrawStrip` (tail), `SubOpPillar` (tail), `SubOpColumn31` (tail), `SubOpClearMark` (falls into) |
+| Runs | not reached in `stage1/c1`; in the other recordings 3,669 calls (`stage2/rzx/r096000` 184, `stage2/rzx/r092000` 178, `stage2/rzx/r126000` 162 and 87 more) |
+| Called from | `DrawStrip` (tail), `SubOpRun77` (tail), `SubOpPillar` (tail), `SubOpColumn31` (tail), `SubOpClearMark` (falls into) |
 | Calls | `NextObject` (tail) |
 
 ### `RoomOpFillBack` (`$A1F1`)
@@ -1155,7 +1180,7 @@ Witness: L1 326 (bossgate, deaths, play48, rooms, poke-room x15, rzx x55, rzxroo
 
 | | |
 | --- | --- |
-| Runs | not reached in `stage1/c1`; in the other recordings run into, not called (`stage1/rec/rooms`, `stage1/rec/deaths`) |
+| Runs | not reached in `stage1/c1`; in the other recordings 326 runs of its first instruction, entered by a jump (`stage2/rzx/r092000` 20, `stage2/rzx/r124000` 16, `stage2/rzx/r086000` 14 and 85 more) |
 | Called from | `JumpViaTable` |
 | Calls | `NextObjectGroup` (tail), `FillBackFrom` |
 | Reads | `$6AE9` (`ZoneRecords+8`); `$A95A` (`Room1+50`); `$A99C` (`Room2+31`); `$AA39` (`Room8+34`); `$AA74` (`Room9+47`); `$AB26` (`Room11+61`); 3 more ranges |
@@ -1175,7 +1200,7 @@ Witness: L1 446 (bossgate, deaths, play48, rooms, poke-room x15, rzx x55, rzxroo
 
 | | |
 | --- | --- |
-| Runs | not reached in `stage1/c1`; in the other recordings 12 calls (`stage1/rec/rooms` 10, `stage1/rec/deaths` 2) |
+| Runs | not reached in `stage1/c1`; in the other recordings 446 calls (`stage2/rzx/r086000` 20, `stage2/rzx/r092000` 20, `stage2/rzx/r124000` 18 and 85 more) |
 | Called from | `RoomOpFillBack` |
 | Calls | `FillBackRow`, `ShadeFirstColumn`, `IsSolid`, `IsRowStart` |
 | Reads | `$6806`-`$68D8` (`TitleColours+268`); `$6BE1` (`FillRowStart`); `$A95B` (`Room1+51`); `$A99D` (`Room2+32`); `$AA3A` (`Room8+35`); `$AA75` (`Room9+48`); 4 more ranges |
@@ -1197,7 +1222,7 @@ Witness: L1 18464 (bossgate, deaths, play48, rooms, poke-room x15, rzx x55, rzxr
 
 | | |
 | --- | --- |
-| Runs | not reached in `stage1/c1`; in the other recordings 67 calls (`stage1/rec/rooms` 52, `stage1/rec/deaths` 15) |
+| Runs | not reached in `stage1/c1`; in the other recordings 1,782 calls (`stage2/rzx/r086000` 80, `stage2/rzx/r022000` 71, `stage2/rzx/r020000` 61 and 85 more) |
 | Called from | `FillBackFrom` |
 | Calls | `ShadeCell`, `IsAboveInList`, `IsSolid`, `IsRowStart` |
 | Reads | `$6807`-`$68DA` (`TitleColours+269`); `$690B`-`$69D6` (`EnemySlots+47`); `$6A0B`-`$6AB1` (`FireHeld+40`, `ControlMenu`, `ControlMenuKey`); `$6AD6` (`ControlMenuText+11`); `$6B0B`-`$6BB1` (`ControlRecords+1`, `ControlGap`, `PageTailTemplate`, `ItemRecords`); `$6BD6` (`ItemRecords+42`); 1 more ranges |
@@ -1213,7 +1238,7 @@ Witness: L1 468 (rooms, poke-room x7, rzx x47, rzxroom x6).
 
 | | |
 | --- | --- |
-| Runs | not reached in `stage1/c1`; in the other recordings 4 calls (`stage1/rec/rooms` 4) |
+| Runs | not reached in `stage1/c1`; in the other recordings 468 calls (`stage2/rzx/r022000` 46, `stage2/rzx/r092000` 38, `stage2/rzx/r122000` 26 and 58 more) |
 | Called from | `FillBackFrom` |
 | Calls | `ShadeCellApply` (tail), `IsAboveInList` |
 
@@ -1227,7 +1252,7 @@ Witness: L1 14525 (bossgate, deaths, play48, rooms, poke-room x15, rzx x55, rzxr
 
 | | |
 | --- | --- |
-| Runs | not reached in `stage1/c1`; in the other recordings 369 calls (`stage1/rec/rooms` 300, `stage1/rec/deaths` 69) |
+| Runs | not reached in `stage1/c1`; in the other recordings 14,525 calls (`stage2/rzx/r022000` 778, `stage2/rzx/r092000` 685, `stage2/rzx/r020000` 522 and 85 more) |
 | Called from | `FillBackRow` |
 | Calls | `NeighbourShade` |
 | Reads | `$6809`-`$683A` (`TitleColours+271`); `$6859`-`$68D3` (`TitleColours+351`); `$6BE0` (`BackWallSet`) |
@@ -1239,7 +1264,7 @@ Witness: L1 14525 (bossgate, deaths, play48, rooms, poke-room x15, rzx x55, rzxr
 
 | | |
 | --- | --- |
-| Runs | not reached in `stage1/c1`; in the other recordings 4 calls (`stage1/rec/rooms` 4) |
+| Runs | not reached in `stage1/c1`; in the other recordings 468 calls (`stage2/rzx/r022000` 46, `stage2/rzx/r092000` 38, `stage2/rzx/r122000` 26 and 58 more) |
 | Called from | `ShadeFirstColumn` (tail) |
 | Calls | `SetShadeProperty` (tail) |
 | Reads | `$6807`-`$68C7` (`TitleColours+269`); `$6BE0` (`BackWallSet`) |
@@ -1255,7 +1280,7 @@ Witness: L1 14016 (bossgate, deaths, play48, rooms, poke-room x15, rzx x55, rzxr
 
 | | |
 | --- | --- |
-| Runs | not reached in `stage1/c1`; in the other recordings 360 calls (`stage1/rec/rooms` 292, `stage1/rec/deaths` 68) |
+| Runs | not reached in `stage1/c1`; in the other recordings 14,016 calls (`stage2/rzx/r022000` 812, `stage2/rzx/r092000` 720, `stage2/rzx/r020000` 456 and 85 more) |
 | Called from | `ShadeCellApply` (tail), `PutOverlayIfEmpty` |
 | Calls | `PutOverlayIfEmpty` |
 | Reads | `$6C07`-`$6CD3` (`CellProperty+36`, `WalkLists`, `WeaponRecords`, `TouchZoneRecords` and 1 more) |
@@ -1271,7 +1296,7 @@ Witness: L1 603 (bossgate, deaths, play48, rooms, poke-room x13, rzx x54, rzxroo
 
 | | |
 | --- | --- |
-| Runs | not reached in `stage1/c1`; in the other recordings 25 calls (`stage1/rec/rooms` 20, `stage1/rec/deaths` 5) |
+| Runs | not reached in `stage1/c1`; in the other recordings 603 calls (`stage2/rzx/r022000` 61, `stage2/rzx/r024000` 26, `stage2/rzx/r086000` 26 and 79 more) |
 | Called from | `SetShadeProperty` |
 | Calls | `SetShadeProperty` |
 | Reads | `$690F`-`$694D` (`EnemySlots+51`); `$6966`-`$6985` (`EnemySlots+138`); `$6996`-`$69C0` (`EnemySlots+186`) |
@@ -1287,7 +1312,7 @@ Witness: L1 14525 (bossgate, deaths, play48, rooms, poke-room x15, rzx x55, rzxr
 
 | | |
 | --- | --- |
-| Runs | not reached in `stage1/c1`; in the other recordings 369 calls (`stage1/rec/rooms` 300, `stage1/rec/deaths` 69) |
+| Runs | not reached in `stage1/c1`; in the other recordings 14,525 calls (`stage2/rzx/r022000` 778, `stage2/rzx/r092000` 685, `stage2/rzx/r020000` 522 and 85 more) |
 | Called from | `ShadeCell` |
 | Calls | `TestCellSolid` |
 
@@ -1301,7 +1326,7 @@ Witness: L1 3158 (bossgate, deaths, play48, rooms, poke-room x15, rzx x55, rzxro
 
 | | |
 | --- | --- |
-| Runs | not reached in `stage1/c1`; in the other recordings 153 calls (`stage1/rec/rooms` 109, `stage1/rec/deaths` 44) |
+| Runs | not reached in `stage1/c1`; in the other recordings 3,158 calls (`stage2/rzx/r022000` 231, `stage2/rzx/r024000` 114, `stage1/rec/rooms` 109 and 85 more) |
 | Called from | `FillBackRow`, `ShadeFirstColumn` |
 | Calls | `TestCellSolid` |
 
@@ -1315,7 +1340,7 @@ Witness: L1 17949 (bossgate, deaths, play48, rooms, poke-room x15, rzx x55, rzxr
 
 | | |
 | --- | --- |
-| Runs | not reached in `stage1/c1`; in the other recordings 530 calls (`stage1/rec/rooms` 417, `stage1/rec/deaths` 113) |
+| Runs | not reached in `stage1/c1`; in the other recordings 17,949 calls (`stage2/rzx/r022000` 1,021, `stage2/rzx/r092000` 777, `stage2/rzx/r020000` 629 and 85 more) |
 | Called from | `FillBackFrom`, `FillBackRow`, `RoomOpLedge` |
 | Calls | `TestCellSolid` (falls into) |
 
@@ -1331,7 +1356,7 @@ Witness: L1 64682 (bossgate, deaths, play48, rooms, poke-room x15, rzx x55, rzxr
 
 | | |
 | --- | --- |
-| Runs | not reached in `stage1/c1`; in the other recordings 1,790 calls (`stage1/rec/rooms` 1,426, `stage1/rec/deaths` 364) |
+| Runs | not reached in `stage1/c1`; in the other recordings 64,682 calls (`stage2/rzx/r022000` 3,586, `stage2/rzx/r092000` 2,916, `stage2/rzx/r020000` 2,294 and 85 more) |
 | Called from | `NeighbourShade`, `IsAboveInList`, `IsSolid` (falls into) |
 | Reads | `$6801`-`$69D9` (`TitleColours+263`, `EnemySlots`); `$69F2`-`$6AD9` (`FireHeld+15`, `ControlMenu`, `ControlMenuKey`, `ControlMenuText`); `$6AF2`-`$6BD9` (`ZoneRecords+17`, `ControlRecords`, `ControlGap`, `PageTailTemplate` and 1 more); `$6BF2`-`$6BFD` (`CellProperty+15`); `$7292`-`$72D7` (`SolidTiles`, `LedgeTiles`) |
 
@@ -1347,7 +1372,7 @@ Witness: L1 256 (bossgate, rooms, poke-room x11, rzx x38, rzxroom x10).
 
 | | |
 | --- | --- |
-| Runs | not reached in `stage1/c1`; in the other recordings run into, not called (`stage1/rec/rooms`) |
+| Runs | not reached in `stage1/c1`; in the other recordings 256 runs of its first instruction, entered by a jump (`stage2/rzx/r124000` 24, `stage2/rzx/r122000` 16, `stage2/rzx/r022000` 12 and 58 more) |
 | Called from | `JumpViaTable` |
 | Calls | `NextObject` (tail), `IsSolid`, `ReadRunLen16`, `IsRowStart`, `PutTileMark` |
 | Reads | `$6B43`-`$6B48` (`ControlRecords+57`); `$6B6B`-`$6B6D` (`PageTailTemplate+15`); `$6B83`-`$6BA2` (`PageTailTemplate+39`); `$6BB6` (`ItemRecords+10`); `$6C43`-`$6C49` (`WalkLists+13`); `$6C6B`-`$6C6E` (`PageTail5F+19`); 6 more ranges |
@@ -1364,7 +1389,7 @@ Witness: L1 279 (bossgate, deaths, gameover, havok, hiscore, menu, play48, rooms
 | | |
 | --- | --- |
 | Runs (c1: power-on on a 128K, the load at signal speed, the menu, the intro, a short walk) | 3 calls, 129 t-states own (0.00 %) |
-| Runs (the other recordings) | 22 calls (`stage1/rec/rooms` 8, `stage1/rec/deaths` 7, `stage1/rec/menu` 2 and 4 more) |
+| Runs (the other recordings) | 276 calls (`stage2/rzx/r022000` 11, `stage2/rzx/r092000` 9, `stage1/rec/rooms` 8 and 98 more) |
 | Called from | `BuildRoomPlanes` |
 | Reads | `$7100`-`$7125` (`ClearRoomCellsLoop+15`, `RoomDataPointers`) |
 
@@ -1378,8 +1403,8 @@ Witness: L1 3763 (bossgate, deaths, play48, rooms, poke-room x15, rzx x55, rzxro
 
 | | |
 | --- | --- |
-| Runs | not reached in `stage1/c1`; in the other recordings 130 calls (`stage1/rec/rooms` 104, `stage1/rec/deaths` 26) |
-| Called from | `DrawStrip`, `RoomOpLedge` |
+| Runs | not reached in `stage1/c1`; in the other recordings 3,763 calls (`stage2/rzx/r096000` 184, `stage2/rzx/r092000` 180, `stage2/rzx/r126000` 172 and 87 more) |
+| Called from | `DrawStrip`, `SubOpRun77`, `RoomOpLedge` |
 | Calls | `ReadRunCommon` (tail) |
 
 ### `ReadRun` (`$A3D5`)
@@ -1393,7 +1418,7 @@ Witness: L1 332 (bossgate, deaths, gameover, havok, hiscore, menu, play48, rooms
 | | |
 | --- | --- |
 | Runs (c1: power-on on a 128K, the load at signal speed, the menu, the intro, a short walk) | 3 calls, 178 t-states own (0.00 %) |
-| Runs (the other recordings) | 27 calls (`stage1/rec/rooms` 11, `stage1/rec/deaths` 9, `stage1/rec/gameover` 2 and 4 more) |
+| Runs (the other recordings) | 329 calls (`stage2/rzx/r022000` 38, `stage2/rzx/r012000` 20, `stage2/rzx/r020000` 20 and 98 more) |
 | Called from | `SubOpPillar`, `SubOpColumn31`, `SubOpColumnTop30`, `SetupRoomObjects` |
 | Calls | `ReadRunCommon` (falls into) |
 | Reads | `$A9D5`-`$A9E2` (`Room4+15`, `Room5`) |
@@ -1406,7 +1431,8 @@ Witness: L1 4095 (bossgate, deaths, gameover, havok, hiscore, menu, play48, room
 
 | | |
 | --- | --- |
-| Runs | not reached in `stage1/c1`; in the other recordings 150 calls (`stage1/rec/rooms` 115, `stage1/rec/deaths` 35) |
+| Runs (c1: power-on on a 128K, the load at signal speed, the menu, the intro, a short walk) | 3 runs of its first instruction (entered by a jump or by running on, no routine of its own in the L1) |
+| Runs (the other recordings) | 4,078 calls (`stage2/rzx/r096000` 189, `stage2/rzx/r092000` 189, `stage2/rzx/r126000` 176 and 87 more) |
 | Called from | `ReadRunLen16` (tail), `ReadRun` (falls into) |
 | Reads | `$A933`-`$A947` (`Room1+11`); `$A95D`-`$A96B` (`Room1+53`); `$A986`-`$AA28` (`Room2+9`, `Room3`, `Room4`, `Room5` and 3 more); `$AA42`-`$AA43` (`Room8+43`); `$AA5C`-`$AA81` (`Room9+23`); `$AAFD`-`$AB37` (`Room11+20`); 4 more ranges |
 
@@ -1421,7 +1447,7 @@ Witness: L1 7132 (bossgate, deaths, gameover, havok, hiscore, menu, play48, room
 | | |
 | --- | --- |
 | Runs (c1: power-on on a 128K, the load at signal speed, the menu, the intro, a short walk) | 12 calls, 560 t-states own (0.00 %) |
-| Runs (the other recordings) | 321 calls (`stage1/rec/rooms` 216, `stage1/rec/deaths` 77, `stage1/rec/menu` 8 and 4 more) |
+| Runs (the other recordings) | 7,120 calls (`stage2/rzx/r092000` 295, `stage2/rzx/r096000` 269, `stage2/rzx/r022000` 262 and 98 more) |
 | Called from | `DecodeRoom`, `NextObjectGroup`, `StripRecordAddress`, `SetupRoomObjects` |
 | Reads | `$A929`-`$A96A` (`Room1+1`); `$A97E`-`$AA80` (`Room2+1`, `Room3`, `Room4`, `Room5` and 4 more); `$AAEA`-`$AB36` (`Room11+1`); `$ABEE`-`$AC48` (`Room14+1`); `$AD85`-`$ADCB` (`Room18+1`); `$C9F1`-`$CA47` (`Room103+70`, `Room104`) |
 
@@ -1435,7 +1461,7 @@ Witness: L1 23797 (bossgate, deaths, play48, rooms, poke-room x15, rzx x55, rzxr
 
 | | |
 | --- | --- |
-| Runs | not reached in `stage1/c1`; in the other recordings 656 calls (`stage1/rec/rooms` 514, `stage1/rec/deaths` 142) |
+| Runs | not reached in `stage1/c1`; in the other recordings 23,797 calls (`stage2/rzx/r022000` 1,352, `stage2/rzx/r092000` 902, `stage2/rzx/r020000` 876 and 85 more) |
 | Called from | `FillBackFrom`, `FillBackRow`, `RoomOpLedge` |
 
 ### `PutTileMarkProp` (`$A3F3`)
@@ -1446,7 +1472,7 @@ Witness: L1 122 (deaths, play48, rooms, poke-room x6, rzx x10, rzxroom x3).
 
 | | |
 | --- | --- |
-| Runs | not reached in `stage1/c1`; in the other recordings 8 calls (`stage1/rec/rooms` 6, `stage1/rec/deaths` 2) |
+| Runs | not reached in `stage1/c1`; in the other recordings 122 calls (`stage2/rzx/r022000` 38, `stage2/rzx/r012000` 18, `stage2/rzx/r020000` 10 and 19 more) |
 | Called from | `SubOpColumn31`, `SubOpColumnTop30` |
 | Calls | `PutTileMarkPropA` (falls into) |
 
@@ -1461,7 +1487,7 @@ Witness: L1 942 (deaths, gameover, havok, hiscore, menu, play48, rooms, throw, c
 | | |
 | --- | --- |
 | Runs (c1: power-on on a 128K, the load at signal speed, the menu, the intro, a short walk) | 60 calls, 5,579 t-states own (0.00 %) |
-| Runs (the other recordings) | 328 calls (`stage1/rec/deaths` 122, `stage1/rec/rooms` 66, `stage1/rec/menu` 40 and 4 more) |
+| Runs (the other recordings) | 774 calls (`stage1/rec/deaths` 122, `stage2/rec/play48` 122, `stage2/rzx/r002000` 102 and 16 more) |
 | Called from | `BuildSurface`, `PutTileMarkProp` (falls into) |
 | Calls | `MarkCellProp` (falls into) |
 | Reads | `$6BE3` (`CellProperty`) |
@@ -1475,7 +1501,8 @@ Witness: L1 7172 (deaths, gameover, havok, hiscore, menu, play48, rooms, throw, 
 
 | | |
 | --- | --- |
-| Runs | not reached in `stage1/c1`; in the other recordings 357 calls (`stage1/rec/deaths` 182, `stage1/rec/rooms` 175) |
+| Runs (c1: power-on on a 128K, the load at signal speed, the menu, the intro, a short walk) | 60 runs of its first instruction (entered by a jump or by running on, no routine of its own in the L1) |
+| Runs (the other recordings) | 1,258 calls (`stage1/rec/deaths` 182, `stage2/rec/play48` 182, `stage1/rec/rooms` 175 and 18 more) |
 | Called from | `PutTileMarkPropA` (falls into), `PutStripTileMark` (tail) |
 | Calls | `SetCellProp` (falls into) |
 | Reads | `$6BE3` (`CellProperty`) |
@@ -1489,7 +1516,8 @@ Witness: L1 7210 (deaths, gameover, havok, hiscore, menu, play48, rooms, throw, 
 
 | | |
 | --- | --- |
-| Runs | not reached in `stage1/c1`; in the other recordings 184 calls (`stage1/rec/deaths` 184) |
+| Runs (c1: power-on on a 128K, the load at signal speed, the menu, the intro, a short walk) | 60 runs of its first instruction (entered by a jump or by running on, no routine of its own in the L1) |
+| Runs (the other recordings) | 887 calls (`stage1/rec/deaths` 184, `stage2/rec/play48` 184, `stage2/rzx/r022000` 178 and 6 more) |
 | Called from | `MarkCellProp` (falls into), `PutTileProp` (tail) |
 | Reads | `$6BE3` (`CellProperty`) |
 | Writes | `$6C1A` (`CellProperty+55`); `$6C2E`-`$6C2F` (`CellProperty+75`); `$6C45`-`$6C97` (`WalkLists+15`, `WeaponRecords`, `TouchZoneRecords`, `SetTuneCode`); `$6CD4`-`$6CD6` (`SetTuneCode+62`, `PageTail60`) |
@@ -1502,7 +1530,7 @@ Witness: L1 38 (deaths, play48, rzx x5, rzxroom x2).
 
 | | |
 | --- | --- |
-| Runs | not reached in `stage1/c1`; in the other recordings 2 calls (`stage1/rec/deaths` 2) |
+| Runs | not reached in `stage1/c1`; in the other recordings 38 calls (`stage2/rzx/r022000` 16, `stage2/rzx/r012000` 8, `stage1/rec/deaths` 2 and 6 more) |
 | Called from | `SubOpColumn31` |
 | Calls | `SetCellProp` (tail) |
 | Writes | `$6B2E`-`$6B2F` (`ControlRecords+36`) |
@@ -1515,7 +1543,7 @@ Witness: L1 1283 (bossgate, deaths, play48, rooms, poke-room x11, rzx x41, rzxro
 
 | | |
 | --- | --- |
-| Runs | not reached in `stage1/c1`; in the other recordings 28 calls (`stage1/rec/rooms` 24, `stage1/rec/deaths` 4) |
+| Runs | not reached in `stage1/c1`; in the other recordings 1,283 calls (`stage2/rzx/r022000` 112, `stage2/rzx/r122000` 106, `stage2/rzx/r124000` 96 and 65 more) |
 | Called from | `SubOpPillar`, `RoomOpLedge` |
 | Calls | `PutTileMarkA` (falls into) |
 
@@ -1529,7 +1557,7 @@ Witness: L1 11476 (bossgate, deaths, play48, rooms, poke-room x15, rzx x54, rzxr
 
 | | |
 | --- | --- |
-| Runs | not reached in `stage1/c1`; in the other recordings 847 calls (`stage1/rec/rooms` 770, `stage1/rec/deaths` 77) |
+| Runs | not reached in `stage1/c1`; in the other recordings 11,437 calls (`stage2/rzx/r022000` 784, `stage1/rec/rooms` 770, `stage2/rzx/r020000` 578 and 80 more) |
 | Called from | `DecodeRoom`, `PutTileMark` (falls into) |
 | Writes | `$6700`-`$68FF` (`TitleColours+6`, `EnemySlots`); `$6B43`-`$6B48` (`ControlRecords+57`); `$6B6B`-`$6B6D` (`PageTailTemplate+15`); `$6B83`-`$6BA2` (`PageTailTemplate+39`); `$6BB6` (`ItemRecords+10`) |
 
@@ -1543,7 +1571,7 @@ Witness: L1 9126 (bossgate, deaths, play48, rooms, poke-room x15, rzx x55, rzxro
 
 | | |
 | --- | --- |
-| Runs | not reached in `stage1/c1`; in the other recordings 294 calls (`stage1/rec/rooms` 210, `stage1/rec/deaths` 84) |
+| Runs | not reached in `stage1/c1`; in the other recordings 9,126 calls (`stage2/rzx/r092000` 514, `stage2/rzx/r100000` 412, `stage2/rzx/r096000` 392 and 87 more) |
 | Called from | `DrawStrip` |
 | Calls | `PutStripTileMark` (falls into) |
 | Reads | `$6BDF` (`StripStep`) |
@@ -1557,7 +1585,7 @@ Witness: L1 8757 (bossgate, deaths, play48, rooms, poke-room x15, rzx x55, rzxro
 
 | | |
 | --- | --- |
-| Runs | not reached in `stage1/c1`; in the other recordings 273 calls (`stage1/rec/rooms` 205, `stage1/rec/deaths` 68) |
+| Runs | not reached in `stage1/c1`; in the other recordings 8,757 calls (`stage2/rzx/r092000` 660, `stage2/rzx/r096000` 500, `stage2/rzx/r126000` 429 and 87 more) |
 | Called from | `DrawStrip`, `PutStripTile` (falls into) |
 | Calls | `MarkCellProp` (tail) |
 | Reads | `$7436`-`$745A` (`StructureSetB`); `$746C`-`$7490` (`StructureSetB+54`); `$74A2`-`$74A8` (`StructureSetC+12`); `$7511`-`$7553` (`StructureSetD`); `$7577` (`StructureSetE+6`); `$75AD`-`$75BF` (`StructureSetF`) |
@@ -1582,11 +1610,11 @@ Witness: L1 206 (bossgate, deaths, gameover, havok, hiscore, menu, play48, rooms
 | | |
 | --- | --- |
 | Runs (c1: power-on on a 128K, the load at signal speed, the menu, the intro, a short walk) | 3 calls, 3,840 t-states own (0.00 %) |
-| Runs (the other recordings) | 20 calls (`stage1/rec/rooms` 7, `stage1/rec/deaths` 6, `stage1/rec/menu` 2 and 4 more) |
+| Runs (the other recordings) | 203 calls (`stage2/rzx/r092000` 9, `stage2/rzx/r022000` 7, `stage1/rec/rooms` 7 and 98 more) |
 | Called from | `EnterRoom` |
 | Calls | `ActorScreenBox`, `ReadRun`, `OpHighNibble`, `BuildZones` |
-| Reads | `$5B01`-`$5B0E` (system); `$671C` (`TitleColours+34`); `$6730`-`$6738` (`TitleColours+54`); `$674B`-`$6772` (`TitleColours+81`); `$679B` (`TitleColours+161`); `$67AE`-`$67C7` (`TitleColours+180`); 13 more ranges |
-| Writes | `$5B01`-`$5B18` (system); `$5E02`-`$5F02` (`IntroBox+7`, `IntroBoxRow`, `IntroBoxSide`, `IntroScript`); `$6002` (`HavokRoomEnter+46`); `$6102` (`SizeClasses+128`); `$6202` (`PrintGlyphsAddress+2`); `$6302` (`IntroAttrsC+191`); 18 more ranges |
+| Reads | `$5B01`-`$5B0E` (`RoomObjectList`); `$671C` (`TitleColours+34`); `$6730`-`$6738` (`TitleColours+54`); `$674B`-`$6772` (`TitleColours+81`); `$679B` (`TitleColours+161`); `$67AE`-`$67C7` (`TitleColours+180`); 13 more ranges |
+| Writes | `$5B01`-`$5B18` (`RoomObjectList`); `$5E02`-`$5F02` (`IntroBox+7`, `IntroBoxRow`, `IntroBoxSide`, `IntroScript`); `$6002` (`HavokRoomEnter+46`); `$6102` (`SizeClasses+128`); `$6202` (`PrintGlyphsAddress+2`); `$6302` (`IntroAttrsC+191`); 18 more ranges |
 
 ### `BuildZones` (`$A4D1`)
 
@@ -1601,7 +1629,7 @@ Witness: L1 206 (bossgate, deaths, gameover, havok, hiscore, menu, play48, rooms
 | | |
 | --- | --- |
 | Runs (c1: power-on on a 128K, the load at signal speed, the menu, the intro, a short walk) | 3 calls, 39,721 t-states own (0.00 %) |
-| Runs (the other recordings) | 20 calls (`stage1/rec/rooms` 7, `stage1/rec/deaths` 6, `stage1/rec/menu` 2 and 4 more) |
+| Runs (the other recordings) | 203 calls (`stage2/rzx/r092000` 9, `stage2/rzx/r022000` 7, `stage1/rec/rooms` 7 and 98 more) |
 | Called from | `SetupRoomObjects` |
 | Calls | `RoomEnemyState`, `RoomItemState`, `RevealZone` (tail) |
 | Reads | `$6700`-`$67DB` (`TitleColours+6`); `$6AE0`-`$6AE6` (`ZoneCount`, `ZoneRecords`); `$6D00`-`$6D23` (`HavokStashB`); `$6DFF`-`$6E23` (`RevealedZones`, `HavokStashA`); `$6EFF`-`$6F00` (`GoneEnemies+1`, `OutlineMask`); `$75FB`-`$75FD` (`EmptyObjectList`); 8 more ranges |
@@ -1616,7 +1644,7 @@ Witness: L1 398 (bossgate, deaths, gameover, havok, hiscore, menu, play48, rooms
 | | |
 | --- | --- |
 | Runs (c1: power-on on a 128K, the load at signal speed, the menu, the intro, a short walk) | 5 calls, 95 t-states own (0.00 %) |
-| Runs (the other recordings) | 33 calls (`stage1/rec/rooms` 14, `stage1/rec/deaths` 11, `stage1/rec/gameover` 3 and 4 more) |
+| Runs (the other recordings) | 393 calls (`stage2/rzx/r092000` 18, `stage1/rec/rooms` 14, `stage2/rzx/r022000` 14 and 98 more) |
 | Called from | `BuildZones`, `SaveRoomState` |
 | Calls | `RoomStateAddress` (tail) |
 
@@ -1629,7 +1657,7 @@ Witness: L1 398 (bossgate, deaths, gameover, havok, hiscore, menu, play48, rooms
 | | |
 | --- | --- |
 | Runs (c1: power-on on a 128K, the load at signal speed, the menu, the intro, a short walk) | 5 calls, 35 t-states own (0.00 %) |
-| Runs (the other recordings) | 33 calls (`stage1/rec/rooms` 14, `stage1/rec/deaths` 11, `stage1/rec/gameover` 3 and 4 more) |
+| Runs (the other recordings) | 393 calls (`stage2/rzx/r092000` 18, `stage1/rec/rooms` 14, `stage2/rzx/r022000` 14 and 98 more) |
 | Called from | `BuildZones`, `SaveRoomState` |
 | Calls | `RoomStateAddress` (falls into) |
 
@@ -1642,7 +1670,7 @@ Witness: L1 796 (bossgate, deaths, gameover, havok, hiscore, menu, play48, rooms
 | | |
 | --- | --- |
 | Runs (c1: power-on on a 128K, the load at signal speed, the menu, the intro, a short walk) | 10 calls, 471 t-states own (0.00 %) |
-| Runs (the other recordings) | 66 calls (`stage1/rec/rooms` 28, `stage1/rec/deaths` 22, `stage1/rec/gameover` 6 and 4 more) |
+| Runs (the other recordings) | 786 calls (`stage2/rzx/r092000` 36, `stage1/rec/rooms` 28, `stage2/rzx/r022000` 28 and 98 more) |
 | Called from | `RoomEnemyState` (tail), `RoomItemState` (falls into) |
 | Reads | `$6BDD` (`Room`) |
 
@@ -1659,7 +1687,7 @@ Witness: L1 42139 (bossgate, deaths, gameover, havok, hiscore, menu, play48, roo
 | | |
 | --- | --- |
 | Runs (c1: power-on on a 128K, the load at signal speed, the menu, the intro, a short walk) | 236 calls, 26,378 t-states own (0.00 %) |
-| Runs (the other recordings) | 2,120 calls (`stage1/rec/deaths` 950, `stage1/rec/rooms` 576, `stage1/rec/gameover` 145 and 4 more) |
+| Runs (the other recordings) | 41,903 calls (`stage2/rec/havok` 1,115, `stage2/rzx/r138000` 1,064, `stage1/rec/deaths` 950 and 113 more) |
 | Called from | `CheckRoomExit`, `BuildZones` (tail) |
 | Reads | `$5D1B` (`BuildOutlineMaskLoop+7`); `$6714`-`$67D1` (`TitleColours+26`); `$6DFF` (`RevealedZones`) |
 | Writes | `$6DFF` (`RevealedZones`) |
@@ -1675,7 +1703,7 @@ Witness: L1 192 (bossgate, deaths, gameover, hiscore, play48, rooms, c x1, poke-
 | | |
 | --- | --- |
 | Runs (c1: power-on on a 128K, the load at signal speed, the menu, the intro, a short walk) | 2 calls, 232 t-states own (0.00 %) |
-| Runs (the other recordings) | 13 calls (`stage1/rec/rooms` 7, `stage1/rec/deaths` 5, `stage1/rec/gameover` 1) |
+| Runs (the other recordings) | 190 calls (`stage2/rzx/r092000` 9, `stage1/rec/rooms` 7, `stage2/rzx/r022000` 7 and 90 more) |
 | Called from | `CheckRoomExit` |
 | Calls | `RoomEnemyState`, `RoomItemState` |
 | Reads | `$6DFE`-`$6DFF` (`TakenItems`, `RevealedZones`); `$6EFE`-`$6EFF` (`GoneEnemies`) |
@@ -1696,8 +1724,8 @@ Witness: L1 262 (bossgate, deaths, gameover, havok, hiscore, menu, play48, throw
 | | |
 | --- | --- |
 | Runs (c1: power-on on a 128K, the load at signal speed, the menu, the intro, a short walk) | 1 call, 27 t-states own (0.00 %) |
-| Runs (the other recordings) | 12 calls (`stage1/rec/deaths` 6, `stage1/rec/menu` 2, `stage1/rec/gameover` 1 and 3 more) |
-| Called from | `MatchCheatName`, `LoseEnergy` (tail), `TouchHiro` (tail) |
+| Runs (the other recordings) | 261 calls (`stage2/rzx/r124000` 11, `stage2/rec/play48` 10, `stage2/rzx/r014000` 9 and 83 more) |
+| Called from | `MatchCheatName`, `LoseEnergy` (tail), `ExpireActor`, `TouchHiro` (tail), `BreakOrBlock` |
 | Calls | `PrintString` |
 
 ### `PrintPanelLine` (`$836B`)
@@ -1711,7 +1739,7 @@ Witness: L1 455 (bossgate, deaths, gameover, havok, hiscore, menu, play48, throw
 | | |
 | --- | --- |
 | Runs (c1: power-on on a 128K, the load at signal speed, the menu, the intro, a short walk) | 1 call, 20 t-states own (0.00 %) |
-| Runs (the other recordings) | 11 calls (`stage1/rec/deaths` 5, `stage1/rec/menu` 2, `stage1/rec/opt2` 1 and 3 more) |
+| Runs (the other recordings) | 192 calls (`stage2/rzx/r092000` 13, `stage2/rzx/r108000` 11, `stage2/rec/bossgate` 10 and 65 more) |
 | Called from | `PanelWeapon` |
 | Calls | `PrintStringTall` (falls into) |
 | Reads | `$6667` (`StatusLine`) |
@@ -1728,8 +1756,8 @@ Witness: L1 546 (bossgate, deaths, gameover, havok, hiscore, menu, play48, throw
 | | |
 | --- | --- |
 | Runs (c1: power-on on a 128K, the load at signal speed, the menu, the intro, a short walk) | 3 calls, 143 t-states own (0.00 %) |
-| Runs (the other recordings) | 57 calls (`stage1/rec/menu` 36, `stage1/rec/gameover` 18, `stage1/rec/c48` 3) |
-| Called from | `ControlMenu`, `PrintPanelLine` (falls into), `ShowHighScores` |
+| Runs (the other recordings) | 126 calls (`stage1/rec/menu` 36, `stage1/rec/gameover` 18, `stage2/rzx/r080000` 15 and 8 more) |
+| Called from | `ControlMenu`, `PrintPanelLine` (falls into), `ShowHighScores`, `EnterName` |
 | Calls | `PrintString` (falls into) |
 | Reads | `$6667` (`StatusLine`); `$6ACB` (`ControlMenuText`); `$8119` (`HiScoreTableHead`); `$81F0` (`CopyrightText`) |
 | Writes | `$8411`-`$841D` (`PrintGlyphTop+10`, `PrintGlyphTopNext`) |
@@ -1749,10 +1777,10 @@ Witness: L1 2381 (bossgate, deaths, gameover, havok, hiscore, menu, play48, thro
 | | |
 | --- | --- |
 | Runs (c1: power-on on a 128K, the load at signal speed, the menu, the intro, a short walk) | 14 calls, 162,851 t-states own (0.01 %) |
-| Runs (the other recordings) | 1,410 calls (`stage1/rec/gameover` 1,048, `stage1/rec/menu` 261, `stage1/rec/c48` 32 and 4 more) |
-| Called from | `IntroPrint`, `IntroBox`, `PrintScore`, `PrintStringTall` (falls into), `EffectEnvelope`, `ShowHighScores` |
+| Runs (the other recordings) | 2,365 calls (`stage1/rec/gameover` 1,048, `stage1/rec/menu` 261, `stage2/rec/hiscore` 71 and 87 more) |
+| Called from | `IntroPrint`, `IntroBox`, `PrintScore`, `PrintStringTall` (falls into), `EffectEnvelope`, `HavokFade`, `ShowHighScores`, `EnterName`, `MoveNameBox`, `PanelWeapon` (tail) |
 | Calls | `SetPrintPosition`, `PrintGlyph` |
-| Reads | `$5B01`-`$5B5E` (system); `$6657`-`$6679` (`ScoreLine`, `ScoreDigits`, `LivesDigits`, `StatusLine` and 1 more); `$6ACB`-`$6B09` (`ControlMenuText`, `ItemCount`, `EnemyCount`, `EnemyListPtr` and 2 more); `$80FB`-`$822B` (`HiScoreHeading`, `HiScoreRankText`, `HiScoreTableHead`, `HiScoreEntries` and 4 more) |
+| Reads | `$5B01`-`$5B5E` (`RoomObjectList`); `$6657`-`$6679` (`ScoreLine`, `ScoreDigits`, `LivesDigits`, `StatusLine` and 1 more); `$6ACB`-`$6B09` (`ControlMenuText`, `ItemCount`, `EnemyCount`, `EnemyListPtr` and 2 more); `$80FB`-`$822B` (`HiScoreHeading`, `HiScoreRankText`, `HiScoreTableHead`, `HiScoreEntries` and 4 more) |
 | Writes | `$83FB` (`PrintGlyph+2`); `$8411`-`$841D` (`PrintGlyphTop+10`, `PrintGlyphTopNext`); `$8436` (`PrintGlyphLowerLoop+7`) |
 
 ### `SetPrintPosition` (`$83CD`)
@@ -1766,7 +1794,7 @@ Witness: L1 4627 (bossgate, deaths, gameover, havok, hiscore, menu, play48, thro
 | | |
 | --- | --- |
 | Runs (c1: power-on on a 128K, the load at signal speed, the menu, the intro, a short walk) | 115 calls, 14,477 t-states own (0.00 %) |
-| Runs (the other recordings) | 2,866 calls (`stage1/rec/gameover` 1,398, `stage1/rec/menu` 771, `stage1/rec/c48` 248 and 4 more) |
+| Runs (the other recordings) | 4,512 calls (`stage1/rec/gameover` 1,398, `stage1/rec/menu` 771, `stage2/rec/hiscore` 258 and 88 more) |
 | Called from | `PrintGlyphs`, `PrintGlyphsLine`, `PrintString` |
 | Calls | `ScreenAddress` (tail) |
 | Writes | `$83C6`-`$83C7` (`PrintStringNewline+1`) |
@@ -1782,7 +1810,7 @@ Witness: L1 179180 (bossgate, deaths, gameover, havok, hiscore, menu, play48, ro
 | | |
 | --- | --- |
 | Runs (c1: power-on on a 128K, the load at signal speed, the menu, the intro, a short walk) | 1,032 calls, 15,480 t-states own (0.00 %) |
-| Runs (the other recordings) | 35,723 calls (`stage1/rec/rooms` 20,201, `stage1/rec/menu` 5,715, `stage1/rec/deaths` 4,444 and 5 more) |
+| Runs (the other recordings) | 178,148 calls (`stage1/rec/rooms` 20,201, `stage1/rec/menu` 5,715, `stage1/rec/deaths` 4,444 and 116 more) |
 | Called from | `CellScreenAddress`, `SpriteScreenAddress` |
 | Calls | `ScreenAddress` (falls into) |
 
@@ -1795,7 +1823,7 @@ Witness: L1 183808 (bossgate, deaths, gameover, havok, hiscore, menu, play48, ro
 | | |
 | --- | --- |
 | Runs (c1: power-on on a 128K, the load at signal speed, the menu, the intro, a short walk) | 1,147 calls, 76,145 t-states own (0.01 %) |
-| Runs (the other recordings) | 18,388 calls (`stage1/rec/menu` 6,486, `stage1/rec/gameover` 4,846, `stage1/rec/deaths` 4,566 and 4 more) |
+| Runs (the other recordings) | 147,720 calls (`stage1/rec/menu` 6,486, `stage1/rec/gameover` 4,846, `stage1/rec/deaths` 4,566 and 88 more) |
 | Called from | `SetPrintPosition` (tail), `CharCellAddress` (falls into) |
 
 ### `PrintGlyph` (`$83F9`)
@@ -1809,7 +1837,7 @@ Witness: L1 34287 (bossgate, deaths, gameover, havok, hiscore, menu, play48, thr
 | | |
 | --- | --- |
 | Runs (c1: power-on on a 128K, the load at signal speed, the menu, the intro, a short walk) | 1,041 calls, 652,076 t-states own (0.05 %) |
-| Runs (the other recordings) | 18,752 calls (`stage1/rec/menu` 6,416, `stage1/rec/gameover` 5,974, `stage1/rec/c48` 2,224 and 4 more) |
+| Runs (the other recordings) | 33,246 calls (`stage1/rec/menu` 6,416, `stage1/rec/gameover` 5,974, `stage1/rec/c48` 2,224 and 88 more) |
 | Called from | `PrintGlyphsAddress`, `PrintString` |
 | Calls | `SetCellAttr` |
 | Reads | `$7BE5`-`$7CB4` (`Font`); `$7CED`-`$7DCB` (`Font+264`); `$7E0D`-`$7E1C` (`Font+552`); `$7F0D`-`$7F1B` (`MeterGlyphs`) |
@@ -1824,7 +1852,7 @@ Witness: L1 44166 (bossgate, deaths, gameover, havok, hiscore, menu, play48, thr
 | | |
 | --- | --- |
 | Runs (c1: power-on on a 128K, the load at signal speed, the menu, the intro, a short walk) | 1,093 calls, 126,412 t-states own (0.01 %) |
-| Runs (the other recordings) | 25,654 calls (`stage1/rec/menu` 10,800, `stage1/rec/gameover` 8,166, `stage1/rec/c48` 2,550 and 4 more) |
+| Runs (the other recordings) | 43,073 calls (`stage1/rec/menu` 10,800, `stage1/rec/gameover` 8,166, `stage2/rec/hiscore` 2,714 and 88 more) |
 | Called from | `PrintGlyph` |
 | Writes | `$5800`-`$5AFF` (screen) |
 
@@ -1842,7 +1870,7 @@ Witness: L1 10 (gameover, hiscore, menu, opt x3, rzx x4).
 
 | | |
 | --- | --- |
-| Runs | not reached in `stage1/c1`; in the other recordings 5 calls (`stage1/rec/gameover` 1, `stage1/rec/menu` 1, `stage1/rec/opt2` 1 and 2 more) |
+| Runs | not reached in `stage1/c1`; in the other recordings 10 calls (`stage2/rzx/r122000` 1, `stage2/rzx/r094000` 1, `stage2/rzx/r080000` 1 and 7 more) |
 | Called from | `GameOver`, `IntroGlyphs` |
 | Calls | `IntroGlyphs` |
 
@@ -1857,7 +1885,7 @@ Witness: L1 122 (deaths, gameover, hiscore, menu, throw, c x2, opt x3, rzx x6).
 | | |
 | --- | --- |
 | Runs (c1: power-on on a 128K, the load at signal speed, the menu, the intro, a short walk) | 6 calls, 42 t-states own (0.00 %) |
-| Runs (the other recordings) | 85 calls (`stage1/rec/menu` 28, `stage1/rec/gameover` 20, `stage1/rec/c48` 13 and 4 more) |
+| Runs (the other recordings) | 106 calls (`stage1/rec/menu` 28, `stage1/rec/gameover` 20, `stage1/rec/c48` 13 and 8 more) |
 | Called from | `Intro48`, `IntroText` (tail), `ShowHighScores` |
 | Calls | `WaitFireFrames` (falls into) |
 
@@ -1872,7 +1900,7 @@ Witness: L1 6408 (deaths, gameover, havok, hiscore, menu, throw, c x2, opt x3, r
 | | |
 | --- | --- |
 | Runs (c1: power-on on a 128K, the load at signal speed, the menu, the intro, a short walk) | 10 calls, 98,082,254 t-states own (7.43 %) |
-| Runs (the other recordings) | 1,160 calls (`stage1/rec/menu` 677, `stage1/rec/gameover` 379, `stage1/rec/c48` 61 and 4 more) |
+| Runs (the other recordings) | 1,364 calls (`stage1/rec/menu` 677, `stage1/rec/gameover` 379, `stage2/rec/hiscore` 93 and 11 more) |
 | Called from | `Intro48`, `IntroPictureWait` (tail), `WaitFireLong` (falls into), `ShowHighScores` |
 | Calls | `ReadInput` |
 | Reads | `$8328` (`WaitFireHalt+1`) |
@@ -1886,8 +1914,8 @@ Witness: L1 144 (gameover, havok, hiscore, menu, opt x3, rzx x7).
 
 | | |
 | --- | --- |
-| Runs | not reached in `stage1/c1`; in the other recordings 7 calls (`stage1/rec/menu` 3, `stage1/rec/gameover` 1, `stage1/rec/opt2` 1 and 2 more) |
-| Called from | `GlyphBytesAsCode` (tail) |
+| Runs | not reached in `stage1/c1`; in the other recordings 144 calls (`stage2/rzx/r140000` 35, `stage2/rec/hiscore` 21, `stage2/rzx/r122000` 16 and 11 more) |
+| Called from | `GlyphBytesAsCode` (tail), `EnterName`, `MoveNameBox` (tail) |
 | Calls | `DelayBC` (falls into) |
 
 ### `DelayBC` (`$8333`)
@@ -1901,8 +1929,8 @@ Witness: L1 4580939 (deaths, gameover, havok, hiscore, menu, throw, c x2, opt x3
 | | |
 | --- | --- |
 | Runs (c1: power-on on a 128K, the load at signal speed, the menu, the intro, a short walk) | 1 call, 213,054 t-states own (0.02 %) |
-| Runs (the other recordings) | 19 calls (`stage1/rec/menu` 7, `stage1/rec/gameover` 3, `stage1/rec/opt3` 2 and 4 more) |
-| Called from | `Intro48`, `IntroGlyphs`, `PauseLong` (falls into) |
+| Runs (the other recordings) | 160 calls (`stage2/rzx/r140000` 43, `stage2/rec/hiscore` 25, `stage2/rzx/r080000` 24 and 13 more) |
+| Called from | `Intro48`, `IntroGlyphs`, `PauseLong` (falls into), `HavokFade`, `EnterName` |
 
 ### `InterruptHandler` (`$8456`)
 
@@ -1917,7 +1945,7 @@ Witness: L1 222542 (bossgate, deaths, gameover, havok, hiscore, menu, play48, ro
 | | |
 | --- | --- |
 | Runs (c1: power-on on a 128K, the load at signal speed, the menu, the intro, a short walk) | 2,614 calls, 524,397 t-states own (0.04 %) |
-| Runs (the other recordings) | 49,277 calls (`stage1/rec/menu` 18,055, `stage1/rec/gameover` 9,844, `stage1/rec/deaths` 7,824 and 5 more) |
+| Runs (the other recordings) | 219,928 calls (`stage1/rec/menu` 18,055, `stage1/rec/gameover` 9,844, `stage1/rec/deaths` 7,824 and 116 more) |
 | Called from | `Im2Space` (tail) |
 | Calls | `GameTick`, `EffectPlayer` |
 
@@ -1934,7 +1962,7 @@ Witness: L1 177113 (bossgate, deaths, gameover, havok, hiscore, menu, play48, ro
 | | |
 | --- | --- |
 | Runs (c1: power-on on a 128K, the load at signal speed, the menu, the intro, a short walk) | 975 calls, 758,991 t-states own (0.06 %) |
-| Runs (the other recordings) | 16,354 calls (`stage1/rec/deaths` 6,185, `stage1/rec/rooms` 3,650, `stage1/rec/menu` 3,406 and 4 more) |
+| Runs (the other recordings) | 176,138 calls (`stage1/rec/deaths` 6,185, `stage2/rec/havok` 5,372, `stage2/rec/play48` 3,666 and 113 more) |
 | Called from | `InterruptHandler` |
 | Calls | `ReadInput`, `HiroBusy` |
 | Reads | `$5D02`-`$5F02` (`Hiro+2`, `BuildPageTails`, `Intro48`, `IntroScene` and 10 more); `$5F1D`-`$5F1F` (`IntroScript+208`); `$6002` (`HavokRoomEnter+46`); `$601D`-`$601F` (`HavokRoomEnter+73`); `$6102` (`SizeClasses+128`); `$611D`-`$611F` (`SizeClasses+155`); 7 more ranges |
@@ -1952,7 +1980,7 @@ Witness: L1 32293 (bossgate, deaths, gameover, havok, hiscore, menu, play48, roo
 | | |
 | --- | --- |
 | Runs (c1: power-on on a 128K, the load at signal speed, the menu, the intro, a short walk) | 260 calls, 1,820 t-states own (0.00 %) |
-| Runs (the other recordings) | 3,677 calls (`stage1/rec/deaths` 1,458, `stage1/rec/menu` 926, `stage1/rec/rooms` 755 and 4 more) |
+| Runs (the other recordings) | 32,033 calls (`stage1/rec/deaths` 1,458, `stage2/rec/havok` 1,132, `stage1/rec/menu` 926 and 111 more) |
 | Called from | `HiroControl` |
 | Calls | `DecodeDirection` (falls into) |
 
@@ -1967,8 +1995,8 @@ Witness: L1 680151 (bossgate, deaths, gameover, havok, hiscore, menu, play48, ro
 | | |
 | --- | --- |
 | Runs (c1: power-on on a 128K, the load at signal speed, the menu, the intro, a short walk) | 278 calls, 21,225 t-states own (0.00 %) |
-| Runs (the other recordings) | 10,447 calls (`stage1/rec/menu` 5,725, `stage1/rec/gameover` 2,808, `stage1/rec/deaths` 1,476 and 3 more) |
-| Called from | `ReadDirection` (falls into), `SweepSpanHalf` |
+| Runs (the other recordings) | 651,964 calls (`stage2/rzx/r140000` 281,093, `stage2/rec/hiscore` 179,399, `stage2/rzx/r122000` 60,402 and 10 more) |
+| Called from | `ReadDirection` (falls into), `SweepSpanHalf`, `EnterName` |
 
 ### `ReadInput` (`$8529`)
 
@@ -1981,8 +2009,8 @@ Witness: L1 833030 (bossgate, deaths, gameover, havok, hiscore, menu, play48, ro
 | | |
 | --- | --- |
 | Runs (c1: power-on on a 128K, the load at signal speed, the menu, the intro, a short walk) | 1,297 calls, 105,138 t-states own (0.01 %) |
-| Runs (the other recordings) | 29,243 calls (`stage1/rec/menu` 10,136, `stage1/rec/deaths` 6,507, `stage1/rec/gameover` 4,778 and 5 more) |
-| Called from | `IntroGlyphs`, `WaitFireFrames`, `GameTick`, `SweepSpanHalf`, `ShowHighScores`, `TitleSequence` |
+| Runs (the other recordings) | 831,733 calls (`stage2/rzx/r140000` 282,110, `stage2/rec/hiscore` 180,623, `stage2/rzx/r122000` 61,968 and 116 more) |
+| Called from | `IntroGlyphs`, `WaitFireFrames`, `GameTick`, `SweepSpanHalf`, `ShowHighScores`, `TitleSequence`, `EnterName` |
 | Ports in | `$001F`, `$101F`, `$B91F`, `$BA1F`, `$EFFE`, `$F7FE`, `$FF1F` |
 
 ### `MainLoop` (`$8DFE`)
@@ -2002,7 +2030,7 @@ Witness: L1 2036434 (bossgate, deaths, gameover, havok, hiscore, menu, play48, r
 | | |
 | --- | --- |
 | Runs (c1: power-on on a 128K, the load at signal speed, the menu, the intro, a short walk) | 1 call, 12,992,165 t-states own (0.98 %) |
-| Runs (the other recordings) | 7 calls (`stage1/rec/menu` 2, `stage1/rec/deaths` 1, `stage1/rec/gameover` 1 and 3 more) |
+| Runs (the other recordings) | 13 calls (`stage1/rec/menu` 2, `stage2/rec/havok` 1, `stage1/rec/deaths` 1 and 9 more) |
 | Called from | `MatchCheatName` (tail) |
 | Reads | `$5D02`-`$5F02` (`Hiro+2`, `BuildPageTails`, `Intro48`, `IntroScene` and 10 more); `$6002` (`HavokRoomEnter+46`); `$6102` (`SizeClasses+128`); `$6202` (`PrintGlyphsAddress+2`); `$6302` (`IntroAttrsC+191`); `$6402` (`IntroGlyphs+239`); 3 more ranges |
 
@@ -2016,8 +2044,9 @@ Witness: L1 18327840 (bossgate, deaths, gameover, havok, hiscore, menu, play48, 
 
 | | |
 | --- | --- |
-| Runs | not reached in `stage1/c1`; in the other recordings run into, not called (`stage1/rec/rooms`) |
-| Calls | `IntroGlyphs`, `ActorUpdate`, `PanelWeapon`, `PanelMeters` |
+| Runs (c1: power-on on a 128K, the load at signal speed, the menu, the intro, a short walk) | 225,604 runs of its first instruction (entered by a jump or by running on, no routine of its own in the L1) |
+| Runs (the other recordings) | 18,102,236 runs of its first instruction, entered by a jump (`stage2/rec/havok` 1,628,871, `stage1/rec/menu` 1,197,684, `stage1/rec/deaths` 972,155 and 113 more) |
+| Calls | `GameOver` (tail), `IntroGlyphs`, `ActorUpdate`, `PanelWeapon`, `PanelMeters` |
 | Reads | `$5D02`-`$5F02` (`Hiro+2`, `BuildPageTails`, `Intro48`, `IntroScene` and 10 more); `$6002` (`HavokRoomEnter+46`); `$6102` (`SizeClasses+128`); `$6202` (`PrintGlyphsAddress+2`); `$6302` (`IntroAttrsC+191`); `$6402` (`IntroGlyphs+239`); 3 more ranges |
 | Writes | `$69DF`-`$69E0` (`MapRow`, `MapColumn`) |
 
@@ -2040,9 +2069,9 @@ Witness: L1 3898690 (bossgate, deaths, gameover, havok, hiscore, menu, play48, r
 | | |
 | --- | --- |
 | Runs (c1: power-on on a 128K, the load at signal speed, the menu, the intro, a short walk) | 28,339 calls, 3,353,370 t-states own (0.25 %) |
-| Runs (the other recordings) | 534,237 calls (`stage1/rec/deaths` 225,247, `stage1/rec/menu` 134,580, `stage1/rec/rooms` 107,204 and 4 more) |
-| Called from | `IntroGlyphs`, `GlyphBytesAsCode`, `MainLoopActors` |
-| Calls | `ComposeActorCells`, `DrawFrontActors`, `DrawActorsAll`, `BlitWindow`, `ClipFlagsOff`, `ActorBoxStore`, `RunActorSteps` |
+| Runs (the other recordings) | 3,870,351 calls (`stage1/rec/deaths` 225,247, `stage2/rec/havok` 197,164, `stage1/rec/menu` 134,580 and 113 more) |
+| Called from | `IntroGlyphs`, `GlyphBytesAsCode`, `MainLoopActors`, `BossFire` |
+| Calls | `HavokFade` (tail), `ComposeActorCells`, `DrawFrontActors`, `DrawActorsAll`, `BlitWindow`, `ClipFlagsOff`, `ActorBoxStore`, `RunActorSteps` |
 | Reads | `$5D00` (`Hiro`); `$5D1C`-`$5D20` (`BuildOutlineMaskLoop+8`); `$5E00` (`IntroBox+5`); `$5E1C`-`$5E20` (`IntroBoxSides+2`); `$5F00` (`IntroScript+179`); `$5F1C`-`$5F20` (`IntroScript+207`); 9 more ranges |
 | Writes | `$5D20` (`BuildOutlineMaskLoop+12`); `$5E20` (`IntroBoxSides+6`); `$5F20` (`IntroScript+211`); `$6020` (`HavokRoomEnter+76`); `$6120` (`SizeClasses+158`); `$6520` (`ActorPage9+32`); 2 more ranges |
 
@@ -2057,7 +2086,7 @@ Witness: L1 771 (bossgate, havok, menu, play48, throw, c x1, opt x3, poke-room x
 | | |
 | --- | --- |
 | Runs (c1: power-on on a 128K, the load at signal speed, the menu, the intro, a short walk) | 2 calls, 88 t-states own (0.00 %) |
-| Runs (the other recordings) | 8 calls (`stage1/rec/menu` 2, `stage1/rec/opt2` 2, `stage1/rec/opt3` 2 and 1 more) |
+| Runs (the other recordings) | 769 calls (`stage2/rec/havok` 31, `stage2/rzx/r020000` 27, `stage2/rzx/r092000` 27 and 97 more) |
 | Called from | `GameTick` |
 | Calls | `ActorInSequence` (tail) |
 | Reads | `$5D02` (`Hiro+2`) |
@@ -2085,7 +2114,7 @@ Witness: L1 163322 (bossgate, deaths, gameover, havok, hiscore, menu, play48, ro
 | | |
 | --- | --- |
 | Runs (c1: power-on on a 128K, the load at signal speed, the menu, the intro, a short walk) | 374 calls, 100,588 t-states own (0.01 %) |
-| Runs (the other recordings) | 13,622 calls (`stage1/rec/menu` 5,277, `stage1/rec/deaths` 3,177, `stage1/rec/gameover` 3,008 and 5 more) |
+| Runs (the other recordings) | 162,948 calls (`stage2/rzx/r030000` 9,792, `stage2/rzx/r088000` 9,515, `stage2/rzx/r028000` 8,861 and 116 more) |
 | Called from | `HiroBusy` (tail), `AnimateActor` |
 | Reads | `$5D30`-`$6538` (`BuildRowBaseLoop+10`, `Intro48`, `IntroScene`, `IntroPictureText` and 23 more); `$6630`-`$6638` (`WeaponActor+48`); `$6730`-`$6738` (`TitleColours+54`); `$6830`-`$6838` (`TitleColours+310`); `$6930`-`$6938` (`EnemySlots+84`); `$6A30`-`$6A38` (`FireHeld+77`); 1 more ranges |
 
@@ -2100,7 +2129,7 @@ Witness: L1 158778 (bossgate, deaths, gameover, havok, hiscore, menu, play48, ro
 | | |
 | --- | --- |
 | Runs (c1: power-on on a 128K, the load at signal speed, the menu, the intro, a short walk) | 387 calls, 5,805 t-states own (0.00 %) |
-| Runs (the other recordings) | 19,617 calls (`stage1/rec/menu` 8,656, `stage1/rec/gameover` 4,860, `stage1/rec/deaths` 3,511 and 5 more) |
+| Runs (the other recordings) | 158,391 calls (`stage1/rec/menu` 8,656, `stage1/rec/gameover` 4,860, `stage2/rzx/r070000` 3,913 and 116 more) |
 | Called from | `DrawActor` |
 | Calls | `ClipFlagsOff` (falls into) |
 | Reads | `$5D20`-`$6520` (`BuildOutlineMaskLoop+12`, `Intro48`, `IntroScene`, `IntroPictureText` and 23 more); `$6620` (`WeaponActor+32`); `$6720` (`TitleColours+38`); `$6820` (`TitleColours+294`); `$6920` (`EnemySlots+68`); `$6A20` (`FireHeld+61`); 1 more ranges |
@@ -2116,7 +2145,7 @@ Witness: L1 261190 (bossgate, deaths, gameover, havok, hiscore, menu, play48, ro
 | | |
 | --- | --- |
 | Runs (c1: power-on on a 128K, the load at signal speed, the menu, the intro, a short walk) | 695 calls, 36,125 t-states own (0.00 %) |
-| Runs (the other recordings) | 23,719 calls (`stage1/rec/menu` 8,944, `stage1/rec/deaths` 6,491, `stage1/rec/gameover` 5,104 and 4 more) |
+| Runs (the other recordings) | 258,702 calls (`stage1/rec/menu` 8,944, `stage1/rec/deaths` 6,491, `stage2/rzx/r070000` 6,075 and 113 more) |
 | Called from | `ActorUpdate`, `ActorOffWindow` (falls into) |
 
 ### `FrameRecord` (`$8EA3`)
@@ -2130,7 +2159,7 @@ Witness: L1 549398 (bossgate, deaths, gameover, havok, hiscore, menu, play48, ro
 | | |
 | --- | --- |
 | Runs (c1: power-on on a 128K, the load at signal speed, the menu, the intro, a short walk) | 1,875 calls, 258,567 t-states own (0.02 %) |
-| Runs (the other recordings) | 21,495 calls (`stage1/rec/deaths` 10,187, `stage1/rec/rooms` 4,520, `stage1/rec/menu` 2,045 and 4 more) |
+| Runs (the other recordings) | 547,523 calls (`stage2/rzx/r018000` 11,111, `stage2/rzx/r118000` 10,797, `stage1/rec/deaths` 10,187 and 113 more) |
 | Called from | `ComposeTileWith`, `ComposeOverlay` |
 
 ### `CellIndex` (`$8EB5`)
@@ -2144,8 +2173,8 @@ Witness: L1 192856 (bossgate, deaths, gameover, havok, hiscore, menu, play48, ro
 | | |
 | --- | --- |
 | Runs (c1: power-on on a 128K, the load at signal speed, the menu, the intro, a short walk) | 872 calls, 69,191 t-states own (0.01 %) |
-| Runs (the other recordings) | 11,485 calls (`stage1/rec/deaths` 8,304, `stage1/rec/rooms` 1,680, `stage1/rec/gameover` 591 and 4 more) |
-| Called from | `CellSolid`, `ProbeCell` |
+| Runs (the other recordings) | 191,984 calls (`stage1/rec/deaths` 8,304, `stage2/rec/play48` 5,020, `stage2/rzx/r108000` 4,335 and 113 more) |
+| Called from | `StopActor`, `CellSolid`, `ProbeCell` |
 | Reads | `$7000`-`$700B` (`RowBase`) |
 
 ### `LastCellPixel` (`$8EC7`)
@@ -2158,7 +2187,9 @@ Witness: L1 108 (bossgate, play48, throw, rzx x31, rzxroom x4).
 
 | | |
 | --- | --- |
-| Runs | not reached in the recordings |
+| Runs | not reached in `stage1/c1`; in the other recordings 108 calls (`stage2/rzx/r062000` 13, `stage2/rzx/r124000` 8, `stage2/rzx/r114000` 7 and 35 more) |
+| Called from | `SpawnSparks`, `FindFreeActorAtCell` |
+| Calls | `CellPixel` (falls into) |
 
 ### `CellPixel` (`$8ECA`)
 
@@ -2171,8 +2202,8 @@ Witness: L1 645 (bossgate, deaths, gameover, hiscore, play48, rooms, throw, c x1
 | | |
 | --- | --- |
 | Runs (c1: power-on on a 128K, the load at signal speed, the menu, the intro, a short walk) | 1 call, 188 t-states own (0.00 %) |
-| Runs (the other recordings) | 20 calls (`stage1/rec/rooms` 12, `stage1/rec/deaths` 7, `stage1/rec/gameover` 1) |
-| Called from | `SpawnEnemy` |
+| Runs (the other recordings) | 622 calls (`stage2/rzx/r134000` 26, `stage2/rzx/r124000` 23, `stage2/rzx/r110000` 22 and 89 more) |
+| Called from | `LastCellPixel` (falls into), `SpawnEnemy` |
 
 ### `Multiply8` (`$8EDD`)
 
@@ -2185,8 +2216,8 @@ Witness: L1 239246 (bossgate, deaths, gameover, havok, hiscore, menu, play48, ro
 | | |
 | --- | --- |
 | Runs (c1: power-on on a 128K, the load at signal speed, the menu, the intro, a short walk) | 522 calls, 117,062 t-states own (0.01 %) |
-| Runs (the other recordings) | 24,938 calls (`stage1/rec/menu` 10,420, `stage1/rec/gameover` 5,867, `stage1/rec/deaths` 4,861 and 5 more) |
-| Called from | `DrawActor`, `ClipColumns`, `StripRecordAddress` |
+| Runs (the other recordings) | 238,724 calls (`stage1/rec/menu` 10,420, `stage1/rec/gameover` 5,867, `stage2/rzx/r070000` 5,220 and 116 more) |
+| Called from | `DrawActor`, `ClipColumns`, `StripRecordAddress`, `NameLetterIndex` |
 
 ### `RunActorSteps` (`$9A4B`)
 
@@ -2201,7 +2232,7 @@ Witness: L1 3898691 (bossgate, deaths, gameover, havok, hiscore, menu, play48, r
 | | |
 | --- | --- |
 | Runs (c1: power-on on a 128K, the load at signal speed, the menu, the intro, a short walk) | 28,339 calls, 16,170,457 t-states own (1.22 %) |
-| Runs (the other recordings) | 534,237 calls (`stage1/rec/deaths` 225,247, `stage1/rec/menu` 134,580, `stage1/rec/rooms` 107,204 and 4 more) |
+| Runs (the other recordings) | 3,870,353 calls (`stage1/rec/deaths` 225,247, `stage2/rec/havok` 197,164, `stage1/rec/menu` 134,580 and 113 more) |
 | Called from | `ActorUpdate` |
 | Calls | `StepIfActive`, `StepIfDue`, `StepActor` (tail) |
 | Reads | `$5D1D` (`BuildOutlineMaskLoop+9`); `$5E02`-`$5F02` (`IntroBox+7`, `IntroBoxRow`, `IntroBoxSide`, `IntroScript`); `$5F1D` (`IntroScript+208`); `$6002` (`HavokRoomEnter+46`); `$601D` (`HavokRoomEnter+73`); `$6102` (`SizeClasses+128`); 7 more ranges |
@@ -2216,7 +2247,7 @@ Witness: L1 2054144 (bossgate, deaths, gameover, havok, hiscore, menu, play48, r
 | | |
 | --- | --- |
 | Runs (c1: power-on on a 128K, the load at signal speed, the menu, the intro, a short walk) | 14,169 calls, 459,030 t-states own (0.03 %) |
-| Runs (the other recordings) | 267,120 calls (`stage1/rec/deaths` 112,623, `stage1/rec/menu` 67,290, `stage1/rec/rooms` 53,602 and 4 more) |
+| Runs (the other recordings) | 2,039,974 calls (`stage1/rec/deaths` 112,623, `stage2/rec/havok` 98,682, `stage1/rec/menu` 67,290 and 113 more) |
 | Called from | `RunActorSteps` |
 | Calls | `StepIfDue` (falls into) |
 | Reads | `$6602` (`WeaponActor+2`) |
@@ -2232,7 +2263,7 @@ Witness: L1 3977795 (bossgate, deaths, gameover, havok, hiscore, menu, play48, r
 | | |
 | --- | --- |
 | Runs (c1: power-on on a 128K, the load at signal speed, the menu, the intro, a short walk) | 28,338 calls, 948,729 t-states own (0.07 %) |
-| Runs (the other recordings) | 533,067 calls (`stage1/rec/deaths` 225,366, `stage1/rec/menu` 133,829, `stage1/rec/rooms` 107,204 and 4 more) |
+| Runs (the other recordings) | 3,949,458 calls (`stage1/rec/deaths` 225,366, `stage2/rec/havok` 197,335, `stage1/rec/menu` 133,829 and 113 more) |
 | Called from | `RunActorSteps`, `StepIfActive` (falls into) |
 | Calls | `StepActor` (falls into) |
 | Reads | `$5D1D` (`BuildOutlineMaskLoop+9`); `$5F1D` (`IntroScript+208`); `$661D` (`WeaponActor+29`) |
@@ -2256,9 +2287,9 @@ Witness: L1 277931 (bossgate, deaths, gameover, havok, hiscore, menu, play48, ro
 | | |
 | --- | --- |
 | Runs (c1: power-on on a 128K, the load at signal speed, the menu, the intro, a short walk) | 398 calls, 240,369 t-states own (0.02 %) |
-| Runs (the other recordings) | 7,897 calls (`stage1/rec/deaths` 4,222, `stage1/rec/rooms` 1,506, `stage1/rec/menu` 1,170 and 4 more) |
+| Runs (the other recordings) | 277,533 calls (`stage2/rzx/r078000` 17,997, `stage2/rzx/r056000` 17,774, `stage2/rzx/r020000` 12,142 and 113 more) |
 | Called from | `RunActorSteps` (tail), `StepIfDue` (falls into) |
-| Calls | `FallSequenceStart` (tail), `TurnToHiro` (tail), `ActorExpired` (tail), `HiroAttack` (tail), `StartLifetime`, `RunHandler` (falls into), `FallStep` (tail) |
+| Calls | `FallSequenceStart` (tail), `TurnToHiro` (tail), `StartPoseSeq` (tail), `ActorExpired` (tail), `HiroAttack` (tail), `StartLifetime`, `RunHandler` (falls into), `FallStep` (tail) |
 | Reads | `$5D02`-`$5D38` (`Hiro+2`, `BuildPageTails`); `$5E02`-`$5E38` (`IntroBox+7`, `IntroBoxRow`); `$5F02`-`$5F38` (`IntroScript+181`); `$6002`-`$6038` (`HavokRoomEnter+46`); `$6102`-`$6138` (`SizeClasses+128`); `$6502`-`$6538` (`ActorPage9+2`); 3 more ranges |
 | Writes | `$5D1D` (`BuildOutlineMaskLoop+9`); `$5E1D`-`$5E28` (`IntroBoxSides+3`); `$5F1D`-`$5F28` (`IntroScript+208`); `$601D`-`$6028` (`HavokRoomEnter+73`); `$611D` (`SizeClasses+155`); `$651D` (`ActorPage9+29`); 2 more ranges |
 
@@ -2272,8 +2303,9 @@ Witness: L1 234521 (bossgate, deaths, gameover, havok, hiscore, menu, play48, ro
 
 | | |
 | --- | --- |
-| Runs | not reached in `stage1/c1`; in the other recordings 3,217 calls (`stage1/rec/deaths` 3,217) |
-| Called from | `FallDamageStep` (tail), `StepActor` (falls into) |
+| Runs (c1: power-on on a 128K, the load at signal speed, the menu, the intro, a short walk) | 321 runs of its first instruction (entered by a jump or by running on, no routine of its own in the L1) |
+| Runs (the other recordings) | 47,501 calls (`stage2/rzx/r028000` 8,770, `stage2/rzx/r032000` 8,438, `stage2/rzx/r026000` 7,640 and 16 more) |
+| Called from | `FallDamageStep` (tail), `HiroAttack` (tail), `StepActor` (falls into) |
 | Calls | `JumpToHandler` (falls into) |
 | Reads | `$5D03`-`$5D04` (`Hiro+3`); `$5E03`-`$5E04` (`IntroBox+8`); `$5F03`-`$5F04` (`IntroScript+182`); `$6503`-`$6504` (`ActorPage9+3`) |
 
@@ -2285,9 +2317,10 @@ Witness: L1 262694 (bossgate, deaths, gameover, havok, hiscore, menu, play48, ro
 
 | | |
 | --- | --- |
-| Runs | not reached in `stage1/c1`; in the other recordings 4,021 calls (`stage1/rec/deaths` 4,021) |
+| Runs (c1: power-on on a 128K, the load at signal speed, the menu, the intro, a short walk) | 368 runs of its first instruction (entered by a jump or by running on, no routine of its own in the L1) |
+| Runs (the other recordings) | 54,120 calls (`stage2/rzx/r028000` 9,051, `stage2/rzx/r032000` 8,699, `stage2/rzx/r026000` 7,845 and 16 more) |
 | Called from | `RunHandler` (falls into) |
-| Calls | `DeathStep`, `RiseStep`, `TurnStep`, `PoseStep`, `ActionStep`, `FallDamageStep`, `JumpStep`, `FallScriptStep`, `HiroControl`, `ChaserControl`, `StillControl`, `StalactiteControl`, `PatrolControl`, `PathControl` |
+| Calls | `DeathStep`, `RiseStep`, `TurnStep`, `PoseStep`, `ActionStep`, `FallDamageStep`, `JumpStep`, `FallScriptStep`, `HiroControl`, `ChaserControl`, `StillControl`, `DecorControl`, `TriggerControl`, `StalactiteControl`, `PatrolControl`, `TrapControl`, `PathControl`, `WeaponControl` |
 
 ### `TemplateForKind` (`$A652`)
 
@@ -2300,8 +2333,8 @@ Witness: L1 775 (bossgate, deaths, gameover, hiscore, play48, rooms, throw, c x1
 | | |
 | --- | --- |
 | Runs (c1: power-on on a 128K, the load at signal speed, the menu, the intro, a short walk) | 1 call, 54 t-states own (0.00 %) |
-| Runs (the other recordings) | 21 calls (`stage1/rec/rooms` 12, `stage1/rec/deaths` 8, `stage1/rec/gameover` 1) |
-| Called from | `CollectPickup`, `SpawnEnemy` |
+| Runs (the other recordings) | 774 calls (`stage2/rzx/r134000` 26, `stage2/rzx/r092000` 24, `stage2/rzx/r104000` 23 and 100 more) |
+| Called from | `HiroAttack`, `CollectPickup`, `BreakReveal`, `SpawnEnemy` |
 | Reads | `$7202`-`$720B` (`KindTemplates+2`); `$7234`-`$7235` (`KindTemplates+52`); `$7256`-`$7271` (`KindTemplates+86`) |
 
 ### `InitActor` (`$A65D`)
@@ -2317,8 +2350,8 @@ Witness: L1 2229 (bossgate, deaths, gameover, havok, hiscore, menu, play48, room
 | | |
 | --- | --- |
 | Runs (c1: power-on on a 128K, the load at signal speed, the menu, the intro, a short walk) | 17 calls, 28,334 t-states own (0.00 %) |
-| Runs (the other recordings) | 882 calls (`stage1/rec/menu` 451, `stage1/rec/gameover` 253, `stage1/rec/c48` 41 and 5 more) |
-| Called from | `MatchCheatName`, `GlyphBytesAsCode`, `SpawnShield`, `SpawnEnemy`, `TitleSequence` |
+| Runs (the other recordings) | 2,212 calls (`stage1/rec/menu` 451, `stage1/rec/gameover` 253, `stage2/rec/hiscore` 86 and 113 more) |
+| Called from | `MatchCheatName`, `GlyphBytesAsCode`, `HiroAttack`, `BossFire`, `SpawnSparks`, `SpawnShield`, `BreakReveal`, `SpawnEnemy`, `TitleSequence` |
 | Calls | `CopyFrameRecord` |
 | Reads | `$5D14`-`$6414` (`BuildOutlineMaskLoop`, `Intro48`, `IntroScene`, `IntroPictureText` and 23 more); `$6514` (`ActorPage9+20`); `$6594`-`$65ED` (`ActorPage9+148`, `SharedEnemyTemplate`, `HiroTemplate`, `TitlePieceTemplate`); `$6614` (`WeaponActor+20`); `$6714` (`TitleColours+26`); `$6814` (`TitleColours+282`); 3 more ranges |
 | Writes | `$5D00`-`$6541` (`Hiro`, `BuildPageTails`, `Intro48`, `IntroScene` and 24 more); `$6600`-`$6641` (`WeaponActor`); `$6700`-`$6741` (`TitleColours+6`); `$6800`-`$6841` (`TitleColours+262`); `$6900`-`$6941` (`EnemySlots+36`); `$6A00`-`$6A41` (`FireHeld+29`); 1 more ranges |
@@ -2334,7 +2367,7 @@ Witness: L1 4446 (bossgate, deaths, gameover, havok, hiscore, menu, play48, room
 | | |
 | --- | --- |
 | Runs (c1: power-on on a 128K, the load at signal speed, the menu, the intro, a short walk) | 9 calls, 711 t-states own (0.00 %) |
-| Runs (the other recordings) | 210 calls (`stage1/rec/deaths` 147, `stage1/rec/rooms` 40, `stage1/rec/gameover` 5 and 4 more) |
+| Runs (the other recordings) | 4,437 calls (`stage1/rec/deaths` 147, `stage2/rzx/r108000` 123, `stage2/rzx/r094000` 100 and 112 more) |
 | Called from | `SequenceEndDrop`, `FallMove` |
 | Calls | `SetActorFrame` (tail) |
 | Reads | `$5D01` (`Hiro+1`); `$5D3C`-`$5D3D` (`BuildBoxPlaceLoop+8`); `$5E01` (`IntroBox+6`); `$5E3C`-`$5E3D` (`IntroBoxRowLoop+4`); `$5F01` (`IntroScript+180`); `$5F3C`-`$5F3D` (`IntroScript+239`) |
@@ -2351,7 +2384,7 @@ Witness: L1 6615 (bossgate, deaths, gameover, havok, hiscore, menu, play48, room
 | | |
 | --- | --- |
 | Runs (c1: power-on on a 128K, the load at signal speed, the menu, the intro, a short walk) | 11 calls, 1,529 t-states own (0.00 %) |
-| Runs (the other recordings) | 273 calls (`stage1/rec/deaths` 190, `stage1/rec/rooms` 50, `stage1/rec/gameover` 9 and 4 more) |
+| Runs (the other recordings) | 6,604 calls (`stage1/rec/deaths` 190, `stage2/rec/havok` 156, `stage2/rzx/r108000` 148 and 112 more) |
 | Called from | `SequenceTiming` |
 | Calls | `SetActorFrame` (falls into) |
 | Reads | `$5D01` (`Hiro+1`); `$5D1B` (`BuildOutlineMaskLoop+7`); `$5E01` (`IntroBox+6`); `$5E1B` (`IntroBoxSides+1`); `$5F01` (`IntroScript+180`); `$5F1B` (`IntroScript+206`); 12 more ranges |
@@ -2366,7 +2399,7 @@ Witness: L1 11061 (bossgate, deaths, gameover, havok, hiscore, menu, play48, roo
 | | |
 | --- | --- |
 | Runs (c1: power-on on a 128K, the load at signal speed, the menu, the intro, a short walk) | 20 calls, 971 t-states own (0.00 %) |
-| Runs (the other recordings) | 483 calls (`stage1/rec/deaths` 337, `stage1/rec/rooms` 90, `stage1/rec/gameover` 14 and 4 more) |
+| Runs (the other recordings) | 11,041 calls (`stage1/rec/deaths` 337, `stage2/rzx/r108000` 271, `stage2/rec/havok` 238 and 112 more) |
 | Called from | `ActorFrameBack` (tail), `ActorFrameStep` (falls into) |
 | Calls | `CopyFrameRecordBody` (tail) |
 | Writes | `$5D14` (`BuildOutlineMaskLoop`); `$5E14` (`IntroBox+25`); `$5F14` (`IntroScript+199`); `$6514` (`ActorPage9+20`) |
@@ -2382,7 +2415,7 @@ Witness: L1 2229 (bossgate, deaths, gameover, havok, hiscore, menu, play48, room
 | | |
 | --- | --- |
 | Runs (c1: power-on on a 128K, the load at signal speed, the menu, the intro, a short walk) | 17 calls, 192 t-states own (0.00 %) |
-| Runs (the other recordings) | 882 calls (`stage1/rec/menu` 451, `stage1/rec/gameover` 253, `stage1/rec/c48` 41 and 5 more) |
+| Runs (the other recordings) | 2,212 calls (`stage1/rec/menu` 451, `stage1/rec/gameover` 253, `stage2/rec/hiscore` 86 and 113 more) |
 | Called from | `InitActor` |
 | Calls | `CopyFrameRecordBody` (falls into) |
 
@@ -2395,7 +2428,7 @@ Witness: L1 13290 (bossgate, deaths, gameover, havok, hiscore, menu, play48, roo
 | | |
 | --- | --- |
 | Runs (c1: power-on on a 128K, the load at signal speed, the menu, the intro, a short walk) | 37 calls, 15,565 t-states own (0.00 %) |
-| Runs (the other recordings) | 1,324 calls (`stage1/rec/menu` 457, `stage1/rec/deaths` 366, `stage1/rec/gameover` 267 and 4 more) |
+| Runs (the other recordings) | 13,156 calls (`stage1/rec/menu` 457, `stage1/rec/deaths` 366, `stage2/rzx/r108000` 292 and 110 more) |
 | Called from | `SetActorFrame` (tail), `CopyFrameRecord` (falls into) |
 | Reads | `$6082`-`$60F9` (`SizeClasses`) |
 | Writes | `$5D15`-`$6519` (`BuildOutlineMaskLoop+1`, `Intro48`, `IntroScene`, `IntroPictureText` and 23 more); `$6615`-`$6619` (`WeaponActor+21`); `$6715`-`$6719` (`TitleColours+27`); `$6815`-`$6819` (`TitleColours+283`); `$6915`-`$6919` (`EnemySlots+57`); `$6A15`-`$6A19` (`FireHeld+50`); 1 more ranges |
@@ -2415,8 +2448,8 @@ Witness: L1 140 (deaths, gameover, havok, hiscore, menu, play48, throw, c x2, op
 | | |
 | --- | --- |
 | Runs (c1: power-on on a 128K, the load at signal speed, the menu, the intro, a short walk) | 6 calls, 983,218 t-states own (0.07 %) |
-| Runs (the other recordings) | 100 calls (`stage1/rec/menu` 42, `stage1/rec/gameover` 25, `stage1/rec/c48` 10 and 4 more) |
-| Called from | `MatchCheatName`, `Intro48`, `ControlMenu`, `ShowHighScores`, `TitleSequence` |
+| Runs (the other recordings) | 134 calls (`stage1/rec/menu` 42, `stage1/rec/gameover` 25, `stage2/rec/hiscore` 11 and 17 more) |
+| Called from | `MatchCheatName`, `Intro48`, `ControlMenu`, `ShowHighScores`, `TitleSequence`, `InsertHighScore` |
 | Calls | `FillAttributes` (falls into), `BlackAttributes` |
 | Reads | `$4000`-`$57FF` (screen) |
 | Writes | `$4000`-`$5800` (screen) |
@@ -2430,7 +2463,7 @@ Witness: L1 280 (deaths, gameover, havok, hiscore, menu, play48, throw, c x2, op
 | | |
 | --- | --- |
 | Runs (c1: power-on on a 128K, the load at signal speed, the menu, the intro, a short walk) | 12 calls, 360 t-states own (0.00 %) |
-| Runs (the other recordings) | 200 calls (`stage1/rec/menu` 84, `stage1/rec/gameover` 50, `stage1/rec/c48` 20 and 4 more) |
+| Runs (the other recordings) | 268 calls (`stage1/rec/menu` 84, `stage1/rec/gameover` 50, `stage2/rec/hiscore` 22 and 17 more) |
 | Called from | `ClearScreen` (falls into), `BlackAttributes` (tail) |
 | Calls | `FillAttrRun` (falls into) |
 
@@ -2443,7 +2476,7 @@ Witness: L1 294 (deaths, gameover, havok, hiscore, menu, play48, throw, c x2, op
 | | |
 | --- | --- |
 | Runs (c1: power-on on a 128K, the load at signal speed, the menu, the intro, a short walk) | 13 calls, 268,465 t-states own (0.02 %) |
-| Runs (the other recordings) | 187 calls (`stage1/rec/menu` 86, `stage1/rec/gameover` 51, `stage1/rec/opt3` 13 and 3 more) |
+| Runs (the other recordings) | 245 calls (`stage1/rec/menu` 86, `stage1/rec/gameover` 51, `stage2/rec/hiscore` 23 and 9 more) |
 | Called from | `FillAttributes` (falls into), `FillPlayAttributes` (tail) |
 | Reads | `$5800`-`$5AFE` (screen) |
 | Writes | `$5800`-`$5AFF` (screen) |
@@ -2457,7 +2490,7 @@ Witness: L1 140 (deaths, gameover, havok, hiscore, menu, play48, throw, c x2, op
 | | |
 | --- | --- |
 | Runs (c1: power-on on a 128K, the load at signal speed, the menu, the intro, a short walk) | 6 calls, 96 t-states own (0.00 %) |
-| Runs (the other recordings) | 100 calls (`stage1/rec/menu` 42, `stage1/rec/gameover` 25, `stage1/rec/c48` 10 and 4 more) |
+| Runs (the other recordings) | 134 calls (`stage1/rec/menu` 42, `stage1/rec/gameover` 25, `stage2/rec/hiscore` 11 and 17 more) |
 | Called from | `ClearScreen` |
 | Calls | `FillAttributes` (tail) |
 
@@ -2472,7 +2505,7 @@ Witness: L1 14 (deaths, gameover, havok, hiscore, menu, play48, throw, c x1, opt
 | | |
 | --- | --- |
 | Runs (c1: power-on on a 128K, the load at signal speed, the menu, the intro, a short walk) | 1 call, 42 t-states own (0.00 %) |
-| Runs (the other recordings) | 7 calls (`stage1/rec/menu` 2, `stage1/rec/deaths` 1, `stage1/rec/gameover` 1 and 3 more) |
+| Runs (the other recordings) | 13 calls (`stage1/rec/menu` 2, `stage1/rec/deaths` 1, `stage1/rec/gameover` 1 and 9 more) |
 | Called from | `MatchCheatName` |
 | Calls | `FillAttrRun` (tail) |
 
@@ -2487,7 +2520,7 @@ Witness: L1 65975 (bossgate, deaths, gameover, havok, hiscore, menu, play48, roo
 | | |
 | --- | --- |
 | Runs (c1: power-on on a 128K, the load at signal speed, the menu, the intro, a short walk) | 660 calls, 185,321 t-states own (0.01 %) |
-| Runs (the other recordings) | 22,246 calls (`stage1/rec/rooms` 19,306, `stage1/rec/deaths` 1,400, `stage1/rec/gameover` 440 and 4 more) |
+| Runs (the other recordings) | 65,315 calls (`stage1/rec/rooms` 19,306, `stage2/rzx/r092000` 1,980, `stage2/rzx/r022000` 1,540 and 103 more) |
 | Called from | `RedrawCellMask`, `ComposeCell` |
 | Calls | `CharCellAddress` |
 | Writes | `$732A` (`DrawColumnPos`); `$8879` (`EraseCell+6`) |
@@ -2503,8 +2536,8 @@ Witness: L1 113205 (bossgate, deaths, gameover, havok, hiscore, menu, play48, ro
 | | |
 | --- | --- |
 | Runs (c1: power-on on a 128K, the load at signal speed, the menu, the intro, a short walk) | 372 calls, 69,456 t-states own (0.01 %) |
-| Runs (the other recordings) | 13,477 calls (`stage1/rec/menu` 5,275, `stage1/rec/deaths` 3,044, `stage1/rec/gameover` 3,008 and 5 more) |
-| Called from | `BlitWindow` |
+| Runs (the other recordings) | 112,833 calls (`stage1/rec/menu` 5,275, `stage1/rec/deaths` 3,044, `stage1/rec/gameover` 3,008 and 116 more) |
+| Called from | `DrawHavok`, `BlitWindow` |
 | Calls | `CharCellAddress` |
 | Reads | `$732A` (`DrawColumnPos`); `$FDF5`-`$FDFC` (`UnitByteOffsets`) |
 
@@ -2519,7 +2552,7 @@ Witness: L1 206 (bossgate, deaths, gameover, havok, hiscore, menu, play48, rooms
 | | |
 | --- | --- |
 | Runs (c1: power-on on a 128K, the load at signal speed, the menu, the intro, a short walk) | 3 calls, 55,656 t-states own (0.00 %) |
-| Runs (the other recordings) | 20 calls (`stage1/rec/rooms` 7, `stage1/rec/deaths` 6, `stage1/rec/gameover` 2 and 4 more) |
+| Runs (the other recordings) | 203 calls (`stage2/rzx/r092000` 9, `stage2/rzx/r022000` 7, `stage1/rec/rooms` 7 and 98 more) |
 | Called from | `EnterRoom` |
 | Calls | `RedrawCellsMasked` (falls into) |
 | Reads | `$6DFF` (`RevealedZones`) |
@@ -2538,7 +2571,8 @@ Witness: L1 313 (bossgate, deaths, gameover, havok, hiscore, menu, play48, rooms
 
 | | |
 | --- | --- |
-| Runs | not reached in `stage1/c1`; in the other recordings 95 calls (`stage1/rec/rooms` 88, `stage1/rec/deaths` 7) |
+| Runs (c1: power-on on a 128K, the load at signal speed, the menu, the intro, a short walk) | 3 runs of its first instruction (entered by a jump or by running on, no routine of its own in the L1) |
+| Runs (the other recordings) | 173 calls (`stage1/rec/rooms` 88, `stage2/rec/play48` 7, `stage2/rzx/r110000` 7 and 21 more) |
 | Called from | `RedrawRoomMasked` (falls into), `CheckRoomExit` |
 | Calls | `RedrawCell` |
 
@@ -2551,8 +2585,9 @@ Witness: L1 68685 (bossgate, deaths, gameover, havok, hiscore, menu, play48, roo
 | | |
 | --- | --- |
 | Runs (c1: power-on on a 128K, the load at signal speed, the menu, the intro, a short walk) | 660 calls, 173,083 t-states own (0.01 %) |
-| Runs (the other recordings) | 22,440 calls (`stage1/rec/rooms` 19,360, `stage1/rec/deaths` 1,540, `stage1/rec/gameover` 440 and 4 more) |
+| Runs (the other recordings) | 68,025 calls (`stage1/rec/rooms` 19,360, `stage2/rzx/r092000` 1,980, `stage2/rzx/r022000` 1,540 and 101 more) |
 | Called from | `RedrawCellsMasked` |
+| Calls | `RedrawCellMask` (falls into) |
 | Reads | `$66F7`-`$67DB` (`CellColours`, `TitleColours`); `$6800`-`$68DB` (`TitleColours+262`); `$6900`-`$69DB` (`EnemySlots+36`); `$6A00`-`$6ADB` (`FireHeld+29`, `ControlMenu`, `ControlMenuKey`, `ControlMenuText`); `$6B00`-`$6BDB` (`ZoneRecords+31`, `ControlRecords`, `ControlGap`, `PageTailTemplate` and 1 more); `$6C00`-`$6CDA` (`CellProperty+29`, `WalkLists`, `WeaponRecords`, `TouchZoneRecords` and 2 more); 1 more ranges |
 | Writes | `$5821`-`$5ADD` (screen) |
 
@@ -2566,7 +2601,9 @@ Witness: L1 68736 (bossgate, deaths, gameover, havok, hiscore, menu, play48, roo
 
 | | |
 | --- | --- |
-| Runs | ran within another entry's routine (reached by a jump or by running on, its calls below), no runs of its own counted |
+| Runs (c1: power-on on a 128K, the load at signal speed, the menu, the intro, a short walk) | 660 runs of its first instruction (entered by a jump or by running on, no routine of its own in the L1) |
+| Runs (the other recordings) | 16,776 calls (`stage2/rec/play48` 1,541, `stage2/rzx/r110000` 1,541, `stage2/rzx/r024000` 1,324 and 29 more) |
+| Called from | `RedrawCell` (falls into), `BreakOrBlock` |
 | Calls | `CellScreenAddress`, `MaskCellRows` (falls into) |
 
 ### `MaskCellRows` (`$888D`)
@@ -2578,7 +2615,7 @@ Witness: L1 78654 (bossgate, deaths, gameover, havok, hiscore, menu, play48, roo
 | | |
 | --- | --- |
 | Runs (c1: power-on on a 128K, the load at signal speed, the menu, the intro, a short walk) | 480 calls, 248,632 t-states own (0.02 %) |
-| Runs (the other recordings) | 39,704 calls (`stage1/rec/rooms` 37,328, `stage1/rec/deaths` 1,256, `stage1/rec/gameover` 320 and 4 more) |
+| Runs (the other recordings) | 78,174 calls (`stage1/rec/rooms` 37,328, `stage2/rzx/r092000` 2,676, `stage2/rzx/r110000` 2,038 and 101 more) |
 | Called from | `RedrawCellMask` (falls into) |
 | Calls | `ComposeCell`, `BlitWindowAt` (tail) |
 | Reads | `$4021`-`$42FE` (screen); `$4321`-`$43FE` (screen); `$4421`-`$44FE` (screen); `$4521`-`$45FE` (screen); `$4621`-`$46FE` (screen); `$4721`-`$57DE` (screen) |
@@ -2595,7 +2632,7 @@ Witness: L1 26646 (bossgate, deaths, gameover, havok, hiscore, menu, play48, roo
 | | |
 | --- | --- |
 | Runs (c1: power-on on a 128K, the load at signal speed, the menu, the intro, a short walk) | 420 calls, 73,642 t-states own (0.01 %) |
-| Runs (the other recordings) | 2,394 calls (`stage1/rec/deaths` 772, `stage1/rec/rooms` 642, `stage1/rec/gameover` 280 and 4 more) |
+| Runs (the other recordings) | 26,226 calls (`stage2/rzx/r022000` 1,429, `stage2/rzx/r020000` 842, `stage2/rec/play48` 773 and 102 more) |
 | Called from | `MaskCellRows` |
 | Calls | `CellScreenAddress`, `ComposeCellColumn` |
 | Writes | `$8C76` (`BlitWindowWidth+2`); `$8D27` (`PackRowLines+1`) |
@@ -2609,7 +2646,7 @@ Witness: L1 53293 (bossgate, deaths, gameover, havok, hiscore, menu, play48, roo
 | | |
 | --- | --- |
 | Runs (c1: power-on on a 128K, the load at signal speed, the menu, the intro, a short walk) | 840 calls, 49,560 t-states own (0.00 %) |
-| Runs (the other recordings) | 4,788 calls (`stage1/rec/deaths` 1,544, `stage1/rec/rooms` 1,284, `stage1/rec/gameover` 560 and 4 more) |
+| Runs (the other recordings) | 52,453 calls (`stage2/rzx/r022000` 2,858, `stage2/rzx/r020000` 1,684, `stage2/rec/play48` 1,546 and 102 more) |
 | Called from | `ComposeCell` |
 | Calls | `ComposeRows` (tail) |
 | Writes | `$8933`-`$8934` (`ComposeRowLoop+9`) |
@@ -2625,7 +2662,7 @@ Witness: L1 203037 (bossgate, deaths, gameover, havok, hiscore, menu, play48, ro
 | | |
 | --- | --- |
 | Runs (c1: power-on on a 128K, the load at signal speed, the menu, the intro, a short walk) | 616 calls, 86,714 t-states own (0.01 %) |
-| Runs (the other recordings) | 9,774 calls (`stage1/rec/deaths` 5,960, `stage1/rec/rooms` 1,790, `stage1/rec/menu` 576 and 4 more) |
+| Runs (the other recordings) | 202,421 calls (`stage1/rec/deaths` 5,960, `stage2/rzx/r048000` 4,418, `stage2/rzx/r070000` 4,323 and 113 more) |
 | Called from | `ActorUpdate` |
 | Calls | `ComposeRows` (falls into) |
 | Reads | `$69DE` (`BoxClip+1`); `$732A` (`DrawColumnPos`); `$74BA`-`$74BB` (`ComposeDest`); `$8C76` (`BlitWindowWidth+2`); `$A56E` (`RevealZone+5`) |
@@ -2640,7 +2677,7 @@ Witness: L1 256331 (bossgate, deaths, gameover, havok, hiscore, menu, play48, ro
 | | |
 | --- | --- |
 | Runs (c1: power-on on a 128K, the load at signal speed, the menu, the intro, a short walk) | 1,456 calls, 358,985 t-states own (0.03 %) |
-| Runs (the other recordings) | 14,562 calls (`stage1/rec/deaths` 7,504, `stage1/rec/rooms` 3,074, `stage1/rec/menu` 1,136 and 4 more) |
+| Runs (the other recordings) | 228,011 calls (`stage1/rec/deaths` 7,504, `stage2/rec/play48` 5,732, `stage2/rzx/r048000` 4,744 and 102 more) |
 | Called from | `ComposeCellColumn` (tail), `ComposeActorCells` (falls into) |
 | Calls | `ComposeFrontCell`, `ComposeBackCell` |
 | Writes | `$892E` (`ComposeRowLoop+4`); `$89F6` (`ComposeTileLoop+10`) |
@@ -2654,7 +2691,7 @@ Witness: L1 349517 (bossgate, deaths, gameover, havok, hiscore, menu, play48, ro
 | | |
 | --- | --- |
 | Runs (c1: power-on on a 128K, the load at signal speed, the menu, the intro, a short walk) | 1,002 calls, 454,988 t-states own (0.03 %) |
-| Runs (the other recordings) | 10,623 calls (`stage1/rec/deaths` 5,113, `stage1/rec/rooms` 2,425, `stage1/rec/menu` 833 and 4 more) |
+| Runs (the other recordings) | 208,603 calls (`stage1/rec/deaths` 5,113, `stage2/rec/play48` 4,178, `stage2/rzx/r104000` 3,459 and 113 more) |
 | Called from | `ComposeRows` |
 | Calls | `ComposeTwoTiles`, `ComposeTile` |
 | Reads | `$6700`-`$67DA` (`TitleColours+6`); `$6A00`-`$6ADA` (`FireHeld+29`, `ControlMenu`, `ControlMenuKey`, `ControlMenuText`); `$6B00`-`$6BDA` (`ZoneRecords+31`, `ControlRecords`, `ControlGap`, `PageTailTemplate` and 1 more); `$6DFF` (`RevealedZones`); `$89F6` (`ComposeTileLoop+10`) |
@@ -2669,7 +2706,7 @@ Witness: L1 349509 (bossgate, deaths, gameover, havok, hiscore, menu, play48, ro
 | | |
 | --- | --- |
 | Runs (c1: power-on on a 128K, the load at signal speed, the menu, the intro, a short walk) | 1,002 calls, 223,134 t-states own (0.02 %) |
-| Runs (the other recordings) | 10,623 calls (`stage1/rec/deaths` 5,113, `stage1/rec/rooms` 2,425, `stage1/rec/menu` 833 and 4 more) |
+| Runs (the other recordings) | 208,603 calls (`stage1/rec/deaths` 5,113, `stage2/rec/play48` 4,178, `stage2/rzx/r104000` 3,458 and 113 more) |
 | Called from | `ComposeRows` |
 | Calls | `ComposeTwoTiles`, `ComposeTileOverlay` |
 | Reads | `$6800`-`$68DA` (`TitleColours+262`); `$6900`-`$69DA` (`EnemySlots+36`); `$89F6` (`ComposeTileLoop+10`) |
@@ -2682,7 +2719,7 @@ Witness: L1 21094 (bossgate, deaths, play48, rooms, poke-room x14, rzx x67, rzxr
 
 | | |
 | --- | --- |
-| Runs | not reached in `stage1/c1`; in the other recordings 98 calls (`stage1/rec/deaths` 73, `stage1/rec/rooms` 25) |
+| Runs | not reached in `stage1/c1`; in the other recordings 21,094 calls (`stage2/rzx/r106000` 1,085, `stage2/rzx/r070000` 811, `stage2/rzx/r016000` 770 and 97 more) |
 | Called from | `ComposeFrontCell`, `ComposeBackCell` |
 | Calls | `ComposeTile`, `ComposeTileWith` (tail) |
 | Reads | `$681C`-`$6846` (`TitleColours+290`); `$685A`-`$686E` (`TitleColours+352`); `$68AD` (`TitleColours+435`); `$68C0`-`$68C4` (`TitleColours+454`); `$6A4C` (`FireHeld+105`); `$6A7C` (`ControlMenu+1`); 3 more ranges |
@@ -2697,7 +2734,7 @@ Witness: L1 123014 (bossgate, deaths, gameover, havok, hiscore, menu, play48, ro
 | | |
 | --- | --- |
 | Runs (c1: power-on on a 128K, the load at signal speed, the menu, the intro, a short walk) | 362 calls, 14,842 t-states own (0.00 %) |
-| Runs (the other recordings) | 3,010 calls (`stage1/rec/rooms` 882, `stage1/rec/deaths` 857, `stage1/rec/menu` 442 and 4 more) |
+| Runs (the other recordings) | 122,652 calls (`stage2/rzx/r018000` 3,682, `stage2/rzx/r106000` 3,627, `stage2/rzx/r046000` 3,179 and 111 more) |
 | Called from | `ComposeFrontCell`, `ComposeTwoTiles` |
 | Calls | `ComposeTileOverlay` (falls into) |
 
@@ -2710,7 +2747,7 @@ Witness: L1 365175 (bossgate, deaths, gameover, havok, hiscore, menu, play48, ro
 | | |
 | --- | --- |
 | Runs (c1: power-on on a 128K, the load at signal speed, the menu, the intro, a short walk) | 1,513 calls, 50,742 t-states own (0.00 %) |
-| Runs (the other recordings) | 17,498 calls (`stage1/rec/deaths` 8,426, `stage1/rec/rooms` 3,555, `stage1/rec/menu` 1,603 and 4 more) |
+| Runs (the other recordings) | 363,662 calls (`stage1/rec/deaths` 8,426, `stage2/rzx/r018000` 7,576, `stage2/rec/play48` 6,790 and 113 more) |
 | Called from | `ComposeBackCell`, `ComposeTile` (falls into) |
 | Calls | `ComposeOverlay` |
 
@@ -2722,7 +2759,8 @@ Witness: L1 365175 (bossgate, deaths, gameover, havok, hiscore, menu, play48, ro
 
 | | |
 | --- | --- |
-| Runs | not reached in `stage1/c1`; in the other recordings 1,289 calls (`stage1/rec/deaths` 1,077, `stage1/rec/rooms` 212) |
+| Runs (c1: power-on on a 128K, the load at signal speed, the menu, the intro, a short walk) | 1,513 runs of its first instruction (entered by a jump or by running on, no routine of its own in the L1) |
+| Runs (the other recordings) | 96,992 calls (`stage2/rzx/r118000` 3,055, `stage2/rzx/r036000` 2,571, `stage2/rzx/r084000` 2,297 and 95 more) |
 | Called from | `ComposeOverlay` |
 | Calls | `ComposeTileWith` (falls into) |
 
@@ -2735,7 +2773,7 @@ Witness: L1 452405 (bossgate, deaths, gameover, havok, hiscore, menu, play48, ro
 | | |
 | --- | --- |
 | Runs (c1: power-on on a 128K, the load at signal speed, the menu, the intro, a short walk) | 1,875 calls, 952,054 t-states own (0.07 %) |
-| Runs (the other recordings) | 20,206 calls (`stage1/rec/deaths` 9,110, `stage1/rec/rooms` 4,308, `stage1/rec/menu` 2,045 and 4 more) |
+| Runs (the other recordings) | 437,090 calls (`stage2/rzx/r018000` 9,374, `stage1/rec/deaths` 9,110, `stage2/rzx/r114000` 8,104 and 110 more) |
 | Called from | `ComposeTwoTiles` (tail), `ComposeTilePlain` (falls into) |
 | Calls | `FrameRecord` |
 | Writes | `$89F1`-`$89F6` (`ComposeTileLoop+5`); `$8C13`-`$8C1E` (`MaskedColumnRows+1`, `MaskedColumnStart`) |
@@ -2748,7 +2786,8 @@ Witness: L1 549398 (bossgate, deaths, gameover, havok, hiscore, menu, play48, ro
 
 | | |
 | --- | --- |
-| Runs | not reached in `stage1/c1`; in the other recordings 1,289 calls (`stage1/rec/deaths` 1,077, `stage1/rec/rooms` 212) |
+| Runs (c1: power-on on a 128K, the load at signal speed, the menu, the intro, a short walk) | 1,875 runs of its first instruction (entered by a jump or by running on, no routine of its own in the L1) |
+| Runs (the other recordings) | 96,993 calls (`stage2/rzx/r118000` 3,055, `stage2/rzx/r036000` 2,571, `stage2/rzx/r084000` 2,297 and 95 more) |
 | Called from | `ComposeOverlay` (tail) |
 | Calls | `AndTileColumns`, `UnpackGroups`, `MaskedColumns` |
 | Writes | `$69E0` (`MapColumn`); `$89F6` (`ComposeTileLoop+10`); `$8C13`-`$8C1E` (`MaskedColumnRows+1`, `MaskedColumnStart`) |
@@ -2762,7 +2801,7 @@ Witness: L1 365175 (bossgate, deaths, gameover, havok, hiscore, menu, play48, ro
 | | |
 | --- | --- |
 | Runs (c1: power-on on a 128K, the load at signal speed, the menu, the intro, a short walk) | 1,513 calls, 77,470 t-states own (0.01 %) |
-| Runs (the other recordings) | 17,498 calls (`stage1/rec/deaths` 8,426, `stage1/rec/rooms` 3,555, `stage1/rec/menu` 1,603 and 4 more) |
+| Runs (the other recordings) | 363,662 calls (`stage1/rec/deaths` 8,426, `stage2/rzx/r018000` 7,576, `stage2/rec/play48` 6,790 and 113 more) |
 | Called from | `ComposeTileOverlay` |
 | Calls | `ComposeTilePlain`, `ComposeTileRows` (tail), `FrameRecord` |
 | Reads | `$6C00`-`$6CD9` (`CellProperty+29`, `WalkLists`, `WeaponRecords`, `TouchZoneRecords` and 2 more); `$89F6` (`ComposeTileLoop+10`) |
@@ -2784,7 +2823,7 @@ Witness: L1 264980 (bossgate, deaths, play48, rooms, poke-room x14, rzx x67, rzx
 
 | | |
 | --- | --- |
-| Runs | not reached in `stage1/c1`; in the other recordings 3,507 calls (`stage1/rec/deaths` 2,791, `stage1/rec/rooms` 716) |
+| Runs | not reached in `stage1/c1`; in the other recordings 264,980 calls (`stage2/rzx/r036000` 7,476, `stage2/rzx/r118000` 7,020, `stage2/rzx/r084000` 6,979 and 95 more) |
 | Called from | `ComposeTileRows` |
 | Reads | `$5D42`-`$5D79` (`BuildBoxPlaceLoop+14`, `Intro48`); `$5E42`-`$5E79` (`IntroBoxSide+3`, `IntroScript`); `$5F42`-`$5F79` (`IntroScript+245`); `$6042`-`$6079` (`HavokRoomEnter+110`); `$6142`-`$6169` (`SizeClasses+192`); `$6242`-`$6251` (`IntroAttrsB+14`, `IntroAttrsC`); 1 more ranges |
 | Writes | `$5D42`-`$5D79` (`BuildBoxPlaceLoop+14`, `Intro48`); `$5E42`-`$5E79` (`IntroBoxSide+3`, `IntroScript`); `$5F42`-`$5F79` (`IntroScript+245`); `$6042`-`$6079` (`HavokRoomEnter+110`); `$6142`-`$6169` (`SizeClasses+192`); `$6242`-`$6251` (`IntroAttrsB+14`, `IntroAttrsC`) |
@@ -2799,7 +2838,7 @@ Witness: L1 11205 (bossgate, deaths, gameover, hiscore, menu, play48, opt x3, rz
 
 | | |
 | --- | --- |
-| Runs | not reached in `stage1/c1`; in the other recordings 372 calls (`stage1/rec/menu` 201, `stage1/rec/gameover` 41, `stage1/rec/opt2` 41 and 3 more) |
+| Runs | not reached in `stage1/c1`; in the other recordings 11,205 calls (`stage2/rzx/r114000` 1,852, `stage2/rzx/r062000` 1,762, `stage2/rzx/r088000` 1,470 and 32 more) |
 | Called from | `ActorUpdate` |
 | Calls | `DrawActorsAll` (falls into) |
 
@@ -2814,7 +2853,7 @@ Witness: L1 112726 (bossgate, deaths, gameover, havok, hiscore, menu, play48, ro
 | | |
 | --- | --- |
 | Runs (c1: power-on on a 128K, the load at signal speed, the menu, the intro, a short walk) | 308 calls, 3,080 t-states own (0.00 %) |
-| Runs (the other recordings) | 5,259 calls (`stage1/rec/deaths` 2,987, `stage1/rec/rooms` 895, `stage1/rec/menu` 489 and 4 more) |
+| Runs (the other recordings) | 112,418 calls (`stage2/rzx/r062000` 3,733, `stage2/rzx/r114000` 3,703, `stage1/rec/deaths` 2,987 and 113 more) |
 | Called from | `DrawFrontActors` (falls into), `ActorUpdate` |
 | Calls | `DrawActors` (falls into) |
 | Reads | `$5D02`-`$5F02` (`Hiro+2`, `BuildPageTails`, `Intro48`, `IntroScene` and 10 more); `$6002` (`HavokRoomEnter+46`); `$6102` (`SizeClasses+128`); `$6202` (`PrintGlyphsAddress+2`); `$6302` (`IntroAttrsC+191`); `$6402` (`IntroGlyphs+239`); 2 more ranges |
@@ -2832,7 +2871,7 @@ Witness: L1 123592 (bossgate, deaths, gameover, havok, hiscore, menu, play48, ro
 | | |
 | --- | --- |
 | Runs (c1: power-on on a 128K, the load at signal speed, the menu, the intro, a short walk) | 372 calls, 369,424 t-states own (0.03 %) |
-| Runs (the other recordings) | 12,957 calls (`stage1/rec/menu` 5,476, `stage1/rec/deaths` 3,051, `stage1/rec/gameover` 3,049 and 4 more) |
+| Runs (the other recordings) | 19,573 calls (`stage1/rec/menu` 5,476, `stage1/rec/deaths` 3,051, `stage1/rec/gameover` 3,049 and 11 more) |
 | Called from | `DrawActorsAll` (falls into), `TitleSequence` |
 | Calls | `DrawActor` |
 | Reads | `$5D02`-`$6502` (`Hiro+2`, `BuildPageTails`, `Intro48`, `IntroScene` and 24 more); `$6602` (`WeaponActor+2`); `$6702` (`TitleColours+8`); `$6802` (`TitleColours+264`); `$6902` (`EnemySlots+38`); `$6A02` (`FireHeld+31`); 1 more ranges |
@@ -2862,9 +2901,9 @@ Witness: L1 610301 (bossgate, deaths, gameover, havok, hiscore, menu, play48, ro
 | | |
 | --- | --- |
 | Runs (c1: power-on on a 128K, the load at signal speed, the menu, the intro, a short walk) | 1,440 calls, 496,672 t-states own (0.04 %) |
-| Runs (the other recordings) | 131,378 calls (`stage1/rec/menu` 69,671, `stage1/rec/gameover` 38,726, `stage1/rec/deaths` 8,708 and 5 more) |
+| Runs (the other recordings) | 608,861 calls (`stage1/rec/menu` 69,671, `stage1/rec/gameover` 38,726, `stage2/rzx/r070000` 17,532 and 116 more) |
 | Called from | `DrawActors` |
-| Calls | `ClipColumns`, `MaskedColumns`, `MirroredColumn`, `ActorOffWindow`, `Multiply8`, `BoxesOverlap` |
+| Calls | `ClipColumns`, `MaskedColumns`, `MirroredColumn`, `ActorOffWindow`, `Multiply8`, `BoxesOverlap`, `SpawnRoomEnemies` (tail) |
 | Reads | `$5D00`-`$652B` (`Hiro`, `BuildPageTails`, `Intro48`, `IntroScene` and 24 more); `$6600`-`$6602` (`WeaponActor`); `$6617`-`$662B` (`WeaponActor+23`); `$6700`-`$6702` (`TitleColours+6`); `$6717`-`$672B` (`TitleColours+29`); `$6800`-`$6802` (`TitleColours+262`); 9 more ranges |
 | Writes | `$5E20` (`IntroBoxSides+6`); `$5F20` (`IntroScript+211`); `$6020` (`HavokRoomEnter+76`); `$6120` (`SizeClasses+158`); `$6602` (`WeaponActor+2`); `$6620` (`WeaponActor+32`); 1 more ranges |
 
@@ -2881,7 +2920,7 @@ Witness: L1 157851 (bossgate, deaths, gameover, havok, hiscore, menu, play48, ro
 | | |
 | --- | --- |
 | Runs (c1: power-on on a 128K, the load at signal speed, the menu, the intro, a short walk) | 387 calls, 59,669 t-states own (0.00 %) |
-| Runs (the other recordings) | 19,459 calls (`stage1/rec/menu` 8,558, `stage1/rec/gameover` 4,806, `stage1/rec/deaths` 3,511 and 5 more) |
+| Runs (the other recordings) | 157,464 calls (`stage1/rec/menu` 8,558, `stage1/rec/gameover` 4,806, `stage2/rzx/r070000` 3,914 and 116 more) |
 | Called from | `DrawActor` |
 | Calls | `SetColumnClip` (falls into), `ClipTop` (tail), `Multiply8` |
 | Reads | `$5D16`-`$6516` (`BuildOutlineMaskLoop+2`, `Intro48`, `IntroScene`, `IntroPictureText` and 23 more); `$6616` (`WeaponActor+22`); `$6716` (`TitleColours+28`); `$6816` (`TitleColours+284`); `$6916` (`EnemySlots+58`); `$6A16` (`FireHeld+51`); 1 more ranges |
@@ -2900,7 +2939,7 @@ Witness: L1 157851 (bossgate, deaths, gameover, havok, hiscore, menu, play48, ro
 | | |
 | --- | --- |
 | Runs (c1: power-on on a 128K, the load at signal speed, the menu, the intro, a short walk) | 387 calls, 69,383 t-states own (0.01 %) |
-| Runs (the other recordings) | 19,459 calls (`stage1/rec/menu` 8,558, `stage1/rec/gameover` 4,806, `stage1/rec/deaths` 3,511 and 5 more) |
+| Runs (the other recordings) | 155,763 calls (`stage1/rec/menu` 8,558, `stage1/rec/gameover` 4,806, `stage2/rzx/r070000` 3,914 and 98 more) |
 | Called from | `ClipColumns` (falls into), `ClipTop` |
 | Reads | `$8D27` (`PackRowLines+1`) |
 | Writes | `$8C13`-`$8C1E` (`MaskedColumnRows+1`, `MaskedColumnStart`) |
@@ -2916,7 +2955,7 @@ Witness: L1 12268 (bossgate, deaths, gameover, havok, hiscore, menu, play48, roo
 | | |
 | --- | --- |
 | Runs (c1: power-on on a 128K, the load at signal speed, the menu, the intro, a short walk) | 15 calls, 908 t-states own (0.00 %) |
-| Runs (the other recordings) | 3,236 calls (`stage1/rec/menu` 1,753, `stage1/rec/gameover` 945, `stage1/rec/deaths` 211 and 5 more) |
+| Runs (the other recordings) | 12,253 calls (`stage1/rec/menu` 1,753, `stage1/rec/gameover` 945, `stage2/rzx/r062000` 426 and 98 more) |
 | Called from | `ClipColumns` (tail) |
 | Calls | `SetColumnClip` |
 
@@ -2931,7 +2970,7 @@ Witness: L1 819989 (bossgate, deaths, gameover, havok, hiscore, menu, play48, ro
 | | |
 | --- | --- |
 | Runs (c1: power-on on a 128K, the load at signal speed, the menu, the intro, a short walk) | 2,748 calls, 27,499 t-states own (0.00 %) |
-| Runs (the other recordings) | 100,115 calls (`stage1/rec/menu` 44,169, `stage1/rec/gameover` 24,025, `stage1/rec/deaths` 15,365 and 5 more) |
+| Runs (the other recordings) | 817,241 calls (`stage1/rec/menu` 44,169, `stage1/rec/gameover` 24,025, `stage2/rzx/r070000` 18,458 and 116 more) |
 | Called from | `MaskedColumns`, `MirroredColumn` |
 | Calls | `UnpackGroups` (falls into) |
 
@@ -2950,7 +2989,7 @@ Witness: L1 4265375 (bossgate, deaths, gameover, havok, hiscore, menu, play48, r
 | | |
 | --- | --- |
 | Runs (c1: power-on on a 128K, the load at signal speed, the menu, the intro, a short walk) | 7,180 calls, 5,812,136 t-states own (0.44 %) |
-| Runs (the other recordings) | 146,553 calls (`stage1/rec/menu` 49,318, `stage1/rec/deaths` 38,505, `stage1/rec/gameover` 27,761 and 4 more) |
+| Runs (the other recordings) | 1,777,763 calls (`stage1/rec/menu` 49,318, `stage1/rec/deaths` 38,505, `stage2/rec/play48` 32,042 and 113 more) |
 | Called from | `ComposeTileRows`, `UnpackColumn` (falls into) |
 | Reads | `$D104`-`$D8FB` (`Tiles`); `$DA64`-`$DF8B` (`Tiles+2400`); `$E184`-`$E1CB` (`EnemyFrames+48`); `$E394`-`$E49B` (`EnemyFrames+576`); `$EA9C`-`$EC4B` (`HiroFrames+288`); `$EEBC`-`$F707` (`HiroFrames+1344`, `HiroFrames15`, `HiroFrames18`, `HiroFrames21`); 1 more ranges |
 | Writes | `$5B68`-`$5BB9` (system); `$5D42`-`$5F79` (`BuildBoxPlaceLoop+14`, `Intro48`, `IntroScene`, `IntroPictureText` and 9 more); `$6042`-`$6079` (`HavokRoomEnter+110`); `$6142`-`$6179` (`SizeClasses+192`); `$6242`-`$6269` (`IntroAttrsB+14`, `IntroAttrsC`); `$6342`-`$6369` (`IntroGlyphs+47`); 2 more ranges |
@@ -2966,7 +3005,7 @@ Witness: L1 597066 (bossgate, deaths, gameover, havok, hiscore, menu, play48, ro
 | | |
 | --- | --- |
 | Runs (c1: power-on on a 128K, the load at signal speed, the menu, the intro, a short walk) | 2,272 calls, 102,797 t-states own (0.01 %) |
-| Runs (the other recordings) | 92,427 calls (`stage1/rec/menu` 44,169, `stage1/rec/gameover` 23,945, `stage1/rec/deaths` 11,010 and 5 more) |
+| Runs (the other recordings) | 594,794 calls (`stage1/rec/menu` 44,169, `stage1/rec/gameover` 23,945, `stage2/rzx/r070000` 14,653 and 114 more) |
 | Called from | `ComposeTileRows`, `DrawActor` |
 | Calls | `UnpackColumn` |
 | Reads | `$5D4A`-`$6669` (`BuildBoxPlaceLoop+22`, `Intro48`, `IntroScene`, `IntroPictureText` and 23 more); `$674A`-`$6769` (`TitleColours+80`); `$684A`-`$6869` (`TitleColours+336`); `$694A`-`$6969` (`EnemySlots+110`); `$6A4A`-`$6A69` (`FireHeld+103`); `$6B4A`-`$6B69` (`ControlRecords+64`, `ControlGap`, `PageTailTemplate`); 2 more ranges |
@@ -2989,7 +3028,7 @@ Witness: L1 819986 (bossgate, deaths, gameover, havok, hiscore, menu, play48, ro
 | | |
 | --- | --- |
 | Runs (c1: power-on on a 128K, the load at signal speed, the menu, the intro, a short walk) | 476 calls, 7,869,234 t-states own (0.60 %) |
-| Runs (the other recordings) | 7,688 calls (`stage1/rec/deaths` 4,355, `stage1/rec/rooms` 2,494, `stage1/rec/opt2` 253 and 3 more) |
+| Runs (the other recordings) | 215,430 calls (`stage2/rzx/r072000` 6,349, `stage2/rzx/r120000` 5,882, `stage2/rzx/r118000` 5,448 and 102 more) |
 | Called from | `MirroredColumn` (tail) |
 | Reads | `$5D42`-`$6669` (`BuildBoxPlaceLoop+14`, `Intro48`, `IntroScene`, `IntroPictureText` and 23 more); `$674A`-`$6769` (`TitleColours+80`); `$684A`-`$6869` (`TitleColours+336`); `$694A`-`$6969` (`EnemySlots+110`); `$6A4A`-`$6A69` (`FireHeld+103`); `$6B4A`-`$6B69` (`ControlRecords+64`, `ControlGap`, `PageTailTemplate`); 2 more ranges |
 | Writes | `$5B68`-`$5B7E` (system); `$5D42`-`$6669` (`BuildBoxPlaceLoop+14`, `Intro48`, `IntroScene`, `IntroPictureText` and 23 more); `$674A`-`$6769` (`TitleColours+80`); `$684A`-`$6869` (`TitleColours+336`); `$694A`-`$6969` (`EnemySlots+110`); `$6A4A`-`$6A69` (`FireHeld+103`); 3 more ranges |
@@ -3005,7 +3044,7 @@ Witness: L1 222923 (bossgate, deaths, gameover, havok, hiscore, play48, rooms, t
 | | |
 | --- | --- |
 | Runs (c1: power-on on a 128K, the load at signal speed, the menu, the intro, a short walk) | 476 calls, 566,621 t-states own (0.04 %) |
-| Runs (the other recordings) | 7,688 calls (`stage1/rec/deaths` 4,355, `stage1/rec/rooms` 2,494, `stage1/rec/opt4` 253 and 3 more) |
+| Runs (the other recordings) | 222,447 calls (`stage2/rzx/r072000` 6,349, `stage2/rzx/r120000` 5,881, `stage2/rzx/r118000` 5,448 and 104 more) |
 | Called from | `DrawActor` |
 | Calls | `UnpackColumn`, `MaskedColumn` (tail) |
 | Reads | `$5B50`-`$5B6F` (system); `$7A00`-`$7A07` (`ReverseCodes`) |
@@ -3024,7 +3063,7 @@ Witness: L1 112380 (bossgate, deaths, gameover, havok, hiscore, menu, play48, ro
 | | |
 | --- | --- |
 | Runs (c1: power-on on a 128K, the load at signal speed, the menu, the intro, a short walk) | 372 calls, 18,446 t-states own (0.00 %) |
-| Runs (the other recordings) | 13,477 calls (`stage1/rec/menu` 5,275, `stage1/rec/deaths` 3,044, `stage1/rec/gameover` 3,008 and 5 more) |
+| Runs (the other recordings) | 112,008 calls (`stage1/rec/menu` 5,275, `stage1/rec/deaths` 3,044, `stage1/rec/gameover` 3,008 and 116 more) |
 | Called from | `ActorUpdate`, `TitleSequence` |
 | Calls | `SpriteScreenAddress` |
 | Reads | `$732A`-`$732C` (`DrawColumnPos`, `DrawRowPos`) |
@@ -3042,7 +3081,7 @@ Witness: L1 139027 (bossgate, deaths, gameover, havok, hiscore, menu, play48, ro
 | | |
 | --- | --- |
 | Runs (c1: power-on on a 128K, the load at signal speed, the menu, the intro, a short walk) | 420 calls, 343,207 t-states own (0.03 %) |
-| Runs (the other recordings) | 2,394 calls (`stage1/rec/deaths` 772, `stage1/rec/rooms` 642, `stage1/rec/menu` 280 and 4 more) |
+| Runs (the other recordings) | 26,227 calls (`stage2/rzx/r022000` 1,429, `stage2/rzx/r020000` 842, `stage2/rec/play48` 773 and 102 more) |
 | Called from | `MaskCellRows` (tail) |
 | Calls | `BlitRows`, `BlitColumn`, `PackRow` |
 | Reads | `$8D27` (`PackRowLines+1`) |
@@ -3059,7 +3098,7 @@ Witness: L1 418215 (bossgate, deaths, gameover, havok, hiscore, menu, play48, ro
 | | |
 | --- | --- |
 | Runs (c1: power-on on a 128K, the load at signal speed, the menu, the intro, a short walk) | 2,154 calls, 2,443,228 t-states own (0.18 %) |
-| Runs (the other recordings) | 48,178 calls (`stage1/rec/menu` 18,042, `stage1/rec/gameover` 10,557, `stage1/rec/deaths` 9,855 and 5 more) |
+| Runs (the other recordings) | 416,061 calls (`stage1/rec/menu` 18,042, `stage1/rec/gameover` 10,557, `stage1/rec/deaths` 9,855 and 116 more) |
 | Called from | `BlitWindowAt` |
 | Reads | `$4021`-`$51DD` (screen); `$5201`-`$52DD` (screen); `$5301`-`$53DD` (screen); `$5401`-`$54DD` (screen); `$5501`-`$55DD` (screen); `$5601`-`$56DD` (screen); 2 more ranges |
 | Writes | `$4021`-`$52DD` (screen); `$5301`-`$53DD` (screen); `$5401`-`$54DD` (screen); `$5501`-`$55DD` (screen); `$5601`-`$56DD` (screen); `$5701`-`$57DD` (screen) |
@@ -3074,7 +3113,7 @@ Witness: L1 6720 (gameover, havok, hiscore, menu, c x1, rzx x2, rzxroom x1).
 
 | | |
 | --- | --- |
-| Runs | not reached in the recordings |
+| Runs | not reached in `stage1/c1`; in the other recordings 6,720 runs of its first instruction, entered by a jump (`stage1/rec/menu` 3,264, `stage1/rec/gameover` 1,728, `stage2/rec/hiscore` 576 and 5 more) |
 
 ### `BlitColumn` (`$8CD9`)
 
@@ -3087,7 +3126,7 @@ Witness: L1 8899 (bossgate, deaths, gameover, havok, hiscore, menu, play48, room
 | | |
 | --- | --- |
 | Runs (c1: power-on on a 128K, the load at signal speed, the menu, the intro, a short walk) | 89 calls, 38,609 t-states own (0.00 %) |
-| Runs (the other recordings) | 4,845 calls (`stage1/rec/menu` 2,545, `stage1/rec/gameover` 1,471, `stage1/rec/c48` 235 and 5 more) |
+| Runs (the other recordings) | 8,810 calls (`stage1/rec/menu` 2,545, `stage1/rec/gameover` 1,471, `stage2/rec/hiscore` 474 and 99 more) |
 | Called from | `BlitWindowAt` |
 | Reads | `$4021`-`$57C1` (screen); `$6F08`-`$6F37` (`OutlineMask+8`) |
 | Writes | `$4021`-`$57C1` (screen) |
@@ -3109,7 +3148,7 @@ Witness: L1 139027 (bossgate, deaths, gameover, havok, hiscore, menu, play48, ro
 | | |
 | --- | --- |
 | Runs (c1: power-on on a 128K, the load at signal speed, the menu, the intro, a short walk) | 792 calls, 2,657,131 t-states own (0.20 %) |
-| Runs (the other recordings) | 15,871 calls (`stage1/rec/menu` 5,555, `stage1/rec/deaths` 3,816, `stage1/rec/gameover` 3,288 and 5 more) |
+| Runs (the other recordings) | 138,235 calls (`stage1/rec/menu` 5,555, `stage1/rec/deaths` 3,816, `stage1/rec/gameover` 3,288 and 116 more) |
 | Called from | `BlitWindowAt` |
 | Calls | `PackUnits0`, `PackUnits1`, `PackUnits2`, `PackUnits3`, `PackUnits4`, `PackUnits5`, `PackUnits6`, `PackUnits7` |
 | Reads | `$732A` (`DrawColumnPos`); `$8D49`-`$8DE6` (`PackUnits0+4`, `PackUnits1`, `PackUnits2`, `PackUnits3` and 5 more); `$8DFD` (`PackUnitsStop2`); `$FD98`-`$FDF4` (`PackerPhases`) |
@@ -3128,7 +3167,7 @@ Witness: L1 753555 (bossgate, deaths, gameover, havok, hiscore, menu, play48, ro
 | | |
 | --- | --- |
 | Runs (c1: power-on on a 128K, the load at signal speed, the menu, the intro, a short walk) | 4,544 calls, 106,140 t-states own (0.01 %) |
-| Runs (the other recordings) | 57,560 calls (`stage1/rec/deaths` 21,432, `stage1/rec/rooms` 15,800, `stage1/rec/menu` 8,512 and 5 more) |
+| Runs (the other recordings) | 749,012 calls (`stage2/rzx/r048000` 24,592, `stage2/rzx/r032000` 22,120, `stage1/rec/deaths` 21,432 and 116 more) |
 | Called from | `PackRow` |
 | Calls | `PackUnits1` (falls into) |
 | Reads | `$5D4A`-`$5D71` (`BuildBoxPlaceLoop+22`, `Intro48`) |
@@ -3142,7 +3181,7 @@ See PackUnits0 `$8D45`. Witness: L1 1158720 (bossgate, deaths, gameover, havok, 
 | | |
 | --- | --- |
 | Runs (c1: power-on on a 128K, the load at signal speed, the menu, the intro, a short walk) | 6,880 calls, 195,387 t-states own (0.01 %) |
-| Runs (the other recordings) | 105,440 calls (`stage1/rec/deaths` 30,368, `stage1/rec/menu` 29,920, `stage1/rec/gameover` 19,104 and 5 more) |
+| Runs (the other recordings) | 1,150,464 calls (`stage2/rec/havok` 41,464, `stage2/rzx/r138000` 40,936, `stage1/rec/deaths` 30,368 and 115 more) |
 | Called from | `PackRow`, `PackUnits0` (falls into) |
 | Calls | `PackUnits2` (falls into) |
 | Reads | `$5D4A`-`$5D81` (`BuildBoxPlaceLoop+22`, `Intro48`); `$5E4A`-`$5E71` (`IntroBoxSide+11`, `IntroScript`) |
@@ -3156,7 +3195,7 @@ See PackUnits0 `$8D45`. Witness: L1 1363472 (bossgate, deaths, gameover, havok, 
 | | |
 | --- | --- |
 | Runs (c1: power-on on a 128K, the load at signal speed, the menu, the intro, a short walk) | 7,552 calls, 431,686 t-states own (0.03 %) |
-| Runs (the other recordings) | 113,936 calls (`stage1/rec/deaths` 36,016, `stage1/rec/menu` 30,240, `stage1/rec/gameover` 19,776 and 5 more) |
+| Runs (the other recordings) | 1,355,920 calls (`stage2/rec/havok` 41,760, `stage2/rzx/r138000` 40,896, `stage1/rec/deaths` 36,016 and 116 more) |
 | Called from | `PackRow`, `PackUnits1` (falls into) |
 | Calls | `PackUnits3` (falls into) |
 | Reads | `$5D4A`-`$5D71` (`BuildBoxPlaceLoop+22`, `Intro48`); `$5E4A`-`$5E81` (`IntroBoxSide+11`, `IntroScript`); `$5F4A`-`$5F71` (`IntroScript+253`) |
@@ -3171,7 +3210,7 @@ See PackUnits0 `$8D45`. Witness: L1 1690190 (bossgate, deaths, gameover, havok, 
 | | |
 | --- | --- |
 | Runs (c1: power-on on a 128K, the load at signal speed, the menu, the intro, a short walk) | 9,592 calls, 370,037 t-states own (0.03 %) |
-| Runs (the other recordings) | 197,968 calls (`stage1/rec/menu` 71,008, `stage1/rec/deaths` 44,400, `stage1/rec/gameover` 43,248 and 5 more) |
+| Runs (the other recordings) | 1,680,598 calls (`stage1/rec/menu` 71,008, `stage1/rec/deaths` 44,400, `stage2/rec/havok` 44,256 and 116 more) |
 | Called from | `PackRow`, `PackUnits2` (falls into) |
 | Calls | `PackUnits4` (falls into) |
 | Reads | `$5D4A`-`$5D79` (`BuildBoxPlaceLoop+22`, `Intro48`); `$5E4A`-`$5E71` (`IntroBoxSide+11`, `IntroScript`); `$5F4A`-`$5F71` (`IntroScript+253`); `$604A`-`$6071` (`HavokRoomEnter+118`) |
@@ -3186,7 +3225,7 @@ See PackUnits0 `$8D45`. Witness: L1 1838814 (bossgate, deaths, gameover, havok, 
 | | |
 | --- | --- |
 | Runs (c1: power-on on a 128K, the load at signal speed, the menu, the intro, a short walk) | 11,424 calls, 295,556 t-states own (0.02 %) |
-| Runs (the other recordings) | 209,480 calls (`stage1/rec/menu` 78,000, `stage1/rec/gameover` 45,608, `stage1/rec/deaths` 43,736 and 5 more) |
+| Runs (the other recordings) | 1,815,294 calls (`stage1/rec/menu` 78,000, `stage2/rec/havok` 47,808, `stage1/rec/gameover` 45,608 and 115 more) |
 | Called from | `PackRow`, `PackUnits3` (falls into) |
 | Calls | `PackUnits5` (falls into) |
 | Reads | `$5D4A`-`$5D71` (`BuildBoxPlaceLoop+22`, `Intro48`); `$5E4A`-`$5E79` (`IntroBoxSide+11`, `IntroScript`); `$5F4A`-`$5F71` (`IntroScript+253`); `$604A`-`$6071` (`HavokRoomEnter+118`); `$614A`-`$6171` (`SizeClasses+200`) |
@@ -3200,7 +3239,7 @@ See PackUnits0 `$8D45`. Witness: L1 1847488 (bossgate, deaths, gameover, havok, 
 | | |
 | --- | --- |
 | Runs (c1: power-on on a 128K, the load at signal speed, the menu, the intro, a short walk) | 9,464 calls, 701,740 t-states own (0.05 %) |
-| Runs (the other recordings) | 244,504 calls (`stage1/rec/menu` 98,648, `stage1/rec/gameover` 56,400, `stage1/rec/deaths` 42,056 and 5 more) |
+| Runs (the other recordings) | 1,831,944 calls (`stage1/rec/menu` 98,648, `stage1/rec/gameover` 56,400, `stage1/rec/deaths` 42,056 and 112 more) |
 | Called from | `PackRow`, `PackUnits4` (falls into) |
 | Calls | `PackUnits6` (falls into) |
 | Reads | `$5D4A`-`$5D79` (`BuildBoxPlaceLoop+22`, `Intro48`); `$5E4A`-`$5E71` (`IntroBoxSide+11`, `IntroScript`); `$5F4A`-`$5F79` (`IntroScript+253`); `$604A`-`$6071` (`HavokRoomEnter+118`); `$614A`-`$6171` (`SizeClasses+200`); `$624A`-`$6269` (`IntroAttrsC+7`) |
@@ -3215,7 +3254,7 @@ See PackUnits0 `$8D45`. Witness: L1 1883375 (bossgate, deaths, gameover, havok, 
 | | |
 | --- | --- |
 | Runs (c1: power-on on a 128K, the load at signal speed, the menu, the intro, a short walk) | 9,320 calls, 295,562 t-states own (0.02 %) |
-| Runs (the other recordings) | 263,208 calls (`stage1/rec/menu` 110,128, `stage1/rec/gameover` 62,392, `stage1/rec/deaths` 41,472 and 5 more) |
+| Runs (the other recordings) | 1,861,175 calls (`stage1/rec/menu` 110,128, `stage1/rec/gameover` 62,392, `stage1/rec/deaths` 41,472 and 104 more) |
 | Called from | `PackRow`, `PackUnits5` (falls into) |
 | Calls | `PackUnits7` (falls into) |
 | Reads | `$5D4A`-`$5D79` (`BuildBoxPlaceLoop+22`, `Intro48`); `$5E4A`-`$5E79` (`IntroBoxSide+11`, `IntroScript`); `$5F4A`-`$5F71` (`IntroScript+253`); `$604A`-`$6079` (`HavokRoomEnter+118`); `$614A`-`$6171` (`SizeClasses+200`); `$624A`-`$6269` (`IntroAttrsC+7`); 1 more ranges |
@@ -3231,7 +3270,7 @@ Witness: L1 1900321 (bossgate, deaths, gameover, havok, hiscore, menu, play48, r
 | | |
 | --- | --- |
 | Runs (c1: power-on on a 128K, the load at signal speed, the menu, the intro, a short walk) | 9,904 calls, 732,584 t-states own (0.06 %) |
-| Runs (the other recordings) | 260,400 calls (`stage1/rec/menu` 107,480, `stage1/rec/gameover` 60,736, `stage1/rec/deaths` 41,112 and 5 more) |
+| Runs (the other recordings) | 1,879,809 calls (`stage1/rec/menu` 107,480, `stage1/rec/gameover` 60,736, `stage1/rec/deaths` 41,112 and 107 more) |
 | Called from | `PackRow`, `PackUnits6` (falls into) |
 | Reads | `$5D4A`-`$5E79` (`BuildBoxPlaceLoop+22`, `Intro48`, `IntroScene`, `IntroPictureText` and 9 more); `$5F4A`-`$6079` (`IntroScript+253`, `SetTune`, `HavokRoomLeave`, `HavokRoomEnter`); `$614A`-`$6179` (`SizeClasses+200`); `$624A`-`$6279` (`IntroAttrsC+7`); `$634A`-`$6379` (`IntroGlyphs+55`); `$644A`-`$6479` (`IntroGlyphs+311`); 8 more ranges |
 | Writes | `$6F08`-`$6FE6` (`OutlineMask+8`, `TitleWhiteRowsCode`, `PageTail66`) |
@@ -3246,7 +3285,7 @@ Witness: L1 2240 (gameover, havok, hiscore, menu, c x1, rzx x2, rzxroom x1).
 
 | | |
 | --- | --- |
-| Runs | not reached in the recordings |
+| Runs | not reached in `stage1/c1`; in the other recordings 2,240 runs of its first instruction, entered by a jump (`stage1/rec/menu` 1,088, `stage1/rec/gameover` 576, `stage2/rec/hiscore` 192 and 5 more) |
 
 ### `ActorBoxStore` (`$8F3B`)
 
@@ -3261,7 +3300,7 @@ Witness: L1 114102 (bossgate, deaths, gameover, havok, hiscore, menu, play48, ro
 | | |
 | --- | --- |
 | Runs (c1: power-on on a 128K, the load at signal speed, the menu, the intro, a short walk) | 372 calls, 106,474 t-states own (0.01 %) |
-| Runs (the other recordings) | 13,481 calls (`stage1/rec/menu` 5,275, `stage1/rec/deaths` 3,044, `stage1/rec/gameover` 3,008 and 5 more) |
+| Runs (the other recordings) | 113,730 calls (`stage1/rec/menu` 5,275, `stage1/rec/deaths` 3,044, `stage1/rec/gameover` 3,008 and 116 more) |
 | Called from | `ActorUpdate`, `TitleSequence` |
 | Calls | `ActorScreenBox`, `BoxColumns`, `BoxRows` |
 | Reads | `$5D00`-`$6520` (`Hiro`, `BuildPageTails`, `Intro48`, `IntroScene` and 24 more); `$6600`-`$6601` (`WeaponActor`); `$6620` (`WeaponActor+32`); `$6700`-`$6701` (`TitleColours+6`); `$6720` (`TitleColours+38`); `$6800`-`$6801` (`TitleColours+262`); 8 more ranges |
@@ -3280,7 +3319,7 @@ Witness: L1 156241 (bossgate, deaths, gameover, havok, hiscore, menu, play48, ro
 | | |
 | --- | --- |
 | Runs (c1: power-on on a 128K, the load at signal speed, the menu, the intro, a short walk) | 608 calls, 305,900 t-states own (0.02 %) |
-| Runs (the other recordings) | 15,601 calls (`stage1/rec/menu` 5,364, `stage1/rec/deaths` 3,994, `stage1/rec/gameover` 3,153 and 5 more) |
+| Runs (the other recordings) | 155,633 calls (`stage1/rec/menu` 5,364, `stage1/rec/deaths` 3,994, `stage1/rec/gameover` 3,153 and 116 more) |
 | Called from | `ActorBoxStore`, `CheckRoomExit`, `SetupRoomObjects` |
 | Calls | `BoxColumns`, `BoxRows` |
 | Reads | `$5D00`-`$6501` (`Hiro`, `BuildPageTails`, `Intro48`, `IntroScene` and 24 more); `$6521`-`$6522` (`ActorPage9+33`); `$6600`-`$6601` (`WeaponActor`); `$6621`-`$6622` (`WeaponActor+33`); `$6700`-`$6701` (`TitleColours+6`); `$6721`-`$6722` (`TitleColours+39`); 9 more ranges |
@@ -3299,7 +3338,7 @@ Witness: L1 270343 (bossgate, deaths, gameover, havok, hiscore, menu, play48, ro
 | | |
 | --- | --- |
 | Runs (c1: power-on on a 128K, the load at signal speed, the menu, the intro, a short walk) | 980 calls, 102,180 t-states own (0.01 %) |
-| Runs (the other recordings) | 29,082 calls (`stage1/rec/menu` 10,639, `stage1/rec/deaths` 7,038, `stage1/rec/gameover` 6,161 and 5 more) |
+| Runs (the other recordings) | 269,363 calls (`stage1/rec/menu` 10,639, `stage1/rec/deaths` 7,038, `stage1/rec/gameover` 6,161 and 116 more) |
 | Called from | `ActorBoxStore`, `ActorScreenBox` |
 | Calls | `BoxSpan` (tail) |
 | Reads | `$5D15`-`$6515` (`BuildOutlineMaskLoop+1`, `Intro48`, `IntroScene`, `IntroPictureText` and 23 more); `$6615` (`WeaponActor+21`); `$6715` (`TitleColours+27`); `$6815` (`TitleColours+283`); `$6915` (`EnemySlots+57`); `$6A15` (`FireHeld+50`); 1 more ranges |
@@ -3315,7 +3354,7 @@ Witness: L1 270343 (bossgate, deaths, gameover, havok, hiscore, menu, play48, ro
 | | |
 | --- | --- |
 | Runs (c1: power-on on a 128K, the load at signal speed, the menu, the intro, a short walk) | 980 calls, 100,646 t-states own (0.01 %) |
-| Runs (the other recordings) | 29,082 calls (`stage1/rec/menu` 10,639, `stage1/rec/deaths` 7,038, `stage1/rec/gameover` 6,161 and 5 more) |
+| Runs (the other recordings) | 269,363 calls (`stage1/rec/menu` 10,639, `stage1/rec/deaths` 7,038, `stage1/rec/gameover` 6,161 and 116 more) |
 | Called from | `ActorBoxStore`, `ActorScreenBox` |
 | Calls | `BoxSpan` (falls into) |
 | Reads | `$5D16`-`$6516` (`BuildOutlineMaskLoop+2`, `Intro48`, `IntroScene`, `IntroPictureText` and 23 more); `$6616` (`WeaponActor+22`); `$6716` (`TitleColours+28`); `$6816` (`TitleColours+284`); `$6916` (`EnemySlots+58`); `$6A16` (`FireHeld+51`); 1 more ranges |
@@ -3331,7 +3370,7 @@ Witness: L1 540685 (bossgate, deaths, gameover, havok, hiscore, menu, play48, ro
 | | |
 | --- | --- |
 | Runs (c1: power-on on a 128K, the load at signal speed, the menu, the intro, a short walk) | 1,960 calls, 45,639 t-states own (0.00 %) |
-| Runs (the other recordings) | 58,163 calls (`stage1/rec/menu` 21,278, `stage1/rec/deaths` 14,076, `stage1/rec/gameover` 12,322 and 5 more) |
+| Runs (the other recordings) | 538,725 calls (`stage1/rec/menu` 21,278, `stage1/rec/deaths` 14,076, `stage1/rec/gameover` 12,322 and 116 more) |
 | Called from | `BoxColumns` (tail), `BoxRows` (falls into) |
 
 ## sound
@@ -3349,7 +3388,7 @@ Witness: L1 222542 (bossgate, deaths, gameover, havok, hiscore, menu, play48, ro
 | | |
 | --- | --- |
 | Runs (c1: power-on on a 128K, the load at signal speed, the menu, the intro, a short walk) | 2,614 calls, 305,838 t-states own (0.02 %) |
-| Runs (the other recordings) | 49,277 calls (`stage1/rec/menu` 18,055, `stage1/rec/gameover` 9,844, `stage1/rec/deaths` 7,824 and 5 more) |
+| Runs (the other recordings) | 219,928 calls (`stage1/rec/menu` 18,055, `stage1/rec/gameover` 9,844, `stage1/rec/deaths` 7,824 and 116 more) |
 | Called from | `InterruptHandler` |
 | Calls | `EffectFrame`, `EffectState` |
 | Reads | `$8450` (`SoundVars`) |
@@ -3366,7 +3405,8 @@ Witness: L1 222542 (bossgate, deaths, gameover, havok, hiscore, menu, play48, ro
 
 | | |
 | --- | --- |
-| Runs | not reached in `stage1/c1`; in the other recordings 2,614 calls (`stage1/rec/c48` 2,614) |
+| Runs (c1: power-on on a 128K, the load at signal speed, the menu, the intro, a short walk) | 2,614 runs of its first instruction (entered by a jump or by running on, no routine of its own in the L1) |
+| Runs (the other recordings) | 165,249 calls (`stage2/rec/havok` 5,900, `stage2/rec/play48` 3,769, `stage1/rec/c48` 2,614 and 107 more) |
 | Called from | `EffectPlayer` |
 | Calls | `EffectSound` (tail) |
 
@@ -3380,7 +3420,8 @@ Witness: L1 62138 (bossgate, deaths, gameover, havok, hiscore, menu, play48, roo
 
 | | |
 | --- | --- |
-| Runs | not reached in the recordings |
+| Runs (c1: power-on on a 128K, the load at signal speed, the menu, the intro, a short walk) | 2,615 runs of its first instruction (entered by a jump or by running on, no routine of its own in the L1) |
+| Runs (the other recordings) | 59,523 runs of its first instruction, entered by a jump (`stage1/rec/menu` 18,056, `stage1/rec/gameover` 9,845, `stage1/rec/deaths` 7,825 and 115 more) |
 
 ### `SweepSpanHalf` (`$859E`)
 
@@ -3391,7 +3432,7 @@ Witness: L1 13167 (bossgate, deaths, gameover, havok, hiscore, menu, play48, thr
 | | |
 | --- | --- |
 | Runs (c1: power-on on a 128K, the load at signal speed, the menu, the intro, a short walk) | 19 calls, 1,112 t-states own (0.00 %) |
-| Runs (the other recordings) | 7,533 calls (`stage1/rec/menu` 4,801, `stage1/rec/gameover` 2,656, `stage1/rec/opt2` 19 and 3 more) |
+| Runs (the other recordings) | 8,312 calls (`stage1/rec/menu` 4,801, `stage1/rec/gameover` 2,656, `stage2/rec/hiscore` 760 and 5 more) |
 | Called from | `ShowHighScores`, `TitleSequence` |
 | Calls | `DecodeDirection`, `ReadInput`, `SetEnvelopeState` (falls into), `EnvelopeTimeFF` (tail) |
 | Writes | `$8455` (`SoundMode`) |
@@ -3405,7 +3446,7 @@ Witness: L1 8022 (bossgate, havok, play48, c x1, poke-room x15, rzx x71, rzxroom
 | | |
 | --- | --- |
 | Runs (c1: power-on on a 128K, the load at signal speed, the menu, the intro, a short walk) | run into, not called, 65 t-states own (0.00 %) |
-| Runs (the other recordings) | 39 calls (`stage1/rec/c48` 39) |
+| Runs (the other recordings) | 7,982 calls (`stage2/rzx/r056000` 206, `stage2/rzx/r038000` 181, `stage2/rzx/r052000` 163 and 101 more) |
 | Called from | `SweepSpanHalf` (falls into), `EnvelopeTimeCount` (tail), `TitleSequence` |
 | Reads | `$8455` (`SoundMode`) |
 
@@ -3419,7 +3460,8 @@ Witness: L1 106023 (bossgate, deaths, gameover, havok, hiscore, menu, play48, th
 
 | | |
 | --- | --- |
-| Runs | not reached in `stage1/c1`; in the other recordings 458 calls (`stage1/rec/c48` 458) |
+| Runs (c1: power-on on a 128K, the load at signal speed, the menu, the intro, a short walk) | 1 run of its first instruction (entered by a jump or by running on, no routine of its own in the L1) |
+| Runs (the other recordings) | 105,058 calls (`stage2/rec/havok` 2,878, `stage2/rzx/r140000` 2,000, `stage2/rzx/r138000` 1,984 and 107 more) |
 | Called from | `EffectSound` |
 | Calls | `PrintString`, `EnvelopeTimeFF` (falls into) |
 
@@ -3432,7 +3474,7 @@ Witness: L1 74157 (bossgate, deaths, gameover, havok, hiscore, menu, play48, thr
 | | |
 | --- | --- |
 | Runs (c1: power-on on a 128K, the load at signal speed, the menu, the intro, a short walk) | 19 calls, 322 t-states own (0.00 %) |
-| Runs (the other recordings) | 7,560 calls (`stage1/rec/menu` 4,817, `stage1/rec/gameover` 2,664, `stage1/rec/opt2` 20 and 3 more) |
+| Runs (the other recordings) | 8,342 calls (`stage1/rec/menu` 4,817, `stage1/rec/gameover` 2,664, `stage2/rec/hiscore` 763 and 5 more) |
 | Called from | `SweepSpanHalf` (tail), `EffectEnvelope` (falls into) |
 
 ### `EnvelopeTimeCount` (`$85C5`)
@@ -3444,7 +3486,7 @@ Witness: L1 65807 (bossgate, deaths, gameover, havok, hiscore, menu, play48, thr
 | | |
 | --- | --- |
 | Runs (c1: power-on on a 128K, the load at signal speed, the menu, the intro, a short walk) | 1 call, 127 t-states own (0.00 %) |
-| Runs (the other recordings) | 8 calls (`stage1/rec/menu` 2, `stage1/rec/gameover` 2, `stage1/rec/opt3` 1 and 3 more) |
+| Runs (the other recordings) | 10 calls (`stage1/rec/menu` 2, `stage1/rec/gameover` 2, `stage1/rec/opt3` 1 and 5 more) |
 | Called from | `MatchCheatName` |
 | Calls | `SetEnvelopeState` (tail), `EffectSweep` |
 | Writes | `$8450` (`SoundVars`) |
@@ -3460,8 +3502,9 @@ Witness: L1 105058 (bossgate, havok, play48, c x1, poke-room x15, rzx x72, rzxro
 
 | | |
 | --- | --- |
-| Runs | not reached in `stage1/c1`; in the other recordings 458 calls (`stage1/rec/c48` 458) |
+| Runs | not reached in `stage1/c1`; in the other recordings 105,058 calls (`stage2/rec/havok` 2,878, `stage2/rzx/r140000` 2,000, `stage2/rzx/r138000` 1,984 and 107 more) |
 | Called from | `EnvelopeTimeCount` |
+| Calls | `SweepRestart` (falls into) |
 
 ### `SweepRestart` (`$862D`)
 
@@ -3471,7 +3514,8 @@ Witness: L1 11983 (bossgate, havok, play48, poke-room x15, rzx x72, rzxroom x16)
 
 | | |
 | --- | --- |
-| Runs | not reached in the recordings |
+| Runs | not reached in `stage1/c1`; in the other recordings 10,468 calls (`stage2/rec/havok` 1,053, `stage2/rzx/r138000` 1,004, `stage2/rec/play48` 216 and 78 more) |
+| Called from | `EffectSweep` (falls into) |
 
 ### `EffectSound` (`$8634`)
 
@@ -3485,7 +3529,7 @@ Witness: L1 160413 (bossgate, havok, play48, c x1, poke-room x15, rzx x72, rzxro
 
 | | |
 | --- | --- |
-| Runs | not reached in `stage1/c1`; in the other recordings 2,576 calls (`stage1/rec/c48` 2,576) |
+| Runs | not reached in `stage1/c1`; in the other recordings 160,413 calls (`stage2/rec/havok` 5,845, `stage2/rec/play48` 3,669, `stage1/rec/c48` 2,576 and 107 more) |
 | Called from | `EffectFrame` (tail) |
 | Calls | `EffectEnvelope`, `LevelToBurst`, `PitchToDelay` |
 | Ports out | `$08FE`, `$18FE` |
@@ -3498,7 +3542,7 @@ Witness: L1 105058 (bossgate, havok, play48, c x1, poke-room x15, rzx x72, rzxro
 
 | | |
 | --- | --- |
-| Runs | not reached in `stage1/c1`; in the other recordings 458 calls (`stage1/rec/c48` 458) |
+| Runs | not reached in `stage1/c1`; in the other recordings 105,058 calls (`stage2/rec/havok` 2,878, `stage2/rzx/r140000` 2,000, `stage2/rzx/r138000` 1,984 and 107 more) |
 | Called from | `EffectSound` |
 
 ### `PitchToDelay` (`$8676`)
@@ -3509,7 +3553,7 @@ Witness: L1 105058 (bossgate, havok, play48, c x1, poke-room x15, rzx x72, rzxro
 
 | | |
 | --- | --- |
-| Runs | not reached in `stage1/c1`; in the other recordings 458 calls (`stage1/rec/c48` 458) |
+| Runs | not reached in `stage1/c1`; in the other recordings 105,058 calls (`stage2/rec/havok` 2,878, `stage2/rzx/r140000` 2,000, `stage2/rzx/r138000` 1,984 and 107 more) |
 | Called from | `EffectSound` |
 
 ## ending
@@ -3526,7 +3570,9 @@ Witness: L1 825 (havok, rzx x2): havok kills Havok with his hit points POKEd to 
 
 | | |
 | --- | --- |
-| Runs | not reached in the recordings |
+| Runs | not reached in `stage1/c1`; in the other recordings 825 calls (`stage2/rzx/r136000` 323, `stage2/rec/havok` 261, `stage2/rzx/r138000` 241) |
+| Called from | `ActorUpdate` (tail) |
+| Calls | `DelayBC`, `PrintString`, `DrawHavok`, `SpawnShield` |
 
 ### `DrawHavok` (`$8769`)
 
@@ -3538,7 +3584,9 @@ Witness: L1 825 (havok, rzx x2).
 
 | | |
 | --- | --- |
-| Runs | not reached in the recordings |
+| Runs | not reached in `stage1/c1`; in the other recordings 825 calls (`stage2/rzx/r136000` 323, `stage2/rec/havok` 261, `stage2/rzx/r138000` 241) |
+| Called from | `HavokFade` |
+| Calls | `ShiftHavokGraphic`, `SpriteScreenAddress` |
 
 ### `ShiftHavokGraphic` (`$87A6`)
 
@@ -3550,7 +3598,8 @@ Witness: L1 825 (havok, rzx x2).
 
 | | |
 | --- | --- |
-| Runs | not reached in the recordings |
+| Runs | not reached in `stage1/c1`; in the other recordings 825 calls (`stage2/rzx/r136000` 323, `stage2/rec/havok` 261, `stage2/rzx/r138000` 241) |
+| Called from | `DrawHavok` |
 
 ## player
 
@@ -3567,7 +3616,7 @@ Witness: the RZX run's snapshot at frame 80 000 has the flags of rooms `$3A` and
 | | |
 | --- | --- |
 | Runs (c1: power-on on a 128K, the load at signal speed, the menu, the intro, a short walk) | 232 calls, 4,001 t-states own (0.00 %) |
-| Runs (the other recordings) | 2,062 calls (`stage1/rec/deaths` 935, `stage1/rec/rooms` 561, `stage1/rec/gameover` 141 and 4 more) |
+| Runs (the other recordings) | 40,578 calls (`stage2/rec/havok` 1,101, `stage2/rzx/r138000` 1,064, `stage1/rec/deaths` 935 and 113 more) |
 | Called from | `ApplyMove` |
 | Calls | `BarrierFind` |
 | Reads | `$5D01` (`Hiro+1`); `$5D1B` (`BuildOutlineMaskLoop+7`); `$76DB`-`$76E7` (`GateClosed+3`, `GateX`, `GateSide`) |
@@ -3582,7 +3631,9 @@ Witness: L1 1 (bossgate).
 
 | | |
 | --- | --- |
-| Runs | not reached in the recordings |
+| Runs | not reached in `stage1/c1`; in the other recordings 1 call (`stage2/rec/bossgate` 1) |
+| Called from | `ExpireActor` |
+| Calls | `BarrierFind` |
 
 ### `BarrierFind` (`$8F28`)
 
@@ -3595,8 +3646,8 @@ Witness: L1 40811 (bossgate, deaths, gameover, havok, hiscore, menu, play48, roo
 | | |
 | --- | --- |
 | Runs (c1: power-on on a 128K, the load at signal speed, the menu, the intro, a short walk) | 232 calls, 44,590 t-states own (0.00 %) |
-| Runs (the other recordings) | 2,062 calls (`stage1/rec/deaths` 935, `stage1/rec/rooms` 561, `stage1/rec/gameover` 141 and 4 more) |
-| Called from | `RoomBarrier` |
+| Runs (the other recordings) | 40,579 calls (`stage2/rec/havok` 1,101, `stage2/rzx/r138000` 1,064, `stage1/rec/deaths` 935 and 113 more) |
+| Called from | `RoomBarrier`, `BarrierOpen` |
 | Reads | `$6BDD` (`Room`); `$76D2`-`$76D7` (`GateRooms`) |
 
 ### `ActorJump` (`$9023`)
@@ -3612,9 +3663,9 @@ Witness: L1 885 (bossgate, deaths, gameover, havok, hiscore, play48, rooms, c x1
 | | |
 | --- | --- |
 | Runs (c1: power-on on a 128K, the load at signal speed, the menu, the intro, a short walk) | 2 calls, 220 t-states own (0.00 %) |
-| Runs (the other recordings) | 49 calls (`stage1/rec/deaths` 31, `stage1/rec/rooms` 9, `stage1/rec/gameover` 3 and 3 more) |
+| Runs (the other recordings) | 883 calls (`stage2/rec/havok` 70, `stage2/rzx/r138000` 68, `stage2/rzx/r004000` 38 and 80 more) |
 | Called from | `MoveActor` (tail) |
-| Calls | `SequenceHeader`, `JumpMove` (tail), `LadderAbove` |
+| Calls | `FallSequenceStart` (tail), `SequenceHeader`, `JumpMove` (tail), `LadderAbove` |
 | Reads | `$5D24` (`BuildOutlineMaskLoop+16`) |
 
 ### `FallSequenceStart` (`$904A`)
@@ -3629,9 +3680,9 @@ Witness: L1 797 (deaths, play48, rooms, rzx x58, rzxroom x5).
 
 | | |
 | --- | --- |
-| Runs | not reached in `stage1/c1`; in the other recordings 27 calls (`stage1/rec/deaths` 22, `stage1/rec/rooms` 5) |
-| Called from | `StepActor` (tail) |
-| Calls | `SequenceHeader`, `FallMove` (tail) |
+| Runs | not reached in `stage1/c1`; in the other recordings 797 calls (`stage2/rzx/r036000` 31, `stage2/rzx/r094000` 25, `stage2/rec/play48` 25 and 63 more) |
+| Called from | `ActorJump` (tail), `StepActor` (tail), `MoveActor` (tail), `StopActor` (tail) |
+| Calls | `StartPoseSeq` (tail), `StartSequence` (tail), `SequenceHeader`, `FallMove` (tail) |
 | Reads | `$5D02`-`$5D06` (`Hiro+2`); `$69DC` (`HiroFallScript`) |
 
 ### `TurnToHiro` (`$9087`)
@@ -3644,7 +3695,7 @@ Witness: L1 242 (bossgate, rooms, poke-room x6, rzx x53, rzxroom x8).
 
 | | |
 | --- | --- |
-| Runs | not reached in `stage1/c1`; in the other recordings 3 calls (`stage1/rec/rooms` 3) |
+| Runs | not reached in `stage1/c1`; in the other recordings 242 calls (`stage2/rzx/r130000` 14, `stage2/rzx/r108000` 13, `stage2/rzx/r116000` 9 and 66 more) |
 | Called from | `StepActor` (tail) |
 | Calls | `StartPoseSeq` (falls into) |
 | Reads | `$5D2A` (`BuildRowBaseLoop+4`); `$5E01`-`$5E0E` (`IntroBox+6`); `$5F01`-`$5F0E` (`IntroScript+180`) |
@@ -3662,8 +3713,9 @@ Witness: L1 1308 (bossgate, deaths, gameover, havok, hiscore, menu, play48, room
 
 | | |
 | --- | --- |
-| Runs | not reached in `stage1/c1`; in the other recordings 17 calls (`stage1/rec/rooms` 17) |
-| Called from | `TurnToHiro` (falls into), `HiroLanded` (tail) |
+| Runs (c1: power-on on a 128K, the load at signal speed, the menu, the intro, a short walk) | 3 runs of its first instruction (entered by a jump or by running on, no routine of its own in the L1) |
+| Runs (the other recordings) | 927 calls (`stage2/rzx/r118000` 45, `stage2/rzx/r074000` 37, `stage2/rzx/r068000` 32 and 61 more) |
+| Called from | `FallSequenceStart` (tail), `TurnToHiro` (falls into), `HiroLanded` (tail), `HiroMelee` (tail), `StepActor` (tail) |
 | Calls | `StartSequence` (tail) |
 
 ### `StartTurn` (`$90B1`)
@@ -3677,7 +3729,7 @@ Witness: L1 1275 (bossgate, deaths, gameover, hiscore, play48, rooms, throw, c x
 | | |
 | --- | --- |
 | Runs (c1: power-on on a 128K, the load at signal speed, the menu, the intro, a short walk) | 4 calls, 316 t-states own (0.00 %) |
-| Runs (the other recordings) | 116 calls (`stage1/rec/deaths` 91, `stage1/rec/rooms` 19, `stage1/rec/gameover` 3 and 3 more) |
+| Runs (the other recordings) | 1,271 calls (`stage1/rec/deaths` 91, `stage2/rzx/r108000` 58, `stage2/rzx/r070000` 55 and 89 more) |
 | Called from | `MoveActor` (tail) |
 | Calls | `StartSequence` (tail) |
 | Reads | `$5D06`-`$5D07` (`Hiro+6`, `BuildPageTails`); `$5E06`-`$5E07` (`IntroBox+11`); `$5F06`-`$5F07` (`IntroScript+185`) |
@@ -3694,7 +3746,7 @@ Witness: 157 landings in the keyed recordings, two of them hard (`$90CC` once in
 | | |
 | --- | --- |
 | Runs (c1: power-on on a 128K, the load at signal speed, the menu, the intro, a short walk) | 9 calls, 673 t-states own (0.00 %) |
-| Runs (the other recordings) | 148 calls (`stage1/rec/deaths` 71, `stage1/rec/rooms` 42, `stage1/rec/opt4` 8 and 4 more) |
+| Runs (the other recordings) | 3,082 calls (`stage2/rec/havok` 153, `stage2/rzx/r138000` 137, `stage2/rzx/r118000` 86 and 110 more) |
 | Called from | `ProbeFloorCell` (tail) |
 | Calls | `StartPoseSeq` (tail), `StartSequenceCount` (tail) |
 | Reads | `$5D26` (`BuildRowBaseLoop`) |
@@ -3715,9 +3767,9 @@ Witness: L1 409 (bossgate, havok, menu, play48, c x1, opt x3, poke-room x15, rzx
 | | |
 | --- | --- |
 | Runs (c1: power-on on a 128K, the load at signal speed, the menu, the intro, a short walk) | 2 calls, 291 t-states own (0.00 %) |
-| Runs (the other recordings) | 4 calls (`stage1/rec/opt2` 1, `stage1/rec/opt3` 1, `stage1/rec/opt4` 1 and 1 more) |
-| Called from | `HiroAttack` (tail) |
-| Calls | `StartSequence` (tail) |
+| Runs (the other recordings) | 407 calls (`stage2/rzx/r124000` 20, `stage2/rzx/r096000` 17, `stage2/rzx/r024000` 15 and 83 more) |
+| Called from | `HiroAttack` (tail), `StalactiteControl` (tail) |
+| Calls | `StartPoseSeq` (tail), `StartSequence` (tail), `FreezeAnim` |
 | Reads | `$5D02` (`Hiro+2`) |
 | Writes | `$5D02` (`Hiro+2`); `$6650` (`FireRequest`); `$8454` (`EffectRequest`) |
 
@@ -3731,7 +3783,7 @@ Witness: deaths 1 run. Witness: L1 16 (deaths, play48, rzx x12).
 
 | | |
 | --- | --- |
-| Runs | not reached in `stage1/c1`; in the other recordings 1 call (`stage1/rec/deaths` 1) |
+| Runs | not reached in `stage1/c1`; in the other recordings 16 calls (`stage2/rzx/r124000` 3, `stage2/rec/play48` 1, `stage2/rzx/r014000` 1 and 11 more) |
 | Called from | `DeathStep` (tail) |
 | Calls | `MarkSpawnKilled`, `SequenceHeader`, `RiseMove` (tail) |
 | Reads | `$5F02` (`IntroScript+181`) |
@@ -3749,8 +3801,8 @@ Witness: L1 638 (bossgate, deaths, havok, play48, throw, rzx x67, rzxroom x7).
 
 | | |
 | --- | --- |
-| Runs | not reached in `stage1/c1`; in the other recordings 5 calls (`stage1/rec/deaths` 5) |
-| Called from | `DeathLeavesBonus`, `DeathStep` |
+| Runs | not reached in `stage1/c1`; in the other recordings 638 calls (`stage2/rzx/r062000` 45, `stage2/rzx/r114000` 42, `stage2/rzx/r088000` 31 and 76 more) |
+| Called from | `DeathLeavesBonus`, `DeathStep`, `ProbeFloorCell` (tail) |
 | Reads | `$5F29` (`IntroScript+220`); `$6529` (`ActorPage9+41`); `$6ADD` (`EnemyCount`); `$6EFE`-`$6EFF` (`GoneEnemies`) |
 | Writes | `$5F29` (`IntroScript+220`); `$6EFE`-`$6EFF` (`GoneEnemies`) |
 
@@ -3764,9 +3816,9 @@ Witness: L1 1691 (bossgate, deaths, havok, play48, throw, rzx x68, rzxroom x9).
 
 | | |
 | --- | --- |
-| Runs | not reached in `stage1/c1`; in the other recordings 9 calls (`stage1/rec/deaths` 9) |
+| Runs | not reached in `stage1/c1`; in the other recordings 1,691 calls (`stage2/rec/havok` 259, `stage2/rzx/r138000` 241, `stage2/rzx/r062000` 89 and 79 more) |
 | Called from | `StepActor` (tail) |
-| Calls | `StartSequence` (falls into) |
+| Calls | `StartSequence` (falls into), `ApplyMove` (tail) |
 | Reads | `$5F02`-`$5F1C` (`IntroScript+181`); `$650F`-`$651C` (`ActorPage9+15`) |
 | Writes | `$5F02` (`IntroScript+181`) |
 
@@ -3783,8 +3835,8 @@ Witness: L1 4906 (bossgate, deaths, gameover, havok, hiscore, menu, play48, room
 | | |
 | --- | --- |
 | Runs (c1: power-on on a 128K, the load at signal speed, the menu, the intro, a short walk) | 9 calls, 671 t-states own (0.00 %) |
-| Runs (the other recordings) | 195 calls (`stage1/rec/deaths` 135, `stage1/rec/rooms` 36, `stage1/rec/gameover` 6 and 4 more) |
-| Called from | `StartPoseSeq` (tail), `StartTurn` (tail), `HiroMelee` (tail), `ActorExpired` (falls into) |
+| Runs (the other recordings) | 4,897 calls (`stage1/rec/deaths` 135, `stage2/rzx/r108000` 130, `stage2/rzx/r114000` 123 and 112 more) |
+| Called from | `FallSequenceStart` (tail), `StartPoseSeq` (tail), `StartTurn` (tail), `HiroMelee` (tail), `ActorExpired` (falls into) |
 | Calls | `StartSequenceCount` (falls into) |
 | Reads | `$76F3` (`ActorScripts+9`); `$792B` (`ActorScripts+577`); `$7A0F` (`ActorScriptsMore+7`); `$7AB6` (`LandScript`); `$7ACE`-`$7ADB` (`StrikeScript2`, `StrikeScript3`); `$7B50`-`$7B58` (`StandScript+80`) |
 | Writes | `$5D22`-`$5D34` (`BuildOutlineMaskLoop+14`, `BuildRowBaseLoop`, `BuildBoxRowLoop`, `BuildBoxPlaceLoop`); `$5E22`-`$5E33` (`IntroBoxSides+8`); `$5F22`-`$5F32` (`IntroScript+213`) |
@@ -3799,7 +3851,8 @@ Witness: L1 4920 (bossgate, deaths, gameover, havok, hiscore, menu, play48, room
 
 | | |
 | --- | --- |
-| Runs | not reached in `stage1/c1`; in the other recordings 136 calls (`stage1/rec/deaths` 136) |
+| Runs (c1: power-on on a 128K, the load at signal speed, the menu, the intro, a short walk) | 9 runs of its first instruction (entered by a jump or by running on, no routine of its own in the L1) |
+| Runs (the other recordings) | 614 calls (`stage1/rec/deaths` 136, `stage2/rzx/r106000` 89, `stage2/rec/play48` 88 and 7 more) |
 | Called from | `HiroLanded` (tail), `StartSequence` (falls into) |
 | Calls | `SequenceFrameAt` (tail), `SequenceTiming` |
 | Writes | `$5D22`-`$5D35` (`BuildOutlineMaskLoop+14`, `BuildRowBaseLoop`, `BuildBoxRowLoop`, `BuildBoxPlaceLoop`); `$5E22` (`IntroBoxSides+8`); `$5E33` (`IntroBoxSides+25`); `$5F22` (`IntroScript+213`); `$5F33`-`$5F37` (`IntroScript+230`); `$6522` (`ActorPage9+34`); 1 more ranges |
@@ -3815,7 +3868,7 @@ Witness: L1 11974 (bossgate, deaths, gameover, havok, hiscore, menu, play48, roo
 | | |
 | --- | --- |
 | Runs (c1: power-on on a 128K, the load at signal speed, the menu, the intro, a short walk) | 26 calls, 664 t-states own (0.00 %) |
-| Runs (the other recordings) | 409 calls (`stage1/rec/deaths` 300, `stage1/rec/rooms` 63, `stage1/rec/opt2` 10 and 4 more) |
+| Runs (the other recordings) | 11,948 calls (`stage2/rzx/r108000` 358, `stage2/rzx/r078000` 302, `stage1/rec/deaths` 300 and 111 more) |
 | Called from | `DeathStep` (tail), `PoseStep` (tail), `ActionStep` (tail), `FallDamageStep` (tail) |
 | Calls | `SequenceFrameAt` (falls into) |
 | Reads | `$5D3A`-`$5D3B` (`BuildBoxPlaceLoop+6`); `$5E3A`-`$5E3B` (`IntroBoxRowLoop+2`); `$5F3A`-`$5F3B` (`IntroScript+237`); `$653A`-`$653B` (`ActorPage9+58`) |
@@ -3831,7 +3884,7 @@ Witness: L1 16894 (bossgate, deaths, gameover, havok, hiscore, menu, play48, roo
 | | |
 | --- | --- |
 | Runs (c1: power-on on a 128K, the load at signal speed, the menu, the intro, a short walk) | 35 calls, 1,967 t-states own (0.00 %) |
-| Runs (the other recordings) | 605 calls (`stage1/rec/deaths` 436, `stage1/rec/rooms` 99, `stage1/rec/opt2` 15 and 4 more) |
+| Runs (the other recordings) | 16,791 calls (`stage2/rzx/r108000` 488, `stage1/rec/deaths` 436, `stage2/rzx/r062000` 410 and 111 more) |
 | Called from | `StartSequenceCount` (tail), `SequenceNextFrame` (falls into) |
 | Calls | `ApplyNoMove` (tail) |
 | Reads | `$76F8`-`$76FB` (`ActorScripts+14`); `$7930`-`$7933` (`ActorScripts+582`); `$7A14`-`$7A17` (`ActorScriptsMore+12`); `$7ABB`-`$7AE7` (`LandScript+5`, `HardLandScript`, `StrikeScript2`, `StrikeScript3`); `$7B55`-`$7B5D` (`StandScript+85`, `Script911A`) |
@@ -3848,7 +3901,7 @@ Witness: L1 1695 (bossgate, deaths, gameover, havok, hiscore, play48, rooms, c x
 | | |
 | --- | --- |
 | Runs (c1: power-on on a 128K, the load at signal speed, the menu, the intro, a short walk) | 2 calls, 40 t-states own (0.00 %) |
-| Runs (the other recordings) | 77 calls (`stage1/rec/deaths` 54, `stage1/rec/rooms` 14, `stage1/rec/gameover` 3 and 3 more) |
+| Runs (the other recordings) | 1,693 calls (`stage2/rec/havok` 70, `stage2/rzx/r138000` 68, `stage1/rec/deaths` 54 and 87 more) |
 | Called from | `ActorJump`, `FallSequenceStart`, `DeathLeavesBonus` |
 | Calls | `SequenceTiming` (falls into) |
 | Reads | `$7A18` (`ActorScriptsMore+16`); `$7A2F` (`ActorScriptsMore+39`); `$7A51` (`WalkScript`); `$7A7A` (`RunScript`); `$7B00` (`StandScript`); `$7B5D` (`Script911A`) |
@@ -3865,7 +3918,7 @@ Witness: L1 6615 (bossgate, deaths, gameover, havok, hiscore, menu, play48, room
 | | |
 | --- | --- |
 | Runs (c1: power-on on a 128K, the load at signal speed, the menu, the intro, a short walk) | 11 calls, 736 t-states own (0.00 %) |
-| Runs (the other recordings) | 273 calls (`stage1/rec/deaths` 190, `stage1/rec/rooms` 50, `stage1/rec/gameover` 9 and 4 more) |
+| Runs (the other recordings) | 6,604 calls (`stage1/rec/deaths` 190, `stage2/rec/havok` 156, `stage2/rzx/r108000` 148 and 112 more) |
 | Called from | `StartSequenceCount`, `SequenceHeader` (falls into) |
 | Calls | `SetFrameDelay`, `ActorFrameStep` |
 | Reads | `$76F4` (`ActorScripts+10`); `$792C` (`ActorScripts+578`); `$7A10`-`$7A19` (`ActorScriptsMore+8`); `$7A30` (`ActorScriptsMore+40`); `$7A52` (`WalkScript+1`); `$7A7B` (`RunScript+1`); 4 more ranges |
@@ -3880,7 +3933,7 @@ Witness: deaths 25 runs. Witness: L1 3660 (bossgate, deaths, havok, play48, thro
 
 | | |
 | --- | --- |
-| Runs | not reached in `stage1/c1`; in the other recordings run into, not called (`stage1/rec/deaths`) |
+| Runs | not reached in `stage1/c1`; in the other recordings 3,660 runs of its first instruction, entered by a jump (`stage2/rzx/r062000` 265, `stage2/rzx/r114000` 252, `stage2/rzx/r088000` 186 and 78 more) |
 | Called from | `JumpToHandler` |
 | Calls | `DeathLeavesBonus` (tail), `MarkSpawnKilled`, `SequenceNextFrame` (tail), `ApplyNoMove` (tail), `SpawnRoomEnemies` (tail) |
 | Reads | `$5F02` (`IntroScript+181`); `$5F37`-`$5F39` (`IntroScript+234`); `$6502` (`ActorPage9+2`); `$651C` (`ActorPage9+28`); `$6537`-`$6539` (`ActorPage9+55`) |
@@ -3896,9 +3949,9 @@ Witness: L1 115 (deaths, play48, rzx x12).
 
 | | |
 | --- | --- |
-| Runs | not reached in `stage1/c1`; in the other recordings run into, not called (`stage1/rec/deaths`) |
+| Runs | not reached in `stage1/c1`; in the other recordings 115 runs of its first instruction, entered by a jump (`stage2/rzx/r124000` 22, `stage2/rec/play48` 8, `stage2/rzx/r000000` 8 and 11 more) |
 | Called from | `JumpToHandler` |
-| Calls | `RiseMove` (tail) |
+| Calls | `RiseMove` (falls into) |
 | Reads | `$5F38` (`IntroScript+235`) |
 | Writes | `$5F38` (`IntroScript+235`) |
 
@@ -3912,8 +3965,8 @@ Witness: L1 131 (deaths, play48, rzx x12).
 
 | | |
 | --- | --- |
-| Runs | not reached in `stage1/c1`; in the other recordings 2 calls (`stage1/rec/deaths` 2) |
-| Called from | `DeathLeavesBonus` (tail), `RiseStep` (tail) |
+| Runs | not reached in `stage1/c1`; in the other recordings 131 calls (`stage2/rzx/r124000` 25, `stage2/rec/play48` 9, `stage2/rzx/r000000` 9 and 11 more) |
+| Called from | `DeathLeavesBonus` (tail), `RiseStep` (falls into) |
 | Calls | `ApplyMove` (tail) |
 
 ### `TurnStep` (`$91E1`)
@@ -3926,8 +3979,8 @@ Witness: L1 5090 (bossgate, deaths, gameover, hiscore, play48, rooms, throw, c x
 
 | | |
 | --- | --- |
-| Runs (c1: power-on on a 128K, the load at signal speed, the menu, the intro, a short walk) | run into, not called, 549 t-states own (0.00 %) |
-| Runs (the other recordings) | run into, not called (`stage1/rec/deaths`, `stage1/rec/rooms`, `stage1/rec/gameover` and 3 more) |
+| Runs (c1: power-on on a 128K, the load at signal speed, the menu, the intro, a short walk) | 16 runs of its first instruction (entered by a jump or by running on, no routine of its own in the L1), 549 t-states own (0.00 %) |
+| Runs (the other recordings) | 5,074 runs of its first instruction, entered by a jump (`stage1/rec/deaths` 361, `stage2/rzx/r108000` 232, `stage2/rzx/r070000` 224 and 90 more) |
 | Called from | `JumpToHandler` |
 | Calls | `PoseStep` (falls into) |
 | Reads | `$5D1B` (`BuildOutlineMaskLoop+7`); `$5D33` (`BuildBoxRowLoop+2`); `$5E1B` (`IntroBoxSides+1`); `$5E33` (`IntroBoxSides+25`); `$5F1B` (`IntroScript+206`); `$5F33` (`IntroScript+230`) |
@@ -3944,7 +3997,7 @@ Witness: L1 7652 (bossgate, deaths, gameover, havok, hiscore, menu, play48, room
 | | |
 | --- | --- |
 | Runs (c1: power-on on a 128K, the load at signal speed, the menu, the intro, a short walk) | 16 calls, 526 t-states own (0.00 %) |
-| Runs (the other recordings) | 456 calls (`stage1/rec/deaths` 361, `stage1/rec/rooms` 72, `stage1/rec/gameover` 11 and 3 more) |
+| Runs (the other recordings) | 4,967 calls (`stage1/rec/deaths` 361, `stage2/rzx/r108000` 232, `stage2/rzx/r070000` 224 and 85 more) |
 | Called from | `TurnStep` (falls into), `JumpToHandler` |
 | Calls | `SequenceNextFrame` (tail), `SequenceEndDrop` (tail) |
 | Reads | `$5D32`-`$5D33` (`BuildBoxRowLoop+1`); `$5E32`-`$5E33` (`IntroBoxSides+24`); `$5F32`-`$5F33` (`IntroScript+229`) |
@@ -3960,8 +4013,8 @@ Witness: L1 5395 (bossgate, havok, menu, play48, throw, c x1, opt x3, poke-room 
 
 | | |
 | --- | --- |
-| Runs (c1: power-on on a 128K, the load at signal speed, the menu, the intro, a short walk) | run into, not called, 942 t-states own (0.00 %) |
-| Runs (the other recordings) | run into, not called (`stage1/rec/menu`, `stage1/rec/opt2`, `stage1/rec/opt3` and 1 more) |
+| Runs (c1: power-on on a 128K, the load at signal speed, the menu, the intro, a short walk) | 16 runs of its first instruction (entered by a jump or by running on, no routine of its own in the L1), 942 t-states own (0.00 %) |
+| Runs (the other recordings) | 5,379 runs of its first instruction, entered by a jump (`stage2/rzx/r124000` 158, `stage2/rzx/r096000` 151, `stage2/rzx/r054000` 137 and 102 more) |
 | Called from | `JumpToHandler` |
 | Calls | `SequenceNextFrame` (tail), `SequenceEndDrop` (tail), `ProbeStrikeCell` |
 | Reads | `$5D02` (`Hiro+2`); `$5D34` (`BuildBoxPlaceLoop`) |
@@ -3978,7 +4031,7 @@ Witness: L1 3658 (bossgate, deaths, gameover, havok, hiscore, menu, play48, room
 | | |
 | --- | --- |
 | Runs (c1: power-on on a 128K, the load at signal speed, the menu, the intro, a short walk) | 9 calls, 333 t-states own (0.00 %) |
-| Runs (the other recordings) | 18 calls (`stage1/rec/opt2` 5, `stage1/rec/opt3` 5, `stage1/rec/opt4` 5 and 1 more) |
+| Runs (the other recordings) | 3,380 calls (`stage2/rzx/r108000` 107, `stage2/rzx/r118000` 82, `stage2/rec/havok` 82 and 93 more) |
 | Called from | `PoseStep` (tail), `ActionStep` (tail) |
 | Calls | `StartFall` (tail), `ActorFrameBack` |
 
@@ -3996,7 +4049,7 @@ Witness: deaths 14 runs. Witness: L1 129 (deaths, play48, rzx x8, rzxroom x1).
 
 | | |
 | --- | --- |
-| Runs | not reached in `stage1/c1`; in the other recordings run into, not called (`stage1/rec/deaths`) |
+| Runs | not reached in `stage1/c1`; in the other recordings 129 runs of its first instruction, entered by a jump (`stage2/rzx/r032000` 22, `stage1/rec/deaths` 14, `stage2/rec/play48` 14 and 8 more) |
 | Called from | `JumpToHandler` |
 | Calls | `SequenceNextFrame` (tail), `LoseEnergy`, `RunHandler` (tail) |
 | Reads | `$5D35` (`BuildBoxPlaceLoop+1`) |
@@ -4014,8 +4067,8 @@ Witness: L1 6629 (bossgate, deaths, gameover, havok, hiscore, play48, rooms, c x
 
 | | |
 | --- | --- |
-| Runs (c1: power-on on a 128K, the load at signal speed, the menu, the intro, a short walk) | run into, not called, 563 t-states own (0.00 %) |
-| Runs (the other recordings) | run into, not called (`stage1/rec/deaths`, `stage1/rec/rooms`, `stage1/rec/gameover` and 3 more) |
+| Runs (c1: power-on on a 128K, the load at signal speed, the menu, the intro, a short walk) | 12 runs of its first instruction (entered by a jump or by running on, no routine of its own in the L1), 563 t-states own (0.00 %) |
+| Runs (the other recordings) | 6,617 runs of its first instruction, entered by a jump (`stage2/rec/havok` 438, `stage2/rzx/r138000` 408, `stage2/rzx/r118000` 289 and 82 more) |
 | Called from | `JumpToHandler` |
 | Calls | `JumpMove` (falls into), `StartFallEndJump` (tail) |
 | Reads | `$5D30`-`$5D3B` (`BuildRowBaseLoop+10`, `BuildBoxRowLoop`, `BuildBoxPlaceLoop`) |
@@ -4032,7 +4085,7 @@ Witness: L1 7241 (bossgate, deaths, gameover, havok, hiscore, play48, rooms, c x
 | | |
 | --- | --- |
 | Runs (c1: power-on on a 128K, the load at signal speed, the menu, the intro, a short walk) | 14 calls, 1,174 t-states own (0.00 %) |
-| Runs (the other recordings) | 442 calls (`stage1/rec/deaths` 254, `stage1/rec/rooms` 99, `stage1/rec/gameover` 47 and 3 more) |
+| Runs (the other recordings) | 7,217 calls (`stage2/rec/havok` 505, `stage2/rzx/r138000` 476, `stage2/rzx/r118000` 312 and 80 more) |
 | Called from | `ActorJump` (tail), `JumpStep` (falls into) |
 | Calls | `MotionStep`, `ApplyMove` (tail), `StartFallEndJump` (tail), `ProbeVertical`, `ProbeCeiling` |
 
@@ -4046,7 +4099,7 @@ Witness: L1 4577 (deaths, play48, rooms, rzx x58, rzxroom x5).
 
 | | |
 | --- | --- |
-| Runs | not reached in `stage1/c1`; in the other recordings run into, not called (`stage1/rec/deaths`, `stage1/rec/rooms`) |
+| Runs | not reached in `stage1/c1`; in the other recordings 4,577 runs of its first instruction, entered by a jump (`stage2/rzx/r036000` 186, `stage2/rec/play48` 150, `stage2/rzx/r006000` 144 and 63 more) |
 | Called from | `JumpToHandler` |
 | Calls | `FallMove` (falls into) |
 | Reads | `$5D10` (`BuildPageTails+9`); `$5D31`-`$5D3B` (`BuildBoxRowLoop`, `BuildBoxPlaceLoop`) |
@@ -4062,7 +4115,7 @@ Witness: L1 4585 (deaths, play48, rooms, rzx x58, rzxroom x5).
 
 | | |
 | --- | --- |
-| Runs | not reached in `stage1/c1`; in the other recordings 162 calls (`stage1/rec/deaths` 132, `stage1/rec/rooms` 30) |
+| Runs | not reached in `stage1/c1`; in the other recordings 4,585 calls (`stage2/rzx/r036000` 186, `stage2/rec/play48` 150, `stage2/rzx/r006000` 144 and 63 more) |
 | Called from | `FallSequenceStart` (tail), `FallScriptStep` (falls into) |
 | Calls | `MotionStep`, `ApplyNoMove` (tail), `ApplyMove` (tail), `ProbeVertical`, `ActorFrameBack` |
 
@@ -4077,7 +4130,7 @@ Witness: L1 11826 (bossgate, deaths, gameover, havok, hiscore, play48, rooms, c 
 | | |
 | --- | --- |
 | Runs (c1: power-on on a 128K, the load at signal speed, the menu, the intro, a short walk) | 14 calls, 1,800 t-states own (0.00 %) |
-| Runs (the other recordings) | 604 calls (`stage1/rec/deaths` 386, `stage1/rec/rooms` 129, `stage1/rec/gameover` 47 and 3 more) |
+| Runs (the other recordings) | 11,812 calls (`stage2/rec/havok` 505, `stage2/rzx/r138000` 476, `stage1/rec/deaths` 386 and 88 more) |
 | Called from | `JumpMove`, `FallMove` |
 | Calls | `ProbeWalls` (tail) |
 | Reads | `$5D1B` (`BuildOutlineMaskLoop+7`); `$7A1D`-`$7A45` (`ActorScriptsMore+21`); `$7A56`-`$7AAE` (`WalkScript+5`, `RunScript`); `$7B05`-`$7B19` (`StandScript+5`) |
@@ -4098,9 +4151,9 @@ Witness: L1 650 (bossgate, havok, menu, play48, throw, c x1, opt x3, poke-room x
 | | |
 | --- | --- |
 | Runs (c1: power-on on a 128K, the load at signal speed, the menu, the intro, a short walk) | 2 calls, 88 t-states own (0.00 %) |
-| Runs (the other recordings) | 4 calls (`stage1/rec/menu` 1, `stage1/rec/opt2` 1, `stage1/rec/opt3` 1 and 1 more) |
+| Runs (the other recordings) | 648 calls (`stage2/rec/havok` 91, `stage2/rzx/r124000` 20, `stage2/rzx/r096000` 17 and 96 more) |
 | Called from | `StepActor` (tail) |
-| Calls | `HiroMelee` (tail) |
+| Calls | `HiroMelee` (tail), `ExpireActor`, `RunHandler` (tail), `TemplateForKind`, `InitActor` |
 | Reads | `$664B` (`Weapon`) |
 | Writes | `$69E1` (`Strike`) |
 
@@ -4116,8 +4169,8 @@ Witness: c1 260 logic steps in 975 frames; deaths 1458. Witness: L1 32891 (bossg
 
 | | |
 | --- | --- |
-| Runs (c1: power-on on a 128K, the load at signal speed, the menu, the intro, a short walk) | run into, not called, 18,948 t-states own (0.00 %) |
-| Runs (the other recordings) | run into, not called (`stage1/rec/deaths`, `stage1/rec/menu`, `stage1/rec/rooms` and 4 more) |
+| Runs (c1: power-on on a 128K, the load at signal speed, the menu, the intro, a short walk) | 260 runs of its first instruction (entered by a jump or by running on, no routine of its own in the L1), 18,948 t-states own (0.00 %) |
+| Runs (the other recordings) | 32,631 runs of its first instruction, entered by a jump (`stage1/rec/deaths` 1,458, `stage2/rec/havok` 1,215, `stage1/rec/menu` 926 and 113 more) |
 | Called from | `JumpToHandler` |
 | Calls | `ReadDirection`, `HiroMove` (tail), `StopActor` (tail) |
 | Reads | `$6652` (`EndFlags`) |
@@ -4132,7 +4185,9 @@ Witness: L1 2632 (bossgate, havok, throw, rzx x26, rzxroom x2).
 
 | | |
 | --- | --- |
-| Runs | not reached in the recordings |
+| Runs | not reached in `stage1/c1`; in the other recordings 2,632 runs of its first instruction, entered by a jump (`stage2/rzx/r136000` 597, `stage2/rzx/r114000` 360, `stage2/rec/throw` 268 and 28 more) |
+| Called from | `JumpToHandler` |
+| Calls | `ExpireActor`, `MoveActor` (tail), `ApplyNoMove` (tail) |
 
 ### `SpawnSparks` (`$965F`)
 
@@ -4146,7 +4201,9 @@ Witness: L1 82 (bossgate, play48, throw, rzx x31, rzxroom x4).
 
 | | |
 | --- | --- |
-| Runs | not reached in the recordings |
+| Runs | not reached in `stage1/c1`; in the other recordings 82 calls (`stage2/rzx/r062000` 12, `stage2/rzx/r114000` 7, `stage2/rzx/r028000` 5 and 35 more) |
+| Called from | `StrikeActor`, `CollectFragment`, `BreakOrBlock` |
+| Calls | `LastCellPixel`, `SetActorTimer`, `FindFreeActor`, `InitActor` |
 
 ### `ActorInteractions` (`$9698`)
 
@@ -4165,9 +4222,9 @@ Witness: L1 148167 (bossgate, deaths, gameover, havok, hiscore, menu, play48, ro
 | | |
 | --- | --- |
 | Runs (c1: power-on on a 128K, the load at signal speed, the menu, the intro, a short walk) | 305 calls, 34,316 t-states own (0.00 %) |
-| Runs (the other recordings) | 4,970 calls (`stage1/rec/deaths` 3,099, `stage1/rec/rooms` 880, `stage1/rec/menu` 284 and 4 more) |
+| Runs (the other recordings) | 147,862 calls (`stage2/rzx/r030000` 9,772, `stage2/rzx/r088000` 9,478, `stage2/rzx/r028000` 8,838 and 113 more) |
 | Called from | `ApplyMoveNoGate` |
-| Calls | `StrikeAllActors`, `TouchHiro` (tail) |
+| Calls | `StrikeAllActors` (falls into), `TouchHiro` (tail) |
 | Reads | `$5D02`-`$5D34` (`Hiro+2`, `BuildPageTails`); `$5E10`-`$5E1C` (`IntroBox+21`, `IntroBoxSides`); `$5F10`-`$5F1C` (`IntroScript+195`); `$6010`-`$601C` (`HavokRoomEnter+60`); `$6110`-`$611C` (`SizeClasses+142`); `$6510`-`$651C` (`ActorPage9+16`); 3 more ranges |
 | Writes | `$5D2A`-`$5D2D` (`BuildRowBaseLoop+4`) |
 
@@ -4182,8 +4239,8 @@ Witness: L1 4718 (bossgate, havok, menu, play48, throw, c x1, opt x3, poke-room 
 | | |
 | --- | --- |
 | Runs (c1: power-on on a 128K, the load at signal speed, the menu, the intro, a short walk) | 16 calls, 4,656 t-states own (0.00 %) |
-| Runs (the other recordings) | 32 calls (`stage1/rec/menu` 8, `stage1/rec/opt2` 8, `stage1/rec/opt3` 8 and 1 more) |
-| Called from | `ActorInteractions` |
+| Runs (the other recordings) | 2,770 calls (`stage2/rec/bossgate` 145, `stage2/rzx/r108000` 95, `stage2/rec/havok` 91 and 83 more) |
+| Called from | `ActorInteractions` (falls into) |
 | Calls | `StrikeActor` |
 
 ### `StrikeActor` (`$970A`)
@@ -4205,8 +4262,9 @@ Witness: L1 36333 (bossgate, havok, menu, play48, throw, c x1, opt x3, poke-room
 | | |
 | --- | --- |
 | Runs (c1: power-on on a 128K, the load at signal speed, the menu, the intro, a short walk) | 128 calls, 3,712 t-states own (0.00 %) |
-| Runs (the other recordings) | 256 calls (`stage1/rec/menu` 64, `stage1/rec/opt2` 64, `stage1/rec/opt3` 64 and 1 more) |
-| Called from | `StrikeAllActors` |
+| Runs (the other recordings) | 36,205 calls (`stage2/rzx/r136000` 4,688, `stage2/rzx/r114000` 2,794, `stage2/rec/throw` 2,136 and 94 more) |
+| Called from | `StrikeAllActors`, `ExpireActor` (tail) |
+| Calls | `SpawnSparks`, `ExpireActor` (falls into), `BoxesOverlap` |
 | Reads | `$5E02` (`IntroBox+7`); `$5F02` (`IntroScript+181`); `$6002` (`HavokRoomEnter+46`); `$6102` (`SizeClasses+128`); `$6202` (`PrintGlyphsAddress+2`); `$6302` (`IntroAttrsC+191`); 2 more ranges |
 
 ### `ExpireActor` (`$97A3`)
@@ -4221,8 +4279,9 @@ Witness: L1 300 (bossgate, deaths, havok, play48, throw, rzx x45, rzxroom x4). K
 
 | | |
 | --- | --- |
-| Runs | not reached in `stage1/c1`; in the other recordings 1 call (`stage1/rec/deaths` 1) |
-| Called from | `TouchHiro` |
+| Runs | not reached in `stage1/c1`; in the other recordings 295 calls (`stage2/rzx/r136000` 38, `stage2/rzx/r114000` 29, `stage2/rzx/r088000` 24 and 49 more) |
+| Called from | `HiroAttack`, `TrapStill`, `BossFire`, `WeaponControl`, `StrikeActor` (falls into), `TouchHiro`, `ProbeWalls` (tail) |
+| Calls | `PrintScore`, `BarrierOpen`, `StrikeActor` (tail), `AddScore` |
 | Reads | `$5F10` (`IntroScript+195`) |
 | Writes | `$5F10` (`IntroScript+195`) |
 
@@ -4245,7 +4304,7 @@ Witness: L1 98469 (bossgate, deaths, gameover, havok, hiscore, play48, rooms, th
 | | |
 | --- | --- |
 | Runs (c1: power-on on a 128K, the load at signal speed, the menu, the intro, a short walk) | 73 calls, 9,745 t-states own (0.00 %) |
-| Runs (the other recordings) | 2,512 calls (`stage1/rec/deaths` 2,133, `stage1/rec/rooms` 319, `stage1/rec/gameover` 60) |
+| Runs (the other recordings) | 98,396 calls (`stage2/rzx/r030000` 9,048, `stage2/rzx/r088000` 8,717, `stage2/rzx/r028000` 8,209 and 102 more) |
 | Called from | `ActorInteractions` (tail) |
 | Calls | `PrintScore` (tail), `LoseEnergy`, `ExpireActor`, `CollectPickup`, `BoxesOverlap` |
 | Reads | `$5D10`-`$5D1B` (`BuildPageTails+9`, `BuildOutlineMaskLoop`); `$5D2C`-`$5D34` (`BuildRowBaseLoop+6`, `BuildBoxRowLoop`, `BuildBoxPlaceLoop`); `$5E1B`-`$5E1C` (`IntroBoxSides+1`); `$5F1B`-`$5F1C` (`IntroScript+206`); `$601C` (`HavokRoomEnter+72`); `$611C` (`SizeClasses+154`); 2 more ranges |
@@ -4293,9 +4352,9 @@ Witness: L1 51 (bossgate, deaths, play48, rzx x31, rzxroom x2).
 
 | | |
 | --- | --- |
-| Runs | not reached in `stage1/c1`; in the other recordings 1 call (`stage1/rec/deaths` 1) |
+| Runs | not reached in `stage1/c1`; in the other recordings 51 calls (`stage2/rzx/r014000` 3, `stage2/rzx/r086000` 3, `stage2/rzx/r124000` 3 and 33 more) |
 | Called from | `TouchHiro` |
-| Calls | `TemplateForKind` |
+| Calls | `SetWeapon` (falls into), `CollectFragment`, `SpawnShield` (tail), `SetActorTimer` (tail), `TemplateForKind` |
 | Reads | `$5DD3` (`IntroScene+1`) |
 | Writes | `$8454` (`EffectRequest`) |
 
@@ -4312,8 +4371,8 @@ Witness: L1 102 (bossgate, deaths, gameover, havok, hiscore, menu, play48, throw
 | | |
 | --- | --- |
 | Runs (c1: power-on on a 128K, the load at signal speed, the menu, the intro, a short walk) | 1 call, 127 t-states own (0.00 %) |
-| Runs (the other recordings) | 11 calls (`stage1/rec/deaths` 5, `stage1/rec/menu` 2, `stage1/rec/gameover` 1 and 3 more) |
-| Called from | `PanelWeapon` |
+| Runs (the other recordings) | 97 calls (`stage2/rec/play48` 5, `stage1/rec/deaths` 5, `stage2/rzx/r110000` 3 and 57 more) |
+| Called from | `CollectPickup` (falls into), `PanelWeapon` |
 | Reads | `$5DF8`-`$5DF9` (`WeaponDefaultItem`) |
 | Writes | `$6649`-`$664B` (`WeaponCount`, `WeaponCountShown`, `Weapon`); `$6671`-`$6672` (`WeaponIcon`) |
 
@@ -4329,8 +4388,9 @@ Witness: L1 4 (rzx x4). Not run in the keyed recordings.
 
 | | |
 | --- | --- |
-| Runs | ran within another entry's routine (reached by a jump or by running on, its calls below), no runs of its own counted |
-| Calls | `AddScore` (tail) |
+| Runs | not reached in `stage1/c1`; in the other recordings 4 calls (`stage2/rzx/r116000` 1, `stage2/rzx/r034000` 1, `stage2/rzx/r056000` 1 and 1 more) |
+| Called from | `CollectPickup` |
+| Calls | `SpawnSparks`, `AddScore` |
 
 ### `RestoreShield` (`$995C`)
 
@@ -4342,7 +4402,7 @@ Witness: L1 16 (deaths, play48, rzx x8, rzxroom x1).
 
 | | |
 | --- | --- |
-| Runs | not reached in `stage1/c1`; in the other recordings 2 calls (`stage1/rec/deaths` 2) |
+| Runs | not reached in `stage1/c1`; in the other recordings 16 calls (`stage1/rec/deaths` 2, `stage2/rec/play48` 2, `stage2/rzx/r100000` 2 and 8 more) |
 | Called from | `EnterRoom` |
 | Calls | `SpawnShield` (falls into) |
 | Reads | `$651E`-`$651F` (`ActorPage9+30`) |
@@ -4359,8 +4419,8 @@ Witness: L1 113 (deaths, gameover, havok, hiscore, play48, rzx x53, rzxroom x2).
 
 | | |
 | --- | --- |
-| Runs | not reached in `stage1/c1`; in the other recordings 7 calls (`stage1/rec/deaths` 6, `stage1/rec/gameover` 1) |
-| Called from | `LoseEnergy`, `RestoreShield` (falls into) |
+| Runs | not reached in `stage1/c1`; in the other recordings 112 calls (`stage1/rec/deaths` 6, `stage2/rec/play48` 6, `stage2/rzx/r130000` 4 and 56 more) |
+| Called from | `HavokFade`, `LoseEnergy`, `CollectPickup` (tail), `RestoreShield` (falls into) |
 | Calls | `SetActorTimer` (tail), `InitActor` |
 | Reads | `$5D00`-`$5D01` (`Hiro`); `$6500`-`$6502` (`ActorPage9`) |
 | Writes | `$651E`-`$651F` (`ActorPage9+30`); `$6651` (`Invulnerable`) |
@@ -4376,7 +4436,7 @@ Witness: L1 272892 (bossgate, deaths, gameover, havok, hiscore, menu, play48, ro
 | | |
 | --- | --- |
 | Runs (c1: power-on on a 128K, the load at signal speed, the menu, the intro, a short walk) | 398 calls, 12,230 t-states own (0.00 %) |
-| Runs (the other recordings) | 7,797 calls (`stage1/rec/deaths` 4,198, `stage1/rec/rooms` 1,430, `stage1/rec/menu` 1,170 and 4 more) |
+| Runs (the other recordings) | 272,495 calls (`stage2/rzx/r078000` 17,997, `stage2/rzx/r056000` 17,716, `stage2/rzx/r020000` 12,077 and 113 more) |
 | Called from | `StepActor` |
 | Calls | `SetActorTimer` (falls into) |
 | Reads | `$5D1C` (`BuildOutlineMaskLoop+8`); `$5E1C` (`IntroBoxSides+2`); `$5F1C` (`IntroScript+207`); `$601C` (`HavokRoomEnter+72`); `$611C` (`SizeClasses+154`); `$651C` (`ActorPage9+28`); 1 more ranges |
@@ -4392,8 +4452,9 @@ Witness: L1 364 (bossgate, deaths, gameover, havok, hiscore, play48, throw, poke
 
 | | |
 | --- | --- |
-| Runs | not reached in `stage1/c1`; in the other recordings 7 calls (`stage1/rec/deaths` 7) |
-| Called from | `SpawnShield` (tail), `StartLifetime` (falls into) |
+| Runs | not reached in `stage1/c1`; in the other recordings 314 calls (`stage2/rzx/r062000` 28, `stage2/rzx/r124000` 14, `stage2/rzx/r028000` 14 and 47 more) |
+| Called from | `SpawnSparks`, `CollectPickup` (tail), `SpawnShield` (tail), `StartLifetime` (falls into) |
+| Calls | `MatchLetters` |
 | Writes | `$5F1E`-`$5F1F` (`IntroScript+209`); `$651E`-`$651F` (`ActorPage9+30`) |
 
 ### `MatchLetters` (`$99D9`)
@@ -4406,7 +4467,8 @@ Witness: L1 9 (rzx x4, rzxroom x1). Not run in the keyed recordings.
 
 | | |
 | --- | --- |
-| Runs | not reached in the recordings |
+| Runs | not reached in `stage1/c1`; in the other recordings 9 calls (`stage2/rzx/r116000` 2, `stage2/rzx/r086000` 2, `stage2/rzx/rooms/e129398` 2 and 2 more) |
+| Called from | `SetActorTimer` |
 
 ### `BoxesOverlap` (`$9A27`)
 
@@ -4419,8 +4481,8 @@ Witness: L1 694628 (bossgate, deaths, gameover, havok, hiscore, menu, play48, ro
 | | |
 | --- | --- |
 | Runs (c1: power-on on a 128K, the load at signal speed, the menu, the intro, a short walk) | 1,513 calls, 147,256 t-states own (0.01 %) |
-| Runs (the other recordings) | 133,461 calls (`stage1/rec/menu` 69,470, `stage1/rec/gameover` 38,745, `stage1/rec/deaths` 10,777 and 5 more) |
-| Called from | `DrawActor`, `TouchHiro` |
+| Runs (the other recordings) | 693,115 calls (`stage1/rec/menu` 69,470, `stage1/rec/gameover` 38,745, `stage2/rzx/r070000` 19,498 and 116 more) |
+| Called from | `DrawActor`, `StrikeActor`, `TouchHiro` |
 | Reads | `$5D2A`-`$652D` (`BuildRowBaseLoop+4`, `Intro48`, `IntroScene`, `IntroPictureText` and 23 more); `$662A`-`$662D` (`WeaponActor+42`); `$672A`-`$672D` (`TitleColours+48`); `$682A`-`$682D` (`TitleColours+304`); `$692A`-`$692D` (`EnemySlots+78`); `$6A2A`-`$6A2D` (`FireHeld+71`); 2 more ranges |
 
 ### `HiroMove` (`$9AFD`)
@@ -4434,9 +4496,9 @@ Witness: L1 16670 (bossgate, deaths, gameover, havok, hiscore, menu, play48, roo
 | | |
 | --- | --- |
 | Runs (c1: power-on on a 128K, the load at signal speed, the menu, the intro, a short walk) | 167 calls, 5,527 t-states own (0.00 %) |
-| Runs (the other recordings) | 935 calls (`stage1/rec/deaths` 363, `stage1/rec/rooms` 286, `stage1/rec/gameover` 72 and 4 more) |
+| Runs (the other recordings) | 16,503 calls (`stage2/rzx/r056000` 439, `stage2/rzx/r058000` 410, `stage2/rec/play48` 373 and 113 more) |
 | Called from | `HiroControl` (tail) |
-| Calls | `MoveActor` (falls into) |
+| Calls | `MoveActor` (falls into), `StopActor` (tail) |
 | Reads | `$5D02`-`$5D25` (`Hiro+2`, `BuildPageTails`) |
 | Writes | `$5D24`-`$5D25` (`BuildOutlineMaskLoop+16`) |
 
@@ -4453,9 +4515,9 @@ Witness: L1 37599 (bossgate, deaths, gameover, havok, hiscore, menu, play48, roo
 | | |
 | --- | --- |
 | Runs (c1: power-on on a 128K, the load at signal speed, the menu, the intro, a short walk) | 228 calls, 43,916 t-states own (0.00 %) |
-| Runs (the other recordings) | 2,394 calls (`stage1/rec/deaths` 1,872, `stage1/rec/rooms` 401, `stage1/rec/gameover` 121) |
-| Called from | `ChaserControl` (tail), `PatrolControl` (tail), `HiroMove` (falls into) |
-| Calls | `ActorJump` (tail), `StartTurn` (tail), `SetWalkCounters` (falls into), `ApplyMove` (tail), `LadderBelow`, `ProbeVertical`, `ProbeWalls` |
+| Runs (the other recordings) | 34,679 calls (`stage1/rec/deaths` 1,872, `stage2/rzx/r070000` 1,448, `stage2/rec/play48` 1,075 and 83 more) |
+| Called from | `ChaserControl` (tail), `PatrolControl` (tail), `WeaponControl` (tail), `HiroMove` (falls into) |
+| Calls | `ActorJump` (tail), `FallSequenceStart` (tail), `StartTurn` (tail), `SetWalkCounters` (falls into), `ApplyMove` (tail), `LadderBelow`, `ProbeVertical`, `ProbeWalls` |
 | Reads | `$5D10`-`$5D25` (`BuildPageTails+9`, `BuildOutlineMaskLoop`); `$5E10`-`$5E25` (`IntroBox+21`, `IntroBoxSides`); `$5F10`-`$5F25` (`IntroScript+195`) |
 | Writes | `$5D24`-`$5D25` (`BuildOutlineMaskLoop+16`); `$5E24`-`$5E25` (`IntroBoxSides+10`); `$5F24`-`$5F25` (`IntroScript+215`) |
 
@@ -4468,7 +4530,7 @@ Witness: L1 13601 (bossgate, deaths, gameover, havok, hiscore, menu, play48, roo
 | | |
 | --- | --- |
 | Runs (c1: power-on on a 128K, the load at signal speed, the menu, the intro, a short walk) | 47 calls, 1,917 t-states own (0.00 %) |
-| Runs (the other recordings) | 677 calls (`stage1/rec/deaths` 363, `stage1/rec/rooms` 141, `stage1/rec/menu` 53 and 4 more) |
+| Runs (the other recordings) | 13,218 calls (`stage2/rzx/r138000` 588, `stage2/rec/havok` 526, `stage2/rzx/r118000` 366 and 112 more) |
 | Called from | `MoveActor` (falls into), `FallStep` (tail) |
 | Calls | `ApplyMove` (tail) |
 | Writes | `$5D24`-`$5D25` (`BuildOutlineMaskLoop+16`); `$5E24`-`$5E25` (`IntroBoxSides+10`); `$5F24`-`$5F25` (`IntroScript+215`) |
@@ -4482,8 +4544,8 @@ Witness: L1 19343 (bossgate, deaths, gameover, havok, hiscore, menu, play48, roo
 | | |
 | --- | --- |
 | Runs (c1: power-on on a 128K, the load at signal speed, the menu, the intro, a short walk) | 35 calls, 350 t-states own (0.00 %) |
-| Runs (the other recordings) | 636 calls (`stage1/rec/deaths` 462, `stage1/rec/rooms` 104, `stage1/rec/gameover` 15 and 4 more) |
-| Called from | `SequenceFrameAt` (tail), `DeathStep` (tail), `FallMove` (tail) |
+| Runs (the other recordings) | 19,308 calls (`stage2/rzx/r132000` 804, `stage2/rzx/r108000` 515, `stage2/rzx/r062000` 477 and 112 more) |
+| Called from | `SequenceFrameAt` (tail), `DeathStep` (tail), `FallMove` (tail), `TrapStill` (tail), `WeaponControl` (tail) |
 | Calls | `ApplyMove` (falls into) |
 
 ### `ApplyMove` (`$9B56`)
@@ -4497,8 +4559,8 @@ Witness: L1 94606 (bossgate, deaths, gameover, havok, hiscore, menu, play48, roo
 | | |
 | --- | --- |
 | Runs (c1: power-on on a 128K, the load at signal speed, the menu, the intro, a short walk) | 305 calls, 51,220 t-states own (0.00 %) |
-| Runs (the other recordings) | 4,836 calls (`stage1/rec/deaths` 2,965, `stage1/rec/rooms` 880, `stage1/rec/menu` 284 and 4 more) |
-| Called from | `RiseMove` (tail), `JumpMove` (tail), `FallMove` (tail), `PathControl` (tail), `MoveActor` (tail), `SetWalkCounters` (tail), `ApplyNoMove` (falls into) |
+| Runs (the other recordings) | 94,301 calls (`stage1/rec/deaths` 2,965, `stage2/rzx/r070000` 2,148, `stage2/rec/play48` 2,091 and 113 more) |
+| Called from | `ActorExpired` (tail), `RiseMove` (tail), `JumpMove` (tail), `FallMove` (tail), `PathControl` (tail), `MoveActor` (tail), `SetWalkCounters` (tail), `ApplyNoMove` (falls into), `StopActor` (tail) |
 | Calls | `RoomBarrier`, `ApplyMoveNoGate` (falls into) |
 | Reads | `$5D00`-`$5D01` (`Hiro`); `$5E00`-`$5E01` (`IntroBox+5`); `$5F00`-`$5F01` (`IntroScript+179`); `$6000`-`$6001` (`HavokRoomEnter+44`); `$6100`-`$6101` (`SizeClasses+126`); `$6500` (`ActorPage9`); 1 more ranges |
 | Writes | `$5D00`-`$5D01` (`Hiro`); `$5E00`-`$5E01` (`IntroBox+5`); `$5F00`-`$5F01` (`IntroScript+179`); `$6000`-`$6001` (`HavokRoomEnter+44`); `$6100`-`$6101` (`SizeClasses+126`); `$95B4` (`RoomExitSetX+5`) |
@@ -4513,7 +4575,8 @@ Witness: L1 148167 (bossgate, deaths, gameover, havok, hiscore, menu, play48, ro
 
 | | |
 | --- | --- |
-| Runs | not reached in `stage1/c1`; in the other recordings 3,099 calls (`stage1/rec/deaths` 3,099) |
+| Runs (c1: power-on on a 128K, the load at signal speed, the menu, the intro, a short walk) | 305 runs of its first instruction (entered by a jump or by running on, no routine of its own in the L1) |
+| Runs (the other recordings) | 116,068 calls (`stage2/rzx/r030000` 9,772, `stage2/rzx/r088000` 9,478, `stage2/rzx/r028000` 8,838 and 59 more) |
 | Called from | `StillControl` (tail), `ApplyMove` (falls into) |
 | Calls | `ActorInteractions`, `AddMove` (falls into) |
 
@@ -4528,7 +4591,7 @@ Witness: L1 159028 (bossgate, deaths, gameover, havok, hiscore, menu, play48, ro
 | | |
 | --- | --- |
 | Runs (c1: power-on on a 128K, the load at signal speed, the menu, the intro, a short walk) | 369 calls, 17,731 t-states own (0.00 %) |
-| Runs (the other recordings) | 12,683 calls (`stage1/rec/menu` 5,271, `stage1/rec/deaths` 3,163, `stage1/rec/gameover` 3,005 and 4 more) |
+| Runs (the other recordings) | 19,737 calls (`stage1/rec/menu` 5,271, `stage1/rec/deaths` 3,163, `stage1/rec/gameover` 3,005 and 11 more) |
 | Called from | `ApplyMoveNoGate` (falls into), `TitleSequence` |
 | Calls | `AnimateAfterMove` (falls into) |
 | Reads | `$5D00`-`$6501` (`Hiro`, `BuildPageTails`, `Intro48`, `IntroScene` and 24 more); `$6600`-`$6601` (`WeaponActor`); `$6700`-`$6701` (`TitleColours+6`); `$6800`-`$6801` (`TitleColours+262`); `$6900`-`$6901` (`EnemySlots+36`); `$6A00`-`$6A01` (`FireHeld+29`); 1 more ranges |
@@ -4545,8 +4608,8 @@ Witness: L1 160342 (bossgate, deaths, gameover, havok, hiscore, menu, play48, ro
 | | |
 | --- | --- |
 | Runs (c1: power-on on a 128K, the load at signal speed, the menu, the intro, a short walk) | 372 calls, 52,553 t-states own (0.00 %) |
-| Runs (the other recordings) | 13,140 calls (`stage1/rec/menu` 5,275, `stage1/rec/deaths` 3,177, `stage1/rec/gameover` 3,008 and 4 more) |
-| Called from | `AddMove` (falls into), `StopActor` (tail) |
+| Runs (the other recordings) | 156,591 calls (`stage2/rzx/r030000` 9,785, `stage2/rzx/r088000` 9,496, `stage2/rzx/r028000` 8,852 and 108 more) |
+| Called from | `DecorControl` (tail), `TriggerControl` (tail), `AddMove` (falls into), `StopActor` (tail) |
 | Calls | `CheckRoomExit` (tail), `FootstepSound`, `AnimateActor` |
 | Reads | `$5D1C` (`BuildOutlineMaskLoop+8`); `$5E1C`-`$5E20` (`IntroBoxSides+2`); `$5F1C`-`$5F20` (`IntroScript+207`); `$601C`-`$6020` (`HavokRoomEnter+72`); `$611C`-`$6120` (`SizeClasses+154`); `$651C` (`ActorPage9+28`); 2 more ranges |
 | Writes | `$5D21`-`$6522` (`BuildOutlineMaskLoop+13`, `Intro48`, `IntroScene`, `IntroPictureText` and 23 more); `$6620`-`$6622` (`WeaponActor+32`); `$6721`-`$6722` (`TitleColours+39`); `$6821`-`$6822` (`TitleColours+295`); `$6921`-`$6922` (`EnemySlots+69`); `$6A21`-`$6A22` (`FireHeld+62`); 1 more ranges |
@@ -4562,7 +4625,7 @@ Witness: L1 42125 (bossgate, deaths, gameover, havok, hiscore, menu, play48, roo
 | | |
 | --- | --- |
 | Runs (c1: power-on on a 128K, the load at signal speed, the menu, the intro, a short walk) | 235 calls, 5,328 t-states own (0.00 %) |
-| Runs (the other recordings) | 2,113 calls (`stage1/rec/deaths` 949, `stage1/rec/rooms` 576, `stage1/rec/gameover` 144 and 4 more) |
+| Runs (the other recordings) | 41,890 calls (`stage2/rec/havok` 1,114, `stage2/rzx/r138000` 1,064, `stage1/rec/deaths` 949 and 113 more) |
 | Called from | `AnimateAfterMove` |
 | Reads | `$5D23` (`BuildOutlineMaskLoop+15`) |
 | Writes | `$8454` (`EffectRequest`) |
@@ -4578,7 +4641,7 @@ Witness: L1 162563 (bossgate, deaths, gameover, havok, hiscore, menu, play48, ro
 | | |
 | --- | --- |
 | Runs (c1: power-on on a 128K, the load at signal speed, the menu, the intro, a short walk) | 372 calls, 120,027 t-states own (0.01 %) |
-| Runs (the other recordings) | 13,614 calls (`stage1/rec/menu` 5,275, `stage1/rec/deaths` 3,177, `stage1/rec/gameover` 3,008 and 5 more) |
+| Runs (the other recordings) | 162,191 calls (`stage2/rzx/r030000` 9,785, `stage2/rzx/r088000` 9,496, `stage2/rzx/r028000` 8,852 and 116 more) |
 | Called from | `AnimateAfterMove` |
 | Calls | `ActorInSequence`, `SetFrameDelay` |
 | Reads | `$5D02`-`$6525` (`Hiro+2`, `BuildPageTails`, `Intro48`, `IntroScene` and 24 more); `$6602`-`$6625` (`WeaponActor+2`); `$6706`-`$6720` (`TitleColours+12`); `$6806`-`$6820` (`TitleColours+268`); `$6906`-`$6920` (`EnemySlots+42`); `$6A06`-`$6A20` (`FireHeld+35`); 9 more ranges |
@@ -4593,7 +4656,7 @@ Witness: L1 92498 (bossgate, deaths, gameover, havok, hiscore, menu, play48, roo
 | | |
 | --- | --- |
 | Runs (c1: power-on on a 128K, the load at signal speed, the menu, the intro, a short walk) | 336 calls, 13,177 t-states own (0.00 %) |
-| Runs (the other recordings) | 12,571 calls (`stage1/rec/menu` 5,268, `stage1/rec/gameover` 2,956, `stage1/rec/deaths` 2,428 and 5 more) |
+| Runs (the other recordings) | 92,162 calls (`stage1/rec/menu` 5,268, `stage1/rec/gameover` 2,956, `stage1/rec/deaths` 2,428 and 116 more) |
 | Called from | `SequenceTiming`, `AnimateActor` |
 | Writes | `$5D1A`-`$651D` (`BuildOutlineMaskLoop+6`, `Intro48`, `IntroScene`, `IntroPictureText` and 23 more); `$661A`-`$661D` (`WeaponActor+26`); `$671A`-`$671D` (`TitleColours+32`); `$681A`-`$681D` (`TitleColours+288`); `$691A`-`$691D` (`EnemySlots+62`); `$6A1A`-`$6A1D` (`FireHeld+55`); 1 more ranges |
 
@@ -4608,9 +4671,9 @@ Witness: L1 16221 (bossgate, deaths, gameover, havok, hiscore, menu, play48, roo
 | | |
 | --- | --- |
 | Runs (c1: power-on on a 128K, the load at signal speed, the menu, the intro, a short walk) | 93 calls, 2,820 t-states own (0.00 %) |
-| Runs (the other recordings) | 2,742 calls (`stage1/rec/deaths` 1,095, `stage1/rec/menu` 886, `stage1/rec/rooms` 469 and 4 more) |
-| Called from | `HiroControl` (tail) |
-| Calls | `AnimateAfterMove` (tail) |
+| Runs (the other recordings) | 16,128 calls (`stage2/rec/havok` 1,132, `stage1/rec/deaths` 1,095, `stage1/rec/menu` 886 and 108 more) |
+| Called from | `HiroControl` (tail), `HiroMove` (tail) |
+| Calls | `CellIndex`, `FallSequenceStart` (tail), `ApplyMove` (tail), `AnimateAfterMove` (tail), `ProbeBelow`, `ProbeCeiling` |
 | Reads | `$5D24` (`BuildOutlineMaskLoop+16`) |
 | Writes | `$5D24`-`$5D25` (`BuildOutlineMaskLoop+16`) |
 
@@ -4625,7 +4688,7 @@ Witness: L1 1608 (bossgate, menu, play48, c x1, rzx x28).
 | | |
 | --- | --- |
 | Runs (c1: power-on on a 128K, the load at signal speed, the menu, the intro, a short walk) | 11 calls, 374 t-states own (0.00 %) |
-| Runs (the other recordings) | 20 calls (`stage1/rec/menu` 20) |
+| Runs (the other recordings) | 1,597 calls (`stage2/rzx/r058000` 183, `stage2/rzx/r078000` 183, `stage2/rzx/r128000` 148 and 28 more) |
 | Called from | `MoveActor` |
 | Calls | `LadderAbove` (tail), `ProbeBelow` |
 | Reads | `$6A81` (`ControlMenu+6`); `$73C5`-`$73C6` (`SpecialTiles`) |
@@ -4641,7 +4704,7 @@ Witness: L1 484 (havok, play48, rooms, c x1, opt x3, rzx x40).
 | | |
 | --- | --- |
 | Runs (c1: power-on on a 128K, the load at signal speed, the menu, the intro, a short walk) | 2 calls, 1,726 t-states own (0.00 %) |
-| Runs (the other recordings) | 8 calls (`stage1/rec/opt2` 2, `stage1/rec/opt3` 2, `stage1/rec/opt4` 2 and 1 more) |
+| Runs (the other recordings) | 482 calls (`stage2/rzx/r138000` 68, `stage2/rec/havok` 67, `stage2/rzx/r004000` 33 and 43 more) |
 | Called from | `ActorJump`, `LadderBelow` (tail) |
 | Calls | `ProbeVertical` |
 | Reads | `$6A59` (`FireHeld+118`); `$6A6A`-`$6A7E` (`FireHeld+135`, `ControlMenu`); `$73C5`-`$73C6` (`SpecialTiles`) |
@@ -4657,7 +4720,7 @@ Witness: L1 884 (bossgate, deaths, gameover, havok, hiscore, play48, rooms, c x1
 | | |
 | --- | --- |
 | Runs (c1: power-on on a 128K, the load at signal speed, the menu, the intro, a short walk) | 2 calls, 36 t-states own (0.00 %) |
-| Runs (the other recordings) | 48 calls (`stage1/rec/deaths` 31, `stage1/rec/rooms` 9, `stage1/rec/gameover` 2 and 3 more) |
+| Runs (the other recordings) | 882 calls (`stage2/rec/havok` 70, `stage2/rzx/r138000` 68, `stage2/rzx/r004000` 38 and 82 more) |
 | Called from | `JumpStep` (tail), `JumpMove` (tail) |
 | Calls | `StartFall` (falls into) |
 | Writes | `$5D30` (`BuildRowBaseLoop+10`) |
@@ -4673,7 +4736,7 @@ Witness: L1 4542 (bossgate, deaths, gameover, havok, hiscore, menu, play48, room
 | | |
 | --- | --- |
 | Runs (c1: power-on on a 128K, the load at signal speed, the menu, the intro, a short walk) | 11 calls, 260 t-states own (0.00 %) |
-| Runs (the other recordings) | 231 calls (`stage1/rec/deaths` 156, `stage1/rec/rooms` 44, `stage1/rec/gameover` 7 and 4 more) |
+| Runs (the other recordings) | 4,531 calls (`stage1/rec/deaths` 156, `stage2/rec/havok` 152, `stage2/rzx/r138000` 137 and 112 more) |
 | Called from | `SequenceEndDrop` (tail), `StartFallEndJump` (falls into) |
 | Calls | `FallStep` (falls into) |
 | Reads | `$5D02` (`Hiro+2`); `$5E02` (`IntroBox+7`); `$5F02` (`IntroScript+181`) |
@@ -4690,7 +4753,7 @@ Witness: L1 11152 (bossgate, deaths, gameover, havok, hiscore, menu, play48, roo
 | | |
 | --- | --- |
 | Runs (c1: power-on on a 128K, the load at signal speed, the menu, the intro, a short walk) | 39 calls, 3,728 t-states own (0.00 %) |
-| Runs (the other recordings) | 576 calls (`stage1/rec/deaths` 303, `stage1/rec/rooms` 106, `stage1/rec/menu` 35 and 4 more) |
+| Runs (the other recordings) | 11,093 calls (`stage2/rec/havok` 584, `stage2/rzx/r138000` 545, `stage2/rzx/r118000` 343 and 99 more) |
 | Called from | `StepActor` (tail), `StartFall` (falls into) |
 | Calls | `SetWalkCounters` (tail), `ProbeBelow` |
 | Reads | `$5D02` (`Hiro+2`); `$5D26` (`BuildRowBaseLoop`); `$5E02` (`IntroBox+7`); `$5E26` (`IntroBoxSides+12`); `$5F02` (`IntroScript+181`); `$5F26` (`IntroScript+217`) |
@@ -4705,8 +4768,8 @@ Witness: L1 13043 (bossgate, deaths, gameover, havok, hiscore, menu, play48, roo
 | | |
 | --- | --- |
 | Runs (c1: power-on on a 128K, the load at signal speed, the menu, the intro, a short walk) | 50 calls, 2,472 t-states own (0.00 %) |
-| Runs (the other recordings) | 596 calls (`stage1/rec/deaths` 303, `stage1/rec/rooms` 106, `stage1/rec/menu` 55 and 4 more) |
-| Called from | `LadderBelow`, `FallStep` |
+| Runs (the other recordings) | 12,993 calls (`stage2/rec/havok` 584, `stage2/rzx/r138000` 545, `stage2/rzx/r118000` 399 and 112 more) |
+| Called from | `StopActor`, `LadderBelow`, `FallStep` |
 | Calls | `ProbeVerticalC` (tail) |
 | Reads | `$5D16` (`BuildOutlineMaskLoop+2`); `$5E16` (`IntroBox+27`); `$5F16` (`IntroScript+201`) |
 
@@ -4721,7 +4784,7 @@ Witness: L1 99089 (bossgate, deaths, gameover, havok, hiscore, menu, play48, roo
 | | |
 | --- | --- |
 | Runs (c1: power-on on a 128K, the load at signal speed, the menu, the intro, a short walk) | 225 calls, 4,304 t-states own (0.00 %) |
-| Runs (the other recordings) | 3,142 calls (`stage1/rec/deaths` 2,252, `stage1/rec/rooms` 501, `stage1/rec/gameover` 162 and 4 more) |
+| Runs (the other recordings) | 98,864 calls (`stage2/rzx/r030000` 8,782, `stage2/rzx/r088000` 8,129, `stage2/rzx/r028000` 7,726 and 113 more) |
 | Called from | `JumpMove`, `FallMove`, `StillControl`, `MoveActor`, `LadderAbove` |
 | Calls | `ProbeVerticalC` (falls into) |
 | Reads | `$5D16` (`BuildOutlineMaskLoop+2`); `$5E16` (`IntroBox+27`); `$5F16` (`IntroScript+201`) |
@@ -4735,7 +4798,7 @@ Witness: L1 112132 (bossgate, deaths, gameover, havok, hiscore, menu, play48, ro
 | | |
 | --- | --- |
 | Runs (c1: power-on on a 128K, the load at signal speed, the menu, the intro, a short walk) | 275 calls, 15,826 t-states own (0.00 %) |
-| Runs (the other recordings) | 3,738 calls (`stage1/rec/deaths` 2,555, `stage1/rec/rooms` 607, `stage1/rec/gameover` 189 and 4 more) |
+| Runs (the other recordings) | 111,521 calls (`stage2/rzx/r030000` 8,845, `stage2/rzx/r088000` 8,186, `stage2/rzx/r028000` 7,787 and 112 more) |
 | Called from | `ProbeBelow` (tail), `ProbeVertical` (falls into) |
 | Calls | `ProbeFloorCell` |
 | Reads | `$5D10` (`BuildPageTails+9`); `$5E10` (`IntroBox+21`); `$5F10` (`IntroScript+195`) |
@@ -4751,9 +4814,9 @@ Witness: L1 64304 (bossgate, deaths, gameover, havok, hiscore, menu, play48, roo
 | | |
 | --- | --- |
 | Runs (c1: power-on on a 128K, the load at signal speed, the menu, the intro, a short walk) | 263 calls, 44,227 t-states own (0.00 %) |
-| Runs (the other recordings) | 3,533 calls (`stage1/rec/deaths` 2,448, `stage1/rec/rooms` 560, `stage1/rec/gameover` 174 and 4 more) |
+| Runs (the other recordings) | 64,041 calls (`stage1/rec/deaths` 2,448, `stage2/rzx/r048000` 1,944, `stage2/rec/play48` 1,575 and 113 more) |
 | Called from | `ProbeVerticalC` |
-| Calls | `HiroLanded` (tail), `FloorUnder`, `TestBreakable` |
+| Calls | `HiroLanded` (tail), `MarkSpawnKilled` (tail), `FreezeAnim` (falls into), `FloorUnder`, `TestBreakable` |
 | Reads | `$5D00`-`$5D02` (`Hiro`); `$5D1C` (`BuildOutlineMaskLoop+8`); `$5E00`-`$5E02` (`IntroBox+5`); `$5E1C` (`IntroBoxSides+2`); `$5F00`-`$5F1C` (`IntroScript+179`) |
 | Writes | `$5D02` (`Hiro+2`); `$5E02` (`IntroBox+7`); `$5F02`-`$5F10` (`IntroScript+181`) |
 
@@ -4767,7 +4830,8 @@ Witness: L1 1531 (bossgate, deaths, play48, throw, poke-room x3, rzx x38, rzxroo
 
 | | |
 | --- | --- |
-| Runs | not reached in the recordings |
+| Runs | not reached in `stage1/c1`; in the other recordings 1,483 calls (`stage2/rzx/r014000` 250, `stage2/rzx/r104000` 230, `stage2/rzx/r072000` 208 and 15 more) |
+| Called from | `HiroMelee`, `TriggerControl`, `ProbeFloorCell` (falls into) |
 
 ### `FloorUnder` (`$9D58`)
 
@@ -4780,7 +4844,7 @@ Witness: L1 57081 (bossgate, deaths, gameover, havok, hiscore, menu, play48, roo
 | | |
 | --- | --- |
 | Runs (c1: power-on on a 128K, the load at signal speed, the menu, the intro, a short walk) | 241 calls, 27,160 t-states own (0.00 %) |
-| Runs (the other recordings) | 3,092 calls (`stage1/rec/deaths` 2,229, `stage1/rec/rooms` 473, `stage1/rec/gameover` 129 and 4 more) |
+| Runs (the other recordings) | 56,840 calls (`stage1/rec/deaths` 2,229, `stage2/rzx/r048000` 1,862, `stage2/rzx/r070000` 1,505 and 113 more) |
 | Called from | `ProbeFloorCell` |
 | Calls | `CellSolid` (falls into) |
 | Reads | `$5D15`-`$5D20` (`BuildOutlineMaskLoop+1`); `$5E15`-`$5E20` (`IntroBox+26`, `IntroBoxSides`); `$5F15`-`$5F20` (`IntroScript+200`) |
@@ -4796,7 +4860,7 @@ Witness: L1 59319 (bossgate, deaths, gameover, havok, hiscore, menu, play48, roo
 | | |
 | --- | --- |
 | Runs (c1: power-on on a 128K, the load at signal speed, the menu, the intro, a short walk) | 246 calls, 26,224 t-states own (0.00 %) |
-| Runs (the other recordings) | 3,177 calls (`stage1/rec/deaths` 2,273, `stage1/rec/rooms` 487, `stage1/rec/gameover` 135 and 4 more) |
+| Runs (the other recordings) | 59,073 calls (`stage1/rec/deaths` 2,273, `stage2/rzx/r048000` 1,881, `stage2/rzx/r128000` 1,574 and 113 more) |
 | Called from | `FloorUnder` (falls into) |
 | Calls | `CellIndex` |
 | Reads | `$6714`-`$67E5` (`TitleColours+26`) |
@@ -4812,9 +4876,9 @@ Witness: L1 50771 (bossgate, deaths, gameover, havok, hiscore, menu, play48, roo
 | | |
 | --- | --- |
 | Runs (c1: power-on on a 128K, the load at signal speed, the menu, the intro, a short walk) | 225 calls, 40,409 t-states own (0.00 %) |
-| Runs (the other recordings) | 3,027 calls (`stage1/rec/deaths` 2,136, `stage1/rec/rooms` 502, `stage1/rec/gameover` 162 and 4 more) |
-| Called from | `MotionStep` (tail), `MoveActor` |
-| Calls | `ProbeSide` |
+| Runs (the other recordings) | 50,546 calls (`stage1/rec/deaths` 2,136, `stage2/rzx/r070000` 1,375, `stage2/rec/play48` 1,261 and 113 more) |
+| Called from | `MotionStep` (tail), `PathControl`, `MoveActor` |
+| Calls | `ExpireActor` (tail), `ProbeSide` |
 | Reads | `$5D01`-`$5D1C` (`Hiro+1`, `BuildPageTails`); `$5E01`-`$5E1C` (`IntroBox+6`, `IntroBoxSides`); `$5F01`-`$5F1C` (`IntroScript+180`) |
 | Writes | `$9BE9` (`AnimateFrame+26`) |
 
@@ -4829,7 +4893,7 @@ Witness: L1 1774 (bossgate, havok, menu, play48, c x1, opt x3, poke-room x15, rz
 | | |
 | --- | --- |
 | Runs (c1: power-on on a 128K, the load at signal speed, the menu, the intro, a short walk) | 14 calls, 2,583 t-states own (0.00 %) |
-| Runs (the other recordings) | 28 calls (`stage1/rec/menu` 7, `stage1/rec/opt2` 7, `stage1/rec/opt3` 7 and 1 more) |
+| Runs (the other recordings) | 1,760 calls (`stage2/rzx/r054000` 75, `stage2/rzx/r024000` 65, `stage2/rzx/r052000` 64 and 82 more) |
 | Called from | `ActionStep` |
 | Calls | `ProbeStrikeHeight` |
 | Reads | `$5D15`-`$5D1B` (`BuildOutlineMaskLoop+1`); `$69E1` (`Strike`) |
@@ -4845,8 +4909,8 @@ Witness: L1 4780 (bossgate, deaths, gameover, havok, hiscore, play48, rooms, c x
 | | |
 | --- | --- |
 | Runs (c1: power-on on a 128K, the load at signal speed, the menu, the intro, a short walk) | 14 calls, 745 t-states own (0.00 %) |
-| Runs (the other recordings) | 209 calls (`stage1/rec/deaths` 112, `stage1/rec/rooms` 43, `stage1/rec/opt2` 14 and 3 more) |
-| Called from | `JumpMove` |
+| Runs (the other recordings) | 4,766 calls (`stage2/rec/havok` 481, `stage2/rzx/r138000` 476, `stage2/rzx/r118000` 207 and 82 more) |
+| Called from | `JumpMove`, `StopActor` |
 | Calls | `ProbeCeilingE` |
 
 ### `ProbeCeilingE` (`$9DF8`)
@@ -4858,7 +4922,7 @@ Witness: L1 4780 (bossgate, deaths, gameover, havok, hiscore, play48, rooms, c x
 | | |
 | --- | --- |
 | Runs (c1: power-on on a 128K, the load at signal speed, the menu, the intro, a short walk) | 14 calls, 530 t-states own (0.00 %) |
-| Runs (the other recordings) | 209 calls (`stage1/rec/deaths` 112, `stage1/rec/rooms` 43, `stage1/rec/opt2` 14 and 3 more) |
+| Runs (the other recordings) | 4,766 calls (`stage2/rec/havok` 481, `stage2/rzx/r138000` 476, `stage2/rzx/r118000` 207 and 82 more) |
 | Called from | `ProbeCeiling` |
 | Calls | `ProbeHead` |
 
@@ -4871,7 +4935,7 @@ Witness: L1 4307 (bossgate, deaths, gameover, havok, hiscore, play48, rooms, c x
 | | |
 | --- | --- |
 | Runs (c1: power-on on a 128K, the load at signal speed, the menu, the intro, a short walk) | 12 calls, 1,320 t-states own (0.00 %) |
-| Runs (the other recordings) | 197 calls (`stage1/rec/deaths` 109, `stage1/rec/rooms` 40, `stage1/rec/gameover` 12 and 3 more) |
+| Runs (the other recordings) | 4,295 calls (`stage2/rec/havok` 414, `stage2/rzx/r138000` 408, `stage2/rzx/r118000` 182 and 82 more) |
 | Called from | `ProbeCeilingE` |
 | Calls | `ProbeHeadLeft`, `ProbeAtTop` (tail) |
 | Reads | `$5D15`-`$5D20` (`BuildOutlineMaskLoop+1`) |
@@ -4885,7 +4949,7 @@ Witness: L1 4283 (bossgate, deaths, gameover, havok, hiscore, play48, rooms, c x
 | | |
 | --- | --- |
 | Runs (c1: power-on on a 128K, the load at signal speed, the menu, the intro, a short walk) | 12 calls, 84 t-states own (0.00 %) |
-| Runs (the other recordings) | 193 calls (`stage1/rec/deaths` 105, `stage1/rec/rooms` 40, `stage1/rec/gameover` 12 and 3 more) |
+| Runs (the other recordings) | 4,271 calls (`stage2/rec/havok` 414, `stage2/rzx/r138000` 408, `stage2/rzx/r118000` 182 and 82 more) |
 | Called from | `ProbeHead` |
 | Calls | `ProbeAtTop` (falls into) |
 
@@ -4898,7 +4962,7 @@ Witness: L1 53015 (bossgate, deaths, gameover, havok, hiscore, menu, play48, roo
 | | |
 | --- | --- |
 | Runs (c1: power-on on a 128K, the load at signal speed, the menu, the intro, a short walk) | 220 calls, 5,060 t-states own (0.00 %) |
-| Runs (the other recordings) | 3,100 calls (`stage1/rec/deaths` 2,198, `stage1/rec/rooms` 486, `stage1/rec/gameover` 168 and 4 more) |
+| Runs (the other recordings) | 52,795 calls (`stage1/rec/deaths` 2,198, `stage2/rzx/r070000` 1,408, `stage2/rec/play48` 1,279 and 112 more) |
 | Called from | `ProbeHead` (tail), `ProbeHeadLeft` (falls into), `ProbeSide` |
 | Calls | `ProbeCell` (tail) |
 
@@ -4911,7 +4975,7 @@ Witness: L1 1774 (bossgate, havok, menu, play48, c x1, opt x3, poke-room x15, rz
 | | |
 | --- | --- |
 | Runs (c1: power-on on a 128K, the load at signal speed, the menu, the intro, a short walk) | 14 calls, 602 t-states own (0.00 %) |
-| Runs (the other recordings) | 28 calls (`stage1/rec/menu` 7, `stage1/rec/opt2` 7, `stage1/rec/opt3` 7 and 1 more) |
+| Runs (the other recordings) | 1,760 calls (`stage2/rzx/r054000` 75, `stage2/rzx/r024000` 65, `stage2/rzx/r052000` 64 and 82 more) |
 | Called from | `ProbeStrikeCell` |
 | Calls | `ProbeAtFoot` (tail), `ProbeCell` (tail) |
 | Reads | `$69E1` (`Strike`) |
@@ -4925,7 +4989,7 @@ Witness: L1 40878 (bossgate, deaths, gameover, havok, hiscore, menu, play48, roo
 | | |
 | --- | --- |
 | Runs (c1: power-on on a 128K, the load at signal speed, the menu, the intro, a short walk) | 196 calls, 6,880 t-states own (0.00 %) |
-| Runs (the other recordings) | 2,639 calls (`stage1/rec/deaths` 1,942, `stage1/rec/rooms` 377, `stage1/rec/gameover` 144 and 4 more) |
+| Runs (the other recordings) | 40,682 calls (`stage1/rec/deaths` 1,942, `stage2/rec/play48` 1,148, `stage2/rzx/r136000` 1,080 and 111 more) |
 | Called from | `ProbeSide` |
 | Calls | `ProbeCell` (tail) |
 | Reads | `$5D16` (`BuildOutlineMaskLoop+2`); `$5E16` (`IntroBox+27`); `$5F16` (`IntroScript+201`) |
@@ -4941,7 +5005,7 @@ Witness: L1 44626 (bossgate, deaths, gameover, havok, hiscore, menu, play48, roo
 | | |
 | --- | --- |
 | Runs (c1: power-on on a 128K, the load at signal speed, the menu, the intro, a short walk) | 196 calls, 8,732 t-states own (0.00 %) |
-| Runs (the other recordings) | 2,730 calls (`stage1/rec/deaths` 2,004, `stage1/rec/rooms` 406, `stage1/rec/gameover` 144 and 4 more) |
+| Runs (the other recordings) | 44,430 calls (`stage1/rec/deaths` 2,004, `stage2/rzx/r070000` 1,330, `stage2/rzx/r108000` 1,188 and 111 more) |
 | Called from | `ProbeWalls` |
 | Calls | `ProbeAtTop`, `ProbeAtMiddle`, `ProbeAtFoot` (falls into) |
 | Reads | `$5D16` (`BuildOutlineMaskLoop+2`); `$5E16` (`IntroBox+27`); `$5F16` (`IntroScript+201`) |
@@ -4955,7 +5019,7 @@ Witness: L1 38556 (bossgate, deaths, gameover, havok, hiscore, menu, play48, roo
 | | |
 | --- | --- |
 | Runs (c1: power-on on a 128K, the load at signal speed, the menu, the intro, a short walk) | 203 calls, 5,278 t-states own (0.00 %) |
-| Runs (the other recordings) | 177 calls (`stage1/rec/opt2` 59, `stage1/rec/opt3` 59, `stage1/rec/opt4` 59) |
+| Runs (the other recordings) | 22,271 calls (`stage2/rec/play48` 1,139, `stage2/rzx/r130000` 950, `stage2/rzx/r046000` 870 and 55 more) |
 | Called from | `ProbeStrikeHeight` (tail), `ProbeSide` (falls into) |
 | Calls | `ProbeCell` (falls into) |
 | Reads | `$5D16` (`BuildOutlineMaskLoop+2`); `$5E16` (`IntroBox+27`) |
@@ -4971,7 +5035,7 @@ Witness: L1 133377 (bossgate, deaths, gameover, havok, hiscore, menu, play48, ro
 | | |
 | --- | --- |
 | Runs (c1: power-on on a 128K, the load at signal speed, the menu, the intro, a short walk) | 626 calls, 104,153 t-states own (0.01 %) |
-| Runs (the other recordings) | 8,309 calls (`stage1/rec/deaths` 6,031, `stage1/rec/rooms` 1,194, `stage1/rec/gameover` 456 and 4 more) |
+| Runs (the other recordings) | 131,935 calls (`stage1/rec/deaths` 6,031, `stage2/rec/play48` 3,573, `stage2/rzx/r136000` 3,349 and 111 more) |
 | Called from | `ProbeAtTop` (tail), `ProbeStrikeHeight` (tail), `ProbeAtMiddle` (tail), `ProbeAtFoot` (falls into) |
 | Calls | `CellIndex`, `BreakOrBlock` |
 | Reads | `$5D00`-`$5D01` (`Hiro`); `$5E00`-`$5E01` (`IntroBox+5`); `$5F00`-`$5F01` (`IntroScript+179`); `$6801`-`$6877` (`TitleColours+263`); `$68A3`-`$68BB` (`TitleColours+425`) |
@@ -4990,9 +5054,9 @@ Witness: L1 133232 (bossgate, deaths, gameover, havok, hiscore, menu, play48, ro
 | | |
 | --- | --- |
 | Runs (c1: power-on on a 128K, the load at signal speed, the menu, the intro, a short walk) | 626 calls, 68,447 t-states own (0.01 %) |
-| Runs (the other recordings) | 8,308 calls (`stage1/rec/deaths` 6,031, `stage1/rec/rooms` 1,193, `stage1/rec/gameover` 456 and 4 more) |
+| Runs (the other recordings) | 132,606 calls (`stage1/rec/deaths` 6,031, `stage2/rec/play48` 3,573, `stage2/rzx/r136000` 3,349 and 112 more) |
 | Called from | `ProbeCell` |
-| Calls | `TestBreakable` |
+| Calls | `PrintScore`, `RedrawCellMask`, `SpawnSparks`, `AddScore`, `TestBreakable`, `BreakReveal` |
 | Reads | `$5D1C` (`BuildOutlineMaskLoop+8`); `$5D34` (`BuildBoxPlaceLoop`); `$5E1C` (`IntroBoxSides+2`); `$5F1C` (`IntroScript+207`) |
 
 ### `TestBreakable` (`$9EBB`)
@@ -5006,7 +5070,7 @@ Witness: L1 133297 (bossgate, deaths, gameover, havok, hiscore, menu, play48, ro
 | | |
 | --- | --- |
 | Runs (c1: power-on on a 128K, the load at signal speed, the menu, the intro, a short walk) | 626 calls, 75,012 t-states own (0.01 %) |
-| Runs (the other recordings) | 8,309 calls (`stage1/rec/deaths` 6,032, `stage1/rec/rooms` 1,193, `stage1/rec/gameover` 456 and 4 more) |
+| Runs (the other recordings) | 132,671 calls (`stage1/rec/deaths` 6,032, `stage2/rec/play48` 3,575, `stage2/rzx/r136000` 3,349 and 112 more) |
 | Called from | `ProbeFloorCell`, `BreakOrBlock` |
 | Reads | `$6901`-`$6977` (`EnemySlots+37`); `$69A3`-`$69BB` (`EnemySlots+199`); `$6A01`-`$6A77` (`FireHeld+30`); `$6AA3`-`$6ABB` (`ControlMenuPatch+10`) |
 
@@ -5020,7 +5084,9 @@ Witness: L1 51 (bossgate, play48, throw, rzx x25, rzxroom x4).
 
 | | |
 | --- | --- |
-| Runs | not reached in the recordings |
+| Runs | not reached in `stage1/c1`; in the other recordings 51 calls (`stage2/rzx/r124000` 5, `stage2/rzx/r014000` 4, `stage2/rzx/r024000` 4 and 29 more) |
+| Called from | `BreakOrBlock` |
+| Calls | `FindFreeActorAtCell`, `TemplateForKind`, `InitActor` |
 
 ### `FindFreeActorAtCell` (`$9F29`)
 
@@ -5030,7 +5096,9 @@ Witness: L1 26 (bossgate, play48, throw, rzx x16, rzxroom x1). Ran in `play48` a
 
 | | |
 | --- | --- |
-| Runs | not reached in the recordings |
+| Runs | not reached in `stage1/c1`; in the other recordings 26 calls (`stage2/rzx/r014000` 3, `stage2/rzx/r124000` 3, `stage2/rzx/r082000` 2 and 17 more) |
+| Called from | `BreakReveal` |
+| Calls | `LastCellPixel` |
 
 ### `FindFreeActor` (`$9F2C`)
 
@@ -5043,8 +5111,8 @@ Witness: L1 2441 (bossgate, deaths, gameover, hiscore, play48, rooms, throw, c x
 | | |
 | --- | --- |
 | Runs (c1: power-on on a 128K, the load at signal speed, the menu, the intro, a short walk) | 1 call, 31 t-states own (0.00 %) |
-| Runs (the other recordings) | 20 calls (`stage1/rec/rooms` 12, `stage1/rec/deaths` 7, `stage1/rec/gameover` 1) |
-| Called from | `SpawnEnemy` |
+| Runs (the other recordings) | 839 calls (`stage2/rzx/r062000` 38, `stage2/rzx/r072000` 36, `stage2/rzx/r124000` 31 and 99 more) |
+| Called from | `SpawnSparks`, `SpawnEnemy` |
 | Reads | `$5E02` (`IntroBox+7`); `$5F02` (`IntroScript+181`); `$6002` (`HavokRoomEnter+46`); `$6102` (`SizeClasses+128`) |
 
 ## enemies
@@ -5061,7 +5129,7 @@ Witness: rooms 82 runs (`$9348` only in rooms). Witness: L1 17816 (bossgate, roo
 
 | | |
 | --- | --- |
-| Runs | not reached in `stage1/c1`; in the other recordings run into, not called (`stage1/rec/rooms`) |
+| Runs | not reached in `stage1/c1`; in the other recordings 17,816 runs of its first instruction, entered by a jump (`stage2/rzx/r070000` 1,184, `stage2/rzx/r108000` 885, `stage2/rzx/r072000` 827 and 72 more) |
 | Called from | `JumpToHandler` |
 | Calls | `MoveActor` (tail) |
 | Reads | `$5D2A` (`BuildRowBaseLoop+4`); `$5E01` (`IntroBox+6`); `$5E27` (`IntroBoxSides+13`); `$5F01` (`IntroScript+180`); `$5F27` (`IntroScript+218`) |
@@ -5076,7 +5144,7 @@ Witness: deaths 134 runs. Witness: L1 53561 (bossgate, deaths, play48, throw, po
 
 | | |
 | --- | --- |
-| Runs | not reached in `stage1/c1`; in the other recordings run into, not called (`stage1/rec/deaths`) |
+| Runs | not reached in `stage1/c1`; in the other recordings 53,561 runs of its first instruction, entered by a jump (`stage2/rzx/r030000` 8,434, `stage2/rzx/r088000` 8,026, `stage2/rzx/r028000` 7,552 and 59 more) |
 | Called from | `JumpToHandler` |
 | Calls | `ApplyMoveNoGate` (tail), `ProbeVertical` |
 
@@ -5090,7 +5158,9 @@ Witness: L1 738 (rzx x5).
 
 | | |
 | --- | --- |
-| Runs | not reached in the recordings |
+| Runs | not reached in `stage1/c1`; in the other recordings 738 runs of its first instruction, entered by a jump (`stage2/rzx/r036000` 228, `stage2/rzx/r016000` 216, `stage2/rzx/r032000` 183 and 2 more) |
+| Called from | `JumpToHandler` |
+| Calls | `AnimateAfterMove` (tail) |
 
 ### `TriggerControl` (`$9390`)
 
@@ -5102,7 +5172,9 @@ Witness: L1 104705 (poke-room x1, rzx x17, rzxroom x5).
 
 | | |
 | --- | --- |
-| Runs | not reached in the recordings |
+| Runs | not reached in `stage1/c1`; in the other recordings 104,705 runs of its first instruction, entered by a jump (`stage2/rzx/r056000` 16,426, `stage2/rzx/r078000` 16,399, `stage2/rzx/r020000` 10,885 and 20 more) |
+| Called from | `JumpToHandler` |
+| Calls | `HiroInZone`, `AnimateAfterMove` (tail), `FreezeAnim` |
 
 ### `StalactiteControl` (`$93A8`)
 
@@ -5114,9 +5186,9 @@ Witness: rooms 84 runs. Witness: L1 2693 (rooms, rzx x10).
 
 | | |
 | --- | --- |
-| Runs | not reached in `stage1/c1`; in the other recordings run into, not called (`stage1/rec/rooms`) |
+| Runs | not reached in `stage1/c1`; in the other recordings 2,693 runs of its first instruction, entered by a jump (`stage2/rzx/r078000` 655, `stage2/rzx/r016000` 367, `stage2/rzx/r022000` 361 and 8 more) |
 | Called from | `JumpToHandler` |
-| Calls | `HiroInZone` |
+| Calls | `HiroMelee` (tail), `HiroInZone` |
 
 ### `PatrolControl` (`$93AF`)
 
@@ -5128,8 +5200,8 @@ Witness: L1 3637 (deaths, gameover, hiscore, play48, rooms, c x1, rzx x3, rzxroo
 
 | | |
 | --- | --- |
-| Runs (c1: power-on on a 128K, the load at signal speed, the menu, the intro, a short walk) | run into, not called, 5,605 t-states own (0.00 %) |
-| Runs (the other recordings) | run into, not called (`stage1/rec/deaths`, `stage1/rec/gameover`, `stage1/rec/rooms`) |
+| Runs (c1: power-on on a 128K, the load at signal speed, the menu, the intro, a short walk) | 61 runs of its first instruction (entered by a jump or by running on, no routine of its own in the L1), 5,605 t-states own (0.00 %) |
+| Runs (the other recordings) | 3,576 runs of its first instruction, entered by a jump (`stage1/rec/deaths` 1,509, `stage2/rec/play48` 702, `stage2/rzx/r004000` 449 and 10 more) |
 | Called from | `JumpToHandler` |
 | Calls | `MoveActor` (tail) |
 | Reads | `$5E12` (`IntroBox+23`); `$5E3E`-`$5E40` (`IntroBoxRowLoop+6`, `IntroBoxSide`); `$5F12` (`IntroScript+197`); `$5F3E`-`$5F40` (`IntroScript+241`) |
@@ -5145,7 +5217,9 @@ Witness: L1 1982 (rzx x5, rzxroom x4).
 
 | | |
 | --- | --- |
-| Runs | not reached in the recordings |
+| Runs | not reached in `stage1/c1`; in the other recordings 1,982 runs of its first instruction, entered by a jump (`stage2/rzx/r132000` 1,035, `stage2/rzx/r082000` 290, `stage2/rzx/r070000` 252 and 6 more) |
+| Called from | `JumpToHandler` |
+| Calls | `TrapStill` (falls into), `PathControl` (tail), `HiroInZone` |
 
 ### `TrapStill` (`$93EB`)
 
@@ -5157,7 +5231,9 @@ Witness: L1 1100 (bossgate, havok, rzx x13, rzxroom x4).
 
 | | |
 | --- | --- |
-| Runs | not reached in the recordings |
+| Runs | not reached in `stage1/c1`; in the other recordings 961 calls (`stage2/rzx/r132000` 683, `stage2/rzx/r082000` 100, `stage2/rzx/r070000` 91 and 2 more) |
+| Called from | `TrapControl` (falls into) |
+| Calls | `ExpireActor`, `ApplyNoMove` (tail) |
 
 ### `PathControl` (`$93FB`)
 
@@ -5171,9 +5247,9 @@ Witness: L1 12290 (bossgate, deaths, gameover, havok, hiscore, menu, play48, roo
 
 | | |
 | --- | --- |
-| Runs | not reached in `stage1/c1`; in the other recordings run into, not called (`stage1/rec/rooms`, `stage1/rec/menu`, `stage1/rec/deaths` and 4 more) |
-| Called from | `JumpToHandler` |
-| Calls | `BossFire`, `ShieldFollow`, `RandomSpeed`, `ApplyMove` (tail) |
+| Runs | not reached in `stage1/c1`; in the other recordings 878 calls (`stage2/rzx/r132000` 361, `stage2/rzx/r082000` 195, `stage2/rzx/r070000` 167 and 3 more) |
+| Called from | `TrapControl` (tail), `JumpToHandler` |
+| Calls | `BossFire`, `ShieldFollow`, `RandomSpeed`, `ApplyMove` (tail), `ProbeWalls` |
 | Reads | `$5E03`-`$5E25` (`IntroBox+8`, `IntroBoxSides`); `$5E3A`-`$5E40` (`IntroBoxRowLoop+2`, `IntroBoxSide`); `$5F03`-`$5F25` (`IntroScript+182`); `$5F3A`-`$5F40` (`IntroScript+237`); `$6003`-`$6025` (`HavokRoomEnter+47`); `$603A`-`$6040` (`HavokRoomEnter+102`); 9 more ranges |
 | Writes | `$5E1B`-`$5E25` (`IntroBoxSides+1`); `$5E3A`-`$5E40` (`IntroBoxRowLoop+2`, `IntroBoxSide`); `$5F1B`-`$5F25` (`IntroScript+206`); `$5F3A`-`$5F40` (`IntroScript+237`); `$601B`-`$6025` (`HavokRoomEnter+71`); `$603A`-`$6040` (`HavokRoomEnter+102`); 6 more ranges |
 
@@ -5189,8 +5265,9 @@ Witness: L1 4894 (bossgate, deaths, gameover, havok, hiscore, menu, play48, room
 
 | | |
 | --- | --- |
-| Runs | not reached in `stage1/c1`; in the other recordings 209 calls (`stage1/rec/rooms` 87, `stage1/rec/deaths` 64, `stage1/rec/menu` 26 and 4 more) |
+| Runs | not reached in `stage1/c1`; in the other recordings 4,894 calls (`stage2/rzx/r062000` 361, `stage2/rzx/r028000` 183, `stage2/rzx/r134000` 162 and 84 more) |
 | Called from | `PathControl` |
+| Calls | `ActorUpdate`, `ExpireActor`, `InitActor` |
 | Reads | `$5E1C` (`IntroBoxSides+2`); `$5E40` (`IntroBoxSide+1`); `$5F1C` (`IntroScript+207`); `$5F40` (`IntroScript+243`); `$601C` (`HavokRoomEnter+72`); `$6040` (`HavokRoomEnter+108`); 6 more ranges |
 
 ### `ShieldFollow` (`$94E1`)
@@ -5203,7 +5280,7 @@ Witness: L1 2516 (deaths, havok, play48, rzx x53, rzxroom x2).
 
 | | |
 | --- | --- |
-| Runs | not reached in `stage1/c1`; in the other recordings 116 calls (`stage1/rec/deaths` 116) |
+| Runs | not reached in `stage1/c1`; in the other recordings 2,516 calls (`stage2/rzx/r140000` 192, `stage2/rzx/r100000` 153, `stage2/rec/play48` 123 and 55 more) |
 | Called from | `PathControl` |
 | Reads | `$5D00`-`$5D01` (`Hiro`); `$6500`-`$6501` (`ActorPage9`) |
 
@@ -5217,7 +5294,7 @@ Witness: L1 19642 (bossgate, deaths, gameover, havok, hiscore, menu, play48, roo
 
 | | |
 | --- | --- |
-| Runs | not reached in `stage1/c1`; in the other recordings 875 calls (`stage1/rec/rooms` 272, `stage1/rec/menu` 227, `stage1/rec/deaths` 180 and 4 more) |
+| Runs | not reached in `stage1/c1`; in the other recordings 19,642 calls (`stage2/rzx/r062000` 1,368, `stage2/rzx/r136000` 942, `stage2/rzx/r028000` 840 and 84 more) |
 | Called from | `PathControl` |
 | Calls | `Random` |
 | Reads | `$5E3F` (`IntroBoxSide`); `$5F3F` (`IntroScript+242`); `$603F` (`HavokRoomEnter+107`); `$613F` (`SizeClasses+189`); `$653F` (`ActorPage9+63`); `$663F` (`WeaponActor+63`) |
@@ -5237,8 +5314,8 @@ Witness: L1 109380 (rooms, poke-room x1, rzx x28, rzxroom x6).
 
 | | |
 | --- | --- |
-| Runs | not reached in `stage1/c1`; in the other recordings 84 calls (`stage1/rec/rooms` 84) |
-| Called from | `StalactiteControl` |
+| Runs | not reached in `stage1/c1`; in the other recordings 109,380 calls (`stage2/rzx/r078000` 17,054, `stage2/rzx/r056000` 16,426, `stage2/rzx/r020000` 10,937 and 33 more) |
+| Called from | `TriggerControl`, `StalactiteControl`, `TrapControl` |
 | Reads | `$5D00`-`$5D01` (`Hiro`); `$5F00`-`$5F11` (`IntroScript+179`); `$5FBC`-`$5FBF` (`IntroScript+367`) |
 
 ### `SpawnRoomEnemies` (`$A59B`)
@@ -5256,8 +5333,8 @@ Witness: L1 830 (bossgate, deaths, gameover, havok, hiscore, menu, play48, rooms
 | | |
 | --- | --- |
 | Runs (c1: power-on on a 128K, the load at signal speed, the menu, the intro, a short walk) | 3 calls, 286 t-states own (0.00 %) |
-| Runs (the other recordings) | 24 calls (`stage1/rec/deaths` 10, `stage1/rec/rooms` 7, `stage1/rec/gameover` 2 and 4 more) |
-| Called from | `DeathStep` (tail), `EnterRoom` |
+| Runs (the other recordings) | 827 calls (`stage2/rzx/r062000` 46, `stage2/rzx/r114000` 42, `stage2/rzx/r088000` 31 and 111 more) |
+| Called from | `DrawActor` (tail), `DeathStep` (tail), `EnterRoom` |
 | Calls | `SpawnZoneEnemies` (falls into) |
 | Reads | `$6ADD`-`$6ADF` (`EnemyCount`, `EnemyListPtr`); `$6DFF` (`RevealedZones`); `$6EFE`-`$6EFF` (`GoneEnemies`) |
 
@@ -5267,7 +5344,8 @@ Witness: L1 830 (bossgate, deaths, gameover, havok, hiscore, menu, play48, rooms
 
 | | |
 | --- | --- |
-| Runs | not reached in `stage1/c1`; in the other recordings 99 calls (`stage1/rec/rooms` 88, `stage1/rec/deaths` 11) |
+| Runs (c1: power-on on a 128K, the load at signal speed, the menu, the intro, a short walk) | 3 runs of its first instruction (entered by a jump or by running on, no routine of its own in the L1) |
+| Runs (the other recordings) | 335 calls (`stage1/rec/rooms` 88, `stage2/rzx/r014000` 20, `stage2/rzx/r024000` 20 and 21 more) |
 | Called from | `CheckRoomExit` (tail), `SpawnRoomEnemies` (falls into) |
 | Calls | `SpawnEnemy` |
 | Reads | `$6ADD`-`$6ADF` (`EnemyCount`, `EnemyListPtr`); `$6EFE`-`$6EFF` (`GoneEnemies`) |
@@ -5287,10 +5365,10 @@ Witness: L1 3701 (bossgate, deaths, gameover, havok, hiscore, play48, rooms, c x
 | | |
 | --- | --- |
 | Runs (c1: power-on on a 128K, the load at signal speed, the menu, the intro, a short walk) | 1 call, 573 t-states own (0.00 %) |
-| Runs (the other recordings) | 467 calls (`stage1/rec/rooms` 446, `stage1/rec/deaths` 20, `stage1/rec/gameover` 1) |
+| Runs (the other recordings) | 3,700 calls (`stage1/rec/rooms` 446, `stage2/rzx/r092000` 193, `stage2/rzx/r062000` 191 and 103 more) |
 | Called from | `SpawnZoneEnemies` |
 | Calls | `CellPixel`, `FindFreeActor`, `Random`, `TemplateForKind`, `InitActor` |
-| Reads | `$5B01`-`$5B18` (system); `$5DD2`-`$5DE3` (`IntroScene`, `IntroPictureText`, `IntroText`, `IntroPictureWait`); `$5E0D` (`IntroBox+18`); `$5ED2`-`$5ED3` (`IntroScript+133`); `$5F0D` (`IntroScript+192`); `$600D` (`HavokRoomEnter+57`); 3 more ranges |
+| Reads | `$5B01`-`$5B18` (`RoomObjectList`); `$5DD2`-`$5DE3` (`IntroScene`, `IntroPictureText`, `IntroText`, `IntroPictureWait`); `$5E0D` (`IntroBox+18`); `$5ED2`-`$5ED3` (`IntroScript+133`); `$5F0D` (`IntroScript+192`); `$600D` (`HavokRoomEnter+57`); 3 more ranges |
 | Writes | `$5E28`-`$5E29` (`IntroBoxSides+14`); `$5F28`-`$5F29` (`IntroScript+219`); `$6028`-`$6029` (`HavokRoomEnter+84`); `$6128`-`$6129` (`SizeClasses+166`); `$65BF`-`$65C2` (`SharedEnemyTemplate+7`); `$68DC`-`$68E2` (`EnemySlots`) |
 
 ### `Random` (`$A632`)
@@ -5304,7 +5382,7 @@ Witness: L1 2482 (bossgate, deaths, gameover, hiscore, play48, rooms, c x1, poke
 | | |
 | --- | --- |
 | Runs (c1: power-on on a 128K, the load at signal speed, the menu, the intro, a short walk) | 1 call, 2,824 t-states own (0.00 %) |
-| Runs (the other recordings) | 91 calls (`stage1/rec/rooms` 83, `stage1/rec/deaths` 7, `stage1/rec/gameover` 1) |
+| Runs (the other recordings) | 2,481 calls (`stage2/rzx/r134000` 600, `stage2/rzx/r042000` 406, `stage2/rzx/r044000` 345 and 88 more) |
 | Called from | `RandomSpeed`, `SpawnEnemy` |
 | Reads | `$8473`-`$8474` (`GameTick+1`) |
 | Writes | `$8473`-`$8474` (`GameTick+1`) |
@@ -5329,7 +5407,7 @@ Witness: L1 827 (deaths, gameover, hiscore, play48, rooms, rzx x60, rzxroom x7).
 
 | | |
 | --- | --- |
-| Runs | not reached in `stage1/c1`; in the other recordings 45 calls (`stage1/rec/deaths` 39, `stage1/rec/rooms` 5, `stage1/rec/gameover` 1) |
+| Runs | not reached in `stage1/c1`; in the other recordings 827 calls (`stage2/rec/play48` 43, `stage1/rec/deaths` 39, `stage2/rzx/r036000` 27 and 69 more) |
 | Called from | `FallDamageStep`, `TouchHiro` |
 | Calls | `GameOver` (tail), `PrintScore` (tail), `SpawnShield`, `BcdToDigits` |
 | Reads | `$5C00`-`$5C09` (`GlobalsInit`); `$6642`-`$6652` (`Vitality`, `VitalityShown`, `ChargeStep`, `Charge` and 13 more); `$9A59` (`RunActorSteps+14`) |
@@ -5349,8 +5427,8 @@ Witness: L1 130 (bossgate, deaths, havok, play48, throw, rzx x47, rzxroom x9).
 
 | | |
 | --- | --- |
-| Runs | not reached in `stage1/c1`; in the other recordings 1 call (`stage1/rec/deaths` 1) |
-| Called from | `CollectFragment` (tail) |
+| Runs | not reached in `stage1/c1`; in the other recordings 130 calls (`stage2/rzx/r124000` 11, `stage2/rzx/r024000` 7, `stage2/rzx/r014000` 7 and 58 more) |
+| Called from | `ExpireActor`, `CollectFragment`, `BreakOrBlock` |
 | Calls | `BcdToDigits` |
 | Reads | `$5D82`-`$5D85` (`Intro48+51`); `$6653`-`$6656` (`Score`) |
 | Writes | `$5F39` (`IntroScript+236`); `$6653`-`$6656` (`Score`) |
@@ -5365,7 +5443,7 @@ Witness: L1 609 (bossgate, deaths, havok, play48, throw, rzx x63, rzxroom x10).
 
 | | |
 | --- | --- |
-| Runs | not reached in `stage1/c1`; in the other recordings 5 calls (`stage1/rec/deaths` 5) |
+| Runs | not reached in `stage1/c1`; in the other recordings 218 calls (`stage2/rzx/r124000` 11, `stage2/rec/play48` 8, `stage2/rzx/r024000` 7 and 74 more) |
 | Called from | `LoseEnergy`, `AddScore` |
 | Reads | `$664D`-`$6656` (`Lives`, `Fragments`, `FragmentsShown`, `FireRequest` and 3 more) |
 | Writes | `$665B`-`$6665` (`ScoreDigits`, `LivesDigits`) |
@@ -5381,9 +5459,9 @@ Witness: L1 2036417 (bossgate, deaths, gameover, havok, hiscore, menu, play48, r
 | | |
 | --- | --- |
 | Runs (c1: power-on on a 128K, the load at signal speed, the menu, the intro, a short walk) | 25,067 calls, 16,458,072 t-states own (1.25 %) |
-| Runs (the other recordings) | 383,349 calls (`stage1/rec/menu` 133,075, `stage1/rec/deaths` 108,017, `stage1/rec/rooms` 78,837 and 4 more) |
+| Runs (the other recordings) | 2,011,350 calls (`stage2/rec/havok` 180,985, `stage1/rec/menu` 133,075, `stage1/rec/deaths` 108,017 and 113 more) |
 | Called from | `MainLoopActors`, `Im2Space` (falls into), `PanelAttrsRoom` |
-| Calls | `PrintPanelLine`, `SetWeapon`, `PanelMeters` (tail), `DrawMeterPartial`, `DrawMeterGradient` |
+| Calls | `PrintPanelLine`, `PrintString` (tail), `SetWeapon`, `PanelMeters` (tail), `DrawMeterPartial`, `DrawMeterGradient` |
 | Reads | `$6649`-`$664F` (`WeaponCount`, `WeaponCountShown`, `Weapon`, `PauseFlag` and 3 more) |
 | Writes | `$664A`-`$664F` (`WeaponCountShown`, `Weapon`, `PauseFlag`, `Lives` and 2 more); `$7F0D`-`$7F1C` (`MeterGlyphs`) |
 | Ports in | `$0AFE` |
@@ -5400,7 +5478,7 @@ Witness: L1 2036423 (bossgate, deaths, gameover, havok, hiscore, menu, play48, r
 | | |
 | --- | --- |
 | Runs (c1: power-on on a 128K, the load at signal speed, the menu, the intro, a short walk) | 25,071 calls, 17,130,764 t-states own (1.30 %) |
-| Runs (the other recordings) | 383,348 calls (`stage1/rec/menu` 133,074, `stage1/rec/deaths` 108,017, `stage1/rec/rooms` 78,837 and 4 more) |
+| Runs (the other recordings) | 2,011,350 calls (`stage2/rec/havok` 180,985, `stage1/rec/menu` 133,074, `stage1/rec/deaths` 108,017 and 113 more) |
 | Called from | `MainLoopActors`, `PanelWeapon` (tail), `DrawMeter` (tail) |
 | Calls | `DrawMeter` (falls into), `DrawMeterPartial` |
 | Reads | `$6642`-`$6646` (`Vitality`, `VitalityShown`, `ChargeStep`, `Charge` and 1 more); `$FFB7`-`$FFC6` (`MeterGradient`, `MeterStrip`, `MeterPartial`, `MeterEmpty`) |
@@ -5421,7 +5499,7 @@ Witness: L1 10240 (bossgate, deaths, gameover, havok, hiscore, menu, play48, roo
 | | |
 | --- | --- |
 | Runs (c1: power-on on a 128K, the load at signal speed, the menu, the intro, a short walk) | 53 calls, 16,461,216 t-states own (1.25 %) |
-| Runs (the other recordings) | 197 calls (`stage1/rec/deaths` 45, `stage1/rec/opt2` 45, `stage1/rec/opt3` 45 and 3 more) |
+| Runs (the other recordings) | 10,176 calls (`stage2/rzx/r024000` 406, `stage2/rzx/r124000` 396, `stage2/rec/play48` 290 and 105 more) |
 | Called from | `PanelMeters` (falls into) |
 | Calls | `PanelMeters` (tail), `DrawMeterPartial` (falls into), `DrawMeterGradient` (tail), `DrawMeterNext` |
 | Reads | `$6643`-`$6646` (`VitalityShown`, `ChargeStep`, `Charge`, `ChargeShown`); `$FFB7`-`$FFCA` (`MeterGradient`, `MeterStrip`, `MeterPartial`, `MeterEmpty`) |
@@ -5481,7 +5559,7 @@ Witness: L1 14 (deaths, gameover, havok, hiscore, menu, play48, throw, c x1, opt
 | | |
 | --- | --- |
 | Runs (c1: power-on on a 128K, the load at signal speed, the menu, the intro, a short walk) | 1 call, 1,082 t-states own (0.00 %) |
-| Runs (the other recordings) | 7 calls (`stage1/rec/menu` 2, `stage1/rec/deaths` 1, `stage1/rec/gameover` 1 and 3 more) |
+| Runs (the other recordings) | 13 calls (`stage1/rec/menu` 2, `stage2/rec/havok` 1, `stage2/rzx/r000000` 1 and 9 more) |
 | Called from | `MatchCheatName`, `BuildPageTails` (tail) |
 | Calls | `IntroScript` (tail), `PanelWeapon` |
 | Reads | `$6BDD` (`Room`); `$FFCB`-`$FFEA` (`PanelAttrs`) |
@@ -5764,8 +5842,8 @@ Witness: L1 14765 (c1, deaths, gameover, menu, rooms, opt x3).
 
 | | |
 | --- | --- |
-| Runs (c1: power-on on a 128K, the load at signal speed, the menu, the intro, a short walk) | run into, not called, 143,259 t-states own (0.01 %) |
-| Runs (the other recordings) | run into, not called (`stage1/rec/menu`, `stage1/rec/gameover`, `stage1/rec/deaths` and 4 more) |
+| Runs (c1: power-on on a 128K, the load at signal speed, the menu, the intro, a short walk) | 911 runs of its first instruction (entered by a jump or by running on, no routine of its own in the L1), 143,259 t-states own (0.01 %) |
+| Runs (the other recordings) | 13,854 runs of its first instruction, entered by a jump (`stage1/rec/menu` 4,848, `stage1/rec/gameover` 3,252, `stage1/rec/deaths` 2,216 and 4 more) |
 | Called from | `UpdateChannel` |
 | Reads | `$CED4`-`$CF5A` (`Instruments`); `$CFBB`-`$CFBF` (`Effects+91`); `$CFE2`-`$CFF3` (`Effects+130`); `$D0A2` (`AyChannelA+5`); `$D0B6` (`AyChannelB+5`); `$D0CA` (`AyChannelC+5`) |
 | Writes | `$D0A2`-`$D0D3` (`AyChannelA+5`, `AyChannelB`, `AyChannelC`) |
@@ -5778,8 +5856,8 @@ Witness: L1 111733 (c1, deaths, gameover, menu, rooms, opt x3).
 
 | | |
 | --- | --- |
-| Runs (c1: power-on on a 128K, the load at signal speed, the menu, the intro, a short walk) | run into, not called, 653,029 t-states own (0.05 %) |
-| Runs (the other recordings) | run into, not called (`stage1/rec/menu`, `stage1/rec/gameover`, `stage1/rec/deaths` and 4 more) |
+| Runs (c1: power-on on a 128K, the load at signal speed, the menu, the intro, a short walk) | 6,334 runs of its first instruction (entered by a jump or by running on, no routine of its own in the L1), 653,029 t-states own (0.05 %) |
+| Runs (the other recordings) | 105,399 runs of its first instruction, entered by a jump (`stage1/rec/menu` 35,870, `stage1/rec/gameover` 24,067, `stage1/rec/deaths` 19,185 and 4 more) |
 | Called from | `UpdateChannel` |
 | Reads | `$CED5`-`$CF58` (`Instruments+1`); `$CFBC`-`$CFBD` (`Effects+92`); `$CFE3`-`$CFF1` (`Effects+131`); `$D0A2` (`AyChannelA+5`); `$D0B6` (`AyChannelB+5`); `$D0CA` (`AyChannelC+5`) |
 | Writes | `$D0A2`-`$D0D3` (`AyChannelA+5`, `AyChannelB`, `AyChannelC`) |
@@ -5792,8 +5870,8 @@ Witness: L1 7336 (c1, deaths, gameover, menu, rooms, opt x3).
 
 | | |
 | --- | --- |
-| Runs (c1: power-on on a 128K, the load at signal speed, the menu, the intro, a short walk) | run into, not called, 16,090 t-states own (0.00 %) |
-| Runs (the other recordings) | run into, not called (`stage1/rec/menu`, `stage1/rec/deaths`, `stage1/rec/gameover` and 4 more) |
+| Runs (c1: power-on on a 128K, the load at signal speed, the menu, the intro, a short walk) | 461 runs of its first instruction (entered by a jump or by running on, no routine of its own in the L1), 16,090 t-states own (0.00 %) |
+| Runs (the other recordings) | 6,875 runs of its first instruction, entered by a jump (`stage1/rec/menu` 2,119, `stage1/rec/deaths` 1,775, `stage1/rec/gameover` 1,507 and 4 more) |
 | Called from | `UpdateChannel` |
 | Reads | `$D0A3` (`AyChannelA+6`); `$D0B7` (`AyChannelB+6`); `$D0CB` (`AyChannelC+6`) |
 | Writes | `$D0AA`-`$D0AB` (`AyChannelA+13`); `$D0BE`-`$D0BF` (`AyChannelB+13`); `$D0D2`-`$D0D3` (`AyChannelC+13`) |
@@ -5808,8 +5886,8 @@ Witness: L1 199 (c1, deaths, gameover, menu, rooms, opt x3).
 
 | | |
 | --- | --- |
-| Runs (c1: power-on on a 128K, the load at signal speed, the menu, the intro, a short walk) | run into, not called, 435 t-states own (0.00 %) |
-| Runs (the other recordings) | run into, not called (`stage1/rec/menu`, `stage1/rec/gameover`, `stage1/rec/rooms` and 4 more) |
+| Runs (c1: power-on on a 128K, the load at signal speed, the menu, the intro, a short walk) | 3 runs of its first instruction (entered by a jump or by running on, no routine of its own in the L1), 435 t-states own (0.00 %) |
+| Runs (the other recordings) | 196 runs of its first instruction, entered by a jump (`stage1/rec/menu` 98, `stage1/rec/gameover` 75, `stage1/rec/rooms` 10 and 4 more) |
 | Called from | `UpdateChannel` |
 | Reads | `$CED7` (`Instruments+3`); `$CEEB`-`$CEFF` (`Instruments+23`); `$CF13` (`Instruments+63`); `$CF31` (`Instruments+93`); `$CF59` (`Instruments+133`); `$CFBE` (`Effects+94`); 2 more ranges |
 | Writes | `$D09C`-`$D0D6` (`AyMixer`, `AyChannelA`) |
@@ -6194,7 +6272,8 @@ Witness: L1 11 (c x2).
 
 | | |
 | --- | --- |
-| Runs | not reached in the recordings |
+| Runs (c1: power-on on a 128K, the load at signal speed, the menu, the intro, a short walk) | 4 runs of its first instruction (entered by a jump or by running on, no routine of its own in the L1) |
+| Runs (the other recordings) | 3 runs of its first instruction, entered by a jump (`stage1/rec/c48` 3) |
 
 #### `LoaderStart` (`$FFEE`)
 
@@ -6206,7 +6285,7 @@ Witness: L1 5 (c x2).
 
 | | |
 | --- | --- |
-| Runs | not reached in the recordings |
+| Runs | not reached in `stage1/c1`; in the other recordings 1 run of its first instruction, entered by a jump (`stage1/rec/c48` 1) |
 
 
 ## The loader's second stage (`src/stage2/stage2.json`)
@@ -6301,8 +6380,8 @@ Witness: L1 2 (c x1). Ran only in c1.
 | --- | --- |
 | Runs (c1: power-on on a 128K, the load at signal speed, the menu, the intro, a short walk) | 2 calls, 1,002,719 t-states own (0.08 %) |
 | Called from | `SwapBank` |
-| Reads | `$8000`-`$A0F8` |
-| Writes | `$8000`-`$A0F8` |
+| Reads | `$8000`-`$A0F8` (`Block6Buffer`) |
+| Writes | `$8000`-`$A0F8` (`Block6Buffer`) |
 
 #### `Has128K` (`$618E`)
 
@@ -6417,7 +6496,7 @@ Witness: L1 2 (c x2).
 | Runs (the other recordings) | 1 call (`stage1/rec/c48` 1) |
 | Calls | `SetVectors` |
 | Reads | `$4052` (`BootModel+1`); `$4095`-`$5190` (`HookBytes`, `work space $40A4+`) |
-| Writes | `$5C00`-`$6B4C`; `$853F`-`$85E0`; `$A6EF`-`$A6F1`; `$A75C`-`$A75E`; `$A76F`-`$A771`; `$FF01`-`$FFFE` |
+| Writes | `$5C00`-`$6B4C` (`GlobalsInit`, `NewGameIntroHook`, `GameEntry`, `GameEntryIntro`); `$853F`-`$85E0`; `$A6EF`-`$A6F1` (`ShowHighScoresHook`); `$A75C`-`$A75E` (`TitleColourHook`); `$A76F`-`$A771` (`TitleStepHook`); `$FF01`-`$FFFE` (`PanelWeapon`) |
 | Ports out | `$00FE` |
 
 #### `SetVectors` (`$401F`)
@@ -6433,7 +6512,7 @@ Witness: L1 3 (c x2).
 | Runs (c1: power-on on a 128K, the load at signal speed, the menu, the intro, a short walk) | 2 calls, 13,512 t-states own (0.00 %) |
 | Runs (the other recordings) | 1 call (`stage1/rec/c48` 1) |
 | Called from | `Bootstrap` |
-| Writes | `$FDFD`-`$FF00` |
+| Writes | `$FDFD`-`$FF00` (`Im2Jump`, `Im2Table`) |
 | Ports out | `$7FFD` |
 
 
@@ -6470,8 +6549,8 @@ Witness: L1 47031 (c1, deaths, gameover, menu, opt2, rooms).
 | Runs (c1: power-on on a 128K, the load at signal speed, the menu, the intro, a short walk) | 2,614 calls, 305,838 t-states own (0.02 %) |
 | Runs (the other recordings) | 41,803 calls (`stage1/rec/menu` 18,055, `stage1/rec/gameover` 9,844, `stage1/rec/deaths` 7,824 and 2 more) |
 | Calls | `GlueRequests` |
-| Reads | `$8450` |
-| Writes | `$9BA3` |
+| Reads | `$8450` (`Last7FFD`) |
+| Writes | `$9BA3` (`EffectBusy`) |
 | Ports out | `$7FFD` |
 
 #### `GlueRequests` (`$8558`)
@@ -6495,8 +6574,8 @@ Witness: L1 47031 (c1, deaths, gameover, menu, opt2, rooms).
 | Runs (c1: power-on on a 128K, the load at signal speed, the menu, the intro, a short walk) | 2,614 calls, 227,689 t-states own (0.02 %) |
 | Runs (the other recordings) | 41,803 calls (`stage1/rec/menu` 18,055, `stage1/rec/gameover` 9,844, `stage1/rec/deaths` 7,824 and 2 more) |
 | Called from | `AyGlue` |
-| Reads | `$8452`-`$8455` |
-| Writes | `$8452`-`$8454` |
+| Reads | `$8452`-`$8455` (`TuneRequest`, `TuneState`, `EffectRequest`, `SoundMode`) |
+| Writes | `$8452`-`$8454` (`TuneRequest`, `TuneState`, `EffectRequest`) |
 
 #### `GlueMenuInput` (`$859E`)
 
@@ -6511,7 +6590,7 @@ Witness: L1 7533 (c1, deaths, gameover, menu, opt2).
 | Runs (c1: power-on on a 128K, the load at signal speed, the menu, the intro, a short walk) | 19 calls, 1,112 t-states own (0.00 %) |
 | Runs (the other recordings) | 7,495 calls (`stage1/rec/menu` 4,801, `stage1/rec/gameover` 2,656, `stage1/rec/opt2` 19 and 1 more) |
 | Calls | `GlueSoundIcon` (tail) |
-| Writes | `$8455` |
+| Writes | `$8455` (`SoundMode`) |
 
 #### `GlueSoundIcon` (`$85B3`)
 
@@ -6526,7 +6605,7 @@ Witness: L1 957 (c1, deaths, gameover, menu, opt2).
 | Runs (c1: power-on on a 128K, the load at signal speed, the menu, the intro, a short walk) | 1 call, 387 t-states own (0.00 %) |
 | Runs (the other recordings) | 955 calls (`stage1/rec/gameover` 923, `stage1/rec/menu` 29, `stage1/rec/opt2` 2 and 1 more) |
 | Called from | `GlueMenuInput` (tail) |
-| Reads | `$8455` |
+| Reads | `$8455` (`SoundMode`) |
 
 #### `GlueIntro` (`$85C5`)
 
@@ -6540,5 +6619,5 @@ Witness: L1 8 (c1, deaths, gameover, menu, opt2).
 | --- | --- |
 | Runs (c1: power-on on a 128K, the load at signal speed, the menu, the intro, a short walk) | 1 call, 127 t-states own (0.00 %) |
 | Runs (the other recordings) | 6 calls (`stage1/rec/menu` 2, `stage1/rec/gameover` 2, `stage1/rec/opt2` 1 and 1 more) |
-| Writes | `$8450` |
+| Writes | `$8450` (`Last7FFD`) |
 | Ports out | `$7FFD` |

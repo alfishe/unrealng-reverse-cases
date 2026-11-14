@@ -6,7 +6,9 @@ Runs count the calls of the entry itself; the time is its own t-states (callees 
 of the recording. Memory ranges name the label at or below their first byte (inner labels too, `Label+offset`)
 and the entries they cover. The interrupt's acceptance (the vector read, the return address pushed) is
 the handler's, not the interrupted routine's. An entry no recording reached says so; one the case's other
-recordings ran gives their calls.
+recordings ran gives their calls. An entry no routine of a recording starts at (entered by a jump, a table jump or
+by running on: L1 books its time to the routine it runs in) gives the runs of its first instruction, as its witness
+line counts them.
 Written by `kit/refdocs.py`; edit `src/game/game.ann`, then run `kit/mkgame.py --case . --install`
 (see [3. Build and load](03-build-and-load.md)) and `kit/refdocs.py --case .`.
 The parts of the medium (`case.json` `ref_parts`: Tape BASIC and loader, The 128K setup and the explorer selector
@@ -54,8 +56,8 @@ Witness: L1 1 (c1).
 | | |
 | --- | --- |
 | Runs (c1: power-on, the original tape at ROM speed on the 128K, the menu, the selector and play) | 1 call, 518,113 t-states own (0.03 %) |
-| Reads | `$5000`-`$57FF` (screen); `$5A00`-`$5B66` (screen); `$5B7C`-`$5B9E` (system); `$5BFA`-`$5C8C` (system); `$5FFE` (system); `$918C` (`AltTileset`); 2 more ranges |
-| Writes | `$5000`-`$57FF` (screen); `$5A00`-`$5BA0` (screen); `$5BFF`-`$5C8D` (system); `$5F5F`-`$5F61` (system); `$5FE5` (system); `$5FFF` (system); 6 more ranges |
+| Reads | `$5000`-`$57FF` (screen); `$5A00`-`$5B66` (screen); `$5B7C`-`$5B9E` (`BearerLoads`, `Lives`, `HeldItem`, `Thought` and 1 more); `$5BFA`-`$5C8C` (`UnicycleFrames`, `CountdownDays`, `CountdownHours`, `CountdownMinutes` and 47 more); `$5FFE` (`Has128K`); `$918C` (`AltTileset`); 2 more ranges |
+| Writes | `$5000`-`$57FF` (screen); `$5A00`-`$5BA0` (screen); `$5BFF`-`$5C8D` (`GameOver`, `BallThrown`, `Room`, `PassCount` and 42 more); `$5F5F`-`$5F61` (`Im2Jump`); `$5FE5` (`Last7FFD`); `$5FFF` (`GameLoaded`); 6 more ranges |
 | Ports in | `$FBFE`, `$FEFE` |
 | Ports out | `$00FE`, `$7FFD` |
 
@@ -75,11 +77,12 @@ Witness: L1 9 (c1, explorers, gameover, rzx50000).
 
 | | |
 | --- | --- |
-| Runs | not reached in `stage1/c1`; in the other recordings 2 calls (`stage1/gameover` 1, `stage1/rzx/r50000` 1) |
+| Runs (c1: power-on, the original tape at ROM speed on the 128K, the menu, the selector and play) | 2 runs of its first instruction (entered by a jump or by running on, no routine of its own in the L1) |
+| Runs (the other recordings) | 2 calls (`stage1/gameover` 1, `stage1/rzx/r50000` 1) |
 | Called from | `EndGame` (tail) |
 | Calls | `DeviceMenu` |
-| Reads | `$5000`-`$57FF` (screen); `$5A00`-`$5B66` (screen); `$5B7C`-`$5B9E` (system); `$5BFA`-`$5C8C` (system); `$5FFE` (system); `$918C` (`AltTileset`); 2 more ranges |
-| Writes | `$5000`-`$57FF` (screen); `$5A00`-`$5BA0` (screen); `$5BFA`-`$5C8D` (system); `$5FE5` (system); `$A6F5`-`$A700` (`ThinkHints+15`); `$B9D9` (`CrystalPlace`); 1 more ranges |
+| Reads | `$5000`-`$57FF` (screen); `$5A00`-`$5B66` (screen); `$5B7C`-`$5B9E` (`BearerLoads`, `Lives`, `HeldItem`, `Thought` and 1 more); `$5BFA`-`$5C8C` (`UnicycleFrames`, `CountdownDays`, `CountdownHours`, `CountdownMinutes` and 47 more); `$5FFE` (`Has128K`); `$918C` (`AltTileset`); 2 more ranges |
+| Writes | `$5000`-`$57FF` (screen); `$5A00`-`$5BA0` (screen); `$5BFA`-`$5C8D` (`UnicycleFrames`, `CountdownDays`, `CountdownHours`, `CountdownMinutes` and 47 more); `$5FE5` (`Last7FFD`); `$A6F5`-`$A700` (`ThinkHints+15`); `$B9D9` (`CrystalPlace`); 1 more ranges |
 | Ports in | `$FBFE`, `$FEFE` |
 | Ports out | `$7FFD` |
 
@@ -93,10 +96,11 @@ Witness: L1 8 (c1, explorers, rzx00000).
 
 | | |
 | --- | --- |
-| Runs | not reached in `stage1/c1`; in the other recordings run into, not called (`stage1/rzx/r00000`) |
+| Runs (c1: power-on, the original tape at ROM speed on the 128K, the menu, the selector and play) | 1 run of its first instruction (entered by a jump or by running on, no routine of its own in the L1) |
+| Runs (the other recordings) | 7 runs of its first instruction, entered by a jump (`stage1/explorers` 6, `stage1/rzx/r00000` 1) |
 | Calls | `SetUpRoom`, `SaveRespawnPoint`, `DrawPortrait`, `DrawSpareLives`, `DrawBearers`, `ResetItems`, `AddScore` |
-| Reads | `$5B04`-`$5B66` (system); `$5B7C`-`$5B9E` (system); `$5BFA`-`$5C8C` (system); `$5FFE` (system); `$B9D9` (`CrystalPlace`); `$E000`-`$E8FF` (`BackBuffer`, `SavedPanelAttrs`) |
-| Writes | `$5000`-`$57FF` (screen); `$5A00`-`$5BA0` (screen); `$5BFA`-`$5C8D` (system); `$5FE5` (system); `$A6F5`-`$A700` (`ThinkHints+15`); `$B9D9` (`CrystalPlace`) |
+| Reads | `$5B04`-`$5B66` (`Hero`, `ObjectSlot1`, `ObjectSlot2`, `ObjectSlot3` and 3 more); `$5B7C`-`$5B9E` (`BearerLoads`, `Lives`, `HeldItem`, `Thought` and 1 more); `$5BFA`-`$5C8C` (`UnicycleFrames`, `CountdownDays`, `CountdownHours`, `CountdownMinutes` and 47 more); `$5FFE` (`Has128K`); `$B9D9` (`CrystalPlace`); `$E000`-`$E8FF` (`BackBuffer`, `SavedPanelAttrs`) |
+| Writes | `$5000`-`$57FF` (screen); `$5A00`-`$5BA0` (screen); `$5BFA`-`$5C8D` (`UnicycleFrames`, `CountdownDays`, `CountdownHours`, `CountdownMinutes` and 47 more); `$5FE5` (`Last7FFD`); `$A6F5`-`$A700` (`ThinkHints+15`); `$B9D9` (`CrystalPlace`) |
 | Ports in | `$FBFE` |
 | Ports out | `$7FFD` |
 
@@ -120,10 +124,11 @@ Witness: L1 26517 (c1, explorers, gameover, rzx x31).
 
 | | |
 | --- | --- |
-| Runs | not reached in `stage1/c1`; in the other recordings run into, not called (`stage1/gameover`, `stage1/rzx/r14000`, `stage1/rzx/r32000` and 28 more) |
+| Runs (c1: power-on, the original tape at ROM speed on the 128K, the menu, the selector and play) | 1,270 runs of its first instruction (entered by a jump or by running on, no routine of its own in the L1) |
+| Runs (the other recordings) | 25,247 runs of its first instruction, entered by a jump (`stage1/explorers` 4,262, `stage1/rzx/r14000` 853, `stage1/rzx/r32000` 772 and 30 more) |
 | Calls | `RoomEffects`, `CountDown`, `RenderPass`, `HeroUpdate`, `LiftPlatform`, `ItemsPass`, `RunCreatures` |
-| Reads | `$5000`-`$57FF` (screen); `$5A00`-`$5AFF` (screen); `$5B9E` (system); `$5BFF`-`$5C02` (system); `$5C2A`-`$5C33` (system); `$918C` (`AltTileset`) |
-| Writes | `$5B04`-`$5B07` (system); `$5B9B`-`$5BA0` (system); `$5C01`-`$5C07` (system); `$5C2A` (system); `$E000`-`$E8FF` (`BackBuffer`, `SavedPanelAttrs`) |
+| Reads | `$5000`-`$57FF` (screen); `$5A00`-`$5AFF` (screen); `$5B9E` (`LiftRoom`); `$5BFF`-`$5C02` (`GameOver`, `BallThrown`, `Room`, `PassCount`); `$5C2A`-`$5C33` (`LifeLost`, `RespawnStatus`, `RespawnTimer`, `RespawnRoom` and 3 more); `$918C` (`AltTileset`) |
+| Writes | `$5B04`-`$5B07` (`Hero`); `$5B9B`-`$5BA0` (`Thought+2`, `LiftRoom`, `LiftY`, `NotOnLift`); `$5C01`-`$5C07` (`Room`, `PassCount`, `RefuseCount`, `Falling` and 3 more); `$5C2A` (`LifeLost`); `$E000`-`$E8FF` (`BackBuffer`, `SavedPanelAttrs`) |
 | Ports in | `$FBFE` |
 
 ### `EndGame` (`$906D`)
@@ -138,7 +143,8 @@ Witness: L1 8 (c1, explorers, gameover, rzx50000).
 
 | | |
 | --- | --- |
-| Runs | ran within another entry's routine (reached by a jump or by running on, its calls below), no runs of its own counted |
+| Runs (c1: power-on, the original tape at ROM speed on the 128K, the menu, the selector and play) | 1 run of its first instruction (entered by a jump or by running on, no routine of its own in the L1) |
+| Runs (the other recordings) | 7 runs of its first instruction, entered by a jump (`stage1/explorers` 5, `stage1/gameover` 1, `stage1/rzx/r50000` 1) |
 | Calls | `NewGame` (tail), `NewHiScore` |
 
 ### `Respawn` (`$9090`)
@@ -153,7 +159,7 @@ Witness: L1 5 (gameover, rzx06000, rzx10000, rzx24000, rzx32000).
 
 | | |
 | --- | --- |
-| Runs | ran within another entry's routine (reached by a jump or by running on, its calls below), no runs of its own counted |
+| Runs | not reached in `stage1/c1`; in the other recordings 5 runs of its first instruction, entered by a jump (`stage1/gameover` 1, `stage1/rzx/r06000` 1, `stage1/rzx/r10000` 1 and 2 more) |
 | Calls | `SetUpRoom` |
 
 ## util
@@ -218,7 +224,7 @@ Witness: L1 67291 (c1, explorers, gameover, rzx x31).
 | Runs (c1: power-on, the original tape at ROM speed on the 128K, the menu, the selector and play) | 3,322 calls, 549,334 t-states own (0.03 %) |
 | Runs (the other recordings) | 63,969 calls (`stage1/explorers` 11,312, `stage1/rzx/r32000` 2,443, `stage1/rzx/r24000` 2,143 and 30 more) |
 | Called from | `BasketScript`, `ProfessorScript`, `LeverScript`, `PickUpItem`, `HitExplorer` |
-| Reads | `$5B04`-`$5B15` (system); `$5B80`-`$5B92` (system); `$5C0E`-`$5C14` (system) |
+| Reads | `$5B04`-`$5B15` (`Hero`, `ObjectSlot1`, `ObjectSlot2`, `ObjectSlot3` and 1 more); `$5B80`-`$5B92` (`BearerLoads+4`); `$5C0E`-`$5C14` (`ItemSlot1`, `ItemSlot2`) |
 
 ### `Random` (`$9390`)
 
@@ -268,11 +274,11 @@ Witness: L1 327 (gameover, rzx50000).
 
 | | |
 | --- | --- |
-| Runs | not reached in `stage1/c1`; in the other recordings run into, not called (`stage1/rzx/r50000`, `stage1/gameover`) |
+| Runs | not reached in `stage1/c1`; in the other recordings 327 runs of its first instruction, entered by a jump (`stage1/rzx/r50000` 180, `stage1/gameover` 147) |
 | Called from | `JumpThroughWord` |
 | Calls | `PlaySound` (tail) |
-| Reads | `$5B08`-`$5B16` (system); `$5BFE` (system); `$5C41` (system) |
-| Writes | `$5B08`-`$5B17` (system); `$5BFF` (system); `$5C41` (system) |
+| Reads | `$5B08`-`$5B16` (`ObjectSlot1`, `ObjectSlot2`, `ObjectSlot3`, `ObjectSlot4`); `$5BFE` (`GameWon`); `$5C41` (`RoomStage`) |
+| Writes | `$5B08`-`$5B17` (`ObjectSlot1`, `ObjectSlot2`, `ObjectSlot3`, `ObjectSlot4`); `$5BFF` (`GameOver`); `$5C41` (`RoomStage`) |
 
 ## rooms
 
@@ -291,7 +297,7 @@ Witness: L1 106 (c1, explorers, gameover, rzx x28).
 | Runs (c1: power-on, the original tape at ROM speed on the 128K, the menu, the selector and play) | 1 call, 109 t-states own (0.00 %) |
 | Runs (the other recordings) | 105 calls (`stage1/rzx/r00000` 8, `stage1/rzx/r14500` 6, `stage1/rzx/r06000` 6 and 27 more) |
 | Called from | `SetUpRoomTiles` |
-| Writes | `$5B0A`-`$5B17` (system) |
+| Writes | `$5B0A`-`$5B17` (`ObjectSlot1+2`, `ObjectSlot2`, `ObjectSlot3`, `ObjectSlot4`) |
 
 ### `SwapTileset` (`$918D`)
 
@@ -330,7 +336,7 @@ Witness: L1 26513 (c1, explorers, gameover, rzx x31).
 | Runs (the other recordings) | 25,243 calls (`stage1/explorers` 4,262, `stage1/rzx/r14000` 853, `stage1/rzx/r32000` 771 and 30 more) |
 | Called from | `MainLoop` |
 | Calls | `Capsules` (tail), `MapToPixels`, `SetTile` |
-| Reads | `$5808`-`$5810` (screen); `$5825`-`$583C` (screen); `$588C`-`$5898` (screen); `$58B8`-`$58BC` (screen); `$59B4` (screen); `$5B04`-`$5B05` (system); 4 more ranges |
+| Reads | `$5808`-`$5810` (screen); `$5825`-`$583C` (screen); `$588C`-`$5898` (screen); `$58B8`-`$58BC` (screen); `$59B4` (screen); `$5B04`-`$5B05` (`Hero`); 4 more ranges |
 | Writes | `$468D`-`$468E` (screen); `$46C5`-`$46D2` (screen); `$478D`-`$478E` (screen); `$47C5`-`$47D2` (screen); `$4E46`-`$4E4D` (screen); `$4EA9`-`$4EB6` (screen); 9 more ranges |
 
 ### `Capsules` (`$9282`)
@@ -346,7 +352,7 @@ Witness: L1 5581 (rzx x12).
 | Runs | not reached in `stage1/c1`; in the other recordings 2,440 calls (`stage1/rzx/r44000` 660, `stage1/rzx/r46000` 631, `stage1/rzx/r48000` 629 and 3 more) |
 | Called from | `RoomEffects` (tail) |
 | Calls | `SetTileBuffer` |
-| Reads | `$5C02` (system); `$92FD`-`$933C` (`CapsuleFrames`); `$9AE5`-`$9AF2` (`EffectCellsB`) |
+| Reads | `$5C02` (`PassCount`); `$92FD`-`$933C` (`CapsuleFrames`); `$9AE5`-`$9AF2` (`EffectCellsB`) |
 | Writes | `$F460`-`$F46F` (`TilePixels+1120`) |
 
 ### `ShowCapsules` (`$92BD`)
@@ -411,8 +417,8 @@ Witness: L1 105 (c1, explorers, gameover, rzx x28).
 | Runs (the other recordings) | 104 calls (`stage1/rzx/r00000` 8, `stage1/rzx/r40000` 6, `stage1/rzx/r06000` 6 and 27 more) |
 | Called from | `RunSelector`, `Respawn`, `LoseGame`, `ExitLeft` (tail), `ExitRight` (tail), `ExitUp` (tail), `ExitDown` (tail), `TeleportStep` (tail), `ProfessorEnding` |
 | Calls | `SetUpRoomTiles`, `SaveRespawnPoint`, `DecodeRoomCreatures` |
-| Reads | `$5C05` (system); `$9AF5`-`$9B21` (`CheckpointRooms`) |
-| Writes | `$5C34`-`$5C35` (system) |
+| Reads | `$5C05` (`FallPasses`); `$9AF5`-`$9B21` (`CheckpointRooms`) |
+| Writes | `$5C34`-`$5C35` (`FloatVelocity`) |
 
 ### `SetUpRoomTiles` (`$9880`)
 
@@ -434,8 +440,8 @@ Witness: L1 105 (c1, explorers, gameover, rzx x28).
 | Runs (the other recordings) | 104 calls (`stage1/rzx/r00000` 8, `stage1/rzx/r06000` 6, `stage1/rzx/r40000` 6 and 27 more) |
 | Called from | `SetUpRoom` |
 | Calls | `ClearPartySlots`, `SwapTileset`, `BuildTileMap`, `DrawRoom`, `FindTileCells`, `SpawnRoomItems` (tail) |
-| Reads | `$5C24` (system); `$918C` (`AltTileset`); `$9AC6`-`$9AF3` (`AltTilesetRooms`, `EffectCellsA`, `EffectCellsB`) |
-| Writes | `$5BA1`-`$5BA3` (system); `$5C0C` (system); `$5C24` (system); `$5C41` (system); `$9AD5`-`$9AF4` (`EffectCellsA`, `EffectCellsB`); `$A6F5` (`ThinkHints+15`); 1 more ranges |
+| Reads | `$5C24` (`RopeCount`); `$918C` (`AltTileset`); `$9AC6`-`$9AF3` (`AltTilesetRooms`, `EffectCellsA`, `EffectCellsB`) |
+| Writes | `$5BA1`-`$5BA3` (`ProfessorState`, `WellHole`); `$5C0C` (`BridgeState`); `$5C24` (`RopeCount`); `$5C41` (`RoomStage`); `$9AD5`-`$9AF4` (`EffectCellsA`, `EffectCellsB`); `$A6F5` (`ThinkHints+15`); 1 more ranges |
 
 ### `BuildTileMap` (`$9914`)
 
@@ -473,7 +479,7 @@ Witness: L1 106 (c1, explorers, gameover, rzx x28).
 | Runs (c1: power-on, the original tape at ROM speed on the 128K, the menu, the selector and play) | 1 call, 433,367 t-states own (0.02 %) |
 | Runs (the other recordings) | 105 calls (`stage1/rzx/r00000` 8, `stage1/rzx/r06000` 6, `stage1/rzx/r40000` 6 and 27 more) |
 | Called from | `SetUpRoomTiles` |
-| Reads | `$5B72`-`$5B73` (system); `$DF01`-`$DFFF` (`TileAttrs+1`); `$F008`-`$F9FF` (`TilePixels+8`, `TileMap`) |
+| Reads | `$5B72`-`$5B73` (`TilePixelsPtr`); `$DF01`-`$DFFF` (`TileAttrs+1`); `$F008`-`$F9FF` (`TilePixels+8`, `TileMap`) |
 | Writes | `$4000`-`$4FFF` (screen); `$5800`-`$59FF` (screen); `$E000`-`$EFFF` (`BackBuffer`, `SavedPanelAttrs`, `BackBufferLeftover`) |
 
 ### `WellRecord` (`$99F0`)
@@ -490,7 +496,7 @@ Witness: L1 3 (rzx06000, rzx12000).
 | --- | --- |
 | Runs | not reached in `stage1/c1`; in the other recordings 3 calls (`stage1/rzx/r06000` 2, `stage1/rzx/r12000` 1) |
 | Called from | `BuildTileMap` |
-| Writes | `$5BA2`-`$5BA5` (system) |
+| Writes | `$5BA2`-`$5BA5` (`WellHole`, `WellTiles`) |
 
 ### `WellFront` (`$9A09`)
 
@@ -508,7 +514,7 @@ Witness: L1 26517 (c1, explorers, gameover, rzx x31).
 | Runs (the other recordings) | 25,247 calls (`stage1/explorers` 4,262, `stage1/rzx/r14000` 853, `stage1/rzx/r32000` 771 and 30 more) |
 | Called from | `RenderPass` |
 | Calls | `DrawWellFront`, `OverHole` |
-| Reads | `$5C06`-`$5C07` (system) |
+| Reads | `$5C06`-`$5C07` (`Status`, `StatusTimer`) |
 
 ### `DrawWellFront` (`$9A2F`)
 
@@ -523,7 +529,7 @@ Witness: L1 11 (rzx06500, rzx12000).
 | Runs | not reached in `stage1/c1`; in the other recordings 11 calls (`stage1/rzx/r12000` 8, `stage1/rzx/r06500` 3) |
 | Called from | `WellFront` |
 | Calls | `DrawTileBuffer` |
-| Reads | `$5BA2`-`$5BA5` (system) |
+| Reads | `$5BA2`-`$5BA5` (`WellHole`, `WellTiles`) |
 
 ### `SetTileBuffer` (`$9A4D`)
 
@@ -538,7 +544,7 @@ Witness: L1 38860 (rzx x12).
 | Runs | not reached in `stage1/c1`; in the other recordings 38,860 calls (`stage1/rzx/r44000` 7,920, `stage1/rzx/r46000` 7,572, `stage1/rzx/r48000` 7,548 and 9 more) |
 | Called from | `Capsules`, `FlickerFloor` |
 | Calls | `DrawTileBuffer` (tail) |
-| Reads | `$5B72`-`$5B73` (system); `$F460`-`$F46F` (`TilePixels+1120`); `$F8B1`-`$F8B2` (`TileMap+177`); `$F8C5`-`$F8DE` (`TileMap+197`); `$F945`-`$F95A` (`TileMap+325`); `$F9B9`-`$F9BA` (`TileMap+441`) |
+| Reads | `$5B72`-`$5B73` (`TilePixelsPtr`); `$F460`-`$F46F` (`TilePixels+1120`); `$F8B1`-`$F8B2` (`TileMap+177`); `$F8C5`-`$F8DE` (`TileMap+197`); `$F945`-`$F95A` (`TileMap+325`); `$F9B9`-`$F9BA` (`TileMap+441`) |
 | Writes | `$E0B1`-`$E7DE` (`BackBuffer+177`); `$E845`-`$EABA` (`SavedPanelAttrs+69`, `BackBufferLeftover`); `$EB45`-`$EBBA` (`BackBufferLeftover+581`); `$EC45`-`$ECBA` (`BackBufferLeftover+837`); `$ED45`-`$EDBA` (`BackBufferLeftover+1093`); `$EE45`-`$EEBA` (`BackBufferLeftover+1349`); 5 more ranges |
 
 ### `SetTile` (`$9A52`)
@@ -569,7 +575,7 @@ Witness: L1 44297 (gameover, rzx x23).
 | Runs | not reached in `stage1/c1`; in the other recordings 13,659 calls (`stage1/rzx/r20000` 7,120, `stage1/rzx/r42000` 4,517, `stage1/rzx/r18000` 1,638 and 3 more) |
 | Called from | `DrawWellFront`, `SetTileBuffer` (tail), `SetTile` (falls into) |
 | Calls | `DrawTileAt` (falls into) |
-| Reads | `$5B72`-`$5B73` (system); `$C704`-`$C70B` (`BackTiles+260`); `$F1A0`-`$F1BF` (`TilePixels+416`); `$F1F8`-`$F217` (`TilePixels+504`) |
+| Reads | `$5B72`-`$5B73` (`TilePixelsPtr`); `$C704`-`$C70B` (`BackTiles+260`); `$F1A0`-`$F1BF` (`TilePixels+416`); `$F1F8`-`$F217` (`TilePixels+504`) |
 | Writes | `$E8A8`-`$E8CB` (`SavedPanelAttrs+168`); `$E9A8`-`$E9CB` (`BackBufferLeftover+168`); `$EAA8`-`$EACB` (`BackBufferLeftover+424`); `$EBA8`-`$EBCB` (`BackBufferLeftover+680`); `$ECA8`-`$ECCB` (`BackBufferLeftover+936`); `$EDA8`-`$EDCB` (`BackBufferLeftover+1192`); 2 more ranges |
 
 ### `DrawTileAt` (`$9A64`)
@@ -584,7 +590,7 @@ Witness: L1 49646 (gameover, rzx x23).
 | --- | --- |
 | Runs | not reached in `stage1/c1`; in the other recordings 22,904 calls (`stage1/rzx/r20000` 7,804, `stage1/rzx/r42000` 4,554, `stage1/rzx/r18000` 2,256 and 12 more) |
 | Called from | `SetTile`, `DrawTileBuffer` (falls into) |
-| Reads | `$5B72`-`$5B73` (system); `$C704`-`$C70B` (`BackTiles+260`); `$F038`-`$F03F` (`TilePixels+56`); `$F1A0`-`$F1BF` (`TilePixels+416`); `$F1F8`-`$F217` (`TilePixels+504`); `$F408`-`$F40F` (`TilePixels+1032`); 13 more ranges |
+| Reads | `$5B72`-`$5B73` (`TilePixelsPtr`); `$C704`-`$C70B` (`BackTiles+260`); `$F038`-`$F03F` (`TilePixels+56`); `$F1A0`-`$F1BF` (`TilePixels+416`); `$F1F8`-`$F217` (`TilePixels+504`); `$F408`-`$F40F` (`TilePixels+1032`); 13 more ranges |
 | Writes | `$4008`-`$4AB4` (screen); `$4B68`-`$4B77` (screen); `$4BB4` (screen); `$4C68`-`$4C77` (screen); `$4CB4` (screen); `$4D68`-`$4D77` (screen); 6 more ranges |
 
 ### `FindTileCells` (`$9A8C`)
@@ -620,8 +626,8 @@ Witness: L1 78 (c1, explorers, gameover, rzx x24).
 | Runs (c1: power-on, the original tape at ROM speed on the 128K, the menu, the selector and play) | 2 calls, 368 t-states own (0.00 %) |
 | Runs (the other recordings) | 76 calls (`stage1/explorers` 10, `stage1/rzx/r00000` 8, `stage1/rzx/r40000` 5 and 23 more) |
 | Called from | `RunSelector`, `SetUpRoom` |
-| Reads | `$5B04`-`$5B07` (system); `$5B9E`-`$5B9F` (system); `$5C01`-`$5C07` (system) |
-| Writes | `$5C2B`-`$5C33` (system) |
+| Reads | `$5B04`-`$5B07` (`Hero`); `$5B9E`-`$5B9F` (`LiftRoom`, `LiftY`); `$5C01`-`$5C07` (`Room`, `PassCount`, `RefuseCount`, `Falling` and 3 more) |
+| Writes | `$5C2B`-`$5C33` (`RespawnStatus`, `RespawnTimer`, `RespawnRoom`, `RespawnXY` and 2 more) |
 
 ## countdown
 
@@ -640,8 +646,8 @@ Witness: L1 26514 (c1, explorers, gameover, rzx x31).
 | Runs (c1: power-on, the original tape at ROM speed on the 128K, the menu, the selector and play) | 1,270 calls, 65,373 t-states own (0.00 %) |
 | Runs (the other recordings) | 25,244 calls (`stage1/explorers` 4,262, `stage1/rzx/r14000` 853, `stage1/rzx/r32000` 771 and 30 more) |
 | Called from | `MainLoop` |
-| Reads | `$5BFB`-`$5BFD` (system) |
-| Writes | `$5BFB`-`$5BFD` (system) |
+| Reads | `$5BFB`-`$5BFD` (`CountdownDays`, `CountdownHours`, `CountdownMinutes`) |
+| Writes | `$5BFB`-`$5BFD` (`CountdownDays`, `CountdownHours`, `CountdownMinutes`) |
 
 ### `LoseGame` (`$9372`)
 
@@ -660,7 +666,7 @@ Witness: L1 1 (gameover).
 | Runs | not reached in `stage1/c1`; in the other recordings 1 call (`stage1/gameover` 1) |
 | Called from | `LoseLifeWait` (tail) |
 | Calls | `SetUpRoom`, `SetStatus` (tail) |
-| Writes | `$5B06` (system); `$5C01` (system); `$5C2B`-`$5C2D` (system) |
+| Writes | `$5B06` (`Hero+2`); `$5C01` (`Room`); `$5C2B`-`$5C2D` (`RespawnStatus`, `RespawnTimer`, `RespawnRoom`) |
 
 ## menu
 
@@ -700,7 +706,8 @@ Witness: L1 6835 (c1, explorers, gameover, rzx00000, rzx50000).
 
 | | |
 | --- | --- |
-| Runs | not reached in `stage1/c1`; in the other recordings 1,266 calls (`stage1/explorers` 1,266) |
+| Runs (c1: power-on, the original tape at ROM speed on the 128K, the menu, the selector and play) | 1,022 runs of its first instruction (entered by a jump or by running on, no routine of its own in the L1) |
+| Runs (the other recordings) | 1,266 calls (`stage1/explorers` 1,266) |
 | Called from | `MenuKeys` (tail) |
 | Calls | `MenuKeys` (falls into), `FillAttrs` |
 | Reads | `$5908`-`$5914` (screen); `$5948`-`$5954` (screen); `$5988`-`$5994` (screen); `$9469` (`MenuKeys+1`); `$94AF` (`InputDevice`) |
@@ -717,7 +724,8 @@ Witness: L1 6836 (c1, explorers, gameover, rzx00000, rzx50000).
 
 | | |
 | --- | --- |
-| Runs | not reached in `stage1/c1`; in the other recordings 1,271 calls (`stage1/explorers` 1,271) |
+| Runs (c1: power-on, the original tape at ROM speed on the 128K, the menu, the selector and play) | 1,022 runs of its first instruction (entered by a jump or by running on, no routine of its own in the L1) |
+| Runs (the other recordings) | 1,271 calls (`stage1/explorers` 1,271) |
 | Called from | `MenuLoop` (falls into) |
 | Calls | `MenuLoop` (tail) |
 | Reads | `$9469` (`MenuKeys+1`) |
@@ -869,7 +877,7 @@ Witness: L1 83616 (c1, explorers, gameover, rzx x31).
 | --- | --- |
 | Runs (c1: power-on, the original tape at ROM speed on the 128K, the menu, the selector and play) | 5,029 calls, 809,669 t-states own (0.04 %) |
 | Runs (the other recordings) | 78,587 calls (`stage1/explorers` 15,190, `stage1/gameover` 6,000, `stage1/rzx/r00000` 2,000 and 30 more) |
-| Reads | `$5FE5` (system); `$5FFE` (system) |
+| Reads | `$5FE5` (`Last7FFD`); `$5FFE` (`Has128K`) |
 | Ports out | `$7FFD` |
 
 ## render
@@ -898,8 +906,8 @@ Witness: L1 26515 (c1, explorers, gameover, rzx x31).
 | Runs (the other recordings) | 25,245 calls (`stage1/explorers` 4,262, `stage1/rzx/r14000` 853, `stage1/rzx/r32000` 771 and 30 more) |
 | Called from | `MainLoop` |
 | Calls | `ShowCapsules`, `WellFront`, `CopyRects`, `DrawSpriteColumn`, `BufferAddress`, `RestoreActorBackgrounds`, `DrawItems` |
-| Reads | `$5B04`-`$5B17` (system); `$5B44`-`$5B63` (system) |
-| Writes | `$5B24`-`$5B57` (system); `$9C82`-`$9C88` (`MirrorPatch1`, `MirrorPatch2`) |
+| Reads | `$5B04`-`$5B17` (`Hero`, `ObjectSlot1`, `ObjectSlot2`, `ObjectSlot3` and 1 more); `$5B44`-`$5B63` (`ActorRects`) |
+| Writes | `$5B24`-`$5B57` (`PrevActorRects`, `ActorRects`); `$9C82`-`$9C88` (`MirrorPatch1`, `MirrorPatch2`) |
 
 ### `CopyRects` (`$9BEB`)
 
@@ -919,7 +927,7 @@ Witness: L1 53020 (c1, explorers, gameover, rzx x31).
 | Runs (the other recordings) | 50,480 calls (`stage1/explorers` 8,524, `stage1/rzx/r14000` 1,704, `stage1/rzx/r32000` 1,542 and 30 more) |
 | Called from | `RenderPass` |
 | Calls | `CopyRectsLoop` (falls into) |
-| Reads | `$5B24`-`$5B55` (system); `$E000`-`$EFF4` (`BackBuffer`, `SavedPanelAttrs`, `BackBufferLeftover`) |
+| Reads | `$5B24`-`$5B55` (`PrevActorRects`, `ActorRects`); `$E000`-`$EFF4` (`BackBuffer`, `SavedPanelAttrs`, `BackBufferLeftover`) |
 | Writes | `$4000`-`$4FF4` (screen) |
 
 ### `CopyRectsLoop` (`$9BED`)
@@ -936,7 +944,7 @@ Witness: L1 265094 (c1, explorers, gameover, rzx x31).
 | Runs (the other recordings) | 146,542 calls (`stage1/explorers` 42,620, `stage1/rzx/r32000` 7,708, `stage1/rzx/r30000` 7,452 and 13 more) |
 | Called from | `CopyRects` (falls into), `CopyRect` (tail) |
 | Calls | `CopyRect` (falls into) |
-| Reads | `$5B24`-`$5B55` (system) |
+| Reads | `$5B24`-`$5B55` (`PrevActorRects`, `ActorRects`) |
 
 ### `CopyRect` (`$9BF3`)
 
@@ -1025,7 +1033,7 @@ Witness: L1 9545126 (c1, explorers, gameover, rzx x31).
 | Runs (the other recordings) | 9,087,867 calls (`stage1/explorers` 1,534,320, `stage1/rzx/r14000` 306,944, `stage1/rzx/r32000` 277,560 and 30 more) |
 | Called from | `DrawSprite3Rows` (falls into), `NextBufferRow` |
 | Calls | `PlotRowShift1`, `PlotRowShift2`, `PlotRowShift3`, `PlotRowShift4`, `PlotRowShift5`, `PlotRowShift6`, `PlotRowShift7`, `PlotRowAligned` |
-| Reads | `$6000`-`$6798` (system); `$67E0`-`$6870` (system); `$6900`-`$6E10` (system); `$7008`-`$7D40` (`CreatureSprites`); `$7E18`-`$8400` (`CreatureSprites+3096`, `BlankSprite`, `ItemSprites`); `$8838`-`$8880` (`ItemSprites+1080`); 6 more ranges |
+| Reads | `$6000`-`$6798` (`ExplorerSet`); `$67E0`-`$6870` (`ExplorerSet+2016`); `$6900`-`$6E10` (`ExplorerSet+2304`); `$7008`-`$7D40` (`CreatureSprites`); `$7E18`-`$8400` (`CreatureSprites+3096`, `BlankSprite`, `ItemSprites`); `$8838`-`$8880` (`ItemSprites+1080`); 6 more ranges |
 
 ### `PlotRowShift1` (`$9C9B`)
 
@@ -1037,7 +1045,7 @@ Witness: L1 73368 (gameover, rzx x6).
 
 | | |
 | --- | --- |
-| Runs | not reached in `stage1/c1`; in the other recordings run into, not called (`stage1/rzx/r50000`, `stage1/gameover`, `stage1/rzx/r28000` and 4 more) |
+| Runs | not reached in `stage1/c1`; in the other recordings 73,368 runs of its first instruction, entered by a jump (`stage1/rzx/r50000` 39,096, `stage1/gameover` 21,384, `stage1/rzx/r28000` 5,616 and 4 more) |
 | Called from | `DrawSpriteRow` |
 | Calls | `PlotRowShift2` (falls into) |
 
@@ -1049,7 +1057,7 @@ Witness: L1 1334322 (c1, explorers, gameover, rzx x31).
 
 | | |
 | --- | --- |
-| Runs (c1: power-on, the original tape at ROM speed on the 128K, the menu, the selector and play) | run into, not called, 791,796 t-states own (0.04 %) |
+| Runs (c1: power-on, the original tape at ROM speed on the 128K, the menu, the selector and play) | 17,208 runs of its first instruction (entered by a jump or by running on, no routine of its own in the L1), 791,796 t-states own (0.04 %) |
 | Runs (the other recordings) | 73,368 calls (`stage1/rzx/r50000` 39,096, `stage1/gameover` 21,384, `stage1/rzx/r28000` 5,616 and 4 more) |
 | Called from | `DrawSpriteRow`, `PlotRowShift1` (falls into) |
 | Calls | `PlotRowShift3` (falls into) |
@@ -1062,7 +1070,8 @@ Witness: L1 1368305 (c1, explorers, gameover, rzx x31).
 
 | | |
 | --- | --- |
-| Runs | not reached in `stage1/c1`; in the other recordings 324,288 calls (`stage1/rzx/r20000` 74,160, `stage1/rzx/r28000` 59,328, `stage1/rzx/r50000` 55,440 and 6 more) |
+| Runs (c1: power-on, the original tape at ROM speed on the 128K, the menu, the selector and play) | 17,208 runs of its first instruction (entered by a jump or by running on, no routine of its own in the L1) |
+| Runs (the other recordings) | 324,288 calls (`stage1/rzx/r20000` 74,160, `stage1/rzx/r28000` 59,328, `stage1/rzx/r50000` 55,440 and 6 more) |
 | Called from | `DrawSpriteRow`, `PlotRowShift2` (falls into) |
 | Calls | `PlotRowShift4` (falls into) |
 
@@ -1087,7 +1096,8 @@ Witness: L1 3350866 (c1, explorers, gameover, rzx x31).
 
 | | |
 | --- | --- |
-| Runs | not reached in `stage1/c1`; in the other recordings 657,493 calls (`stage1/rzx/r20000` 137,592, `stage1/rzx/r28000` 111,384, `stage1/rzx/r34000` 107,442 and 4 more) |
+| Runs (c1: power-on, the original tape at ROM speed on the 128K, the menu, the selector and play) | 62,928 runs of its first instruction (entered by a jump or by running on, no routine of its own in the L1) |
+| Runs (the other recordings) | 657,493 calls (`stage1/rzx/r20000` 137,592, `stage1/rzx/r28000` 111,384, `stage1/rzx/r34000` 107,442 and 4 more) |
 | Called from | `DrawSpriteRow`, `PlotRowShift4` (falls into) |
 | Calls | `PlotRowShift6` (falls into) |
 
@@ -1114,7 +1124,8 @@ Witness: L1 5146153 (c1, explorers, gameover, rzx x31).
 
 | | |
 | --- | --- |
-| Runs | not reached in `stage1/c1`; in the other recordings 1,326,075 calls (`stage1/rzx/r36000` 186,998, `stage1/rzx/r28000` 183,932, `stage1/rzx/r34000` 180,504 and 7 more) |
+| Runs (c1: power-on, the original tape at ROM speed on the 128K, the menu, the selector and play) | 165,312 runs of its first instruction (entered by a jump or by running on, no routine of its own in the L1) |
+| Runs (the other recordings) | 1,326,075 calls (`stage1/rzx/r36000` 186,998, `stage1/rzx/r28000` 183,932, `stage1/rzx/r34000` 180,504 and 7 more) |
 | Called from | `DrawSpriteRow`, `PlotRowShift6` (falls into) |
 | Calls | `NextBufferRow` (falls into) |
 | Reads | `$E00D`-`$EFF4` (`BackBuffer+13`, `SavedPanelAttrs`, `BackBufferLeftover`) |
@@ -1143,8 +1154,8 @@ Witness: L1 4398977 (c1, explorers, gameover, rzx x31).
 
 | | |
 | --- | --- |
-| Runs (c1: power-on, the original tape at ROM speed on the 128K, the menu, the selector and play) | run into, not called, 9,342,981 t-states own (0.49 %) |
-| Runs (the other recordings) | run into, not called (`stage1/explorers`, `stage1/rzx/r14000`, `stage1/rzx/r08000` and 30 more) |
+| Runs (c1: power-on, the original tape at ROM speed on the 128K, the menu, the selector and play) | 291,888 runs of its first instruction (entered by a jump or by running on, no routine of its own in the L1), 9,342,981 t-states own (0.49 %) |
+| Runs (the other recordings) | 4,107,089 runs of its first instruction, entered by a jump (`stage1/explorers` 989,280, `stage1/rzx/r14000` 224,432, `stage1/rzx/r08000` 173,664 and 30 more) |
 | Called from | `DrawSpriteRow` |
 | Calls | `NextBufferRow` (tail) |
 | Reads | `$E000`-`$EFEB` (`BackBuffer`, `SavedPanelAttrs`, `BackBufferLeftover`) |
@@ -1184,8 +1195,8 @@ Witness: L1 35 (c1, explorers, gameover, rzx x14).
 | Runs (the other recordings) | 34 calls (`stage1/explorers` 5, `stage1/rzx/r02000` 4, `stage1/gameover` 3 and 13 more) |
 | Called from | `DrawItem` (tail) |
 | Calls | `CopyRect` (tail), `BufferAddress`, `RestoreRect` |
-| Reads | `$5B99`-`$5B9A` (system); `$5C0E`-`$5C14` (system) |
-| Writes | `$5B9B` (system); `$5C10`-`$5C15` (system) |
+| Reads | `$5B99`-`$5B9A` (`Thought`); `$5C0E`-`$5C14` (`ItemSlot1`, `ItemSlot2`) |
+| Writes | `$5B9B` (`Thought+2`); `$5C10`-`$5C15` (`ItemSlot1+2`, `ItemSlot2`) |
 
 ### `RestoreActorBackgrounds` (`$9D3C`)
 
@@ -1203,7 +1214,7 @@ Witness: L1 26510 (c1, explorers, gameover, rzx x31).
 | Runs (the other recordings) | 25,240 calls (`stage1/explorers` 4,262, `stage1/rzx/r14000` 853, `stage1/rzx/r32000` 771 and 30 more) |
 | Called from | `RenderPass` |
 | Calls | `RestoreActorsLoop` (falls into) |
-| Reads | `$5B04`-`$5B15` (system); `$5B44`-`$5B55` (system); `$5B72`-`$5B73` (system); `$F008`-`$F2BF` (`TilePixels+8`); `$F2E8`-`$F397` (`TilePixels+744`); `$F3D0`-`$F6B7` (`TilePixels+976`); 3 more ranges |
+| Reads | `$5B04`-`$5B15` (`Hero`, `ObjectSlot1`, `ObjectSlot2`, `ObjectSlot3` and 1 more); `$5B44`-`$5B55` (`ActorRects`); `$5B72`-`$5B73` (`TilePixelsPtr`); `$F008`-`$F2BF` (`TilePixels+8`); `$F2E8`-`$F397` (`TilePixels+744`); `$F3D0`-`$F6B7` (`TilePixels+976`); 3 more ranges |
 | Writes | `$E000`-`$EFF9` (`BackBuffer`, `SavedPanelAttrs`, `BackBufferLeftover`) |
 
 ### `RestoreActorsLoop` (`$9D42`)
@@ -1218,7 +1229,7 @@ Witness: L1 132558 (c1, explorers, gameover, rzx x31).
 | Runs (the other recordings) | 73,267 calls (`stage1/explorers` 21,310, `stage1/rzx/r32000` 3,855, `stage1/rzx/r30000` 3,725 and 13 more) |
 | Called from | `RestoreActorBackgrounds` (falls into), `RestoreRect` (tail) |
 | Calls | `RestoreRect` (falls into) |
-| Reads | `$5B44`-`$5B55` (system) |
+| Reads | `$5B44`-`$5B55` (`ActorRects`) |
 
 ### `RestoreRect` (`$9D48`)
 
@@ -1234,7 +1245,7 @@ Witness: L1 132593 (c1, explorers, gameover, rzx x31).
 | Runs (the other recordings) | 73,301 calls (`stage1/explorers` 21,315, `stage1/rzx/r32000` 3,856, `stage1/rzx/r30000` 3,726 and 13 more) |
 | Called from | `EraseItem`, `RestoreActorsLoop` (falls into) |
 | Calls | `RestoreActorsLoop` (tail) |
-| Reads | `$5B04`-`$5B15` (system); `$5B72`-`$5B73` (system); `$5B99`-`$5B9A` (system); `$5C0E`-`$5C14` (system); `$F008`-`$F6B7` (`TilePixels+8`); `$F730`-`$F74F` (`TilePixels+1840`); 2 more ranges |
+| Reads | `$5B04`-`$5B15` (`Hero`, `ObjectSlot1`, `ObjectSlot2`, `ObjectSlot3` and 1 more); `$5B72`-`$5B73` (`TilePixelsPtr`); `$5B99`-`$5B9A` (`Thought`); `$5C0E`-`$5C14` (`ItemSlot1`, `ItemSlot2`); `$F008`-`$F6B7` (`TilePixels+8`); `$F730`-`$F74F` (`TilePixels+1840`); 2 more ranges |
 | Writes | `$E000`-`$EFFE` (`BackBuffer`, `SavedPanelAttrs`, `BackBufferLeftover`) |
 
 ### `NextCharRowDE` (`$9DB9`)
@@ -1295,7 +1306,7 @@ Witness: L1 79532 (c1, explorers, gameover, rzx x31).
 | Runs (the other recordings) | 75,722 calls (`stage1/explorers` 12,786, `stage1/rzx/r14000` 2,556, `stage1/rzx/r32000` 2,313 and 30 more) |
 | Called from | `DrawItems` (falls into) |
 | Calls | `BufferAddress`, `EraseItem` (tail), `NextCharRowDE` |
-| Reads | `$5B9B` (system); `$5C0E`-`$5C15` (system); `$8400`-`$8838` (`ItemSprites`); `$8880`-`$8B08` (`ItemSprites+1152`); `$8B98`-`$8BE0` (`ItemSprites+1944`); `$E034`-`$EFDA` (`BackBuffer+52`, `SavedPanelAttrs`, `BackBufferLeftover`); 1 more ranges |
+| Reads | `$5B9B` (`Thought+2`); `$5C0E`-`$5C15` (`ItemSlot1`, `ItemSlot2`); `$8400`-`$8838` (`ItemSprites`); `$8880`-`$8B08` (`ItemSprites+1152`); `$8B98`-`$8BE0` (`ItemSprites+1944`); `$E034`-`$EFDA` (`BackBuffer+52`, `SavedPanelAttrs`, `BackBufferLeftover`); 1 more ranges |
 | Writes | `$4034`-`$4FDA` (screen); `$E034`-`$EFDA` (`BackBuffer+52`, `SavedPanelAttrs`, `BackBufferLeftover`) |
 
 ## panel
@@ -1320,7 +1331,7 @@ Witness: L1 81 (c1, explorers, gameover, rzx x27).
 | Runs (the other recordings) | 79 calls (`stage1/explorers` 10, `stage1/rzx/r14500` 5, `stage1/rzx/r00000` 5 and 26 more) |
 | Called from | `RunSelector`, `Room43Anim`, `CricketBallScript`, `ProfessorScript`, `LeverScript` (tail), `ItemsPass` (tail), `ItemsKeys`, `PickUpRedraw` |
 | Calls | `BlitColumns` (tail), `SpriteAddress`, `AddColumnPointers` |
-| Reads | `$5B98` (system) |
+| Reads | `$5B98` (`HeldItem`) |
 
 ### `DrawSpareLives` (`$9E96`)
 
@@ -1338,7 +1349,7 @@ Witness: L1 11 (c1, explorers, rzx x5).
 | Runs (the other recordings) | 10 calls (`stage1/explorers` 5, `stage1/rzx/r32000` 1, `stage1/rzx/r24000` 1 and 3 more) |
 | Called from | `RunSelector`, `LoseLifeWait` (tail) |
 | Calls | `SpareLivesShow` (tail), `SpriteAddress`, `AddColumnPointers` |
-| Reads | `$5B97` (system) |
+| Reads | `$5B97` (`Lives`) |
 
 ### `DrawBearers` (`$9EBD`)
 
@@ -1358,7 +1369,7 @@ Witness: L1 1139 (c1, explorers, gameover, rzx x26).
 | Runs (the other recordings) | 1,129 calls (`stage1/rzx/r48000` 163, `stage1/rzx/r16000` 137, `stage1/rzx/r28000` 91 and 25 more) |
 | Called from | `RunSelector`, `ItemsKeys`, `PickUpRedraw` (tail), `BearerKeys` (tail) |
 | Calls | `DrawBearerItems`, `BearerRowShow` (tail), `SpriteAddress`, `AddColumnPointers` |
-| Reads | `$5C23` (system) |
+| Reads | `$5C23` (`BearerIndex`) |
 
 ### `DrawBearerItems` (`$9EE3`)
 
@@ -1374,7 +1385,7 @@ Witness: L1 1139 (c1, explorers, gameover, rzx x26).
 | Runs (the other recordings) | 1,129 calls (`stage1/rzx/r48000` 163, `stage1/rzx/r16000` 137, `stage1/rzx/r28000` 91 and 25 more) |
 | Called from | `DrawBearers` |
 | Calls | `SpriteAddress`, `AddColumnPointers` |
-| Reads | `$5B7C`-`$5B96` (system); `$5C23` (system) |
+| Reads | `$5B7C`-`$5B96` (`BearerLoads`); `$5C23` (`BearerIndex`) |
 
 ### `SpareLivesShow` (`$9F1E`)
 
@@ -1388,7 +1399,7 @@ Witness: L1 11 (c1, explorers, rzx x5).
 | Runs (the other recordings) | 10 calls (`stage1/explorers` 5, `stage1/rzx/r06000` 1, `stage1/rzx/r32000` 1 and 3 more) |
 | Called from | `DrawSpareLives` (tail) |
 | Calls | `Blit9Columns` (tail) |
-| Reads | `$5BD6`-`$5BE7` (system); `$5C46`-`$5C8D` (system); `$6090`-`$611F` (system) |
+| Reads | `$5BD6`-`$5BE7` (`PanelColumns`); `$5C46`-`$5C8D` (`BlankIcon`); `$6090`-`$611F` (`ExplorerSet+144`) |
 | Writes | `$5081`-`$50C9` (screen); `$5181`-`$51C9` (screen); `$5281`-`$52C9` (screen); `$5381`-`$53C9` (screen); `$5481`-`$54C9` (screen); `$5581`-`$55C9` (screen); 2 more ranges |
 
 ### `BearerRowShow` (`$9F6B`)
@@ -1416,7 +1427,7 @@ Witness: L1 2278 (c1, explorers, gameover, rzx x26).
 | Runs (the other recordings) | 2,258 calls (`stage1/rzx/r48000` 326, `stage1/rzx/r16000` 274, `stage1/rzx/r28000` 182 and 25 more) |
 | Called from | `BearerRowShow` (tail) |
 | Calls | `Blit9Columns` (falls into) |
-| Reads | `$5C22` (system) |
+| Reads | `$5C22` (`BearerPhase`) |
 
 ### `Blit9Columns` (`$9F84`)
 
@@ -1445,7 +1456,7 @@ Witness: L1 21217 (c1, explorers, gameover, rzx x29).
 | Runs (the other recordings) | 2,445 calls (`stage1/rzx/r48000` 332, `stage1/rzx/r16000` 280, `stage1/rzx/r28000` 188 and 26 more) |
 | Called from | `DrawPortrait` (tail), `DrawMenuGlobes` (tail), `Blit9Columns` (falls into) |
 | Calls | `NextCharRow`, `ItemsKeys` |
-| Reads | `$5BD6`-`$5BED` (system); `$5C46`-`$5C8D` (system); `$6090`-`$6167` (system); `$6288`-`$62CF` (system); `$7FC8`-`$812F` (`CreatureSprites+3528`); `$8400`-`$87EF` (`ItemSprites`); 5 more ranges |
+| Reads | `$5BD6`-`$5BED` (`PanelColumns`); `$5C46`-`$5C8D` (`BlankIcon`); `$6090`-`$6167` (`ExplorerSet+144`); `$6288`-`$62CF` (`ExplorerSet+648`); `$7FC8`-`$812F` (`CreatureSprites+3528`); `$8400`-`$87EF` (`ItemSprites`); 5 more ranges |
 | Writes | `$4837`-`$57DE` (screen) |
 
 ### `SpriteAddress` (`$9FAA`)
@@ -1473,7 +1484,7 @@ Witness: L1 9352 (c1, explorers, gameover, rzx x29).
 | Runs (c1: power-on, the original tape at ROM speed on the 128K, the menu, the selector and play) | 97 calls, 22,055 t-states own (0.00 %) |
 | Runs (the other recordings) | 9,255 calls (`stage1/rzx/r48000` 1,310, `stage1/rzx/r16000` 1,102, `stage1/rzx/r28000` 734 and 28 more) |
 | Called from | `DrawPortrait`, `DrawSpareLives`, `DrawBearers`, `DrawBearerItems`, `DrawMenuGlobes` |
-| Writes | `$5BD6`-`$5BED` (system) |
+| Writes | `$5BD6`-`$5BED` (`PanelColumns`) |
 
 ## player
 
@@ -1497,8 +1508,8 @@ Witness: L1 21714 (c1, explorers, gameover, rzx x31).
 | Runs (the other recordings) | 21,662 calls (`stage1/rzx/r30000` 920, `stage1/rzx/r08000` 914, `stage1/rzx/r14000` 868 and 30 more) |
 | Called from | `FloatInRoom2C`, `HeroUpdate`, `BalloonRide`, `BounceUp`, `JumpArc`, `JumpStepY` |
 | Calls | `DeadlyTileProbe`, `FloorDistance`, `LeftWallCheck`, `RightWallCheck` |
-| Reads | `$5BA0` (system); `$5C06` (system); `$5C29` (system); `$918C` (`AltTileset`); `$A101` (`HeroProbes+3`); `$A234`-`$A260` (`FloorTiles`, `SolidTiles`) |
-| Writes | `$5C28`-`$5C29` (system); `$A0FE`-`$A101` (`HeroProbes`) |
+| Reads | `$5BA0` (`NotOnLift`); `$5C06` (`Status`); `$5C29` (`MudPasses`); `$918C` (`AltTileset`); `$A101` (`HeroProbes+3`); `$A234`-`$A260` (`FloorTiles`, `SolidTiles`) |
+| Writes | `$5C28`-`$5C29` (`MudTile`, `MudPasses`); `$A0FE`-`$A101` (`HeroProbes`) |
 
 ### `DeadlyTileProbe` (`$A176`)
 
@@ -1514,7 +1525,7 @@ Witness: L1 11772 (c1, explorers, gameover, rzx x23).
 | Runs (the other recordings) | 11,720 calls (`stage1/explorers` 790, `stage1/rzx/r14000` 648, `stage1/rzx/r12000` 617 and 22 more) |
 | Called from | `HeroTileChecks` |
 | Calls | `PixelToTileMap` |
-| Reads | `$5B04`-`$5B05` (system); `$F849`-`$F84A` (`TileMap+73`); `$F861`-`$F9FD` (`TileMap+97`) |
+| Reads | `$5B04`-`$5B05` (`Hero`); `$F849`-`$F84A` (`TileMap+73`); `$F861`-`$F9FD` (`TileMap+97`) |
 
 ### `OnLadder` (`$A193`)
 
@@ -1532,7 +1543,7 @@ Witness: L1 16548 (c1, explorers, gameover, rzx x31).
 | Runs (the other recordings) | 16,496 calls (`stage1/explorers` 790, `stage1/rzx/r40000` 690, `stage1/rzx/r42000` 674 and 30 more) |
 | Called from | `HeroUpdate` |
 | Calls | `PixelToTileMap` |
-| Reads | `$5B04`-`$5B05` (system); `$5C01` (system); `$918C` (`AltTileset`); `$F849`-`$F9FD` (`TileMap+73`) |
+| Reads | `$5B04`-`$5B05` (`Hero`); `$5C01` (`Room`); `$918C` (`AltTileset`); `$F849`-`$F9FD` (`TileMap+73`) |
 
 ### `HeadroomRows` (`$A1D3`)
 
@@ -1547,7 +1558,7 @@ Witness: L1 69 (rzx18000, rzx20000).
 | Runs | not reached in `stage1/c1`; in the other recordings 69 calls (`stage1/rzx/r20000` 38, `stage1/rzx/r18000` 31) |
 | Called from | `FloatInRoom2C` |
 | Calls | `FloorScanFrom` |
-| Reads | `$5B04`-`$5B05` (system); `$A101` (`HeroProbes+3`) |
+| Reads | `$5B04`-`$5B05` (`Hero`); `$A101` (`HeroProbes+3`) |
 | Writes | `$A101` (`HeroProbes+3`) |
 
 ### `FloorDistance` (`$A1F4`)
@@ -1566,7 +1577,7 @@ Witness: L1 21714 (c1, explorers, gameover, rzx x31).
 | Runs (the other recordings) | 21,662 calls (`stage1/rzx/r30000` 920, `stage1/rzx/r08000` 914, `stage1/rzx/r14000` 868 and 30 more) |
 | Called from | `HeroTileChecks` |
 | Calls | `FloorScanFrom` (tail) |
-| Reads | `$5B04`-`$5B05` (system); `$918C` (`AltTileset`); `$A101` (`HeroProbes+3`); `$A234`-`$A292` (`FloorTiles`, `SolidTiles`, `AltFloorTiles`, `AltSolidTiles`); `$F864`-`$F9FE` (`TileMap+100`) |
+| Reads | `$5B04`-`$5B05` (`Hero`); `$918C` (`AltTileset`); `$A101` (`HeroProbes+3`); `$A234`-`$A292` (`FloorTiles`, `SolidTiles`, `AltFloorTiles`, `AltSolidTiles`); `$F864`-`$F9FE` (`TileMap+100`) |
 | Writes | `$A101` (`HeroProbes+3`) |
 
 ### `FloorScanFrom` (`$A208`)
@@ -1579,7 +1590,8 @@ Witness: L1 21782 (c1, explorers, gameover, rzx x31).
 
 | | |
 | --- | --- |
-| Runs | not reached in `stage1/c1`; in the other recordings 1,611 calls (`stage1/rzx/r18000` 865, `stage1/rzx/r20000` 746) |
+| Runs (c1: power-on, the original tape at ROM speed on the 128K, the menu, the selector and play) | 52 runs of its first instruction (entered by a jump or by running on, no routine of its own in the L1) |
+| Runs (the other recordings) | 1,611 calls (`stage1/rzx/r18000` 865, `stage1/rzx/r20000` 746) |
 | Called from | `HeadroomRows`, `FloorDistance` (tail) |
 | Calls | `PixelToTileMap` |
 | Reads | `$918C` (`AltTileset`); `$A101` (`HeroProbes+3`); `$A234`-`$A292` (`FloorTiles`, `SolidTiles`, `AltFloorTiles`, `AltSolidTiles`); `$F808` (`TileMap+8`); `$F825`-`$F828` (`TileMap+37`); `$F845`-`$F849` (`TileMap+69`); 4 more ranges |
@@ -1613,7 +1625,7 @@ Witness: L1 26266 (c1, explorers, gameover, rzx x31).
 | Runs (the other recordings) | 25,488 calls (`stage1/explorers` 3,398, `stage1/rzx/r04000` 1,089, `stage1/rzx/r14000` 943 and 30 more) |
 | Called from | `HeroTileChecks`, `TestBelow` |
 | Calls | `WallColumnCheck` (falls into) |
-| Reads | `$5B04`-`$5B11` (system) |
+| Reads | `$5B04`-`$5B11` (`Hero`, `ObjectSlot1`, `ObjectSlot2`, `ObjectSlot3`) |
 
 ### `WallColumnCheck` (`$A2B2`)
 
@@ -1629,7 +1641,7 @@ Witness: L1 49704 (c1, explorers, gameover, rzx x31).
 | Runs (the other recordings) | 48,874 calls (`stage1/explorers` 4,188, `stage1/rzx/r04000` 2,133, `stage1/rzx/r14000` 1,921 and 30 more) |
 | Called from | `LeftWallCheck` (falls into), `RightWallCheck` |
 | Calls | `PixelToTileMap` |
-| Reads | `$5C01` (system); `$918C` (`AltTileset`); `$A242`-`$A292` (`ExtraSolidTiles`, `SolidTiles`, `AltFloorTiles`, `AltSolidTiles`); `$F800`-`$F9FE` (`TileMap`) |
+| Reads | `$5C01` (`Room`); `$918C` (`AltTileset`); `$A242`-`$A292` (`ExtraSolidTiles`, `SolidTiles`, `AltFloorTiles`, `AltSolidTiles`); `$F800`-`$F9FE` (`TileMap`) |
 | Writes | `$A0FE`-`$A0FF` (`HeroProbes`); `$C12D`-`$C12E` (`TileScanFlags`) |
 
 ### `RightWallCheck` (`$A2FA`)
@@ -1646,7 +1658,7 @@ Witness: L1 23438 (c1, explorers, gameover, rzx x31).
 | Runs (the other recordings) | 23,386 calls (`stage1/rzx/r24000` 1,069, `stage1/rzx/r04000` 1,044, `stage1/rzx/r14000` 978 and 30 more) |
 | Called from | `HeroTileChecks`, `TestRight` |
 | Calls | `WallColumnCheck` |
-| Reads | `$5B04`-`$5B11` (system) |
+| Reads | `$5B04`-`$5B11` (`Hero`, `ObjectSlot1`, `ObjectSlot2`, `ObjectSlot3`) |
 
 ### `CreatureFloorBelow` (`$A30B`)
 
@@ -1661,7 +1673,7 @@ Witness: L1 3402 (rzx x21).
 | Runs | not reached in `stage1/c1`; in the other recordings 3,402 calls (`stage1/rzx/r08000` 427, `stage1/rzx/r12000` 379, `stage1/rzx/r22000` 375 and 18 more) |
 | Called from | `TestBelowRight` |
 | Calls | `SolidTileAt` |
-| Reads | `$5B08`-`$5B11` (system) |
+| Reads | `$5B08`-`$5B11` (`ObjectSlot1`, `ObjectSlot2`, `ObjectSlot3`) |
 
 ### `CreatureSolidAt` (`$A31F`)
 
@@ -1676,7 +1688,7 @@ Witness: L1 138 (rzx34000, rzx36000, rzx40000).
 | Runs | not reached in `stage1/c1`; in the other recordings 138 calls (`stage1/rzx/r36000` 67, `stage1/rzx/r34000` 38, `stage1/rzx/r40000` 33) |
 | Called from | `TestAhead` |
 | Calls | `SolidTileAt` (falls into) |
-| Reads | `$5B08`-`$5B09` (system) |
+| Reads | `$5B08`-`$5B09` (`ObjectSlot1`) |
 
 ### `SolidTileAt` (`$A328`)
 
@@ -1708,11 +1720,11 @@ Witness: L1 149 (rzx18000, rzx20000).
 
 | | |
 | --- | --- |
-| Runs | not reached in `stage1/c1`; in the other recordings run into, not called (`stage1/rzx/r20000`, `stage1/rzx/r18000`) |
+| Runs | not reached in `stage1/c1`; in the other recordings 149 runs of its first instruction, entered by a jump (`stage1/rzx/r20000` 87, `stage1/rzx/r18000` 62) |
 | Called from | `JumpThroughWord` |
 | Calls | `HeroTileChecks`, `HeadroomRows`, `ExitLeft` (tail), `ClearStatus`, `ReadControls` |
-| Reads | `$5B04`-`$5B07` (system); `$5C34`-`$5C35` (system); `$A0FE`-`$A101` (`HeroProbes`) |
-| Writes | `$5B04`-`$5B07` (system); `$5C34`-`$5C35` (system) |
+| Reads | `$5B04`-`$5B07` (`Hero`); `$5C34`-`$5C35` (`FloatVelocity`); `$A0FE`-`$A101` (`HeroProbes`) |
+| Writes | `$5B04`-`$5B07` (`Hero`); `$5C34`-`$5C35` (`FloatVelocity`) |
 
 ### `HeroUpdate` (`$A3E1`)
 
@@ -1746,8 +1758,8 @@ Witness: L1 26517 (c1, explorers, gameover, rzx x31).
 | Runs (the other recordings) | 25,247 calls (`stage1/explorers` 4,262, `stage1/rzx/r14000` 853, `stage1/rzx/r32000` 772 and 30 more) |
 | Called from | `MainLoop` |
 | Calls | `HeroTileChecks`, `OnLadder`, `HeroWalkFrames` (tail), `ExitLeft` (tail), `ExitRight` (tail), `ExitUp` (tail), `ExitDown` (tail), `StatusDispatch`, `SetStatus` (tail), `StartFrameList` (tail), `FrameListPlay` (tail), `StatusZeroTriggers`, `ThinkKey`, `TeleportPadCheck`, `RunRoomScript`, `ReadControls`, `PlaySound` (tail) |
-| Reads | `$5B04`-`$5B07` (system); `$5B70` (system); `$5B98`-`$5BA0` (system); `$5BFA`-`$5C0A` (system); `$5C28` (system); `$A0FE`-`$A101` (`HeroProbes`); 2 more ranges |
-| Writes | `$5B04`-`$5B07` (system); `$5C01`-`$5C0A` (system); `$AF39`-`$AF3A` (`SavedSP`) |
+| Reads | `$5B04`-`$5B07` (`Hero`); `$5B70` (`Explorer`); `$5B98`-`$5BA0` (`HeldItem`, `Thought`, `LiftRoom`, `LiftY` and 1 more); `$5BFA`-`$5C0A` (`UnicycleFrames`, `CountdownDays`, `CountdownHours`, `CountdownMinutes` and 12 more); `$5C28` (`MudTile`); `$A0FE`-`$A101` (`HeroProbes`); 2 more ranges |
+| Writes | `$5B04`-`$5B07` (`Hero`); `$5C01`-`$5C0A` (`Room`, `PassCount`, `RefuseCount`, `Falling` and 5 more); `$AF39`-`$AF3A` (`SavedSP`) |
 
 ### `HeroWalkFrames` (`$A5E3`)
 
@@ -1761,10 +1773,11 @@ Witness: L1 15541 (c1, explorers, gameover, rzx x31).
 
 | | |
 | --- | --- |
-| Runs | not reached in `stage1/c1`; in the other recordings 1,642 calls (`stage1/rzx/r40000` 621, `stage1/rzx/r38000` 545, `stage1/rzx/r36000` 476) |
+| Runs (c1: power-on, the original tape at ROM speed on the 128K, the menu, the selector and play) | 52 runs of its first instruction (entered by a jump or by running on, no routine of its own in the L1) |
+| Runs (the other recordings) | 1,642 calls (`stage1/rzx/r40000` 621, `stage1/rzx/r38000` 545, `stage1/rzx/r36000` 476) |
 | Called from | `HeroUpdate` (tail) |
-| Reads | `$5B06` (system); `$5B98` (system); `$5BFA`-`$5C04` (system) |
-| Writes | `$5B06` (system); `$5C03`-`$5C04` (system) |
+| Reads | `$5B06` (`Hero+2`); `$5B98` (`HeldItem`); `$5BFA`-`$5C04` (`UnicycleFrames`, `CountdownDays`, `CountdownHours`, `CountdownMinutes` and 7 more) |
+| Writes | `$5B06` (`Hero+2`); `$5C03`-`$5C04` (`RefuseCount`, `Falling`) |
 
 ### `ExitLeft` (`$A640`)
 
@@ -1779,8 +1792,8 @@ Witness: L1 30 (rzx x17).
 | Runs | not reached in `stage1/c1`; in the other recordings 12 calls (`stage1/rzx/r20000` 4, `stage1/rzx/r06000` 3, `stage1/rzx/r40000` 2 and 2 more) |
 | Called from | `FloatInRoom2C` (tail), `HeroUpdate` (tail), `JumpArc` |
 | Calls | `SetUpRoom` (tail), `RoomToLevelColumn`, `LevelColumnToRoom` |
-| Reads | `$5C01` (system) |
-| Writes | `$5B04` (system) |
+| Reads | `$5C01` (`Room`) |
+| Writes | `$5B04` (`Hero`) |
 
 ### `ExitRight` (`$A671`)
 
@@ -1795,8 +1808,8 @@ Witness: L1 38 (gameover, rzx x18).
 | Runs | not reached in `stage1/c1`; in the other recordings 18 calls (`stage1/rzx/r08000` 4, `stage1/rzx/r40000` 3, `stage1/rzx/r00000` 2 and 5 more) |
 | Called from | `HeroUpdate` (tail), `JumpArc` |
 | Calls | `SetUpRoom` (tail), `RoomToLevelColumn`, `LevelColumnToRoom` |
-| Reads | `$5C01` (system); `$A66C`-`$A670` (`ExplorerRooms`) |
-| Writes | `$5B04` (system) |
+| Reads | `$5C01` (`Room`); `$A66C`-`$A670` (`ExplorerRooms`) |
+| Writes | `$5B04` (`Hero`) |
 
 ### `ExitUp` (`$A69B`)
 
@@ -1811,8 +1824,8 @@ Witness: L1 13 (gameover, rzx x8).
 | Runs | not reached in `stage1/c1`; in the other recordings 13 calls (`stage1/rzx/r04000` 4, `stage1/rzx/r00000` 2, `stage1/rzx/r02000` 1 and 6 more) |
 | Called from | `HeroUpdate` (tail), `BalloonRide`, `BounceUp` (tail), `Hover` (tail), `JumpStepY` |
 | Calls | `SetUpRoom` (tail), `RoomToLevelColumn`, `LevelColumnToRoom` |
-| Reads | `$5C09`-`$5C0A` (system) |
-| Writes | `$5B04`-`$5B05` (system) |
+| Reads | `$5C09`-`$5C0A` (`HeroSavedXY`) |
+| Writes | `$5B04`-`$5B05` (`Hero`) |
 
 ### `ExitDown` (`$A6AE`)
 
@@ -1827,7 +1840,7 @@ Witness: L1 13 (gameover, rzx x9).
 | Runs | not reached in `stage1/c1`; in the other recordings 13 calls (`stage1/rzx/r36000` 3, `stage1/rzx/r14500` 2, `stage1/rzx/r23250` 1 and 7 more) |
 | Called from | `HeroUpdate` (tail), `LiftDown`, `JumpHoleCheck` (tail) |
 | Calls | `SetUpRoom` (tail), `RoomToLevelColumn`, `LevelColumnToRoom` |
-| Writes | `$5B05` (system) |
+| Writes | `$5B05` (`Hero+1`) |
 
 ### `JumpHoleCheck` (`$AF09`)
 
@@ -1842,7 +1855,7 @@ Witness: L1 2366 (gameover, rzx x23).
 | Runs | not reached in `stage1/c1`; in the other recordings 2,366 calls (`stage1/rzx/r06500` 225, `stage1/rzx/r30000` 204, `stage1/rzx/r22000` 198 and 21 more) |
 | Called from | `JumpStepY` |
 | Calls | `ExitDown` (tail), `OverHole` |
-| Reads | `$5C06` (system); `$AF39`-`$AF3A` (`SavedSP`) |
+| Reads | `$5C06` (`Status`); `$AF39`-`$AF3A` (`SavedSP`) |
 
 ### `OverHole` (`$AF22`)
 
@@ -1857,7 +1870,7 @@ Witness: L1 26583 (c1, explorers, gameover, rzx x31).
 | Runs (c1: power-on, the original tape at ROM speed on the 128K, the menu, the selector and play) | 1,270 calls, 56,228 t-states own (0.00 %) |
 | Runs (the other recordings) | 25,313 calls (`stage1/explorers` 4,262, `stage1/rzx/r14000` 854, `stage1/rzx/r32000` 773 and 30 more) |
 | Called from | `WellFront`, `JumpHoleCheck` |
-| Reads | `$5B04` (system); `$5BA2`-`$5BA3` (system) |
+| Reads | `$5B04` (`Hero`); `$5BA2`-`$5BA3` (`WellHole`) |
 
 ### `ReadControls` (`$B87D`)
 
@@ -1916,7 +1929,7 @@ Witness: L1 849 (explorers).
 
 | | |
 | --- | --- |
-| Runs | not reached in the recordings |
+| Runs | not reached in `stage1/c1`; in the other recordings 849 runs of its first instruction, entered by a jump (`stage1/explorers` 849) |
 
 ### `InputBitsOut` (`$B930`)
 
@@ -1951,7 +1964,7 @@ Witness: L1 26144 (c1, explorers, gameover, rzx x31).
 | Runs (the other recordings) | 24,874 calls (`stage1/explorers` 4,262, `stage1/rzx/r14000` 853, `stage1/rzx/r32000` 772 and 30 more) |
 | Called from | `HeroUpdate` |
 | Calls | `JumpThroughWord` (falls into) |
-| Reads | `$5C06` (system) |
+| Reads | `$5C06` (`Status`) |
 
 ### `JumpThroughWord` (`$A6DD`)
 
@@ -2029,11 +2042,11 @@ Witness: L1 43 (rzx16000).
 
 | | |
 | --- | --- |
-| Runs | not reached in `stage1/c1`; in the other recordings run into, not called (`stage1/rzx/r16000`) |
+| Runs | not reached in `stage1/c1`; in the other recordings 43 runs of its first instruction, entered by a jump (`stage1/rzx/r16000` 43) |
 | Called from | `JumpThroughWord` |
 | Calls | `ClearStatusTimer` (tail), `SetHeroFrame` (tail), `NextFrame` |
-| Reads | `$5C06` (system) |
-| Writes | `$5C06` (system) |
+| Reads | `$5C06` (`Status`) |
+| Writes | `$5C06` (`Status`) |
 
 ### `Room43Anim` (`$A851`)
 
@@ -2045,10 +2058,10 @@ Witness: L1 50 (rzx38000).
 
 | | |
 | --- | --- |
-| Runs | not reached in `stage1/c1`; in the other recordings run into, not called (`stage1/rzx/r38000`) |
+| Runs | not reached in `stage1/c1`; in the other recordings 50 runs of its first instruction, entered by a jump (`stage1/rzx/r38000` 50) |
 | Called from | `JumpThroughWord` |
 | Calls | `DrawPortrait`, `SetHeroFrame` (tail), `NextFrame`, `ClearStatus` (tail), `AddScore` |
-| Writes | `$5B98` (system) |
+| Writes | `$5B98` (`HeldItem`) |
 
 ### `FallDeath` (`$A888`)
 
@@ -2062,7 +2075,7 @@ Witness: L1 9 (gameover, rzx10000, rzx24000).
 
 | | |
 | --- | --- |
-| Runs | not reached in `stage1/c1`; in the other recordings run into, not called (`stage1/gameover`, `stage1/rzx/r24000`, `stage1/rzx/r10000`) |
+| Runs | not reached in `stage1/c1`; in the other recordings 9 runs of its first instruction, entered by a jump (`stage1/gameover` 3, `stage1/rzx/r10000` 3, `stage1/rzx/r24000` 3) |
 | Called from | `JumpThroughWord` |
 | Calls | `DeathFrames` (tail) |
 
@@ -2076,7 +2089,7 @@ Witness: L1 7 (rzx10000).
 
 | | |
 | --- | --- |
-| Runs | not reached in `stage1/c1`; in the other recordings run into, not called (`stage1/rzx/r10000`) |
+| Runs | not reached in `stage1/c1`; in the other recordings 7 runs of its first instruction, entered by a jump (`stage1/rzx/r10000` 7) |
 | Called from | `JumpThroughWord` |
 | Calls | `DeathFrames` (tail) |
 | Writes | `$A6FD`-`$A700` (`ThinkHints+23`) |
@@ -2091,7 +2104,7 @@ Witness: L1 33 (rzx06000, rzx22000, rzx32000).
 
 | | |
 | --- | --- |
-| Runs | not reached in `stage1/c1`; in the other recordings run into, not called (`stage1/rzx/r32000`, `stage1/rzx/r22000`, `stage1/rzx/r06000`) |
+| Runs | not reached in `stage1/c1`; in the other recordings 33 runs of its first instruction, entered by a jump (`stage1/rzx/r06000` 11, `stage1/rzx/r22000` 11, `stage1/rzx/r32000` 11) |
 | Called from | `JumpThroughWord` |
 | Calls | `PlaySound` |
 
@@ -2131,10 +2144,10 @@ Witness: L1 36 (rzx24750, rzx34000).
 
 | | |
 | --- | --- |
-| Runs | not reached in `stage1/c1`; in the other recordings run into, not called (`stage1/rzx/r34000`, `stage1/rzx/r24750`) |
+| Runs | not reached in `stage1/c1`; in the other recordings 36 runs of its first instruction, entered by a jump (`stage1/rzx/r24750` 18, `stage1/rzx/r34000` 18) |
 | Called from | `JumpThroughWord` |
-| Reads | `$5C01`-`$5C07` (system); `$5C44` (system); `$B073`-`$B078` (`TeleportPads`) |
-| Writes | `$5B04`-`$5B06` (system); `$5B9E`-`$5B9F` (system); `$5C01`-`$5C07` (system); `$A959` (`TeleportDest`); `$B072` (`PadLatch`) |
+| Reads | `$5C01`-`$5C07` (`Room`, `PassCount`, `RefuseCount`, `Falling` and 3 more); `$5C44` (`CrystalPlaced`); `$B073`-`$B078` (`TeleportPads`) |
+| Writes | `$5B04`-`$5B06` (`Hero`); `$5B9E`-`$5B9F` (`LiftRoom`, `LiftY`); `$5C01`-`$5C07` (`Room`, `PassCount`, `RefuseCount`, `Falling` and 3 more); `$A959` (`TeleportDest`); `$B072` (`PadLatch`) |
 
 ### `Frozen` (`$A90E`)
 
@@ -2146,7 +2159,7 @@ Witness: L1 413 (gameover, rzx16000, rzx18000, rzx50000).
 
 | | |
 | --- | --- |
-| Runs | not reached in `stage1/c1`; in the other recordings run into, not called (`stage1/rzx/r50000`, `stage1/gameover`, `stage1/rzx/r16000` and 1 more) |
+| Runs | not reached in `stage1/c1`; in the other recordings 413 runs of its first instruction, entered by a jump (`stage1/rzx/r50000` 181, `stage1/gameover` 147, `stage1/rzx/r16000` 73 and 1 more) |
 | Called from | `JumpThroughWord` |
 
 ### `TeleportStep` (`$A910`)
@@ -2159,7 +2172,7 @@ Witness: L1 2 (rzx24750, rzx34000).
 
 | | |
 | --- | --- |
-| Runs | ran within another entry's routine (reached by a jump or by running on, its calls below), no runs of its own counted |
+| Runs | not reached in `stage1/c1`; in the other recordings 2 runs of its first instruction, entered by a jump (`stage1/rzx/r24750` 1, `stage1/rzx/r34000` 1) |
 | Calls | `SetUpRoom` (tail), `NextFrame`, `ClearStatus` (tail) |
 
 ### `RideObject4` (`$A95F`)
@@ -2172,10 +2185,10 @@ Witness: L1 418 (rzx28000, rzx32750, rzx34000).
 
 | | |
 | --- | --- |
-| Runs | not reached in `stage1/c1`; in the other recordings run into, not called (`stage1/rzx/r28000`, `stage1/rzx/r32750`, `stage1/rzx/r34000`) |
+| Runs | not reached in `stage1/c1`; in the other recordings 418 runs of its first instruction, entered by a jump (`stage1/rzx/r28000` 209, `stage1/rzx/r32750` 149, `stage1/rzx/r34000` 60) |
 | Called from | `JumpThroughWord` |
-| Reads | `$5B14`-`$5B15` (system) |
-| Writes | `$5B04`-`$5B06` (system) |
+| Reads | `$5B14`-`$5B15` (`ObjectSlot4`) |
+| Writes | `$5B04`-`$5B06` (`Hero`) |
 
 ### `LiftUp` (`$A96B`)
 
@@ -2197,7 +2210,7 @@ Witness: L1 4 (rzx20000, rzx36000).
 
 | | |
 | --- | --- |
-| Runs | ran within another entry's routine (reached by a jump or by running on, its calls below), no runs of its own counted |
+| Runs | not reached in `stage1/c1`; in the other recordings 4 runs of its first instruction, entered by a jump (`stage1/rzx/r36000` 3, `stage1/rzx/r20000` 1) |
 | Calls | `LiftAtStop` (falls into) |
 
 ### `LiftAtStop` (`$A9A9`)
@@ -2213,7 +2226,7 @@ Witness: L1 263 (rzx20000, rzx36000).
 | Runs | not reached in `stage1/c1`; in the other recordings 200 calls (`stage1/rzx/r36000` 200) |
 | Called from | `LiftSetRoom` (falls into), `LiftDown` |
 | Calls | `ClearStatus` (tail) |
-| Reads | `$5B9F` (system); `$5C01` (system); `$A9E6`-`$A9ED` (`LiftStops`) |
+| Reads | `$5B9F` (`LiftY`); `$5C01` (`Room`); `$A9E6`-`$A9ED` (`LiftStops`) |
 
 ### `LiftDown` (`$A9C4`)
 
@@ -2225,11 +2238,11 @@ Witness: L1 220 (rzx20000, rzx36000).
 
 | | |
 | --- | --- |
-| Runs | not reached in `stage1/c1`; in the other recordings run into, not called (`stage1/rzx/r36000`, `stage1/rzx/r20000`) |
+| Runs | not reached in `stage1/c1`; in the other recordings 220 runs of its first instruction, entered by a jump (`stage1/rzx/r36000` 156, `stage1/rzx/r20000` 64) |
 | Called from | `JumpThroughWord` |
 | Calls | `ExitDown`, `LiftAtStop` |
-| Reads | `$5B05` (system); `$5B9F` (system); `$5C01` (system); `$A9E6`-`$A9EB` (`LiftStops`) |
-| Writes | `$5B05` (system); `$5B9E`-`$5B9F` (system) |
+| Reads | `$5B05` (`Hero+1`); `$5B9F` (`LiftY`); `$5C01` (`Room`); `$A9E6`-`$A9EB` (`LiftStops`) |
+| Writes | `$5B05` (`Hero+1`); `$5B9E`-`$5B9F` (`LiftRoom`, `LiftY`) |
 
 ### `LoseLifeWait` (`$A9EE`)
 
@@ -2241,11 +2254,11 @@ Witness: L1 292 (gameover, rzx x5).
 
 | | |
 | --- | --- |
-| Runs | not reached in `stage1/c1`; in the other recordings run into, not called (`stage1/rzx/r10000`, `stage1/rzx/r32000`, `stage1/rzx/r24000` and 3 more) |
+| Runs | not reached in `stage1/c1`; in the other recordings 292 runs of its first instruction, entered by a jump (`stage1/rzx/r10000` 65, `stage1/gameover` 50, `stage1/rzx/r06000` 50 and 3 more) |
 | Called from | `JumpThroughWord` |
 | Calls | `LoseGame` (tail), `DrawSpareLives` (tail) |
-| Reads | `$5B97` (system); `$5C07` (system) |
-| Writes | `$5B97` (system); `$5C07` (system); `$5C2A` (system) |
+| Reads | `$5B97` (`Lives`); `$5C07` (`StatusTimer`) |
+| Writes | `$5B97` (`Lives`); `$5C07` (`StatusTimer`); `$5C2A` (`LifeLost`) |
 
 ### `SinkInMud` (`$AA04`)
 
@@ -2269,11 +2282,11 @@ Witness: L1 6 (rzx16000).
 
 | | |
 | --- | --- |
-| Runs | not reached in `stage1/c1`; in the other recordings run into, not called (`stage1/rzx/r16000`) |
+| Runs | not reached in `stage1/c1`; in the other recordings 6 runs of its first instruction, entered by a jump (`stage1/rzx/r16000` 6) |
 | Called from | `JumpThroughWord` |
 | Calls | `SetStatus`, `PlaySound` (tail) |
-| Reads | `$5B07` (system); `$5B98` (system); `$5C07` (system) |
-| Writes | `$5B06`-`$5B07` (system); `$5C07` (system) |
+| Reads | `$5B07` (`Hero+3`); `$5B98` (`HeldItem`); `$5C07` (`StatusTimer`) |
+| Writes | `$5B06`-`$5B07` (`Hero+2`); `$5C07` (`StatusTimer`) |
 
 ### `BarrelRide` (`$AA6F`)
 
@@ -2285,11 +2298,11 @@ Witness: L1 85 (rzx16000).
 
 | | |
 | --- | --- |
-| Runs | not reached in `stage1/c1`; in the other recordings run into, not called (`stage1/rzx/r16000`) |
+| Runs | not reached in `stage1/c1`; in the other recordings 85 runs of its first instruction, entered by a jump (`stage1/rzx/r16000` 85) |
 | Called from | `JumpThroughWord` |
 | Calls | `ClearStatus` (tail) |
-| Reads | `$5B04`-`$5B07` (system); `$5C07` (system); `$AAFA`-`$AB4D` (`BarrelArc`) |
-| Writes | `$5B04`-`$5B07` (system); `$5C07` (system) |
+| Reads | `$5B04`-`$5B07` (`Hero`); `$5C07` (`StatusTimer`); `$AAFA`-`$AB4D` (`BarrelArc`) |
+| Writes | `$5B04`-`$5B07` (`Hero`); `$5C07` (`StatusTimer`) |
 
 ### `BarrelRideShort` (`$AAA7`)
 
@@ -2325,7 +2338,7 @@ Witness: L1 7 (gameover, rzx x5).
 | --- | --- |
 | Runs | not reached in `stage1/c1`; in the other recordings 7 calls (`stage1/rzx/r10000` 2, `stage1/gameover` 1, `stage1/rzx/r24000` 1 and 3 more) |
 | Called from | `DeathFrames` (tail) |
-| Writes | `$5C06`-`$5C07` (system) |
+| Writes | `$5C06`-`$5C07` (`Status`, `StatusTimer`) |
 
 ### `ClearStatusTimer` (`$AAF5`)
 
@@ -2337,7 +2350,7 @@ Witness: L1 8 (gameover, rzx x6).
 | --- | --- |
 | Runs | not reached in `stage1/c1`; in the other recordings 1 call (`stage1/rzx/r16000` 1) |
 | Called from | `Room2DAnim` (tail) |
-| Writes | `$5C07` (system) |
+| Writes | `$5C07` (`StatusTimer`) |
 
 ### `Think` (`$AB6E`)
 
@@ -2361,7 +2374,7 @@ Witness: L1 133 (gameover, rzx x7).
 | --- | --- |
 | Runs | not reached in `stage1/c1`; in the other recordings 133 calls (`stage1/rzx/r38000` 49, `stage1/rzx/r16000` 42, `stage1/rzx/r22000` 10 and 5 more) |
 | Called from | `Room2DAnim` (tail), `Room43Anim` (tail), `DeathFrames` (tail) |
-| Writes | `$5B06` (system) |
+| Writes | `$5B06` (`Hero+2`) |
 
 ### `BrightIdea` (`$ABC7`)
 
@@ -2399,8 +2412,8 @@ Witness: L1 178 (gameover, rzx x9).
 | --- | --- |
 | Runs | not reached in `stage1/c1`; in the other recordings 178 calls (`stage1/rzx/r38000` 50, `stage1/rzx/r16000` 43, `stage1/rzx/r24750` 18 and 7 more) |
 | Called from | `Room2DAnim`, `Room43Anim`, `DeathFrames`, `TeleportStep` |
-| Reads | `$5C07` (system); `$A83B`-`$A850` (`Room2DFrames`); `$A86E`-`$A887` (`Room43Frames`); `$A8BF`-`$A8C0` (`FallDeathFrames`); `$A8E0`-`$A8E9` (`CreatureDeathFrames`, `Room1ADeathFrames`); `$A955`-`$A95E` (`TeleportFrames`, `TeleportDest`, `TeleportFramesArrive`) |
-| Writes | `$5C07` (system) |
+| Reads | `$5C07` (`StatusTimer`); `$A83B`-`$A850` (`Room2DFrames`); `$A86E`-`$A887` (`Room43Frames`); `$A8BF`-`$A8C0` (`FallDeathFrames`); `$A8E0`-`$A8E9` (`CreatureDeathFrames`, `Room1ADeathFrames`); `$A955`-`$A95E` (`TeleportFrames`, `TeleportDest`, `TeleportFramesArrive`) |
+| Writes | `$5C07` (`StatusTimer`) |
 
 ### `NextFrameAt` (`$ABE1`)
 
@@ -2439,11 +2452,11 @@ Witness: L1 452 (rzx14000, rzx14500).
 
 | | |
 | --- | --- |
-| Runs | not reached in `stage1/c1`; in the other recordings run into, not called (`stage1/rzx/r14500`, `stage1/rzx/r14000`) |
+| Runs | not reached in `stage1/c1`; in the other recordings 452 runs of its first instruction, entered by a jump (`stage1/rzx/r14500` 265, `stage1/rzx/r14000` 187) |
 | Called from | `JumpThroughWord` |
 | Calls | `HeroTileChecks`, `ExitUp`, `ClearStatus` (tail) |
-| Reads | `$5B04`-`$5B05` (system); `$5B98` (system); `$5C01`-`$5C06` (system); `$A0FF`-`$A101` (`HeroProbes+1`) |
-| Writes | `$5B04`-`$5B06` (system); `$5C06` (system); `$5C25`-`$5C27` (system) |
+| Reads | `$5B04`-`$5B05` (`Hero`); `$5B98` (`HeldItem`); `$5C01`-`$5C06` (`Room`, `PassCount`, `RefuseCount`, `Falling` and 2 more); `$A0FF`-`$A101` (`HeroProbes+1`) |
+| Writes | `$5B04`-`$5B06` (`Hero`); `$5C06` (`Status`); `$5C25`-`$5C27` (`BalloonX`, `BalloonY`, `BalloonInRoom`) |
 
 ### `BounceUp` (`$AD17`)
 
@@ -2455,11 +2468,11 @@ Witness: L1 67 (gameover, rzx10000, rzx22000).
 
 | | |
 | --- | --- |
-| Runs | not reached in `stage1/c1`; in the other recordings run into, not called (`stage1/gameover`, `stage1/rzx/r10000`, `stage1/rzx/r22000`) |
+| Runs | not reached in `stage1/c1`; in the other recordings 67 runs of its first instruction, entered by a jump (`stage1/gameover` 23, `stage1/rzx/r10000` 23, `stage1/rzx/r22000` 21) |
 | Called from | `JumpThroughWord` |
 | Calls | `HeroTileChecks`, `ExitUp` (tail), `SetStatus` (tail) |
-| Reads | `$5B05` (system); `$A101` (`HeroProbes+3`) |
-| Writes | `$5B05` (system) |
+| Reads | `$5B05` (`Hero+1`); `$A101` (`HeroProbes+3`) |
+| Writes | `$5B05` (`Hero+1`) |
 
 ### `Hover` (`$AD32`)
 
@@ -2471,12 +2484,12 @@ Witness: L1 4908 (c1, explorers, rzx00000, rzx02000).
 
 | | |
 | --- | --- |
-| Runs (c1: power-on, the original tape at ROM speed on the 128K, the menu, the selector and play) | run into, not called, 231,133 t-states own (0.01 %) |
-| Runs (the other recordings) | run into, not called (`stage1/explorers`, `stage1/rzx/r00000`, `stage1/rzx/r02000`) |
+| Runs (c1: power-on, the original tape at ROM speed on the 128K, the menu, the selector and play) | 1,217 runs of its first instruction (entered by a jump or by running on, no routine of its own in the L1), 231,133 t-states own (0.01 %) |
+| Runs (the other recordings) | 3,691 runs of its first instruction, entered by a jump (`stage1/explorers` 3,467, `stage1/rzx/r00000` 209, `stage1/rzx/r02000` 15) |
 | Called from | `JumpThroughWord` |
 | Calls | `ExitUp` (tail), `ClearStatus` (tail) |
-| Reads | `$5B04`-`$5B07` (system); `$5B98` (system); `$5C01` (system) |
-| Writes | `$5B04`-`$5B07` (system); `$5C03` (system) |
+| Reads | `$5B04`-`$5B07` (`Hero`); `$5B98` (`HeldItem`); `$5C01` (`Room`) |
+| Writes | `$5B04`-`$5B07` (`Hero`); `$5C03` (`RefuseCount`) |
 
 ### `JumpArc` (`$ADAC`)
 
@@ -2490,11 +2503,11 @@ Witness: L1 2391 (gameover, rzx x23).
 
 | | |
 | --- | --- |
-| Runs | not reached in `stage1/c1`; in the other recordings run into, not called (`stage1/rzx/r06500`, `stage1/rzx/r22000`, `stage1/rzx/r30000` and 21 more) |
+| Runs | not reached in `stage1/c1`; in the other recordings 2,391 runs of its first instruction, entered by a jump (`stage1/rzx/r06500` 230, `stage1/rzx/r30000` 206, `stage1/rzx/r22000` 200 and 21 more) |
 | Called from | `JumpThroughWord` |
 | Calls | `HeroTileChecks`, `ExitLeft`, `ExitRight`, `JumpStepY`, `FrameFromTable`, `ClearStatus` (tail) |
-| Reads | `$5B04`-`$5B05` (system); `$5C07`-`$5C08` (system); `$A0FE`-`$A0FF` (`HeroProbes`) |
-| Writes | `$5B04`-`$5B05` (system); `$5C07` (system) |
+| Reads | `$5B04`-`$5B05` (`Hero`); `$5C07`-`$5C08` (`StatusTimer`, `JumpDirection`); `$A0FE`-`$A0FF` (`HeroProbes`) |
+| Writes | `$5B04`-`$5B05` (`Hero`); `$5C07` (`StatusTimer`) |
 
 ### `JumpStepY` (`$AE37`)
 
@@ -2509,8 +2522,8 @@ Witness: L1 2366 (gameover, rzx x23).
 | Runs | not reached in `stage1/c1`; in the other recordings 2,366 calls (`stage1/rzx/r06500` 225, `stage1/rzx/r30000` 204, `stage1/rzx/r22000` 198 and 21 more) |
 | Called from | `JumpArc` |
 | Calls | `HeroTileChecks`, `ExitUp`, `ClearStatus` (tail), `JumpHoleCheck` |
-| Reads | `$5B05` (system); `$A101` (`HeroProbes+3`); `$AE9E`-`$AEAE` (`JumpRise`) |
-| Writes | `$5B05`-`$5B06` (system); `$5C06`-`$5C07` (system) |
+| Reads | `$5B05` (`Hero+1`); `$A101` (`HeroProbes+3`); `$AE9E`-`$AEAE` (`JumpRise`) |
+| Writes | `$5B05`-`$5B06` (`Hero+1`); `$5C06`-`$5C07` (`Status`, `StatusTimer`) |
 
 ### `ExitDownSaved` (`$AE6A`)
 
@@ -2532,8 +2545,8 @@ Witness: L1 2391 (gameover, rzx x23).
 | --- | --- |
 | Runs | not reached in `stage1/c1`; in the other recordings 2,391 calls (`stage1/rzx/r06500` 230, `stage1/rzx/r30000` 206, `stage1/rzx/r22000` 200 and 21 more) |
 | Called from | `JumpArc` |
-| Reads | `$5C07` (system); `$AE8D`-`$AE9E` (`JumpFrames`, `JumpRise`) |
-| Writes | `$5B06` (system) |
+| Reads | `$5C07` (`StatusTimer`); `$AE8D`-`$AE9E` (`JumpFrames`, `JumpRise`) |
+| Writes | `$5B06` (`Hero+2`) |
 
 ### `ClearStatus` (`$AE84`)
 
@@ -2546,7 +2559,7 @@ Witness: L1 332 (gameover, rzx x25).
 | Runs | not reached in `stage1/c1`; in the other recordings 304 calls (`stage1/rzx/r20000` 98, `stage1/rzx/r18000` 73, `stage1/rzx/r06000` 16 and 18 more) |
 | Called from | `FloatInRoom2C`, `Room43Anim` (tail), `TeleportStep` (tail), `LiftAtStop` (tail), `BarrelRide` (tail), `BalloonRide` (tail), `Hover` (tail), `JumpArc` (tail), `JumpStepY` (tail), `CricketBallScript` (tail), `BasketScript` (tail) |
 | Calls | `SetStatus` (falls into) |
-| Writes | `$5C06`-`$5C07` (system) |
+| Writes | `$5C06`-`$5C07` (`Status`, `StatusTimer`) |
 
 ### `SetStatus` (`$AE85`)
 
@@ -2560,7 +2573,7 @@ Witness: L1 360 (gameover, rzx x26).
 | --- | --- |
 | Runs | not reached in `stage1/c1`; in the other recordings 203 calls (`stage1/rzx/r20000` 101, `stage1/rzx/r06000` 17, `stage1/rzx/r22000` 15 and 10 more) |
 | Called from | `LoseGame` (tail), `HeroUpdate` (tail), `BarrelSpot`, `BounceUp` (tail), `ClearStatus` (falls into), `LiftPlatform`, `TeleportPadCheck` (tail), `CricketBallScript` (tail), `SnakesRoom1A` (tail), `ProfessorEnding`, `HitExplorer` (tail) |
-| Writes | `$5C06`-`$5C07` (system) |
+| Writes | `$5C06`-`$5C07` (`Status`, `StatusTimer`) |
 
 ### `StartFrameList` (`$AEAF`)
 
@@ -2597,7 +2610,7 @@ Witness: L1 224 (rzx00000, rzx02000, rzx22000).
 | Runs | not reached in `stage1/c1`; in the other recordings 224 calls (`stage1/rzx/r00000` 128, `stage1/rzx/r22000` 64, `stage1/rzx/r02000` 32) |
 | Called from | `HeroUpdate` (tail) |
 | Reads | `$AECD`-`$AEEC` (`RefuseFrames`) |
-| Writes | `$5B06` (system); `$AEED`-`$AEEE` (`FrameListPtr`) |
+| Writes | `$5B06` (`Hero+2`); `$AEED`-`$AEEE` (`FrameListPtr`) |
 
 ### `RoomToLevelColumn` (`$AEEF`)
 
@@ -2609,7 +2622,7 @@ Witness: L1 92 (gameover, rzx x27).
 | --- | --- |
 | Runs | not reached in `stage1/c1`; in the other recordings 92 calls (`stage1/rzx/r04000` 8, `stage1/rzx/r00000` 7, `stage1/rzx/r40000` 6 and 25 more) |
 | Called from | `ExitLeft`, `ExitRight`, `ExitUp`, `ExitDown` |
-| Reads | `$5C01` (system) |
+| Reads | `$5C01` (`Room`) |
 
 ### `LevelColumnToRoom` (`$AEFD`)
 
@@ -2621,7 +2634,7 @@ Witness: L1 87 (gameover, rzx x27).
 | --- | --- |
 | Runs | not reached in `stage1/c1`; in the other recordings 87 calls (`stage1/rzx/r00000` 7, `stage1/rzx/r40000` 6, `stage1/rzx/r20000` 5 and 25 more) |
 | Called from | `ExitLeft`, `ExitRight`, `ExitUp`, `ExitDown` |
-| Writes | `$5C01` (system) |
+| Writes | `$5C01` (`Room`) |
 
 ## roomscripts
 
@@ -2640,8 +2653,8 @@ Witness: L1 16719 (c1, explorers, gameover, rzx x31).
 | Runs (c1: power-on, the original tape at ROM speed on the 128K, the menu, the selector and play) | 53 calls, 3,591 t-states own (0.00 %) |
 | Runs (the other recordings) | 16,666 calls (`stage1/explorers` 795, `stage1/rzx/r40000` 692, `stage1/rzx/r42000` 675 and 30 more) |
 | Called from | `HeroUpdate` |
-| Reads | `$5B04`-`$5B05` (system); `$5C01` (system); `$5C25`-`$5C27` (system) |
-| Writes | `$5B04` (system); `$5C06` (system) |
+| Reads | `$5B04`-`$5B05` (`Hero`); `$5C01` (`Room`); `$5C25`-`$5C27` (`BalloonX`, `BalloonY`, `BalloonInRoom`) |
+| Writes | `$5B04` (`Hero`); `$5C06` (`Status`) |
 
 ### `LiftPlatform` (`$AF81`)
 
@@ -2656,8 +2669,8 @@ Witness: L1 1406 (rzx x6).
 | Runs | not reached in `stage1/c1`; in the other recordings 1,406 calls (`stage1/rzx/r36000` 684, `stage1/rzx/r38000` 235, `stage1/rzx/r20000` 183 and 3 more) |
 | Called from | `MainLoop` |
 | Calls | `SetStatus`, `ReadControls` |
-| Reads | `$5B04`-`$5B05` (system); `$5B9F` (system); `$5C06` (system) |
-| Writes | `$5B14`-`$5B16` (system); `$5BA0` (system) |
+| Reads | `$5B04`-`$5B05` (`Hero`); `$5B9F` (`LiftY`); `$5C06` (`Status`) |
+| Writes | `$5B14`-`$5B16` (`ObjectSlot4`); `$5BA0` (`NotOnLift`) |
 
 ### `BalloonRoom` (`$AFD7`)
 
@@ -2669,10 +2682,10 @@ Witness: L1 1017 (rzx14000, rzx14500).
 
 | | |
 | --- | --- |
-| Runs | not reached in `stage1/c1`; in the other recordings run into, not called (`stage1/rzx/r14000`, `stage1/rzx/r14500`) |
+| Runs | not reached in `stage1/c1`; in the other recordings 1,017 runs of its first instruction, entered by a jump (`stage1/rzx/r14000` 666, `stage1/rzx/r14500` 351) |
 | Called from | `JumpThroughWord` |
-| Reads | `$5B07` (system); `$5C01`-`$5C06` (system); `$5C25`-`$5C27` (system) |
-| Writes | `$5B10`-`$5B17` (system) |
+| Reads | `$5B07` (`Hero+3`); `$5C01`-`$5C06` (`Room`, `PassCount`, `RefuseCount`, `Falling` and 2 more); `$5C25`-`$5C27` (`BalloonX`, `BalloonY`, `BalloonInRoom`) |
+| Writes | `$5B10`-`$5B17` (`ObjectSlot3`, `ObjectSlot4`) |
 
 ### `ThinkKey` (`$B02E`)
 
@@ -2703,7 +2716,7 @@ Witness: L1 16714 (c1, explorers, gameover, rzx x31).
 | Runs (the other recordings) | 16,661 calls (`stage1/explorers` 795, `stage1/rzx/r40000` 692, `stage1/rzx/r42000` 675 and 30 more) |
 | Called from | `HeroUpdate` |
 | Calls | `SetStatus` (tail) |
-| Reads | `$5B04`-`$5B05` (system); `$5C01` (system); `$B072`-`$B07B` (`PadLatch`, `TeleportPads`) |
+| Reads | `$5B04`-`$5B05` (`Hero`); `$5C01` (`Room`); `$B072`-`$B07B` (`PadLatch`, `TeleportPads`) |
 | Writes | `$B072` (`PadLatch`) |
 
 ### `KeyRoomDoneFlag` (`$B165`)
@@ -2718,7 +2731,7 @@ Witness: L1 346 (rzx16000, rzx18000).
 | --- | --- |
 | Runs | not reached in `stage1/c1`; in the other recordings 346 calls (`stage1/rzx/r16000` 245, `stage1/rzx/r18000` 101) |
 | Called from | `CricketBallScript` |
-| Reads | `$5C00` (system) |
+| Reads | `$5C00` (`BallThrown`) |
 
 ### `TelescopeRoom` (`$B16A`)
 
@@ -2794,11 +2807,11 @@ Witness: L1 346 (rzx16000, rzx18000).
 
 | | |
 | --- | --- |
-| Runs | not reached in `stage1/c1`; in the other recordings run into, not called (`stage1/rzx/r16000`, `stage1/rzx/r18000`) |
+| Runs | not reached in `stage1/c1`; in the other recordings 346 runs of its first instruction, entered by a jump (`stage1/rzx/r16000` 245, `stage1/rzx/r18000` 101) |
 | Called from | `JumpThroughWord` |
 | Calls | `DrawPortrait`, `ClearStatus` (tail), `SetStatus` (tail), `KeyRoomDoneFlag` |
-| Reads | `$5B04`-`$5B15` (system); `$5B98` (system); `$5C41` (system) |
-| Writes | `$5B07`-`$5B17` (system); `$5B98` (system); `$5C00` (system); `$5C41` (system) |
+| Reads | `$5B04`-`$5B15` (`Hero`, `ObjectSlot1`, `ObjectSlot2`, `ObjectSlot3` and 1 more); `$5B98` (`HeldItem`); `$5C41` (`RoomStage`) |
+| Writes | `$5B07`-`$5B17` (`Hero+3`, `ObjectSlot1`, `ObjectSlot2`, `ObjectSlot3` and 1 more); `$5B98` (`HeldItem`); `$5C00` (`BallThrown`); `$5C41` (`RoomStage`) |
 
 ### `BasketScript` (`$B409`)
 
@@ -2814,11 +2827,11 @@ Witness: L1 870 (rzx28000, rzx32750, rzx34000).
 
 | | |
 | --- | --- |
-| Runs | not reached in `stage1/c1`; in the other recordings run into, not called (`stage1/rzx/r28000`, `stage1/rzx/r32750`, `stage1/rzx/r34000`) |
+| Runs | not reached in `stage1/c1`; in the other recordings 870 runs of its first instruction, entered by a jump (`stage1/rzx/r28000` 446, `stage1/rzx/r32750` 358, `stage1/rzx/r34000` 66) |
 | Called from | `JumpThroughWord` |
 | Calls | `Near`, `ClearStatus` (tail), `BasketToRight`, `BasketRight`, `BasketToLeft`, `BasketLeft` |
-| Reads | `$5B04`-`$5B05` (system); `$5C40`-`$5C41` (system) |
-| Writes | `$5B05`-`$5B16` (system); `$5C06` (system); `$5C40`-`$5C41` (system) |
+| Reads | `$5B04`-`$5B05` (`Hero`); `$5C40`-`$5C41` (`RoomFlag`, `RoomStage`) |
+| Writes | `$5B05`-`$5B16` (`Hero+1`, `ObjectSlot1`, `ObjectSlot2`, `ObjectSlot3` and 1 more); `$5C06` (`Status`); `$5C40`-`$5C41` (`RoomFlag`, `RoomStage`) |
 
 ### `BasketToRight` (`$B47E`)
 
@@ -2832,8 +2845,8 @@ Witness: L1 209 (rzx32750).
 | --- | --- |
 | Runs | not reached in `stage1/c1`; in the other recordings 209 calls (`stage1/rzx/r32750` 209) |
 | Called from | `BasketScript` |
-| Reads | `$5B14`-`$5B15` (system); `$5C42` (system) |
-| Writes | `$5B14`-`$5B15` (system) |
+| Reads | `$5B14`-`$5B15` (`ObjectSlot4`); `$5C42` (`LeverState`) |
+| Writes | `$5B14`-`$5B15` (`ObjectSlot4`) |
 
 ### `BasketRight` (`$B483`)
 
@@ -2847,8 +2860,8 @@ Witness: L1 418 (rzx28000, rzx32750).
 | --- | --- |
 | Runs | not reached in `stage1/c1`; in the other recordings 209 calls (`stage1/rzx/r28000` 209) |
 | Called from | `BasketScript` |
-| Reads | `$5B14`-`$5B15` (system) |
-| Writes | `$5B14`-`$5B15` (system) |
+| Reads | `$5B14`-`$5B15` (`ObjectSlot4`) |
+| Writes | `$5B14`-`$5B15` (`ObjectSlot4`) |
 
 ### `BasketRightTail` (`$B4A3`)
 
@@ -2860,7 +2873,7 @@ Witness: L1 322 (rzx28000, rzx32750).
 
 | | |
 | --- | --- |
-| Runs | not reached in the recordings |
+| Runs | not reached in `stage1/c1`; in the other recordings 322 runs of its first instruction, entered by a jump (`stage1/rzx/r28000` 161, `stage1/rzx/r32750` 161) |
 
 ### `BasketToLeft` (`$B4B0`)
 
@@ -2874,8 +2887,8 @@ Witness: L1 209 (rzx28000).
 | --- | --- |
 | Runs | not reached in `stage1/c1`; in the other recordings 209 calls (`stage1/rzx/r28000` 209) |
 | Called from | `BasketScript` |
-| Reads | `$5B14`-`$5B15` (system); `$5C42` (system) |
-| Writes | `$5B14`-`$5B15` (system) |
+| Reads | `$5B14`-`$5B15` (`ObjectSlot4`); `$5C42` (`LeverState`) |
+| Writes | `$5B14`-`$5B15` (`ObjectSlot4`) |
 
 ### `BasketLeft` (`$B4B5`)
 
@@ -2889,8 +2902,8 @@ Witness: L1 418 (rzx28000, rzx32750, rzx34000).
 | --- | --- |
 | Runs | not reached in `stage1/c1`; in the other recordings 209 calls (`stage1/rzx/r32750` 148, `stage1/rzx/r34000` 61) |
 | Called from | `BasketScript` |
-| Reads | `$5B14`-`$5B15` (system) |
-| Writes | `$5B14`-`$5B15` (system) |
+| Reads | `$5B14`-`$5B15` (`ObjectSlot4`) |
+| Writes | `$5B14`-`$5B15` (`ObjectSlot4`) |
 
 ### `BasketLeftTail` (`$B4D5`)
 
@@ -2902,7 +2915,7 @@ Witness: L1 376 (rzx28000, rzx32750, rzx34000).
 
 | | |
 | --- | --- |
-| Runs | not reached in the recordings |
+| Runs | not reached in `stage1/c1`; in the other recordings 376 runs of its first instruction, entered by a jump (`stage1/rzx/r28000` 188, `stage1/rzx/r32750` 148, `stage1/rzx/r34000` 40) |
 
 ### `SilverCrossScript` (`$B4E2`)
 
@@ -2918,11 +2931,11 @@ Witness: L1 273 (rzx40000).
 
 | | |
 | --- | --- |
-| Runs | not reached in `stage1/c1`; in the other recordings run into, not called (`stage1/rzx/r40000`) |
+| Runs | not reached in `stage1/c1`; in the other recordings 273 runs of its first instruction, entered by a jump (`stage1/rzx/r40000` 273) |
 | Called from | `JumpThroughWord` |
 | Calls | `AddScore` |
-| Reads | `$5B04`-`$5B13` (system); `$5B98` (system); `$5C02` (system); `$5C41`-`$5C45` (system) |
-| Writes | `$5B10`-`$5B13` (system); `$5C41`-`$5C45` (system) |
+| Reads | `$5B04`-`$5B13` (`Hero`, `ObjectSlot1`, `ObjectSlot2`, `ObjectSlot3`); `$5B98` (`HeldItem`); `$5C02` (`PassCount`); `$5C41`-`$5C45` (`RoomStage`, `LeverState`, `SwitchFitted`, `CrystalPlaced` and 1 more) |
+| Writes | `$5B10`-`$5B13` (`ObjectSlot3`); `$5C41`-`$5C45` (`RoomStage`, `LeverState`, `SwitchFitted`, `CrystalPlaced` and 1 more) |
 
 ### `SnakesRoom17` (`$B55A`)
 
@@ -2934,10 +2947,10 @@ Witness: L1 297 (rzx04000, rzx06000).
 
 | | |
 | --- | --- |
-| Runs | not reached in `stage1/c1`; in the other recordings run into, not called (`stage1/rzx/r06000`, `stage1/rzx/r04000`) |
+| Runs | not reached in `stage1/c1`; in the other recordings 297 runs of its first instruction, entered by a jump (`stage1/rzx/r06000` 266, `stage1/rzx/r04000` 31) |
 | Called from | `JumpThroughWord` |
-| Reads | `$5B0E`-`$5B12` (system); `$5B98` (system); `$5C01`-`$5C02` (system) |
-| Writes | `$5B0E`-`$5B12` (system) |
+| Reads | `$5B0E`-`$5B12` (`ObjectSlot2+2`, `ObjectSlot3`); `$5B98` (`HeldItem`); `$5C01`-`$5C02` (`Room`, `PassCount`) |
+| Writes | `$5B0E`-`$5B12` (`ObjectSlot2+2`, `ObjectSlot3`) |
 
 ### `SnakesRoom1A` (`$B562`)
 
@@ -2951,11 +2964,11 @@ Witness: L1 437 (rzx08000, rzx10000, rzx12000).
 
 | | |
 | --- | --- |
-| Runs | not reached in `stage1/c1`; in the other recordings run into, not called (`stage1/rzx/r08000`, `stage1/rzx/r10000`, `stage1/rzx/r12000`) |
+| Runs | not reached in `stage1/c1`; in the other recordings 437 runs of its first instruction, entered by a jump (`stage1/rzx/r08000` 231, `stage1/rzx/r10000` 153, `stage1/rzx/r12000` 53) |
 | Called from | `JumpThroughWord` |
 | Calls | `SetStatus` (tail) |
-| Reads | `$5B04`-`$5B16` (system); `$5B98` (system); `$5C01`-`$5C02` (system); `$5C41` (system); `$B5D1`-`$B5DC` (`SnakeTemplate`) |
-| Writes | `$5B0C`-`$5B17` (system); `$5C41` (system) |
+| Reads | `$5B04`-`$5B16` (`Hero`, `ObjectSlot1`, `ObjectSlot2`, `ObjectSlot3` and 1 more); `$5B98` (`HeldItem`); `$5C01`-`$5C02` (`Room`, `PassCount`); `$5C41` (`RoomStage`); `$B5D1`-`$B5DC` (`SnakeTemplate`) |
+| Writes | `$5B0C`-`$5B17` (`ObjectSlot2`, `ObjectSlot3`, `ObjectSlot4`); `$5C41` (`RoomStage`) |
 
 ### `ProfessorScript` (`$B5DD`)
 
@@ -2973,11 +2986,11 @@ Witness: L1 2293 (rzx x5).
 
 | | |
 | --- | --- |
-| Runs | not reached in `stage1/c1`; in the other recordings run into, not called (`stage1/rzx/r44000`, `stage1/rzx/r46000`, `stage1/rzx/r48000` and 2 more) |
+| Runs | not reached in `stage1/c1`; in the other recordings 2,293 runs of its first instruction, entered by a jump (`stage1/rzx/r44000` 660, `stage1/rzx/r46000` 631, `stage1/rzx/r48000` 629 and 2 more) |
 | Called from | `JumpThroughWord` |
 | Calls | `Near`, `DrawPortrait`, `NextFrameAt`, `SpawnRoomItems`, `AddScore` |
-| Reads | `$5B14`-`$5B17` (system); `$5B98`-`$5BA1` (system); `$5C02` (system); `$5C3C`-`$5C3D` (system); `$B6BB`-`$B6C0` (`WantedItems`) |
-| Writes | `$5B06`-`$5B17` (system); `$5B98`-`$5BA1` (system); `$5BFE`-`$5C01` (system); `$5C3C`-`$5C3E` (system); `$B6ED` (`LabStep`) |
+| Reads | `$5B14`-`$5B17` (`ObjectSlot4`); `$5B98`-`$5BA1` (`HeldItem`, `Thought`, `LiftRoom`, `LiftY` and 2 more); `$5C02` (`PassCount`); `$5C3C`-`$5C3D` (`WantedItem`, `GiftCount`); `$B6BB`-`$B6C0` (`WantedItems`) |
+| Writes | `$5B06`-`$5B17` (`Hero+2`, `ObjectSlot1`, `ObjectSlot2`, `ObjectSlot3` and 1 more); `$5B98`-`$5BA1` (`HeldItem`, `Thought`, `LiftRoom`, `LiftY` and 2 more); `$5BFE`-`$5C01` (`GameWon`, `GameOver`, `BallThrown`, `Room`); `$5C3C`-`$5C3E` (`WantedItem`, `GiftCount`, `LastGift`); `$B6ED` (`LabStep`) |
 
 ### `ProfessorEnding` (`$B6EE`)
 
@@ -2989,7 +3002,7 @@ Witness: L1 1 (rzx50000).
 
 | | |
 | --- | --- |
-| Runs | ran within another entry's routine (reached by a jump or by running on, its calls below), no runs of its own counted |
+| Runs | not reached in `stage1/c1`; in the other recordings 1 run of its first instruction, entered by a jump (`stage1/rzx/r50000` 1) |
 | Calls | `SetUpRoom`, `SetStatus` |
 
 ### `SilverLiningScript` (`$B704`)
@@ -3002,9 +3015,9 @@ Witness: L1 737 (rzx36000, rzx38000, rzx40000).
 
 | | |
 | --- | --- |
-| Runs | not reached in `stage1/c1`; in the other recordings run into, not called (`stage1/rzx/r36000`, `stage1/rzx/r38000`, `stage1/rzx/r40000`) |
+| Runs | not reached in `stage1/c1`; in the other recordings 737 runs of its first instruction, entered by a jump (`stage1/rzx/r36000` 405, `stage1/rzx/r38000` 235, `stage1/rzx/r40000` 97) |
 | Called from | `JumpThroughWord` |
-| Reads | `$5B04`-`$5B05` (system); `$5B98` (system); `$5C06` (system) |
+| Reads | `$5B04`-`$5B05` (`Hero`); `$5B98` (`HeldItem`); `$5C06` (`Status`) |
 
 ### `LeverRoom40` (`$B723`)
 
@@ -3016,11 +3029,11 @@ Witness: L1 1036 (rzx28000, rzx30000, rzx32000, rzx32750).
 
 | | |
 | --- | --- |
-| Runs | not reached in `stage1/c1`; in the other recordings run into, not called (`stage1/rzx/r32000`, `stage1/rzx/r32750`, `stage1/rzx/r30000` and 1 more) |
+| Runs | not reached in `stage1/c1`; in the other recordings 1,036 runs of its first instruction, entered by a jump (`stage1/rzx/r32000` 701, `stage1/rzx/r32750` 131, `stage1/rzx/r28000` 114 and 1 more) |
 | Called from | `JumpThroughWord` |
 | Calls | `LeverScript` (tail) |
-| Reads | `$5C40`-`$5C43` (system) |
-| Writes | `$5B14`-`$5B16` (system); `$5C40`-`$5C42` (system) |
+| Reads | `$5C40`-`$5C43` (`RoomFlag`, `RoomStage`, `LeverState`, `SwitchFitted`) |
+| Writes | `$5B14`-`$5B16` (`ObjectSlot4`); `$5C40`-`$5C42` (`RoomFlag`, `RoomStage`, `LeverState`) |
 
 ### `LeverRoom3E` (`$B72D`)
 
@@ -3032,11 +3045,11 @@ Witness: L1 571 (rzx26000, rzx28000, rzx34000).
 
 | | |
 | --- | --- |
-| Runs | not reached in `stage1/c1`; in the other recordings run into, not called (`stage1/rzx/r34000`, `stage1/rzx/r26000`, `stage1/rzx/r28000`) |
+| Runs | not reached in `stage1/c1`; in the other recordings 571 runs of its first instruction, entered by a jump (`stage1/rzx/r34000` 274, `stage1/rzx/r28000` 165, `stage1/rzx/r26000` 132) |
 | Called from | `JumpThroughWord` |
 | Calls | `LeverScript` (falls into) |
-| Reads | `$5B98` (system); `$5C42`-`$5C43` (system) |
-| Writes | `$5B14`-`$5B16` (system); `$5C40` (system) |
+| Reads | `$5B98` (`HeldItem`); `$5C42`-`$5C43` (`LeverState`, `SwitchFitted`) |
+| Writes | `$5B14`-`$5B16` (`ObjectSlot4`); `$5C40` (`RoomFlag`) |
 
 ### `LeverScript` (`$B735`)
 
@@ -3053,8 +3066,8 @@ Witness: L1 1607 (rzx x6).
 | Runs | not reached in `stage1/c1`; in the other recordings 279 calls (`stage1/rzx/r28000` 279) |
 | Called from | `LeverRoom40` (tail), `LeverRoom3E` (falls into) |
 | Calls | `Near`, `DrawPortrait` (tail), `LeverMirror` |
-| Reads | `$5B98` (system); `$5C40`-`$5C43` (system) |
-| Writes | `$5B15`-`$5B16` (system); `$5B98` (system); `$5C40`-`$5C43` (system) |
+| Reads | `$5B98` (`HeldItem`); `$5C40`-`$5C43` (`RoomFlag`, `RoomStage`, `LeverState`, `SwitchFitted`) |
+| Writes | `$5B15`-`$5B16` (`ObjectSlot4+1`); `$5B98` (`HeldItem`); `$5C40`-`$5C43` (`RoomFlag`, `RoomStage`, `LeverState`, `SwitchFitted`) |
 
 ### `LeverMirror` (`$B779`)
 
@@ -3068,8 +3081,8 @@ Witness: L1 1338 (rzx x5).
 | --- | --- |
 | Runs | not reached in `stage1/c1`; in the other recordings 1,338 calls (`stage1/rzx/r32000` 701, `stage1/rzx/r34000` 274, `stage1/rzx/r28000` 141 and 2 more) |
 | Called from | `LeverScript` |
-| Reads | `$5B17` (system) |
-| Writes | `$5B17` (system) |
+| Reads | `$5B17` (`ObjectSlot4+3`) |
+| Writes | `$5B17` (`ObjectSlot4+3`) |
 
 ### `RadiationScript` (`$B784`)
 
@@ -3081,10 +3094,10 @@ Witness: L1 214 (rzx26000).
 
 | | |
 | --- | --- |
-| Runs | not reached in `stage1/c1`; in the other recordings run into, not called (`stage1/rzx/r26000`) |
+| Runs | not reached in `stage1/c1`; in the other recordings 214 runs of its first instruction, entered by a jump (`stage1/rzx/r26000` 214) |
 | Called from | `JumpThroughWord` |
-| Reads | `$5C3F`-`$5C41` (system) |
-| Writes | `$5C41` (system) |
+| Reads | `$5C3F`-`$5C41` (`PillsTaken`, `RoomFlag`, `RoomStage`) |
+| Writes | `$5C41` (`RoomStage`) |
 
 ### `FloorRoom36` (`$B79C`)
 
@@ -3096,7 +3109,7 @@ Witness: L1 155 (rzx20000).
 
 | | |
 | --- | --- |
-| Runs | not reached in `stage1/c1`; in the other recordings run into, not called (`stage1/rzx/r20000`) |
+| Runs | not reached in `stage1/c1`; in the other recordings 155 runs of its first instruction, entered by a jump (`stage1/rzx/r20000` 155) |
 | Called from | `JumpThroughWord` |
 | Calls | `FlickerFloor` (tail) |
 
@@ -3110,7 +3123,7 @@ Witness: L1 187 (rzx20000).
 
 | | |
 | --- | --- |
-| Runs | not reached in `stage1/c1`; in the other recordings run into, not called (`stage1/rzx/r20000`) |
+| Runs | not reached in `stage1/c1`; in the other recordings 187 runs of its first instruction, entered by a jump (`stage1/rzx/r20000` 187) |
 | Called from | `JumpThroughWord` |
 | Calls | `FlickerFloor` (falls into) |
 
@@ -3127,8 +3140,8 @@ Witness: L1 5312 (rzx20000).
 | Runs | not reached in `stage1/c1`; in the other recordings 342 calls (`stage1/rzx/r20000` 342) |
 | Called from | `FloorRoom36` (tail), `FloorRoom35` (falls into) |
 | Calls | `SetTileBuffer` |
-| Reads | `$5B04`-`$5B05` (system); `$5C02` (system) |
-| Writes | `$5B09`-`$5B15` (system) |
+| Reads | `$5B04`-`$5B05` (`Hero`); `$5C02` (`PassCount`) |
+| Writes | `$5B09`-`$5B15` (`ObjectSlot1+1`, `ObjectSlot2`, `ObjectSlot3`, `ObjectSlot4`) |
 
 ### `RunRoomScript` (`$B7DD`)
 
@@ -3144,7 +3157,7 @@ Witness: L1 26517 (c1, explorers, gameover, rzx x31).
 | Runs (the other recordings) | 25,247 calls (`stage1/explorers` 4,262, `stage1/rzx/r14000` 853, `stage1/rzx/r32000` 772 and 30 more) |
 | Called from | `HeroUpdate` |
 | Calls | `JumpThroughWord` (tail) |
-| Reads | `$5C01` (system) |
+| Reads | `$5C01` (`Room`) |
 
 ### `BridgeEffect` (`$BA97`)
 
@@ -3163,8 +3176,8 @@ Witness: L1 857 (rzx08000, rzx12000, rzx40000, rzx42000).
 | Runs | not reached in `stage1/c1`; in the other recordings 857 calls (`stage1/rzx/r42000` 362, `stage1/rzx/r08000` 267, `stage1/rzx/r12000` 206 and 1 more) |
 | Called from | `ItemsKeys` |
 | Calls | `SetTile`, `AlwaysZero` |
-| Reads | `$5B04` (system); `$5B98` (system); `$5C01`-`$5C0D` (system); `$5C3E` (system); `$BB51`-`$BB58` (`BridgeTiles`, `BridgeTiles3A`) |
-| Writes | `$5C0C`-`$5C0D` (system) |
+| Reads | `$5B04` (`Hero`); `$5B98` (`HeldItem`); `$5C01`-`$5C0D` (`Room`, `PassCount`, `RefuseCount`, `Falling` and 7 more); `$5C3E` (`LastGift`); `$BB51`-`$BB58` (`BridgeTiles`, `BridgeTiles3A`) |
+| Writes | `$5C0C`-`$5C0D` (`BridgeState`, `BridgeReverse`) |
 
 ### `RopeTrick` (`$BC73`)
 
@@ -3180,7 +3193,7 @@ Witness: L1 674 (gameover, rzx10000, rzx14500).
 | --- | --- |
 | Runs | not reached in `stage1/c1`; in the other recordings 674 calls (`stage1/gameover` 324, `stage1/rzx/r10000` 324, `stage1/rzx/r14500` 26) |
 | Called from | `ItemsKeys` |
-| Reads | `$5B04`-`$5B05` (system); `$5B98` (system); `$5C24` (system) |
+| Reads | `$5B04`-`$5B05` (`Hero`); `$5B98` (`HeldItem`); `$5C24` (`RopeCount`) |
 
 ## objects
 
@@ -3218,8 +3231,8 @@ Witness: L1 113 (c1, explorers, gameover, rzx x31).
 | Runs (the other recordings) | 112 calls (`stage1/rzx/r00000` 8, `stage1/rzx/r14500` 6, `stage1/rzx/r06000` 6 and 30 more) |
 | Called from | `SetUpRoomTiles` (tail), `ProfessorScript`, `ItemsPass` |
 | Calls | `PlaceItem` |
-| Reads | `$5C01` (system); `$B99D`-`$B9F7` (`ItemPlaces`, `CrystalPlace`) |
-| Writes | `$5C10`-`$5C15` (system) |
+| Reads | `$5C01` (`Room`); `$B99D`-`$B9F7` (`ItemPlaces`, `CrystalPlace`) |
+| Writes | `$5C10`-`$5C15` (`ItemSlot1+2`, `ItemSlot2`) |
 
 ### `PlaceItem` (`$B95F`)
 
@@ -3235,7 +3248,7 @@ Witness: L1 42 (c1, explorers, gameover, rzx x15). The second slot (`$B96A`) is 
 | Runs (the other recordings) | 41 calls (`stage1/rzx/r00000` 6, `stage1/explorers` 5, `stage1/gameover` 4 and 14 more) |
 | Called from | `SpawnRoomItems` |
 | Reads | `$B99E`-`$B9ED` (`ItemPlaces+1`, `CrystalPlace`) |
-| Writes | `$5C0E`-`$5C17` (system) |
+| Writes | `$5C0E`-`$5C17` (`ItemSlot1`, `ItemSlot2`) |
 
 ### `ItemsPass` (`$B9FA`)
 
@@ -3253,8 +3266,8 @@ Witness: L1 26514 (c1, explorers, gameover, rzx x31). The crystal is placed once
 | Runs (the other recordings) | 25,244 calls (`stage1/explorers` 4,262, `stage1/rzx/r14000` 853, `stage1/rzx/r32000` 771 and 30 more) |
 | Called from | `MainLoop` |
 | Calls | `DrawPortrait` (tail), `SpawnRoomItems`, `ItemsKeys`, `PickUpItems`, `AddScore` |
-| Reads | `$5B04`-`$5B05` (system); `$5B7C`-`$5B98` (system); `$5C01`-`$5C06` (system); `$5C22`-`$5C23` (system); `$B9D9` (`CrystalPlace`); `$BA96` (`SwapLatch`) |
-| Writes | `$5B7C`-`$5B98` (system); `$5C44` (system); `$B9D9` (`CrystalPlace`); `$BA96` (`SwapLatch`) |
+| Reads | `$5B04`-`$5B05` (`Hero`); `$5B7C`-`$5B98` (`BearerLoads`, `Lives`, `HeldItem`); `$5C01`-`$5C06` (`Room`, `PassCount`, `RefuseCount`, `Falling` and 2 more); `$5C22`-`$5C23` (`BearerPhase`, `BearerIndex`); `$B9D9` (`CrystalPlace`); `$BA96` (`SwapLatch`) |
+| Writes | `$5B7C`-`$5B98` (`BearerLoads`, `Lives`, `HeldItem`); `$5C44` (`CrystalPlaced`); `$B9D9` (`CrystalPlace`); `$BA96` (`SwapLatch`) |
 | Ports in | `$FDFE` |
 
 ### `ItemsKeys` (`$BA36`)
@@ -3267,11 +3280,12 @@ Witness: L1 26514 (c1, explorers, gameover, rzx x31). The swap runs 34 times in 
 
 | | |
 | --- | --- |
-| Runs | not reached in `stage1/c1`; in the other recordings 184 calls (`stage1/rzx/r24750` 184) |
+| Runs (c1: power-on, the original tape at ROM speed on the 128K, the menu, the selector and play) | 1,270 runs of its first instruction (entered by a jump or by running on, no routine of its own in the L1) |
+| Runs (the other recordings) | 184 calls (`stage1/rzx/r24750` 184) |
 | Called from | `BlitColumns`, `ItemsPass` |
 | Calls | `DrawPortrait`, `DrawBearers`, `BridgeEffect`, `BearerKeys`, `RopeTrick` |
-| Reads | `$5B8B`-`$5B98` (system); `$5C01`-`$5C06` (system); `$5C22`-`$5C23` (system); `$BA96` (`SwapLatch`) |
-| Writes | `$5B8B`-`$5B98` (system); `$BA96` (`SwapLatch`) |
+| Reads | `$5B8B`-`$5B98` (`BearerLoads+15`, `Lives`, `HeldItem`); `$5C01`-`$5C06` (`Room`, `PassCount`, `RefuseCount`, `Falling` and 2 more); `$5C22`-`$5C23` (`BearerPhase`, `BearerIndex`); `$BA96` (`SwapLatch`) |
+| Writes | `$5B8B`-`$5B98` (`BearerLoads+15`, `Lives`, `HeldItem`); `$BA96` (`SwapLatch`) |
 | Ports in | `$FDFE` |
 
 ### `AlwaysZero` (`$BB59`)
@@ -3320,8 +3334,8 @@ Witness: L1 52660 (c1, explorers, gameover, rzx x31). 30 pickups in 15 builds (`
 | Runs (the other recordings) | 50,120 calls (`stage1/explorers` 8,524, `stage1/rzx/r14000` 1,706, `stage1/rzx/r32000` 1,542 and 30 more) |
 | Called from | `PickUpItems` (falls into) |
 | Calls | `Near`, `PickUpRedraw` (tail), `AddScore`, `PlaySound` |
-| Reads | `$5B04` (system); `$5B7C`-`$5B98` (system); `$5C06`-`$5C17` (system); `$B99D`-`$B9EB` (`ItemPlaces`, `CrystalPlace`) |
-| Writes | `$5B04`-`$5B06` (system); `$5B7D`-`$5B98` (system); `$5C06`-`$5C23` (system); `$5C3F` (system); `$B99D`-`$B9EB` (`ItemPlaces`, `CrystalPlace`) |
+| Reads | `$5B04` (`Hero`); `$5B7C`-`$5B98` (`BearerLoads`, `Lives`, `HeldItem`); `$5C06`-`$5C17` (`Status`, `StatusTimer`, `JumpDirection`, `HeroSavedXY` and 4 more); `$B99D`-`$B9EB` (`ItemPlaces`, `CrystalPlace`) |
+| Writes | `$5B04`-`$5B06` (`Hero`); `$5B7D`-`$5B98` (`BearerLoads+1`, `Lives`, `HeldItem`); `$5C06`-`$5C23` (`Status`, `StatusTimer`, `JumpDirection`, `HeroSavedXY` and 10 more); `$5C3F` (`PillsTaken`); `$B99D`-`$B9EB` (`ItemPlaces`, `CrystalPlace`) |
 
 ### `PickUpRedraw` (`$BC07`)
 
@@ -3333,7 +3347,8 @@ Witness: L1 52660 (c1, explorers, gameover, rzx x31).
 
 | | |
 | --- | --- |
-| Runs | not reached in `stage1/c1`; in the other recordings 23,828 calls (`stage1/rzx/r14000` 1,706, `stage1/rzx/r32000` 1,542, `stage1/rzx/r08000` 1,512 and 16 more) |
+| Runs (c1: power-on, the original tape at ROM speed on the 128K, the menu, the selector and play) | 2,540 runs of its first instruction (entered by a jump or by running on, no routine of its own in the L1) |
+| Runs (the other recordings) | 23,828 calls (`stage1/rzx/r14000` 1,706, `stage1/rzx/r32000` 1,542, `stage1/rzx/r08000` 1,512 and 16 more) |
 | Called from | `PickUpItem` (tail) |
 | Calls | `DrawPortrait`, `DrawBearers` (tail) |
 
@@ -3355,8 +3370,8 @@ Witness: L1 26514 (c1, explorers, gameover, rzx x31).
 | Runs (the other recordings) | 25,244 calls (`stage1/explorers` 4,262, `stage1/rzx/r14000` 853, `stage1/rzx/r32000` 771 and 30 more) |
 | Called from | `ItemsKeys` |
 | Calls | `DrawBearers` (tail) |
-| Reads | `$5C21`-`$5C23` (system) |
-| Writes | `$5C21`-`$5C23` (system) |
+| Reads | `$5C21`-`$5C23` (`BearerScrollDir`, `BearerPhase`, `BearerIndex`) |
+| Writes | `$5C21`-`$5C23` (`BearerScrollDir`, `BearerPhase`, `BearerIndex`) |
 | Ports in | `$F7FE` |
 
 ## score
@@ -3405,8 +3420,8 @@ Witness: L1 46 (c1, explorers, gameover, rzx x18).
 | Runs (c1: power-on, the original tape at ROM speed on the 128K, the menu, the selector and play) | 2 calls, 474 t-states own (0.00 %) |
 | Runs (the other recordings) | 44 calls (`stage1/explorers` 10, `stage1/rzx/r02000` 4, `stage1/rzx/r00000` 3 and 17 more) |
 | Called from | `AddScore` |
-| Reads | `$5C18`-`$5C1B` (system) |
-| Writes | `$5C18`-`$5C1B` (system) |
+| Reads | `$5C18`-`$5C1B` (`Score`) |
+| Writes | `$5C18`-`$5C1B` (`Score`) |
 
 ### `PrintHiScore` (`$BD3B`)
 
@@ -3418,7 +3433,8 @@ Witness: L1 4 (c1, explorers, gameover, rzx50000).
 
 | | |
 | --- | --- |
-| Runs | ran within another entry's routine (reached by a jump or by running on, its calls below), no runs of its own counted |
+| Runs (c1: power-on, the original tape at ROM speed on the 128K, the menu, the selector and play) | 1 run of its first instruction (entered by a jump or by running on, no routine of its own in the L1) |
+| Runs (the other recordings) | 3 runs of its first instruction, entered by a jump (`stage1/explorers` 1, `stage1/gameover` 1, `stage1/rzx/r50000` 1) |
 | Calls | `PrintNumber` |
 
 ### `NewHiScore` (`$BD50`)
@@ -3436,8 +3452,8 @@ Witness: L1 8 (c1, explorers, gameover, rzx50000). c1, explorers, gameover and r
 | Runs (c1: power-on, the original tape at ROM speed on the 128K, the menu, the selector and play) | 1 call, 516 t-states own (0.00 %) |
 | Runs (the other recordings) | 7 calls (`stage1/explorers` 5, `stage1/rzx/r50000` 1, `stage1/gameover` 1) |
 | Called from | `EndGame` |
-| Reads | `$5B78`-`$5B7B` (system); `$5C18`-`$5C1B` (system); `$BD89`-`$BD8A` (`PrintNumberSource+1`) |
-| Writes | `$5B78`-`$5B7B` (system); `$BD89`-`$BD8A` (`PrintNumberSource+1`) |
+| Reads | `$5B78`-`$5B7B` (`HiScore`); `$5C18`-`$5C1B` (`Score`); `$BD89`-`$BD8A` (`PrintNumberSource+1`) |
+| Writes | `$5B78`-`$5B7B` (`HiScore`); `$BD89`-`$BD8A` (`PrintNumberSource+1`) |
 
 ### `PrintScore` (`$BD75`)
 
@@ -3453,8 +3469,8 @@ Witness: L1 46 (c1, explorers, gameover, rzx x18).
 | Runs (the other recordings) | 44 calls (`stage1/explorers` 10, `stage1/rzx/r02000` 4, `stage1/rzx/r00000` 3 and 17 more) |
 | Called from | `AddScore` |
 | Calls | `PrintNumber` (falls into) |
-| Reads | `$5C18`-`$5C20` (system); `$BE18`-`$BE23` (`PlaceValues`) |
-| Writes | `$5C1C`-`$5C20` (system) |
+| Reads | `$5C18`-`$5C20` (`Score`, `NumberWork`, `DigitShown`); `$BE18`-`$BE23` (`PlaceValues`) |
+| Writes | `$5C1C`-`$5C20` (`NumberWork`, `DigitShown`) |
 
 ### `PrintNumber` (`$BD78`)
 
@@ -3470,8 +3486,8 @@ Witness: L1 50 (c1, explorers, gameover, rzx x18).
 | Runs (the other recordings) | 16 calls (`stage1/explorers` 11, `stage1/gameover` 3, `stage1/rzx/r50000` 2) |
 | Called from | `PrintHiScore`, `PrintScore` (falls into) |
 | Calls | `PrintChar`, `DivideNumber` |
-| Reads | `$5B78`-`$5B7B` (system); `$5C18`-`$5C20` (system); `$BE18`-`$BE23` (`PlaceValues`) |
-| Writes | `$5C1C`-`$5C20` (system) |
+| Reads | `$5B78`-`$5B7B` (`HiScore`); `$5C18`-`$5C20` (`Score`, `NumberWork`, `DigitShown`); `$BE18`-`$BE23` (`PlaceValues`) |
+| Writes | `$5C1C`-`$5C20` (`NumberWork`, `DigitShown`) |
 
 ### `DivideNumber` (`$BDDF`)
 
@@ -3486,8 +3502,8 @@ Witness: L1 501 (c1, explorers, gameover, rzx x18).
 | Runs (c1: power-on, the original tape at ROM speed on the 128K, the menu, the selector and play) | 12 calls, 7,154 t-states own (0.00 %) |
 | Runs (the other recordings) | 188 calls (`stage1/explorers` 44, `stage1/rzx/r02000` 16, `stage1/gameover` 12 and 17 more) |
 | Called from | `PrintNumber` |
-| Reads | `$5C1C`-`$5C1F` (system) |
-| Writes | `$5C1C`-`$5C1F` (system) |
+| Reads | `$5C1C`-`$5C1F` (`NumberWork`) |
+| Writes | `$5C1C`-`$5C1F` (`NumberWork`) |
 
 ## creatures
 
@@ -3550,8 +3566,8 @@ Witness: L1 41598 (c1, explorers, gameover, rzx x31).
 
 | | |
 | --- | --- |
-| Runs (c1: power-on, the original tape at ROM speed on the 128K, the menu, the selector and play) | run into, not called, 16,445 t-states own (0.00 %) |
-| Runs (the other recordings) | run into, not called (`stage1/explorers`, `stage1/rzx/r14000`, `stage1/rzx/r42000` and 30 more) |
+| Runs (c1: power-on, the original tape at ROM speed on the 128K, the menu, the selector and play) | 1,270 runs of its first instruction (entered by a jump or by running on, no routine of its own in the L1), 16,445 t-states own (0.00 %) |
+| Runs (the other recordings) | 40,328 runs of its first instruction, entered by a jump (`stage1/explorers` 4,262, `stage1/rzx/r14000` 2,187, `stage1/rzx/r42000` 2,025 and 30 more) |
 | Called from | `JumpHL` |
 
 ### `WalkerCreature` (`$BEDD`)
@@ -3564,11 +3580,11 @@ Witness: L1 2454 (rzx x11).
 
 | | |
 | --- | --- |
-| Runs | not reached in `stage1/c1`; in the other recordings run into, not called (`stage1/rzx/r04000`, `stage1/rzx/r38000`, `stage1/rzx/r36000` and 8 more) |
+| Runs | not reached in `stage1/c1`; in the other recordings 2,454 runs of its first instruction, entered by a jump (`stage1/rzx/r04000` 626, `stage1/rzx/r38000` 573, `stage1/rzx/r36000` 406 and 8 more) |
 | Called from | `JumpHL` |
 | Calls | `AnimateCreature` (tail), `TestBelow`, `TestRight`, `PlaceCreature` |
-| Reads | `$5B08`-`$5B10` (system); `$BE2B`-`$BE40` (`CreatureRecords+7`, `CreatureRecord2`, `CreatureRecord3`); `$C12D`-`$C12E` (`TileScanFlags`) |
-| Writes | `$5B08`-`$5B10` (system); `$BE2B`-`$BE3F` (`CreatureRecords+7`, `CreatureRecord2`, `CreatureRecord3`) |
+| Reads | `$5B08`-`$5B10` (`ObjectSlot1`, `ObjectSlot2`, `ObjectSlot3`); `$BE2B`-`$BE40` (`CreatureRecords+7`, `CreatureRecord2`, `CreatureRecord3`); `$C12D`-`$C12E` (`TileScanFlags`) |
+| Writes | `$5B08`-`$5B10` (`ObjectSlot1`, `ObjectSlot2`, `ObjectSlot3`); `$BE2B`-`$BE3F` (`CreatureRecords+7`, `CreatureRecord2`, `CreatureRecord3`) |
 
 ### `ClimberCreature` (`$BF22`)
 
@@ -3580,11 +3596,11 @@ Witness: L1 266 (rzx34000, rzx36000, rzx40000).
 
 | | |
 | --- | --- |
-| Runs | not reached in `stage1/c1`; in the other recordings run into, not called (`stage1/rzx/r36000`, `stage1/rzx/r34000`, `stage1/rzx/r40000`) |
+| Runs | not reached in `stage1/c1`; in the other recordings 266 runs of its first instruction, entered by a jump (`stage1/rzx/r36000` 130, `stage1/rzx/r34000` 80, `stage1/rzx/r40000` 56) |
 | Called from | `JumpHL` |
 | Calls | `AnimateCreature` (tail), `TestAhead`, `TestBelowRight`, `PlaceCreature` |
-| Reads | `$5B09` (system); `$BE2B`-`$BE2C` (`CreatureRecords+7`); `$C131`-`$C132` (`TileScanSecond`) |
-| Writes | `$5B09` (system); `$BE2B` (`CreatureRecords+7`) |
+| Reads | `$5B09` (`ObjectSlot1+1`); `$BE2B`-`$BE2C` (`CreatureRecords+7`); `$C131`-`$C132` (`TileScanSecond`) |
+| Writes | `$5B09` (`ObjectSlot1+1`); `$BE2B` (`CreatureRecords+7`) |
 
 ### `LeftFlier` (`$BF67`)
 
@@ -3596,12 +3612,12 @@ Witness: L1 5796 (c1, explorers, rzx00000, rzx12000).
 
 | | |
 | --- | --- |
-| Runs (c1: power-on, the original tape at ROM speed on the 128K, the menu, the selector and play) | run into, not called, 168,803 t-states own (0.01 %) |
-| Runs (the other recordings) | run into, not called (`stage1/explorers`, `stage1/rzx/r00000`, `stage1/rzx/r12000`) |
+| Runs (c1: power-on, the original tape at ROM speed on the 128K, the menu, the selector and play) | 1,270 runs of its first instruction (entered by a jump or by running on, no routine of its own in the L1), 168,803 t-states own (0.01 %) |
+| Runs (the other recordings) | 4,526 runs of its first instruction, entered by a jump (`stage1/explorers` 4,262, `stage1/rzx/r00000` 147, `stage1/rzx/r12000` 117) |
 | Called from | `JumpHL` |
 | Calls | `CreatureTimer`, `AnimateCreature` (tail), `TestBelow` |
-| Reads | `$5B0C` (system); `$BE2F`-`$BE35` (`CreatureRecord2+1`); `$C12D` (`TileScanFlags`) |
-| Writes | `$5B0C`-`$5B0E` (system); `$BE2E`-`$BE36` (`CreatureRecord2`) |
+| Reads | `$5B0C` (`ObjectSlot2`); `$BE2F`-`$BE35` (`CreatureRecord2+1`); `$C12D` (`TileScanFlags`) |
+| Writes | `$5B0C`-`$5B0E` (`ObjectSlot2`); `$BE2E`-`$BE36` (`CreatureRecord2`) |
 
 ### `CreatureTimer` (`$BFA0`)
 
@@ -3630,11 +3646,11 @@ Witness: L1 989 (rzx00000, rzx12000, rzx24000, rzx24750).
 
 | | |
 | --- | --- |
-| Runs | not reached in `stage1/c1`; in the other recordings run into, not called (`stage1/rzx/r24000`, `stage1/rzx/r00000`, `stage1/rzx/r24750` and 1 more) |
+| Runs | not reached in `stage1/c1`; in the other recordings 989 runs of its first instruction, entered by a jump (`stage1/rzx/r24000` 475, `stage1/rzx/r00000` 296, `stage1/rzx/r12000` 117 and 1 more) |
 | Called from | `JumpHL` |
 | Calls | `CreatureTimer`, `AnimateCreature` (tail), `TestRight` |
-| Reads | `$5B08`-`$5B0C` (system); `$BE25`-`$BE35` (`CreatureRecords+1`, `CreatureRecord2`); `$C12E` (`TileScanFlags+1`) |
-| Writes | `$5B08`-`$5B0E` (system); `$BE24`-`$BE36` (`CreatureRecords`, `CreatureRecord2`) |
+| Reads | `$5B08`-`$5B0C` (`ObjectSlot1`, `ObjectSlot2`); `$BE25`-`$BE35` (`CreatureRecords+1`, `CreatureRecord2`); `$C12E` (`TileScanFlags+1`) |
+| Writes | `$5B08`-`$5B0E` (`ObjectSlot1`, `ObjectSlot2`); `$BE24`-`$BE36` (`CreatureRecords`, `CreatureRecord2`) |
 
 ### `DropCreature` (`$BFF6`)
 
@@ -3646,11 +3662,11 @@ Witness: L1 12834 (rzx x20).
 
 | | |
 | --- | --- |
-| Runs | not reached in `stage1/c1`; in the other recordings run into, not called (`stage1/rzx/r08000`, `stage1/rzx/r22000`, `stage1/rzx/r12000` and 17 more) |
+| Runs | not reached in `stage1/c1`; in the other recordings 12,834 runs of its first instruction, entered by a jump (`stage1/rzx/r08000` 1,294, `stage1/rzx/r22000` 1,273, `stage1/rzx/r34000` 1,186 and 17 more) |
 | Called from | `JumpHL` |
 | Calls | `CreatureTimer` |
-| Reads | `$5B09`-`$5B11` (system); `$BE28`-`$BE3F` (`CreatureRecords+4`, `CreatureRecord2`, `CreatureRecord3`); `$C132` (`TileScanSecond+1`) |
-| Writes | `$5B09`-`$5B12` (system); `$BE2B`-`$BE40` (`CreatureRecords+7`, `CreatureRecord2`, `CreatureRecord3`) |
+| Reads | `$5B09`-`$5B11` (`ObjectSlot1+1`, `ObjectSlot2`, `ObjectSlot3`); `$BE28`-`$BE3F` (`CreatureRecords+4`, `CreatureRecord2`, `CreatureRecord3`); `$C132` (`TileScanSecond+1`) |
+| Writes | `$5B09`-`$5B12` (`ObjectSlot1+1`, `ObjectSlot2`, `ObjectSlot3`); `$BE2B`-`$BE40` (`CreatureRecords+7`, `CreatureRecord2`, `CreatureRecord3`) |
 
 ### `DropFall` (`$C000`)
 
@@ -3662,7 +3678,7 @@ Witness: L1 3288 (rzx x19). 105 splashes with sound 5 in 18 builds (`$C04F`).
 
 | | |
 | --- | --- |
-| Runs | ran within another entry's routine (reached by a jump or by running on, its calls below), no runs of its own counted |
+| Runs | not reached in `stage1/c1`; in the other recordings 3,288 runs of its first instruction, entered by a jump (`stage1/rzx/r08000` 431, `stage1/rzx/r12000` 383, `stage1/rzx/r22000` 379 and 16 more) |
 | Calls | `HitExplorer` (tail), `TestBelowRight`, `PlaySound` (tail) |
 
 ### `StillCreature` (`$C054`)
@@ -3675,10 +3691,10 @@ Witness: L1 2107 (gameover, rzx x9).
 
 | | |
 | --- | --- |
-| Runs | not reached in `stage1/c1`; in the other recordings run into, not called (`stage1/rzx/r06000`, `stage1/gameover`, `stage1/rzx/r10000` and 7 more) |
+| Runs | not reached in `stage1/c1`; in the other recordings 2,107 runs of its first instruction, entered by a jump (`stage1/rzx/r06000` 530, `stage1/gameover` 324, `stage1/rzx/r10000` 324 and 7 more) |
 | Called from | `JumpHL` |
 | Calls | `AnimateCreature` (tail), `PlaceCreature` |
-| Reads | `$5B0A`-`$5B12` (system); `$BE2C`-`$BE40` (`CreatureRecords+8`, `CreatureRecord2`, `CreatureRecord3`) |
+| Reads | `$5B0A`-`$5B12` (`ObjectSlot1+2`, `ObjectSlot2`, `ObjectSlot3`); `$BE2C`-`$BE40` (`CreatureRecords+8`, `CreatureRecord2`, `CreatureRecord3`) |
 
 ### `RiserCreature` (`$C069`)
 
@@ -3690,12 +3706,12 @@ Witness: L1 11533 (c1, explorers, gameover, rzx x17).
 
 | | |
 | --- | --- |
-| Runs (c1: power-on, the original tape at ROM speed on the 128K, the menu, the selector and play) | run into, not called, 100,998 t-states own (0.01 %) |
-| Runs (the other recordings) | run into, not called (`stage1/explorers`, `stage1/rzx/r32000`, `stage1/rzx/r16000` and 16 more) |
+| Runs (c1: power-on, the original tape at ROM speed on the 128K, the menu, the selector and play) | 1,270 runs of its first instruction (entered by a jump or by running on, no routine of its own in the L1), 100,998 t-states own (0.01 %) |
+| Runs (the other recordings) | 10,263 runs of its first instruction, entered by a jump (`stage1/explorers` 4,262, `stage1/rzx/r30000` 893, `stage1/rzx/r32000` 841 and 16 more) |
 | Called from | `JumpHL` |
 | Calls | `CreatureTimer`, `HitExplorer` (tail) |
 | Reads | `$BE26`-`$BE3F` (`CreatureRecords+2`, `CreatureRecord2`, `CreatureRecord3`) |
-| Writes | `$5B0A`-`$5B12` (system); `$BE2B`-`$BE40` (`CreatureRecords+7`, `CreatureRecord2`, `CreatureRecord3`) |
+| Writes | `$5B0A`-`$5B12` (`ObjectSlot1+2`, `ObjectSlot2`, `ObjectSlot3`); `$BE2B`-`$BE40` (`CreatureRecords+7`, `CreatureRecord2`, `CreatureRecord3`) |
 
 ### `AnimateCreature` (`$C0AC`)
 
@@ -3712,7 +3728,7 @@ Witness: L1 8663 (c1, explorers, gameover, rzx x18).
 | Called from | `WalkerCreature` (tail), `ClimberCreature` (tail), `LeftFlier` (tail), `RightFlier` (tail), `StillCreature` (tail) |
 | Calls | `HitExplorer` (tail) |
 | Reads | `$BE26`-`$BE3F` (`CreatureRecords+2`, `CreatureRecord2`, `CreatureRecord3`) |
-| Writes | `$5B0A`-`$5B13` (system); `$BE2B`-`$BE3F` (`CreatureRecords+7`, `CreatureRecord2`, `CreatureRecord3`) |
+| Writes | `$5B0A`-`$5B13` (`ObjectSlot1+2`, `ObjectSlot2`, `ObjectSlot3`); `$BE2B`-`$BE3F` (`CreatureRecords+7`, `CreatureRecord2`, `CreatureRecord3`) |
 
 ### `HitExplorer` (`$C0DA`)
 
@@ -3728,7 +3744,7 @@ Witness: L1 10981 (c1, explorers, gameover, rzx x26). 23 contacts in 4 builds (`
 | Runs (the other recordings) | 9,135 calls (`stage1/explorers` 2,788, `stage1/rzx/r24000` 685, `stage1/rzx/r04000` 653 and 19 more) |
 | Called from | `DropFall` (tail), `RiserCreature` (tail), `AnimateCreature` (tail) |
 | Calls | `Near`, `SetStatus` (tail) |
-| Reads | `$5C06` (system); `$A101` (`HeroProbes+3`) |
+| Reads | `$5C06` (`Status`); `$A101` (`HeroProbes+3`) |
 
 ### `TestBelow` (`$C0FD`)
 
@@ -3793,7 +3809,7 @@ Witness: L1 2377 (c1, explorers, gameover, rzx x26).
 | Runs (the other recordings) | 388 calls (`stage1/explorers` 76, `stage1/rzx/r22000` 25, `stage1/rzx/r12000` 24 and 25 more) |
 | Called from | `JumpHL`, `WalkerCreature`, `ClimberCreature`, `CreatureTimer`, `StillCreature` |
 | Reads | `$BE28`-`$BE40` (`CreatureRecords+4`, `CreatureRecord2`, `CreatureRecord3`) |
-| Writes | `$5B08`-`$5B13` (system); `$BE2C`-`$BE40` (`CreatureRecords+8`, `CreatureRecord2`, `CreatureRecord3`) |
+| Writes | `$5B08`-`$5B13` (`ObjectSlot1`, `ObjectSlot2`, `ObjectSlot3`); `$BE2C`-`$BE40` (`CreatureRecords+8`, `CreatureRecord2`, `CreatureRecord3`) |
 
 ## sound
 
@@ -3979,7 +3995,7 @@ Witness: L1 1 (c1).
 | --- | --- |
 | Runs (c1: power-on, the original tape at ROM speed on the 128K, the menu, the selector and play) | 1 call, 187,512 t-states own (0.01 %) |
 | Reads | `$4000`-`$5AFE` (screen) |
-| Writes | `$4000`-`$5B03` (screen); `$5C3D`-`$5C3E`; `$5DA6`-`$5DA7` (`BreakMessagePtr+1`); `$5FFE`-`$5FFF` |
+| Writes | `$4000`-`$5B03` (screen); `$5C3D`-`$5C3E` (`ErrSp`); `$5DA6`-`$5DA7` (`BreakMessagePtr+1`); `$5FFE`-`$5FFF` (`Has128K`) |
 | Ports in | `$00FE` |
 | Ports out | `$00FE`, `$05FE` |
 
@@ -4050,7 +4066,8 @@ Witness: L1 8 (c1, explorers).
 
 | | |
 | --- | --- |
-| Runs | not reached in the recordings |
+| Runs (c1: power-on, the original tape at ROM speed on the 128K, the menu, the selector and play) | 2 runs of its first instruction (entered by a jump or by running on, no routine of its own in the L1) |
+| Runs (the other recordings) | 6 runs of its first instruction, entered by a jump (`stage1/explorers` 6) |
 
 ### The 128K setup and the explorer selector (RAM 1): relocation
 
@@ -4082,7 +4099,7 @@ Witness: L1 1 (c1).
 
 | | |
 | --- | --- |
-| Runs | not reached in the recordings |
+| Runs (c1: power-on, the original tape at ROM speed on the 128K, the menu, the selector and play) | 1 run of its first instruction (entered by a jump or by running on, no routine of its own in the L1) |
 
 ### The 128K setup and the explorer selector (RAM 1): selector
 
@@ -4100,7 +4117,8 @@ Witness: L1 8 (c1, explorers).
 
 | | |
 | --- | --- |
-| Runs | ran within another entry's routine (reached by a jump or by running on, its calls below), no runs of its own counted |
+| Runs (c1: power-on, the original tape at ROM speed on the 128K, the menu, the selector and play) | 2 runs of its first instruction (entered by a jump or by running on, no routine of its own in the L1) |
+| Runs (the other recordings) | 6 runs of its first instruction, entered by a jump (`stage1/explorers` 6) |
 | Calls | `RestoreUnderCursor`, `DrawSelectorPicture`, `MoveCursor`, `DrawCursor`, `ClearScreen`, `ShowHelp` (tail) |
 
 #### `CopyExplorerSet` (`$C134`)
@@ -4117,7 +4135,8 @@ Witness: L1 6 (c1, explorers).
 
 | | |
 | --- | --- |
-| Runs | not reached in the recordings |
+| Runs (c1: power-on, the original tape at ROM speed on the 128K, the menu, the selector and play) | 1 run of its first instruction (entered by a jump or by running on, no routine of its own in the L1) |
+| Runs (the other recordings) | 5 runs of its first instruction, entered by a jump (`stage1/explorers` 5) |
 
 #### `RestoreUnderCursor` (`$C1A2`)
 
@@ -4395,7 +4414,8 @@ Witness: L1 3459 (c1, explorers).
 
 | | |
 | --- | --- |
-| Runs | not reached in the recordings |
+| Runs (c1: power-on, the original tape at ROM speed on the 128K, the menu, the selector and play) | 1,127 runs of its first instruction (entered by a jump or by running on, no routine of its own in the L1) |
+| Runs (the other recordings) | 2,332 runs of its first instruction, entered by a jump (`stage1/explorers` 2,332) |
 
 ### The 128K setup and the explorer selector (RAM 1): paging
 
@@ -4647,7 +4667,8 @@ Witness: L1 73906 (c1, explorers, gameover, rzx x31).
 
 | | |
 | --- | --- |
-| Runs | not reached in `stage1/c1`; in the other recordings 13,411 calls (`stage1/explorers` 13,411) |
+| Runs (c1: power-on, the original tape at ROM speed on the 128K, the menu, the selector and play) | 4,395 runs of its first instruction (entered by a jump or by running on, no routine of its own in the L1) |
+| Runs (the other recordings) | 13,411 calls (`stage1/explorers` 13,411) |
 | Called from | `UpdateTune` (falls into), `EndTune` (tail) |
 | Calls | `AYWrite` |
 | Reads | `$C14E` (`MixerImage`); `$C170`-`$C172` (`ChannelAPeriod`, `ChannelAVolume`); `$C19D`-`$C19F` (`ChannelBPeriod`, `ChannelBVolume`); `$C1CA`-`$C1CC` (`ChannelCPeriod`, `ChannelCVolume`) |
@@ -4662,7 +4683,8 @@ Witness: L1 83609 (c1, explorers, gameover, rzx x31).
 
 | | |
 | --- | --- |
-| Runs | not reached in `stage1/c1`; in the other recordings 1,778 calls (`stage1/explorers` 1,778) |
+| Runs (c1: power-on, the original tape at ROM speed on the 128K, the menu, the selector and play) | 5,028 runs of its first instruction (entered by a jump or by running on, no routine of its own in the L1) |
+| Runs (the other recordings) | 1,778 calls (`stage1/explorers` 1,778) |
 | Called from | `UpdateTune` (tail) |
 | Writes | `$C14D` (`NoteEndFlag`) |
 
@@ -4748,7 +4770,8 @@ Witness: L1 123 (c1, explorers, gameover, rzx x26).
 
 | | |
 | --- | --- |
-| Runs | ran within another entry's routine (reached by a jump or by running on, its calls below), no runs of its own counted |
+| Runs (c1: power-on, the original tape at ROM speed on the 128K, the menu, the selector and play) | 11 runs of its first instruction (entered by a jump or by running on, no routine of its own in the L1) |
+| Runs (the other recordings) | 33 runs of its first instruction, entered by a jump (`stage1/explorers` 23, `stage1/gameover` 10) |
 | Calls | `SetRepeat` (tail) |
 
 #### `OrderJumpDetune` (`$C343`)
@@ -4759,7 +4782,8 @@ Witness: L1 17 (c1, explorers, gameover, rzx x11).
 
 | | |
 | --- | --- |
-| Runs | ran within another entry's routine (reached by a jump or by running on, its calls below), no runs of its own counted |
+| Runs (c1: power-on, the original tape at ROM speed on the 128K, the menu, the selector and play) | 2 runs of its first instruction (entered by a jump or by running on, no routine of its own in the L1) |
+| Runs (the other recordings) | 4 runs of its first instruction, entered by a jump (`stage1/explorers` 3, `stage1/gameover` 1) |
 | Calls | `SetDetune` (tail) |
 
 #### `OrderJumpSlot` (`$C347`)
@@ -4770,7 +4794,7 @@ Witness: L1 21 (explorers, gameover, rzx x12).
 
 | | |
 | --- | --- |
-| Runs | ran within another entry's routine (reached by a jump or by running on, its calls below), no runs of its own counted |
+| Runs | not reached in `stage1/c1`; in the other recordings 4 runs of its first instruction, entered by a jump (`stage1/explorers` 3, `stage1/gameover` 1) |
 | Calls | `SetSlot` (tail) |
 
 #### `StartPattern` (`$C34A`)
@@ -4783,7 +4807,8 @@ Witness: L1 479 (c1, explorers, gameover, rzx x31).
 
 | | |
 | --- | --- |
-| Runs | ran within another entry's routine (reached by a jump or by running on, its calls below), no runs of its own counted |
+| Runs (c1: power-on, the original tape at ROM speed on the 128K, the menu, the selector and play) | 32 runs of its first instruction (entered by a jump or by running on, no routine of its own in the L1) |
+| Runs (the other recordings) | 124 runs of its first instruction, entered by a jump (`stage1/explorers` 90, `stage1/gameover` 34) |
 | Calls | `ReadPatternEvent` (tail) |
 
 #### `PatternEvent` (`$C36D`)
@@ -4798,7 +4823,8 @@ Witness: L1 19804 (c1, explorers, gameover, rzx x31).
 
 | | |
 | --- | --- |
-| Runs | ran within another entry's routine (reached by a jump or by running on, its calls below), no runs of its own counted |
+| Runs (c1: power-on, the original tape at ROM speed on the 128K, the menu, the selector and play) | 1,140 runs of its first instruction (entered by a jump or by running on, no routine of its own in the L1) |
+| Runs (the other recordings) | 4,890 runs of its first instruction, entered by a jump (`stage1/explorers` 3,497, `stage1/gameover` 1,393) |
 | Calls | `ChannelEffects` (tail), `FetchPatternByte` |
 
 #### `SetInstrument` (`$C3D8`)
@@ -4813,7 +4839,8 @@ Witness: L1 2250 (c1, explorers, gameover, rzx x31).
 
 | | |
 | --- | --- |
-| Runs | not reached in the recordings |
+| Runs (c1: power-on, the original tape at ROM speed on the 128K, the menu, the selector and play) | 111 runs of its first instruction (entered by a jump or by running on, no routine of its own in the L1) |
+| Runs (the other recordings) | 517 runs of its first instruction, entered by a jump (`stage1/explorers` 382, `stage1/gameover` 135) |
 
 #### `StartNote` (`$C4C9`)
 
@@ -4827,7 +4854,8 @@ Witness: L1 15424 (c1, explorers, gameover, rzx x31).
 
 | | |
 | --- | --- |
-| Runs | not reached in the recordings |
+| Runs (c1: power-on, the original tape at ROM speed on the 128K, the menu, the selector and play) | 957 runs of its first instruction (entered by a jump or by running on, no routine of its own in the L1) |
+| Runs (the other recordings) | 3,923 runs of its first instruction, entered by a jump (`stage1/explorers` 2,772, `stage1/gameover` 1,151) |
 
 #### `SetDetune` (`$C7D1`)
 
@@ -4960,7 +4988,8 @@ Witness: L1 208864 (c1, explorers, gameover, rzx x31).
 
 | | |
 | --- | --- |
-| Runs | not reached in the recordings |
+| Runs (c1: power-on, the original tape at ROM speed on the 128K, the menu, the selector and play) | 12,738 runs of its first instruction (entered by a jump or by running on, no routine of its own in the L1) |
+| Runs (the other recordings) | 52,004 runs of its first instruction, entered by a jump (`stage1/explorers` 37,566, `stage1/gameover` 14,438) |
 
 #### `ArpeggioEffect` (`$C694`)
 
@@ -4974,7 +5003,8 @@ Witness: L1 208864 (c1, explorers, gameover, rzx x31).
 
 | | |
 | --- | --- |
-| Runs | not reached in the recordings |
+| Runs (c1: power-on, the original tape at ROM speed on the 128K, the menu, the selector and play) | 12,738 runs of its first instruction (entered by a jump or by running on, no routine of its own in the L1) |
+| Runs (the other recordings) | 52,004 runs of its first instruction, entered by a jump (`stage1/explorers` 37,566, `stage1/gameover` 14,438) |
 
 #### `SlideEffect` (`$C72F`)
 
@@ -4988,7 +5018,8 @@ Witness: L1 208864 (c1, explorers, gameover, rzx x31).
 
 | | |
 | --- | --- |
-| Runs | not reached in the recordings |
+| Runs (c1: power-on, the original tape at ROM speed on the 128K, the menu, the selector and play) | 12,738 runs of its first instruction (entered by a jump or by running on, no routine of its own in the L1) |
+| Runs (the other recordings) | 52,004 runs of its first instruction, entered by a jump (`stage1/explorers` 37,566, `stage1/gameover` 14,438) |
 
 
 ## The explorer data sets (`src/explorers/explorers.json`)

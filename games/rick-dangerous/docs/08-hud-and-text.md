@@ -185,8 +185,8 @@ copyright sign.
 to `$40C1`, `$40E1`, then E = `$E1` + `$20` = `$01` with a carry, so D = `$40` + 8: the fourth line is at `$4801`,
 char row 8, the first row of the middle third.
 
-**Witness.** PrintText runs in `beeper48`, `c1`, `controls`, `ending2`, `gameover`, `l1end` and `level1` (its L1
-witness, 4 504 runs in all). The intro in the animation is the text of `src/res/texts/SouthAmericaText.txt`, line for line.
+**Witness.** PrintText runs in `beeper48`, `c1`, `controls`, `ending`, `ending2`, `gameover`, `l1end` and `level1`
+(its L1 witness, 4 941 runs in all). The intro in the animation is the text of `src/res/texts/SouthAmericaText.txt`, line for line.
 
 ## 8.3 The HUD
 
@@ -381,7 +381,7 @@ work/docs/rdA/shots8 hudA=31329:30000`.*
 *`c1` 31 330: five bullets. Cell 14 still holds the bullet's pixels, now in the map char's colours: DrawCounter
 gave the cell its attribute, and the map has not drawn its char there yet. Same command, `hudB=31330`.*
 
-**Witness.** UpdateHud runs 42 930 times over all the recordings (its L1 witness), DrawCounter 1 176. The two
+**Witness.** UpdateHud runs 42 932 times over all the recordings (its L1 witness), DrawCounter 1 176. The two
 screens above show the counter before and after.
 
 ## 8.4 The score
@@ -466,8 +466,8 @@ The score becomes 001970, as the HUD shows from frame 755 ([doc 10](10-gameplay-
 **Worked example: the end bonus, `ending2`.** At the closing text LevelEnd stores Lives + 1 = 7 in LevelBonus's
 first digit and adds 7 0 0 0 0: the score goes from 000000 at frame 250 to 070000 at frame 500.
 
-**Witness.** AddScore runs 38 times over the recordings (`c1`, `ending2`, `L1Z3`, `L2Z6`, `L3Z2`, `L3Z6`, `L3Z11`,
-`L3Z12`, `L4Z2`, `level1`, `level2`, `level4`). The score rows of `level1` (8.4) and `ending2` show its result.
+**Witness.** AddScore runs 39 times over the recordings (`c1`, `ending`, `ending2`, `L1Z3`, `L2Z6`, `L3Z2`, `L3Z6`,
+`L3Z11`, `L3Z12`, `L4Z2`, `level1`, `level2`, `level4`). The score rows of `level1` (8.4) and `ending2` show its result.
 
 ## 8.5 The texts
 

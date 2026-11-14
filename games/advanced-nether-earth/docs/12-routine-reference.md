@@ -140,8 +140,8 @@ Reached by SaveGameStage's JP (`$C2E5`) once the shots and the buildings are sta
 | --- | --- |
 | Runs (`work/game-r2`, save and load) | 1 call, 54,915 t-states own (0.01 %) |
 | Called from | `SaveGameStage` (tail) |
-| Reads | `$5C6A` (system); `$6914` (`GameSave+15`) |
-| Writes | `$5C08` (system); `$5C3B` (system); `$5C6A` (system); `$692C`-`$692D` (`SaveReturn+1`); `$A5EB`-`$A5EC` (`GameEntry+17`) |
+| Reads | `$5C6A` (`FLAGS2`); `$6914` (`GameSave+15`) |
+| Writes | `$5C08` (`LAST_K`); `$5C3B` (`FLAGS`); `$5C6A` (`FLAGS2`); `$692C`-`$692D` (`SaveReturn+1`); `$A5EB`-`$A5EC` (`GameEntry+17`) |
 | Ports out | `$7FFD` |
 
 ### `SaveReturn` (`$692B`)
@@ -150,7 +150,7 @@ Reached by SaveGameStage's JP (`$C2E5`) once the shots and the buildings are sta
 
 | | |
 | --- | --- |
-| Runs (`work/game-r2`, save and load) | run into, not called, 59,419 t-states own (0.01 %) |
+| Runs (`work/game-r2`, save and load) | 1 run of its first instruction (entered by a jump or by running on, no routine of its own in the L1), 59,419 t-states own (0.01 %) |
 | Calls | `PlayRedraw` (tail) |
 | Reads | `$6936` (`SaveReturn+11`) |
 
@@ -168,8 +168,8 @@ Reached by LoadGame's JP (`$C1FD`, key 5 of the main menu). The same steps as Ga
 | --- | --- |
 | Runs (`work/game-r2`, save and load) | 2 calls, 138,442 t-states own (0.03 %) |
 | Called from | `LoadGame` (tail) |
-| Reads | `$5C6A` (system); `$A579` (`GameLoad+15`) |
-| Writes | `$5C08` (system); `$5C3B` (system); `$5C6A` (system); `$A591`-`$A592` (`LoadReturn+1`); `$A5EB`-`$A5EC` (`GameEntry+17`) |
+| Reads | `$5C6A` (`FLAGS2`); `$A579` (`GameLoad+15`) |
+| Writes | `$5C08` (`LAST_K`); `$5C3B` (`FLAGS`); `$5C6A` (`FLAGS2`); `$A591`-`$A592` (`LoadReturn+1`); `$A5EB`-`$A5EC` (`GameEntry+17`) |
 | Ports out | `$7FFD` |
 
 ### `LoadReturn` (`$A590`)
@@ -178,10 +178,10 @@ Reached by LoadGame's JP (`$C1FD`, key 5 of the main menu). The same steps as Ga
 
 | | |
 | --- | --- |
-| Runs (`work/game-r2`, save and load) | run into, not called, 117,506 t-states own (0.03 %) |
+| Runs (`work/game-r2`, save and load) | 2 runs of its first instruction (entered by a jump or by running on, no routine of its own in the L1), 117,506 t-states own (0.03 %) |
 | Calls | `NewGameSetup` (tail) |
 | Reads | `$A59B` (`LoadReturn+11`) |
-| Writes | `$5B00`-`$5B01` (system) |
+| Writes | `$5B00`-`$5B01` (`ViewBuffer`) |
 
 ## start
 
@@ -211,6 +211,7 @@ Entered from GameEntry and by JP from the abort key in play (`$A712`); the dead 
 | | |
 | --- | --- |
 | Runs (`work/game-r2`, save and load) | 3 calls, 20,700 t-states own (0.00 %) |
+| Runs (`work/game`, the first game) | 1 run of its first instruction (entered by a jump or by running on, no routine of its own in the L1) |
 | Called from | `GameEntry` (falls into), `PlayLoop` (tail) |
 | Calls | `MainMenu` |
 | Writes | `$6800`-`$6900` (`ImTable`); `$6969`-`$696B` (`ImJump`, `ImHandler`); `$FD00`-`$FD03` (`RandomSeed`) |
@@ -226,8 +227,9 @@ Zeroes the robot records `$DA00-$DCFF` (48 x 16), the variables `$FD04-$FDFC` (e
 
 | | |
 | --- | --- |
-| Runs (`work/docL/deep`, the bot's game) | run into, not called, 656,332 t-states own (0.03 %) |
+| Runs (`work/docL/deep`, the bot's game) | 1 run of its first instruction (entered by a jump or by running on, no routine of its own in the L1), 656,332 t-states own (0.03 %) |
 | Runs (`work/game-r2`, save and load) | 2 calls, 26,795 t-states own (0.01 %) |
+| Runs (`work/game`, the first game) | 1 run of its first instruction (entered by a jump or by running on, no routine of its own in the L1) |
 | Called from | `LoadReturn` (tail) |
 | Calls | `EnterPlay` (tail), `BuildMap` |
 | Reads | `$D7D3`-`$D7FE` (`Shots`); `$DA00`-`$DCFE` (`Robots`, `EnemyRobots`); `$E714`-`$E716` (`Map`); `$E914`-`$EB18` (`Map`); `$ED12`-`$ED18` (`Map`); `$EF12`-`$F118` (`Map`); 6 more ranges |
@@ -241,7 +243,9 @@ DrawViewBackground and DrawPlayScreen build the play screen (the view, its frame
 
 | | |
 | --- | --- |
+| Runs (`work/docL/deep`, the bot's game) | 1 run of its first instruction (entered by a jump or by running on, no routine of its own in the L1) |
 | Runs (`work/game-r2`, save and load) | 3 calls, 240 t-states own (0.00 %) |
+| Runs (`work/game`, the first game) | 1 run of its first instruction (entered by a jump or by running on, no routine of its own in the L1) |
 | Called from | `NewGameSetup` (tail), `PlayRedraw` (tail) |
 | Calls | `PlayLoop` (falls into), `DrawViewBackground`, `DrawPlayScreen` |
 | Writes | `$696A`-`$696B` (`ImHandler`) |
@@ -260,6 +264,7 @@ Last, the game keys: Input bit 6 (key I in the default KeyTable) abandons the ga
 
 | | |
 | --- | --- |
+| Runs (`work/docL/deep`, the bot's game) | 3,333 runs of its first instruction (entered by a jump or by running on, no routine of its own in the L1) |
 | Runs (`work/game-r2`, save and load) | 4 calls, 32,067 t-states own (0.01 %) |
 | Runs (`work/game`, the first game) | 1 call, 52,043 t-states own (0.02 %) |
 | Called from | `EnterPlay` (falls into) |
@@ -354,7 +359,7 @@ CloseRobotMenu (`$A812`) clears the panel, sets `$FD39` = 0 and redraws the stat
 
 | | |
 | --- | --- |
-| Runs | ran within another entry's routine (reached by a jump or by running on, its calls below), no runs of its own counted |
+| Runs (`work/docL/deep`, the bot's game) | 14 runs of its first instruction (entered by a jump or by running on, no routine of its own in the L1) |
 | Calls | `ShowStrength`, `OrdersMenu` (tail), `ListMenu`, `Beep`, `ShowStatusPanel`, `ClearPanel` |
 
 ### `ShowStrength` (`$A81D`)
@@ -819,6 +824,8 @@ RadarDirty (`$FD52`) is set when the window moved (`$B017`) and by other code th
 | | |
 | --- | --- |
 | Runs (`work/docL/deep`, the bot's game) | 3,417 calls, 99,122 t-states own (0.00 %) |
+| Runs (`work/game-r2`, save and load) | 185 runs of its first instruction (entered by a jump or by running on, no routine of its own in the L1) |
+| Runs (`work/game`, the first game) | 299 runs of its first instruction (entered by a jump or by running on, no routine of its own in the L1) |
 | Called from | `PutShipOnMap` (falls into), `MenuRadarTick` (tail) |
 | Calls | `BlinkShipDot` (falls into), `BuildRadar` |
 | Reads | `$FD52` (`RadarDirty`) |
@@ -921,6 +928,8 @@ The common tail of TerrainTop and ObjectTop.
 | | |
 | --- | --- |
 | Runs (`work/docL/deep`, the bot's game) | 41,554 calls, 1,039,970 t-states own (0.04 %) |
+| Runs (`work/game-r2`, save and load) | 292 runs of its first instruction (entered by a jump or by running on, no routine of its own in the L1) |
+| Runs (`work/game`, the first game) | 276 runs of its first instruction (entered by a jump or by running on, no routine of its own in the L1) |
 | Called from | `TerrainTop` (tail), `ObjectTop` (falls into) |
 | Calls | `FindBuilding`, `AddAToHL` |
 
@@ -969,6 +978,7 @@ Direct control (+`$0A` = 2): the stick decides (RobotDirectControl). Otherwise S
 
 | | |
 | --- | --- |
+| Runs (`work/docL/deep`, the bot's game) | 52,071 runs of its first instruction (entered by a jump or by running on, no routine of its own in the L1) |
 | Runs (`work/game-r2`, save and load) | 557 calls, 138,987 t-states own (0.03 %) |
 | Runs (`work/game`, the first game) | 596 calls, 105,609 t-states own (0.04 %) |
 | Called from | `UpdateRobot` (tail) |
@@ -1010,7 +1020,9 @@ Masks C with random bytes until exactly one bit is left (CountDirections); when 
 
 | | |
 | --- | --- |
-| Runs | ran within another entry's routine (reached by a jump or by running on, its calls below), no runs of its own counted |
+| Runs (`work/docL/deep`, the bot's game) | 974 runs of its first instruction (entered by a jump or by running on, no routine of its own in the L1) |
+| Runs (`work/game-r2`, save and load) | 3 runs of its first instruction (entered by a jump or by running on, no routine of its own in the L1) |
+| Runs (`work/game`, the first game) | 6 runs of its first instruction (entered by a jump or by running on, no routine of its own in the L1) |
 | Calls | `CountDirections`, `Random` |
 
 ### `FindTargetBuilding` (`$B34D`)
@@ -1418,7 +1430,7 @@ The recorded hits agree: a missile (2) into a 19 high robot takes 10 * 3 = 30, a
 
 | | |
 | --- | --- |
-| Runs | not reached in the recordings |
+| Runs (`work/docL/deep`, the bot's game) | 260 runs of its first instruction (entered by a jump or by running on, no routine of its own in the L1) |
 
 ## enemy
 
@@ -1745,7 +1757,8 @@ Called by Restart (`$A62A`), which falls into NewGameSetup with Z when it return
 
 | | |
 | --- | --- |
-| Runs | ran within another entry's routine (reached by a jump or by running on, its calls below), no runs of its own counted |
+| Runs (`work/game-r2`, save and load) | 3 runs of its first instruction (entered by a jump or by running on, no routine of its own in the L1) |
+| Runs (`work/game`, the first game) | 1 run of its first instruction (entered by a jump or by running on, no routine of its own in the L1) |
 | Calls | `MenuPicture` |
 
 ### `MainMenuOptions` (`$C106`)
@@ -1755,6 +1768,8 @@ Called by Restart (`$A62A`), which falls into NewGameSetup with Z when it return
 | | |
 | --- | --- |
 | Runs (`work/docL/deep`, the bot's game) | 1 call, 17 t-states own (0.00 %) |
+| Runs (`work/game-r2`, save and load) | 3 runs of its first instruction (entered by a jump or by running on, no routine of its own in the L1) |
+| Runs (`work/game`, the first game) | 1 run of its first instruction (entered by a jump or by running on, no routine of its own in the L1) |
 | Called from | `MainMenuKeys` (tail) |
 | Calls | `PrintInline` |
 
@@ -1817,7 +1832,9 @@ Waits until no key is held (KEY-SCAN `$028E`), then reads a key every frame (one
 
 | | |
 | --- | --- |
-| Runs | ran within another entry's routine (reached by a jump or by running on, its calls below), no runs of its own counted |
+| Runs (`work/docL/deep`, the bot's game) | 329 runs of its first instruction (entered by a jump or by running on, no routine of its own in the L1) |
+| Runs (`work/game-r2`, save and load) | 3 runs of its first instruction (entered by a jump or by running on, no routine of its own in the L1) |
+| Runs (`work/game`, the first game) | 1 run of its first instruction (entered by a jump or by running on, no routine of its own in the L1) |
 | Calls | `MainMenuOptions` (tail) |
 
 ### `PrintTitle` (`$C1E3`)
@@ -1836,7 +1853,7 @@ Waits until no key is held (KEY-SCAN `$028E`), then reads a key every frame (one
 
 | | |
 | --- | --- |
-| Runs | ran within another entry's routine (reached by a jump or by running on, its calls below), no runs of its own counted |
+| Runs (`work/game-r2`, save and load) | 2 runs of its first instruction (entered by a jump or by running on, no routine of its own in the L1) |
 | Calls | `GameLoad` (tail) |
 
 ### `LoadTapePrompt` (`$C200`)
@@ -2358,7 +2375,7 @@ IY = the robot record being designed. Paints the attributes of the parts list (c
 | Runs (`work/docL/deep`, the bot's game) | 29 calls, 666,666 t-states own (0.03 %) |
 | Called from | `ConstructionMenuSetup`, `ConstructionMenuLoop` |
 | Calls | `DrawRobot`, `ClearViewBuffer`, `NextScreenLine`, `AddAToHL` |
-| Reads | `$6168`-`$667F` (system); `$6690`-`$6693` (system); `$66A4`-`$66A7` (system); `$66B8`-`$66BB` (system); `$66CC`-`$66CF` (system); `$66E0`-`$66E3` (system); 3 more ranges |
+| Reads | `$6168`-`$667F` (`ViewBuffer+1640`); `$6690`-`$6693` (`ViewBuffer+2960`); `$66A4`-`$66A7` (`ViewBuffer+2980`); `$66B8`-`$66BB` (`ViewBuffer+3000`); `$66CC`-`$66CF` (`ViewBuffer+3020`); `$66E0`-`$66E3` (`ViewBuffer+3040`); 3 more ranges |
 | Writes | `$48E0`-`$54E3` (screen); `$5500`-`$55C3` (screen); `$55E0`-`$55E3` (screen); `$5600`-`$56C3` (screen); `$56E0`-`$56E3` (screen); `$5700`-`$57C3` (screen); 10 more ranges |
 
 ### `PlaceRobot` (`$CC7C`)
@@ -2576,7 +2593,8 @@ Robots and shots keep their real position in +`$02`/+`$03` (x) and +`$04` (y) an
 
 | | |
 | --- | --- |
-| Runs | ran within another entry's routine (reached by a jump or by running on, its calls below), no runs of its own counted |
+| Runs (`work/docL/deep`, the bot's game) | 1,348 runs of its first instruction (entered by a jump or by running on, no routine of its own in the L1) |
+| Runs (`work/game-r2`, save and load) | 54 runs of its first instruction (entered by a jump or by running on, no routine of its own in the L1) |
 | Calls | `MapCell`, `FindLatestBlock`, `DrawMoverSprite` (tail) |
 
 ### `DrawMoverSprite` (`$CEC3`)
@@ -2588,6 +2606,7 @@ Records at `$D800` and up are robots: DrawRobot. A shot (records at `$D7D3`) is 
 | | |
 | --- | --- |
 | Runs (`work/docL/deep`, the bot's game) | 1,330 calls, 61,180 t-states own (0.00 %) |
+| Runs (`work/game-r2`, save and load) | 54 runs of its first instruction (entered by a jump or by running on, no routine of its own in the L1) |
 | Called from | `DrawMover` (tail) |
 | Calls | `DrawRobot` (tail) |
 
@@ -2600,6 +2619,7 @@ Height starts at +`$0D` (the ground under the robot, 0 in the construction menu)
 | | |
 | --- | --- |
 | Runs (`work/docL/deep`, the bot's game) | 1,359 calls, 478,669 t-states own (0.02 %) |
+| Runs (`work/game-r2`, save and load) | 54 runs of its first instruction (entered by a jump or by running on, no routine of its own in the L1) |
 | Called from | `ShowRobotDesign`, `DrawMoverSprite` (tail) |
 | Calls | `DrawRobotPart` |
 | Reads | `$DA07`-`$DA5D` (`Robots`) |
@@ -2662,8 +2682,8 @@ Pushes HL = 0 with SP at `$6780` (198 x 16 bytes, SP kept in `$FD08`), then clea
 | Runs (`work/game-r2`, save and load) | 192 calls, 3,985,551 t-states own (0.92 %) |
 | Runs (`work/game`, the first game) | 300 calls, 6,226,857 t-states own (2.09 %) |
 | Called from | `StartRobot`, `ShowRobotDesign`, `DrawViewBackground` |
-| Reads | `$5B00`-`$5B1E` (system); `$FD08`-`$FD09` (`SavedSP`) |
-| Writes | `$5B00`-`$5B1F` (system); `$FD08`-`$FD09` (`SavedSP`) |
+| Reads | `$5B00`-`$5B1E` (`ViewBuffer`); `$FD08`-`$FD09` (`SavedSP`) |
+| Writes | `$5B00`-`$5B1F` (`ViewBuffer`); `$FD08`-`$FD09` (`SavedSP`) |
 
 ### `FillViewCorner` (`$D026`)
 
@@ -2679,7 +2699,7 @@ Pushes HL = 0 with SP at `$6780` (198 x 16 bytes, SP kept in `$FD08`), then clea
 | Called from | `DrawViewBackground` |
 | Calls | `AddAToHL` |
 | Reads | `$D038`-`$D041` (`CornerRowLoop+2`, `CornerByteLoop`) |
-| Writes | `$5B00`-`$5D83` (system); `$5D94`-`$5D95` (system); `$5DA8`-`$5DA9` (system); `$5DBC`-`$5DBD` (system); `$5DD0`-`$5DD1` (system); `$5DE4`-`$5DE5` (system); 3 more ranges |
+| Writes | `$5B00`-`$5D83` (`ViewBuffer`, `LAST_K`, `FLAGS`, `FLAGS2`); `$5D94`-`$5D95` (`ViewBuffer+660`); `$5DA8`-`$5DA9` (`ViewBuffer+680`); `$5DBC`-`$5DBD` (`ViewBuffer+700`); `$5DD0`-`$5DD1` (`ViewBuffer+720`); `$5DE4`-`$5DE5` (`ViewBuffer+740`); 3 more ranges |
 
 ### `DrawEdgeStrips` (`$D057`)
 
@@ -2694,7 +2714,7 @@ The diagonal edge of the map in the view. The patterns are at `$D6A8` (ink on th
 | Runs (`work/game`, the first game) | 900 calls, 2,625,680 t-states own (0.88 %) |
 | Called from | `DrawViewBackground` (tail) |
 | Reads | `$D6A8`-`$D6C7` (`ViewEdgeA`, `ViewEdgeB`) |
-| Writes | `$5B0A`-`$5EAD` (system); `$6512`-`$672B` (system); `$673C`-`$673F` (`ViewBufferTail+11`); `$6750`-`$6753` (`ViewBufferTail+31`); `$6764`-`$6767` (`ViewBufferTail+51`); `$6778`-`$677B` (`ViewBufferTail+71`) |
+| Writes | `$5B0A`-`$5EAD` (`ViewBuffer+10`, `LAST_K`, `FLAGS`, `FLAGS2`); `$6512`-`$672B` (`ViewBuffer+2578`); `$673C`-`$673F` (`ViewBufferTail+11`); `$6750`-`$6753` (`ViewBufferTail+31`); `$6764`-`$6767` (`ViewBufferTail+51`); `$6778`-`$677B` (`ViewBufferTail+71`) |
 
 ### `CopyViewToScreen` (`$D071`)
 
@@ -2735,7 +2755,9 @@ Clears the 6912 bytes of pixels and attributes from `$4000` and sets the border 
 
 | | |
 | --- | --- |
-| Runs | not reached in the recordings |
+| Runs (`work/docL/deep`, the bot's game) | 103,665 runs of its first instruction (entered by a jump or by running on, no routine of its own in the L1) |
+| Runs (`work/game-r2`, save and load) | 48,377 runs of its first instruction (entered by a jump or by running on, no routine of its own in the L1) |
+| Runs (`work/game`, the first game) | 13,822 runs of its first instruction (entered by a jump or by running on, no routine of its own in the L1) |
 
 ### `DrawPlayScreen` (`$D0CA`)
 
@@ -3084,6 +3106,8 @@ The operand `$FF9C` is -100 (the source writes it so with @isub; as a label it w
 | | |
 | --- | --- |
 | Runs (`work/docL/deep`, the bot's game) | 140 calls, 96,042 t-states own (0.00 %) |
+| Runs (`work/game-r2`, save and load) | 183 runs of its first instruction (entered by a jump or by running on, no routine of its own in the L1) |
+| Runs (`work/game`, the first game) | 297 runs of its first instruction (entered by a jump or by running on, no routine of its own in the L1) |
 | Called from | `ShowStrengthValue`, `PrintMenuTotal` (tail) |
 | Calls | `PrintDigit` |
 
@@ -3262,7 +3286,9 @@ Reached only by falling out of PlayInterrupt (and from PlayMusic's return throug
 
 | | |
 | --- | --- |
-| Runs | not reached in the recordings |
+| Runs (`work/docL/deep`, the bot's game) | 34,609 runs of its first instruction (entered by a jump or by running on, no routine of its own in the L1) |
+| Runs (`work/game-r2`, save and load) | 1,871 runs of its first instruction (entered by a jump or by running on, no routine of its own in the L1) |
+| Runs (`work/game`, the first game) | 2,973 runs of its first instruction (entered by a jump or by running on, no routine of its own in the L1) |
 
 ### `ShowRadar` (`$D59E`)
 

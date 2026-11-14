@@ -42,9 +42,10 @@
 ;
 ; Callers: DrawDirtyCells and DrawAllDirtyCells. Output: AF, B, HL changed.
 ;
-; Witness: L1 43626 (beeper48, c1, controls, emptygun, ending2, gameover,
-; l1end, l1z1left, spotL2Z4-34, spotL3Z7-51, spotL4Z8-69, L1Z1-L1Z6, L2Z1-L2Z7,
-; L3Z1-L3Z12, L4Z1-L4Z9, level1-level4, spotL1Z4-43, spotL1Z4-44, spotL1Z4-47).
+; Witness: L1 43628 (beeper48, c1, controls, emptygun, ending, ending2,
+; gameover, l1end, l1z1left, spotL2Z4-34, spotL3Z7-51, spotL4Z8-69, L1Z1-L1Z6,
+; L2Z1-L2Z7, L3Z1-L3Z12, L4Z1-L4Z9, level1-level4, spotL1Z4-43, spotL1Z4-44,
+; spotL1Z4-47).
 MaskHudCells:
   LD HL,$0000
   LD (CellFlags+$21),HL
@@ -103,9 +104,10 @@ MaskLivesLoop:
 ; Callers: the frame loop ($E422), the game over ($E35D) and the level's end
 ; ($ABF3). Output: everything.
 ;
-; Witness: L1 42930 (beeper48, c1, controls, emptygun, ending2, gameover,
-; l1end, l1z1left, spotL2Z4-34, spotL3Z7-51, spotL4Z8-69, L1Z1-L1Z6, L2Z1-L2Z7,
-; L3Z1-L3Z12, L4Z1-L4Z9, level1-level4, spotL1Z4-43, spotL1Z4-44, spotL1Z4-47).
+; Witness: L1 42932 (beeper48, c1, controls, emptygun, ending, ending2,
+; gameover, l1end, l1z1left, spotL2Z4-34, spotL3Z7-51, spotL4Z8-69, L1Z1-L1Z6,
+; L2Z1-L2Z7, L3Z1-L3Z12, L4Z1-L4Z9, level1-level4, spotL1Z4-43, spotL1Z4-44,
+; spotL1Z4-47).
 UpdateHud:
   LD A,(OldHudCounts)
   LD C,A
@@ -215,8 +217,9 @@ Bullets:
 ;
 ; Callers: DrawHud and AddScore (a tail jump). Output: everything.
 ;
-; Witness: L1 369 (beeper48, c1, controls, ending2, gameover, spotL3Z7-51,
-; L1Z1-L1Z6, L2Z1-L2Z7, L3Z1-L3Z12, L4Z1-L4Z9, level1-level4, spotL1Z4-43).
+; Witness: L1 370 (beeper48, c1, controls, ending, ending2, gameover,
+; spotL3Z7-51, L1Z1-L1Z6, L2Z1-L2Z7, L3Z1-L3Z12, L4Z1-L4Z9, level1-level4,
+; spotL1Z4-43).
 DrawScore:
   LD DE,$4021
   LD HL,Score
@@ -314,8 +317,8 @@ LevelBonus:
 ; Callers: $EDF6 (500), $F190 (50), $F52C (the award at $E49A) and the end of
 ; the last level ($AC35). Output: everything.
 ;
-; Witness: L1 38 (c1, ending2, L1Z3, L2Z6, L3Z2, L3Z6, L3Z11, L3Z12, L4Z2,
-; level1, level2, level4).
+; Witness: L1 39 (c1, ending, ending2, L1Z3, L2Z6, L3Z2, L3Z6, L3Z11, L3Z12,
+; L4Z2, level1, level2, level4).
 AddScore:
   LD HL,Score+$0005
   OR A
@@ -471,7 +474,8 @@ CounterAttrTableHigh:
 ; Output: HL on the $FF, DE past the text, AF changed. Callers: PrintLines and
 ; the game over text ($E36B-$E381).
 ;
-; Witness: L1 4504 (beeper48, c1, controls, ending2, gameover, l1end, level1).
+; Witness: L1 4941 (beeper48, c1, controls, ending, ending2, gameover, l1end,
+; level1).
 PrintText:
   LD A,(HL)
   CP $FF
@@ -550,7 +554,8 @@ SpaceGlyph:
 ; Callers: the title ($E22F-$E241), the level texts ($E31A, $AC1A). Output:
 ; everything.
 ;
-; Witness: L1 287 (beeper48, c1, controls, ending2, gameover, l1end, level1).
+; Witness: L1 315 (beeper48, c1, controls, ending, ending2, gameover, l1end,
+; level1).
 PrintLines:
   LD A,(HL)
   CP $FE
@@ -574,7 +579,7 @@ PrintLinesNext:
 ;
 ; Callers: the title ($E223) and the game start ($E2DC). Output: BC, DE, HL.
 ;
-; Witness: L1 17 (beeper48, c1, controls, ending2, gameover, level1).
+; Witness: L1 18 (beeper48, c1, controls, ending, ending2, gameover, level1).
 ClearScreen:
   LD HL,$4000
   LD DE,$4001
@@ -597,7 +602,7 @@ ClearScreen:
 ;
 ; Output: AF, BC, DE, HL changed, AF' used.
 ;
-; Witness: L1 6603 (beeper48, c1, controls, ending2, gameover, level1).
+; Witness: L1 6749 (beeper48, c1, controls, ending, ending2, gameover, level1).
 CycleAttributes:
   EX AF,AF'
   LD (CycleTablePtr+$0001),HL
@@ -755,7 +760,7 @@ NextLevel:
 ;
 ; Called once, after the last level ($AC49), before the game over.
 ;
-; Witness: L1 1 (ending2).
+; Witness: L1 2 (ending, ending2).
 ClearPlayArea:
   LD HL,MusicImage+$0800
   LD DE,MusicImage+$0801

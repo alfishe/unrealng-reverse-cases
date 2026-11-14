@@ -31,7 +31,7 @@
 ; menu screen is work/images/menu.*.bin. The `LD DE,$780A` at `$E229` is dead:
 ; the next instruction loads DE again.
 ;
-; Witness: L1 26072 (c1, controls, ending2, gameover, level1).
+; Witness: L1 30069 (c1, controls, ending, ending2, gameover, level1).
 Menu:
   CALL StartPressed
   JR Z,Menu
@@ -204,7 +204,7 @@ Quit:
 ; Also the end of the game: CheckGameComplete $E406 jumps here after the ending
 ; (the ending recording shows GAME OVER after the closing text).
 ;
-; Witness: L1 9 (beeper48, c1, controls, ending2, gameover, level1).
+; Witness: L1 10 (beeper48, c1, controls, ending, ending2, gameover, level1).
 GameOver:
   CALL UpdateHud
   CALL DrawDirtyCells

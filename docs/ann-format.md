@@ -126,7 +126,9 @@ menu, timer, rzx x32).` A line that no longer agrees, say after `case.json` swap
 `witness: src/game/game.ann:134 $8040 PrintGlyph: L1 90100 (c1, rzx x32), the builds give L1 90104 (...)`;
 `mkgame.py --fix-witness` rewrites N and the list in the `.ann` (the rest of the line stays) and writes the source
 again from it (with `--install` one run leaves the `.asm` current too); a line that names a
-build mkgame did not load is kept as written and printed (`kept: NAME not among the builds`), and a name it drops is
+build mkgame did not load is kept as written and printed (`kept: NAME not among the builds`), a name a build had
+before `witness_names` renamed it (its own name, `c1g`, or its path) is that build's and rewritten (`renamed
+(witness_names): c1g is c1`), and a name it drops is
 printed as `NAME ran no instruction there` (not for an entry no build ran at all, `L1 0 ()`, a data entry or a dormant
 routine: that says no more than its count). A part whose addresses other programs also ran counts only the runs of
 its own bytes, as its code is found: `same_bytes`, where all the instruction's bytes the L1 holds are the image's;
@@ -344,10 +346,10 @@ reads them for a part of segments in `case.json` `ref_parts`:
 | `l1` | the recordings: `"PATH"` or `{"path", "reads", "lo", "hi", "roots", "format", "optional"}`. `reads`: its data reads count (not for a build over a depacker's input; default: the build's folder is in `read_builds`). `lo`/`hi`: only this window of addresses counts (the bytes that held this part while it ran). `roots: false`: a routine that is only the window's root (where the build began) is no entry. `format: "trace"`: a simulator's `{"starts": {ADDR: length}, "entries": [ADDR], "reads": {ADDR: count}}`. A path may be a glob. A segment's own `l1` replaces the part's |
 | `mode` | `"instructions"` (default: every recorded instruction whose opcode and length are the image's) or `"blocks"` (only whole recorded basic blocks whose every instruction has the image's bytes, no routine entries: a later program at the same addresses cannot make a lone byte look like code) |
 | `bases`, `pages`, `bank` | L1 page -> Z80 base (`{"5": "4000", "2": "8000", "0": "C000"}` by default); `pages` lists pages at their natural base (5 `$4000`, 2 `$8000`, any other `$C000`); `bank` N adds `SLOT 3` / `PAGE N` to the top file |
-| `same_bytes` | count a recorded instruction only when all its bytes are the image's (code overwritten later in the same window), for the code and the witness counts (section 3.2) |
+| `same_bytes` | count a recorded instruction only when all its bytes are the image's (code overwritten later in the same window), for the code and the witness counts (section 3.2); a list of builds (`work/<build>` names, globs): only for those recordings (their routine entries too only at such an instruction), the others count as before |
 | `data_entries` | `"stop"` (or `true`): every annotated data entry, up to the next entry, is data the walk never enters; `"first"`: only the entry's first byte stops the walk |
-| `entries_in_code`, `no_entries` | keep only the recorded routine entries the walk made code / take none |
-| `overwritten` | `[[LO, HI], ...]`: ranges another block overwrites at run time; no recorded instruction there counts and the walk stops there |
+| `entries_in_code`, `no_entries` | keep only the recorded routine entries the walk made code / take none; `no_entries` as a list of builds (globs): those recordings make no entries, their instructions and reads still count (a recording started from a snapshot, whose returns and jumps out of the routine it began in look like routine starts) |
+| `overwritten` | `[[LO, HI], ...]`: ranges another block overwrites at run time; no recorded instruction there counts and the walk stops there. `[LO, HI, BUILD or [BUILDS]]` (globs): only the named recordings' instructions and routine entries there do not count, nor their witness runs and doc 12 routines; the walk is free (a recording whose start state holds other code bytes there: Rick Dangerous's `stage1/ending`, whose L1 holds `$39` at `$ABD8`, LevelEnd's `CALL`) |
 | `operands` | `LD BC,nn` as `Label+offset` (section 3.4): only the pointers read through `(BC)` by default, `"wide"` every one, `"narrow"` none |
 | `drop_data_refs`, `isub_as_written` | drop sna2skool's reference marks inside data rows; write `@isub` numbers as the `.ann` does (decimal), not as skool2asm's hex (now always so: the key stays for the older part files) |
 | `res`, `res_install`, `built`, `save` | the resources: as bytes into `res` (the `INCBIN`s name it relative to `dest`), or through a hook `tools/x.py[:function]` called with `{name: bytes}` (no `res_install` and no `res`: `case.json`'s, else `tools/res_formats.py`, section 4 step 7); `built` `{NAME: PATH}` is a resource the build makes (not installed, `INCBIN "PATH"`); `save` is the installed top file's `SAVEBIN` path |
@@ -356,8 +358,10 @@ reads them for a part of segments in `case.json` `ref_parts`:
 | `work`, `clean_work` | the work folder (default `work/mkpart/<top>`) |
 
 `case.json` takes the same keys for the game (`dest`, `work`, `res_install`, `operands`, `mode`, `no_entries`,
-`entries_in_code`, `overwritten`, ...), and `witness_skip`: the builds left out of the witness counts (section 3.2;
-Earth Shaker's two death recordings, which its `.ann` names where it uses them).
+`entries_in_code`, `overwritten`, `same_bytes`, `built`, ...), and `witness_skip`: the builds left out of the witness
+counts (section 3.2; Earth Shaker's two death recordings, which its `.ann` names where it uses them); `no_roots`: the
+builds of its `read_builds` / `code_builds` (globs) read as `{"roots": false}` (a routine that is only the
+recording's root, a snapshot start's PC, is no entry).
 
 ### 5.3 One image on the command line
 

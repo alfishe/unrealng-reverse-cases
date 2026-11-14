@@ -13,7 +13,9 @@ image's bytes: a case's game, or any other part of the medium (a loader, a menu,
 
 The game: CASE/case.json (or --config) names the 64 K image, the range that is the game, the banks, the recordings
 (read_builds: work/<build>/l1.json whose instructions and data reads count; code_builds: whose instructions only;
-the witness lines count ref_builds and witness_builds too, witness_names renames a windowed build) and the header;
+no_roots / no_entries name the builds whose root / whose routines make no entry; same_bytes and overwritten take
+per-build forms; the witness lines count ref_builds and witness_builds too, witness_names renames a windowed build)
+and the header;
 the source goes to src/<main> (case.json "main": the main part's name, "game" when absent; a case that is no game,
 under software/, says "main": src/main/main.ann, main.asm), the resources through tools/res_formats.py (case.json res_install names another; a part
 file without res_install or res inherits case.json's, and a part whose resources nothing installs says so). Several
@@ -121,11 +123,22 @@ class Source:
         format    'l1' (re_session.py build) or 'trace' ({"starts": {ADDR: length}, "entries": [ADDR],
                   "reads": {ADDR: count}}, a case's simulator: tools/bootmenu_sim.py)
         optional  a missing file is skipped (a window not every checkout has), not an error
+        same_bytes  this recording's instructions count only where all their bytes are the image's, its routine
+                  entries only at such an instruction (a part's or case.json's "same_bytes" naming the build)
+        skip      [(lo, hi)]: no instruction or routine entry of this recording there counts (a part's or case.json's
+                  "overwritten" [LO, HI, BUILDS]: its start state holds other code bytes there)
+        entries   False: its routines make no entries, its instructions and reads count (a part's or case.json's
+                  "no_entries" naming the build: a recording started from a snapshot, whose jumps out of the routine
+                  it started in look like routine starts)
     """
 
     def __init__(self, path, reads=False, lo=None, hi=None, roots=True, fmt='l1', optional=False):
         self.path, self.reads, self.lo, self.hi, self.roots, self.format = path, reads, lo, hi, roots, fmt
         self.optional = optional
+        self.same_bytes, self.skip, self.entries = False, [], True
+
+    def skipped(self, a):
+        return any(lo <= a < hi for lo, hi in self.skip)
 
     @staticmethod
     def parse(spec, root, read_builds=()):
@@ -175,6 +188,8 @@ def read_sources(sources, mem, lo, hi, bases, mode='instructions', same_bytes=Fa
             whi = hi if src.hi is None else min(hi, src.hi)
             if src.format == 'l1':  # the runs of each instruction, for the witness check
                 add_runs(EXECS.setdefault(path, {}), doc, bases)
+            src_same = same_bytes or src.same_bytes
+            own = set()  # this recording's instruction starts (same_bytes: its entries only there)
             if src.format == 'trace':
                 for a, n in doc['starts'].items():
                     if decode(mem, int(a, 16))[0] == n:
@@ -195,7 +210,8 @@ def read_sources(sources, mem, lo, hi, bases, mode='instructions', same_bytes=Fa
                     a, block = first, []
                     while a <= last:
                         raw = ran.get((b['page'], a))
-                        if raw is None or mem[a:a + len(raw)] != raw or decode(mem, a)[0] != len(raw):
+                        if raw is None or mem[a:a + len(raw)] != raw or decode(mem, a)[0] != len(raw) or \
+                                src.skipped(a):
                             break
                         block.append(a)
                         a += len(raw)
@@ -205,12 +221,13 @@ def read_sources(sources, mem, lo, hi, bases, mode='instructions', same_bytes=Fa
                 for z80, page, code, *_ in doc['instructions']:
                     a = int(z80[1:], 16)
                     raw = bytes.fromhex(code)
-                    if a < wlo or page not in bases or a + len(raw) > whi:
+                    if a < wlo or page not in bases or a + len(raw) > whi or src.skipped(a):
                         continue
                     # The opcode as the image holds it (an operand may be self-modified)
                     if decode(mem, a)[0] == len(raw) and mem[a] == raw[0] and \
-                            (not same_bytes or mem[a:a + len(raw)] == raw):
+                            (not src_same or mem[a:a + len(raw)] == raw):
                         starts.add(a)
+                        own.add(a)
                 routines = doc['routines']
                 # how each routine is entered from another one: a call, an interrupt, a jump from a routine that
                 # is no build's root reaches it; a fall into it, or a jump out of a root's routine (a loop of the
@@ -222,6 +239,8 @@ def read_sources(sources, mem, lo, hi, bases, mode='instructions', same_bytes=Fa
                 for i, r in enumerate(routines):
                     a = int(r['entry'][1:], 16)
                     if not src.roots and r.get('kinds') == 'root':
+                        continue
+                    if not src.entries or src.skipped(a) or (src.same_bytes and a not in own):
                         continue
                     if r['page'] in bases and wlo <= a < whi:
                         entries.add(a)
@@ -1339,21 +1358,54 @@ class Segment:
             witness = [os.path.join('work', b, 'l1.json') for b in get('witness_builds', ())]
         self.witness = [os.path.join(ROOT, p) for p in witness]
         self.mode = get('mode', 'instructions')
-        self.same_bytes = bool(get('same_bytes'))
+        # same_bytes: true (every recording), or the builds it holds for (a list of work/<build> names, globs)
+        same = get('same_bytes')
+        self.same_bytes = bool(same) and not isinstance(same, list)
+        self.same_builds = list(same) if isinstance(same, list) else []
         self.data_entries = get('data_entries')
-        self.overwritten = [(hexa(a), hexa(b)) for a, b in get('overwritten', [])]
+        # overwritten: [LO, HI] for every recording (the walk stops there), [LO, HI, BUILD or [BUILDS]] for the
+        # named recordings only (their start state holds other code bytes there: their instructions and entries
+        # there do not count, the walk is free)
+        self.overwritten, self.build_skips = [], []
+        for item in get('overwritten', []):
+            if len(item) > 2:
+                names = [item[2]] if isinstance(item[2], str) else list(item[2])
+                self.build_skips.append((hexa(item[0]), hexa(item[1]), names))
+            else:
+                self.overwritten.append((hexa(item[0]), hexa(item[1])))
+        for src in self.sources:
+            src.same_bytes, src.skip = self.build_options(src.path)
         self.operands = get('operands', 'pointer')
         self.isub_as_written = bool(get('isub_as_written'))
         self.drop_data_refs = bool(get('drop_data_refs'))
-        self.no_entries = bool(get('no_entries', self.mode == 'blocks'))
+        # no_entries: true (no recording's routine entries), or the builds whose entries do not count (a list)
+        noent = get('no_entries', self.mode == 'blocks')
+        self.no_entries = bool(noent) and not isinstance(noent, list)
+        self.no_entry_builds = list(noent) if isinstance(noent, list) else []
+        for src in self.sources:
+            src.entries = not any(fnmatch.fnmatch(build_key(src.path), n) for n in self.no_entry_builds)
         self.entries_in_code = bool(get('entries_in_code'))
         self.single = False  # set by single_part
         self.suffix = ''  # set by make_part: '-RUN' when another segment of the part has the same .ann and piece
+
+    def build_options(self, path):
+        """(same_bytes, skip ranges) of the recording path (work/<build>/l1.json) by the per-build forms of
+        same_bytes and overwritten"""
+        build = build_key(path)
+        same = any(fnmatch.fnmatch(build, n) for n in self.same_builds)
+        return same, [(lo, hi) for lo, hi, names in self.build_skips if any(fnmatch.fnmatch(build, n) for n in names)]
 
     def tag(self):
         """the name of the segment's work files (TAG.ctl, TAG.skool, TAG-image.bin): the .ann's name and the piece,
         and the run address in hex when two segments share both (kit/refdocs.py reads them)"""
         return os.path.splitext(os.path.basename(self.ann))[0] + ('-' + self.piece if self.piece else '') + self.suffix
+
+
+def build_key(path):
+    """work/<build>/l1.json -> <build> (the case's work folder; a path elsewhere: its folder as given)"""
+    folder = os.path.dirname(os.path.abspath(path))
+    work = os.path.join(ROOT or '', 'work')
+    return os.path.relpath(folder, work) if folder.startswith(work + os.sep) else os.path.dirname(path)
 
 
 def segment_tags(segments, part):
@@ -1804,11 +1856,12 @@ WITNESS = re.compile(r'Witness: L1 (\d+) \(([\w ,.\-]*)\)')
 WITNESS_NAMES = {}  # case.json witness_names: {build: the name its witness lines give it} (a window: c1g as c1)
 
 
-def build_name(build):
+def build_name(build, renames=True):
     """the short name of a build in a witness line: stage1/c1 -> c1, stage2/rzx04/cap -> rzx04, stage1/rzx/r02000 -> rzx02000, timer -> timer, a
     recording kept under a rec folder by its own name (stage2/rec/fuel -> fuel, docs/bcC/rec/armour -> armour); case.json
-    witness_names renames a build (a --from-frame window by its recording: "stage1/c1g": "c1")"""
-    if build in WITNESS_NAMES:
+    witness_names renames a build (a --from-frame window by its recording: "stage1/c1g": "c1"; renames False: the
+    name without it)"""
+    if renames and build in WITNESS_NAMES:
         return WITNESS_NAMES[build]
     parts = build.split('/')
     if 'rec' in parts[1:-1]:
@@ -1898,14 +1951,17 @@ class Runs:
     over by the next, a menu by the game) adds nothing. Any other part counts every run, as before. A source's
     address window (lo, hi) bounds its runs as it bounds the code. shared: the entries counted under such a part
     whose instruction the L1 marks self-modified: the L1 keeps one instruction an address (the last bytes run
-    there, the runs of all), so the runs may be several programs' (a frame window build keeps them apart)"""
+    there, the runs of all), so the runs may be several programs' (a frame window build keeps them apart). A build's
+    per-build forms (same_bytes naming it: its own bytes only; overwritten [LO, HI, BUILDS]: none there) hold too"""
 
-    def __init__(self, ran, mem, match, windows):
-        self.ran, self.mem, self.match, self.windows = ran, mem, match, windows
+    def __init__(self, ran, mem, match, windows, skips=()):
+        self.ran, self.mem, self.match, self.windows, self.skips = ran, mem, match, windows, skips
         self.shared = set()
 
     def get(self, a, default=0):
         if self.windows and not any(lo <= a < hi for lo, hi in self.windows):
+            return default
+        if any(lo <= a < hi for lo, hi in self.skips):  # overwritten [LO, HI, BUILDS]: not this image's bytes
             return default
         n = 0
         for _page, raw, runs, modified in self.ran.get(a, ()):
@@ -1966,8 +2022,16 @@ def check_witness(seg, skip=(), fix=False, mem=None):
         if sources or witness:
             windows = [] if witness or any(s.lo is None and s.hi is None for s in sources) else \
                 [(s.lo if s.lo is not None else 0, s.hi if s.hi is not None else 0x10000) for s in sources]
-            builds[build] = Runs(ran, mem, match, windows)
+            same, skips = seg.build_options(path)
+            builds[build] = Runs(ran, mem, 'all' if same else match, windows, skips)
     known = {build_name(b) for b in builds}
+    # the names a build had before witness_names renamed it (its own name, its path): a line that still gives one
+    # is the renamed build's, and --fix-witness writes the new name
+    former = {}
+    for b in builds:
+        for alias in (build_name(b, renames=False), b):
+            if alias not in known and alias != build_name(b):
+                former.setdefault(alias, build_name(b))
     lines = open(seg.ann).read().split('\n')
     entry, stale = None, 0
     for i, line in enumerate(lines):
@@ -1995,12 +2059,16 @@ def check_witness(seg, skip=(), fix=False, mem=None):
             # a name of the line that is none of these builds' (a recording this run does not load): the line is
             # kept as it is, a rewrite would drop it
             had = witness_items(w.group(2))
-            unknown = sorted(x for x in had if x not in known and not re.match(r'.* x\d+$', x))
-            dropped = sorted(had - witness_items(names) - set(unknown) - {x for x in had if re.match(r'.* x\d+$', x)})
+            renamed = sorted(x for x in had if x in former)
+            unknown = sorted(x for x in had if x not in known and x not in former and not re.match(r'.* x\d+$', x))
+            dropped = sorted(had - witness_items(names) - set(unknown) - set(renamed) -
+                             {x for x in had if re.match(r'.* x\d+$', x)})
             # an entry no build ran at all (data, or code no recording reaches) is no build's miss: nothing said
-            print('witness: %s:%d $%04X %s: L1 %s (%s), the builds give L1 %d (%s)%s%s' % (
+            print('witness: %s:%d $%04X %s: L1 %s (%s), the builds give L1 %d (%s)%s%s%s' % (
                 os.path.relpath(seg.ann, ROOT), i + 1, entry[0], entry[2] or '', w.group(1), w.group(2), n, names,
                 ('; %s ran no instruction there' % ', '.join(dropped)) if dropped and n else '',
+                ('; renamed (witness_names): %s' % ', '.join('%s is %s' % (x, former[x]) for x in renamed))
+                if renamed else '',
                 ('; kept: %s not among the builds' % ', '.join(unknown) if unknown else ': rewritten') if fix else ''))
             if unknown:
                 return w.group(0)
@@ -2114,10 +2182,19 @@ def load_case(case, config_path=None):
 
 def case_builds(config):
     """the recordings of the case's game: work/<build>/l1.json of read_builds (instructions and data reads) and
-    code_builds (instructions only), never every work/*/l1.json"""
-    out = [{'path': os.path.join('work', b, 'l1.json'), 'reads': True} for b in config.get('read_builds', ())]
-    out += [{'path': os.path.join('work', b, 'l1.json'), 'reads': False} for b in config.get('code_builds', ())]
-    return out
+    code_builds (instructions only), never every work/*/l1.json; a build case.json "no_roots" names (globs) as a
+    part file's {"roots": false}: a recording started from a snapshot makes no entry at its start PC"""
+    rootless = config.get('no_roots', ())
+    if isinstance(rootless, str):
+        rootless = [rootless]
+
+    def source(b, reads):
+        spec = {'path': os.path.join('work', b, 'l1.json'), 'reads': reads}
+        if any(fnmatch.fnmatch(b, n) for n in rootless):
+            spec['roots'] = False
+        return spec
+    return [source(b, True) for b in config.get('read_builds', ())] + \
+        [source(b, False) for b in config.get('code_builds', ())]
 
 
 def game_part(config, ann):
@@ -2135,7 +2212,7 @@ def game_part(config, ann):
     witness = [b[0] if isinstance(b, (list, tuple)) else b for b in config.get('ref_builds', ())] + \
         list(config.get('witness_builds', ()))
     part['witness'] = [os.path.join('work', b, 'l1.json') for b in dict.fromkeys(witness)]
-    for key in ('work', 'operands', 'res_install', 'mode', 'same_bytes', 'data_entries', 'overwritten',
+    for key in ('work', 'operands', 'res_install', 'mode', 'same_bytes', 'data_entries', 'overwritten', 'built',
                 'isub_as_written', 'drop_data_refs', 'no_entries', 'entries_in_code', 'witness_skip'):
         if key in config:
             part[key] = config[key]

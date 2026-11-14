@@ -86,9 +86,10 @@ FrameTicks:
 ;
 ; `$A081` has run; restores, EI, RET.
 ;
-; Witness: L1 111926 (beeper48, c1, controls, emptygun, ending2, gameover,
-; l1end, l1z1left, spotL2Z4-34, spotL3Z7-51, spotL4Z8-69, L1Z1-L1Z6, L2Z1-L2Z7,
-; L3Z1-L3Z12, L4Z1-L4Z9, level1-level4, spotL1Z4-43, spotL1Z4-44, spotL1Z4-47).
+; Witness: L1 113425 (beeper48, c1, controls, emptygun, ending, ending2,
+; gameover, l1end, l1z1left, spotL2Z4-34, spotL3Z7-51, spotL4Z8-69, L1Z1-L1Z6,
+; L2Z1-L2Z7, L3Z1-L3Z12, L4Z1-L4Z9, level1-level4, spotL1Z4-43, spotL1Z4-44,
+; spotL1Z4-47).
 Im2Handler:
   DI
   PUSH AF

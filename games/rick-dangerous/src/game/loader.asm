@@ -107,7 +107,7 @@ BasicLeft:
 ; The second loader stage, deciphered (src/loader/stage2.asm): the build's
 ; stage2.bin
 LoaderStage2:
-  INCBIN "res/loader/stage2.bin",$0000,231
+  INCBIN "stage2.bin",$0000,231
 
 ; The loader's stack at the game's entry: 24 bytes under $5DFF (zeros on the
 ; tape)
@@ -123,7 +123,7 @@ LoaderStack:
 ; The AY player and its tunes, $0DA4 bytes, as the entry copies them to RAM 1
 ; $C000 (src/music/music.asm)
 MusicImage:
-  INCBIN "res/music/music.bin",$0000,3492
+  INCBIN "music.bin",$0000,3492
 
 ; A sprite frame (24 x 21, 126 bytes): kind 16's graphic, which Start $AB4D
 ; copies to $6A80

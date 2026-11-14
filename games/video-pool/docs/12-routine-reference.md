@@ -6,7 +6,9 @@ Runs count the calls of the entry itself; the time is its own t-states (callees 
 of the recording. Memory ranges name the label at or below their first byte (inner labels too, `Label+offset`)
 and the entries they cover. The interrupt's acceptance (the vector read, the return address pushed) is
 the handler's, not the interrupted routine's. An entry no recording reached says so; one the case's other
-recordings ran gives their calls.
+recordings ran gives their calls. An entry no routine of a recording starts at (entered by a jump, a table jump or
+by running on: L1 books its time to the routine it runs in) gives the runs of its first instruction, as its witness
+line counts them.
 Written by `kit/refdocs.py`; edit `src/game/game.ann`, then run `kit/mkgame.py --case . --install`
 (see [3. Build and load](03-build-and-load.md)) and `kit/refdocs.py --case .`.
 
@@ -57,8 +59,8 @@ Entered once by the turbo loader's JP `$8000` (every build: game frame 5556, eac
 
 | | |
 | --- | --- |
-| Runs (the first recording's game window) | run into, not called, 85 t-states own (0.00 %) |
-| Runs (the other recordings) | run into, not called (`runs/e1`, `runs/f1`, `runs/j1` and 4 more) |
+| Runs (the first recording's game window) | 1 run of its first instruction (entered by a jump or by running on, no routine of its own in the L1), 85 t-states own (0.00 %) |
+| Runs (the other recordings) | 7 runs of its first instruction, entered by a jump (`runs/e1` 1, `runs/f1` 1, `runs/j1` 1 and 4 more) |
 | Calls | `GameRestart` (falls into), `ResetBallPositions`, `PresentsPage` |
 | Reads | `$FE00`-`$FEFF` (`work space $FE00+`) |
 | Writes | `$BD0B` (`PresentsDone`); `$FCFC`-`$FCFF` (`work space $FCFC+`); `$FE00`-`$FF00` (`work space $FE00+`) |
@@ -225,8 +227,8 @@ The keys are the characters at `$B8BE` (left), `$B8BF` (right) and `$B8C0` (fire
 
 | | |
 | --- | --- |
-| Runs (the first recording's game window) | run into, not called, 308,355 t-states own (0.10 %) |
-| Runs (the other recordings) | run into, not called (`runs/w1`, `runs/f1`, `runs/p2` and 3 more) |
+| Runs (the first recording's game window) | 1,725 runs of its first instruction (entered by a jump or by running on, no routine of its own in the L1), 308,355 t-states own (0.10 %) |
+| Runs (the other recordings) | 12,120 runs of its first instruction, entered by a jump (`runs/w1` 6,407, `runs/f1` 2,793, `runs/p2` 1,375 and 3 more) |
 | Called from | `ReadInput` |
 | Calls | `ReadBreak`, `KeyDown` |
 | Reads | `$B8BE`-`$B8C0` (`LeftKey`, `RightKey`, `FireKey`) |
@@ -239,7 +241,7 @@ j1 (menu I): 836 calls at frames 2503-3540; key 6 held 40 frames from 2565 moved
 
 | | |
 | --- | --- |
-| Runs | not reached in `game`; in the other recordings run into, not called (`runs/j1`) |
+| Runs | not reached in `game`; in the other recordings 836 runs of its first instruction, entered by a jump (`runs/j1` 836) |
 | Called from | `ReadInput` |
 | Calls | `ReadBreak` |
 | Ports in | `$EFFE`, `$F7FE` |
@@ -252,7 +254,7 @@ IN A,(`$1F`): bit 0 right, 1 left, 2 down, 3 up, 4 fire, moved to the game's bit
 
 | | |
 | --- | --- |
-| Runs | not reached in `game`; in the other recordings run into, not called (`runs/j1`, `runs/m1`) |
+| Runs | not reached in `game`; in the other recordings 1,138 runs of its first instruction, entered by a jump (`runs/j1` 1,087, `runs/m1` 51) |
 | Called from | `ReadInput` |
 | Calls | `ReadBreak` |
 | Ports in | `$A01F` |
@@ -265,7 +267,7 @@ KeyDown for '8', '5', '6', '7'; when none is down, the ROM's KEY_SCAN and K_TEST
 
 | | |
 | --- | --- |
-| Runs | not reached in `game`; in the other recordings run into, not called (`runs/m1`, `runs/e1`) |
+| Runs | not reached in `game`; in the other recordings 822 runs of its first instruction, entered by a jump (`runs/m1` 559, `runs/e1` 263) |
 | Called from | `ReadInput` |
 | Calls | `ReadBreak`, `KeyDown` |
 
@@ -309,8 +311,8 @@ Task of MovingTasks (period 0; w1 2839 runs, frames 1086-11 615). For the 7 entr
 
 | | |
 | --- | --- |
-| Runs (the first recording's game window) | run into, not called, 290,576 t-states own (0.10 %) |
-| Runs (the other recordings) | run into, not called (`runs/w1`, `runs/p2`, `runs/v1` and 4 more) |
+| Runs (the first recording's game window) | 286 runs of its first instruction (entered by a jump or by running on, no routine of its own in the L1), 290,576 t-states own (0.10 %) |
+| Runs (the other recordings) | 6,403 runs of its first instruction, entered by a jump (`runs/w1` 2,839, `runs/p2` 1,174, `runs/v1` 818 and 4 more) |
 | Called from | `CallTask` |
 | Calls | `RedrawBall` |
 | Reads | `$869E`-`$86B9` (`DrawList`) |
@@ -358,8 +360,8 @@ ScoreTally runs before LoseLife, so a foul pot still scores: v1 frames 3045-3375
 
 | | |
 | --- | --- |
-| Runs (the first recording's game window) | run into, not called, 42,082 t-states own (0.01 %) |
-| Runs (the other recordings) | run into, not called (`runs/w1`, `runs/p2`, `runs/v1` and 3 more) |
+| Runs (the first recording's game window) | 290 runs of its first instruction (entered by a jump or by running on, no routine of its own in the L1), 42,082 t-states own (0.01 %) |
+| Runs (the other recordings) | 6,307 runs of its first instruction, entered by a jump (`runs/w1` 2,860, `runs/p2` 1,180, `runs/v1` 822 and 3 more) |
 | Called from | `CallTask` |
 | Calls | `StartAim` (falls into), `WaitMessages`, `StopShotTasks`, `RespotCueBall`, `DrawBall`, `LoseLife`, `ScoreShot`, `NextFrame`, `PrintHudNumber`, `Rack` |
 | Reads | `$89BB` (`BallHitFlag`); `$8A92`-`$8AE9` (`BallRecords+10`, `BallOne`, `BallTwo`, `BallThree` and 3 more); `$8E80` (`FoulCode`); `$9F4D`-`$9F4E` (`ShotsLeft`, `LivesLeft`) |
@@ -400,8 +402,8 @@ With the tasks stopped (WaitFrameNoTasks): while the message counter `$9F50` is 
 
 | | |
 | --- | --- |
-| Runs (the first recording's game window) | run into, not called, 22,027,624 t-states own (7.41 %) |
-| Runs (the other recordings) | run into, not called (`runs/w1`, `runs/f1`, `runs/p2` and 3 more) |
+| Runs (the first recording's game window) | 328 runs of its first instruction (entered by a jump or by running on, no routine of its own in the L1), 22,027,624 t-states own (7.41 %) |
+| Runs (the other recordings) | 691 runs of its first instruction, entered by a jump (`runs/w1` 345, `runs/f1` 252, `runs/p2` 87 and 3 more) |
 | Called from | `WaitFrameCall` |
 | Calls | `MessagesTask` |
 | Reads | `$847E` (`WaitMessagesHalt+1`); `$8AA2`-`$8AE8` (`BallOne+12`, `BallTwo`, `BallThree`, `BallFour` and 2 more); `$8E80` (`FoulCode`); `$9F50` (`MessageStep`) |
@@ -451,8 +453,8 @@ Task of AimTasks (w1 4425 runs). Fire held (InputState bit 4): Power + 2, back t
 
 | | |
 | --- | --- |
-| Runs (the first recording's game window) | run into, not called, 90,611 t-states own (0.03 %) |
-| Runs (the other recordings) | run into, not called (`runs/w1`, `runs/f1`, `runs/j1` and 3 more) |
+| Runs (the first recording's game window) | 1,447 runs of its first instruction (entered by a jump or by running on, no routine of its own in the L1), 90,611 t-states own (0.03 %) |
+| Runs (the other recordings) | 10,683 runs of its first instruction, entered by a jump (`runs/w1` 4,425, `runs/f1` 2,044, `runs/j1` 1,672 and 3 more) |
 | Called from | `FrictionSteps`, `CallTask` |
 | Calls | `InstallTasks`, `RemoveTasks`, `ShotReset`, `AimShot`, `RunTasks`, `RemoveTask`, `DrawCursor` |
 | Reads | `$827C` (`InputState`); `$86BF` (`Power`) |
@@ -481,8 +483,8 @@ Task of AimTasks and of the editor (w1 4404 runs). When InputState changed since
 
 | | |
 | --- | --- |
-| Runs (the first recording's game window) | run into, not called, 147,961 t-states own (0.05 %) |
-| Runs (the other recordings) | run into, not called (`runs/w1`, `runs/f1`, `runs/j1` and 4 more) |
+| Runs (the first recording's game window) | 1,443 runs of its first instruction (entered by a jump or by running on, no routine of its own in the L1), 147,961 t-states own (0.05 %) |
+| Runs (the other recordings) | 11,017 runs of its first instruction, entered by a jump (`runs/w1` 4,404, `runs/f1` 2,035, `runs/j1` 1,670 and 4 more) |
 | Called from | `CallTask` |
 | Reads | `$827C` (`InputState`); `$86BA`-`$86BE` (`CursorX`, `CursorY`, `CursorSpeed`, `CursorAccel` and 1 more) |
 | Writes | `$86BC`-`$86BE` (`CursorSpeed`, `CursorAccel`, `CursorLastInput`) |
@@ -511,8 +513,8 @@ Task of AimTasks and the editor (w1 4424 runs). Speed 0: nothing. Else erases th
 
 | | |
 | --- | --- |
-| Runs (the first recording's game window) | run into, not called, 131,154 t-states own (0.04 %) |
-| Runs (the other recordings) | run into, not called (`runs/w1`, `runs/j1`, `runs/f1` and 4 more) |
+| Runs (the first recording's game window) | 1,446 runs of its first instruction (entered by a jump or by running on, no routine of its own in the L1), 131,154 t-states own (0.04 %) |
+| Runs (the other recordings) | 11,059 runs of its first instruction, entered by a jump (`runs/w1` 4,424, `runs/f1` 2,043, `runs/j1` 1,672 and 4 more) |
 | Called from | `CallTask` |
 | Calls | `DrawCursor` |
 | Reads | `$86BA`-`$86BC` (`CursorX`, `CursorY`, `CursorSpeed`) |
@@ -536,8 +538,8 @@ In w1 the break has 159 physics ticks in the 168 video frames 1085-1252: tick 1 
 
 | | |
 | --- | --- |
-| Runs (the first recording's game window) | run into, not called, 248,181 t-states own (0.08 %) |
-| Runs (the other recordings) | run into, not called (`runs/w1`, `runs/p2`, `runs/v1` and 4 more) |
+| Runs (the first recording's game window) | 290 runs of its first instruction (entered by a jump or by running on, no routine of its own in the L1), 248,181 t-states own (0.08 %) |
+| Runs (the other recordings) | 6,447 runs of its first instruction, entered by a jump (`runs/w1` 2,860, `runs/p2` 1,180, `runs/v1` 822 and 4 more) |
 | Called from | `CallTask` |
 | Calls | `BuildDrawList`, `MoveBall` |
 | Reads | `$8A95`-`$8AE9` (`BallRecords+13`, `BallOne`, `BallTwo`, `BallThree` and 3 more); `$8B4C`-`$8B4D` (`FrictionTurn`, `EventCount`) |
@@ -641,8 +643,8 @@ The calculator returns here. Stacks CursorY `$86BB` and the cue ball's pixel y `
 
 | | |
 | --- | --- |
-| Runs (the first recording's game window) | run into, not called, 312 t-states own (0.00 %) |
-| Runs (the other recordings) | run into, not called (`runs/w1`, `runs/f1`, `runs/p2` and 4 more) |
+| Runs (the first recording's game window) | 4 runs of its first instruction (entered by a jump or by running on, no routine of its own in the L1), 312 t-states own (0.00 %) |
+| Runs (the other recordings) | 44 runs of its first instruction, entered by a jump (`runs/w1` 21, `runs/f1` 9, `runs/p2` 6 and 4 more) |
 | Reads | `$86BA`-`$86BB` (`CursorX`, `CursorY`); `$8A8B` (`BallRecords+3`) |
 
 ### `AimStoreVy` (`$8A3D`)
@@ -653,8 +655,8 @@ Stores BC from ScaleByPower `$8A5D` in the cue ball's vy `$8A8E`, then runs AimC
 
 | | |
 | --- | --- |
-| Runs (the first recording's game window) | run into, not called, 192 t-states own (0.00 %) |
-| Runs (the other recordings) | run into, not called (`runs/w1`, `runs/f1`, `runs/p2` and 4 more) |
+| Runs (the first recording's game window) | 4 runs of its first instruction (entered by a jump or by running on, no routine of its own in the L1), 192 t-states own (0.00 %) |
+| Runs (the other recordings) | 44 runs of its first instruction, entered by a jump (`runs/w1` 21, `runs/f1` 9, `runs/p2` 6 and 4 more) |
 | Calls | `ScaleByPower` |
 | Writes | `$8A8E`-`$8A8F` (`BallRecords+6`) |
 
@@ -666,8 +668,8 @@ Stores BC in the cue ball's vx `$8A8C`, sets its +13 bit 6 (moving), I = `$FE` (
 
 | | |
 | --- | --- |
-| Runs (the first recording's game window) | run into, not called, 400 t-states own (0.00 %) |
-| Runs (the other recordings) | run into, not called (`runs/w1`, `runs/f1`, `runs/p2` and 4 more) |
+| Runs (the first recording's game window) | 4 runs of its first instruction (entered by a jump or by running on, no routine of its own in the L1), 400 t-states own (0.00 %) |
+| Runs (the other recordings) | 44 runs of its first instruction, entered by a jump (`runs/w1` 21, `runs/f1` 9, `runs/p2` 6 and 4 more) |
 | Calls | `ScaleByPower`, `FrictionSteps` (tail) |
 | Reads | `$8A95` (`BallRecords+13`) |
 | Writes | `$8A8C`-`$8A95` (`BallRecords+4`) |
@@ -693,8 +695,8 @@ Jumps to the ROM's FP-TO-BC `$2DA2`, which returns to AimStoreVy `$8A3D` or AimS
 
 | | |
 | --- | --- |
-| Runs (the first recording's game window) | run into, not called, 80 t-states own (0.00 %) |
-| Runs (the other recordings) | run into, not called (`runs/w1`, `runs/f1`, `runs/p2` and 4 more) |
+| Runs (the first recording's game window) | 8 runs of its first instruction (entered by a jump or by running on, no routine of its own in the L1), 80 t-states own (0.00 %) |
+| Runs (the other recordings) | 88 runs of its first instruction, entered by a jump (`runs/w1` 42, `runs/f1` 18, `runs/p2` 12 and 4 more) |
 
 ## cushions
 
@@ -993,8 +995,8 @@ A task of the aim list `$84AA`, period 0 (every interrupt while aiming): game 14
 
 | | |
 | --- | --- |
-| Runs (the first recording's game window) | run into, not called, 111,111 t-states own (0.04 %) |
-| Runs (the other recordings) | run into, not called (`runs/w1`, `runs/f1`, `runs/j1` and 4 more) |
+| Runs (the first recording's game window) | 1,443 runs of its first instruction (entered by a jump or by running on, no routine of its own in the L1), 111,111 t-states own (0.04 %) |
+| Runs (the other recordings) | 11,017 runs of its first instruction, entered by a jump (`runs/w1` 4,404, `runs/f1` 2,035, `runs/j1` 1,670 and 4 more) |
 | Called from | `CallTask` |
 | Calls | `DrawPowerBar` (falls into) |
 | Reads | `$86BF`-`$86C0` (`Power`, `PowerHigh`) |
@@ -1194,7 +1196,7 @@ Prints the HUD words (HudTexts `$969D` "1up" ... HudShots), zeroes the scores (`
 | Called from | `GameRestart` |
 | Calls | `DrawTable`, `DrawPowerBox`, `ParkBalls`, `PrintHudNumber`, `PrintText` |
 | Reads | `$4000`-`$5AFE` (screen) |
-| Writes | `$4000`-`$5AFF` (screen); `$5C48` (system); `$86BF`-`$86C0` (`Power`, `PowerHigh`); `$9B33` (`Player2Racked`); `$9F43`-`$9F4F` (`PlayerVars`, `PocketTurnOther`, `ScorePlayer1`, `ScorePlayer2` and 6 more) |
+| Writes | `$4000`-`$5AFF` (screen); `$5C48` (`BORDCR`); `$86BF`-`$86C0` (`Power`, `PowerHigh`); `$9B33` (`Player2Racked`); `$9F43`-`$9F4F` (`PlayerVars`, `PocketTurnOther`, `ScorePlayer1`, `ScorePlayer2` and 6 more) |
 | Ports out | `$07FE` |
 
 ### `ParkBalls` (`$967B`)
@@ -1283,8 +1285,8 @@ Two low notes: the ROM's BEEPER pitch 437500 / (HL + 30.125): about 52 Hz for DE
 
 | | |
 | --- | --- |
-| Runs (the first recording's game window) | run into, not called, 4,073,572 t-states own (1.37 %) |
-| Runs (the other recordings) | run into, not called (`runs/w1`, `runs/f1`, `runs/v1` and 1 more) |
+| Runs (the first recording's game window) | 4 runs of its first instruction (entered by a jump or by running on, no routine of its own in the L1), 4,073,572 t-states own (1.37 %) |
+| Runs (the other recordings) | 12 runs of its first instruction, entered by a jump (`runs/f1` 4, `runs/w1` 4, `runs/v1` 3 and 1 more) |
 | Called from | `WaitFrameCall` |
 | Reads | `$9789`-`$9797` (`JingleWaitOne+1`, `JingleWaitTwo`) |
 
@@ -1327,8 +1329,8 @@ Run through WaitFrame `$80DE` by GameOverEnd (game 1 at frame 8811-9061, w1 1176
 
 | | |
 | --- | --- |
-| Runs (the first recording's game window) | run into, not called, 66 t-states own (0.00 %) |
-| Runs (the other recordings) | run into, not called (`runs/f1`, `runs/w1`) |
+| Runs (the first recording's game window) | 1 run of its first instruction (entered by a jump or by running on, no routine of its own in the L1), 66 t-states own (0.00 %) |
+| Runs (the other recordings) | 2 runs of its first instruction, entered by a jump (`runs/f1` 1, `runs/w1` 1) |
 | Called from | `WaitFrameCall`, `SlideFlagsUp` |
 | Calls | `WaitFramesOrKey` (falls into), `GameOverHallOfFame` |
 
@@ -1410,8 +1412,8 @@ Returns at once when nothing was potted. Witness: AddScoreStep w1 287 calls (fra
 
 | | |
 | --- | --- |
-| Runs (the first recording's game window) | run into, not called, 2,584 t-states own (0.00 %) |
-| Runs (the other recordings) | run into, not called (`runs/w1`, `runs/v1`, `runs/p2` and 3 more) |
+| Runs (the first recording's game window) | 4 runs of its first instruction (entered by a jump or by running on, no routine of its own in the L1), 2,584 t-states own (0.00 %) |
+| Runs (the other recordings) | 43 runs of its first instruction, entered by a jump (`runs/w1` 21, `runs/f1` 9, `runs/p2` 6 and 3 more) |
 | Called from | `WaitFrameCall` |
 | Calls | `ClearMessageRows`, `AddScoreStep`, `TallyTermPlus`, `TallyTermTotal`, `DrawPottedRow`, `TallyPause`, `ShotsForFrame` |
 | Reads | `$8AA2`-`$8AE8` (`BallOne+12`, `BallTwo`, `BallThree`, `BallFour` and 2 more); `$999B` (`TallyCountStep+15`); `$99AD` (`TallyWaitRest+1`); `$99BE` (`TallyEndWait+1`); `$9B2C`-`$9B2D` (`ShotScore`); `$9F43`-`$9F50` (`PlayerVars`, `PocketTurnOther`, `ScorePlayer1`, `ScorePlayer2` and 7 more) |
@@ -1610,8 +1612,8 @@ Then for one and two players: `$8539` (power 0), PrintHudNumber 4 (frame), Shots
 
 | | |
 | --- | --- |
-| Runs (the first recording's game window) | run into, not called, 423 t-states own (0.00 %) |
-| Runs (the other recordings) | run into, not called (`runs/p2`, `runs/f1`, `runs/v1` and 1 more) |
+| Runs (the first recording's game window) | 3 runs of its first instruction (entered by a jump or by running on, no routine of its own in the L1), 423 t-states own (0.00 %) |
+| Runs (the other recordings) | 10 runs of its first instruction, entered by a jump (`runs/f1` 3, `runs/v1` 3, `runs/w1` 3 and 1 more) |
 | Called from | `WaitFrameCall` |
 | Calls | `AimPowerReset`, `ClearTableForTurn`, `DrawLives`, `ShotsForFrame`, `DrawPocketMarks`, `PrintHudNumber` |
 | Reads | `$8A88`-`$8B4B` (`BallRecords`, `OtherPlayerBalls`); `$9B30` (`CurrentPlayer`); `$9C1E` (`TurnSwapWait+1`); `$9F43`-`$9F4F` (`PlayerVars`, `PocketTurnOther`, `ScorePlayer1`, `ScorePlayer2` and 6 more); `$B8BB` (`Players`) |
@@ -1639,8 +1641,8 @@ A task added by StartAim `$8425` with period 25, removed by `$8506` at the shot.
 
 | | |
 | --- | --- |
-| Runs (the first recording's game window) | run into, not called, 1,624 t-states own (0.00 %) |
-| Runs (the other recordings) | run into, not called (`runs/w1`, `runs/f1`, `runs/j1` and 3 more) |
+| Runs (the first recording's game window) | 58 runs of its first instruction (entered by a jump or by running on, no routine of its own in the L1), 1,624 t-states own (0.00 %) |
+| Runs (the other recordings) | 432 runs of its first instruction, entered by a jump (`runs/w1` 179, `runs/f1` 83, `runs/j1` 66 and 3 more) |
 | Called from | `CallTask` |
 | Reads | `$9F4D` (`ShotsLeft`) |
 
@@ -1862,8 +1864,8 @@ The cue ball: ClearBallMotion, x 40 / y 115 with a random fraction (R x 2 into b
 
 | | |
 | --- | --- |
-| Runs (the first recording's game window) | run into, not called, 7,276,975 t-states own (2.45 %) |
-| Runs (the other recordings) | run into, not called (`runs/w1`, `runs/v1`, `runs/p2` and 3 more) |
+| Runs (the first recording's game window) | 1 run of its first instruction (entered by a jump or by running on, no routine of its own in the L1), 7,276,975 t-states own (2.45 %) |
+| Runs (the other recordings) | 12 runs of its first instruction, entered by a jump (`runs/w1` 4, `runs/j1` 2, `runs/p2` 2 and 3 more) |
 | Called from | `WaitFrameCall` |
 | Calls | `BuildDrawList`, `DrawBall`, `ShowFrameBanner`, `SpriteFromBall`, `ClearBallMotion`, `RackStep` |
 | Reads | `$869E`-`$86B9` (`DrawList`); `$8AA0`-`$8AE9` (`BallOne+10`, `BallTwo`, `BallThree`, `BallFour` and 2 more); `$9F4B` (`FrameNumber`); `$9FD3` (`RackStepBall+26`); `$A0C4`-`$A0DB` (`RackSets`, `RackScripts0`); `$A162`-`$A16D` (`RackSet1`) |
@@ -2218,7 +2220,7 @@ Witness: w1 1, frames 12018-12023 (the title HofTitle; HofTitleP1/P2 read by no 
 | Called from | `GameOverHallOfFame` |
 | Calls | `PrintText`, `NameEntry` (tail) |
 | Reads | `$4000`-`$5AFE` (screen); `$AD3D`-`$AD4E` (`HofTextList`); `$B8BB` (`Players`) |
-| Writes | `$4000`-`$5AFF` (screen); `$5C48` (system) |
+| Writes | `$4000`-`$5AFF` (screen); `$5C48` (`BORDCR`) |
 | Ports out | `$06FE` |
 
 ### `NameEntry` (`$AE92`)
@@ -2361,7 +2363,7 @@ Callers: `$8037` (every restart from `$8013`), the ends of the timeout (`$B2C3`,
 | Called from | `GameRestart`, `VariationsPage` (tail) |
 | Calls | `ReadInput`, `PrintText`, `WaitNoKey`, `ShowKeys`, `VariationsPage` (tail), `XorTick`, `PresentsPage`, `EditorStart` (tail) |
 | Reads | `$4000`-`$5AFE` (screen); `$827C` (`InputState`); `$B29D` (`MenuKeyLoop+1`); `$B464`-`$B483` (`MenuTexts`); `$B8BB`-`$B8C3` (`Players`, `Pockets`, `Control`, `LeftKey` and 4 more) |
-| Writes | `$4000`-`$5AFF` (screen); `$5C48` (system); `$B8BB`-`$B8C2` (`Players`, `Pockets`, `Control`, `LeftKey` and 3 more) |
+| Writes | `$4000`-`$5AFF` (screen); `$5C48` (`BORDCR`); `$B8BB`-`$B8C2` (`Players`, `Pockets`, `Control`, `LeftKey` and 3 more) |
 | Ports out | `$01FE` |
 
 ### `WaitNoKey` (`$B38E`)
@@ -2401,7 +2403,7 @@ RedefinePrompt `$B3F3` with PromptLeft `$B407`, PromptRight `$B426`, PromptFire 
 
 | | |
 | --- | --- |
-| Runs | ran within another entry's routine (reached by a jump or by running on, its calls below), no runs of its own counted |
+| Runs | not reached in `game`; in the other recordings 2 runs of its first instruction, entered by a jump (`runs/m1` 2) |
 | Calls | `RedefinePrompt`, `ShowKeys` |
 
 ### `RedefinePrompt` (`$B3F3`)
@@ -2851,7 +2853,7 @@ PUSH DE, four LDIs, POP DE, INC D; DJNZ. m1 64 168 lines.
 
 | | |
 | --- | --- |
-| Runs | not reached in the recordings |
+| Runs | not reached in `game`; in the other recordings 64,168 runs of its first instruction, entered by a jump (`runs/m1` 64,168) |
 
 ### `PenShaftClear` (`$BF41`)
 
@@ -2861,7 +2863,7 @@ The target of PenShaftBlock's JR `$63` when PenErase set it. m1 9105 calls, 64 1
 
 | | |
 | --- | --- |
-| Runs | not reached in the recordings |
+| Runs | not reached in `game`; in the other recordings 9,105 runs of its first instruction, entered by a jump (`runs/m1` 9,105) |
 
 ### `PenPlot` (`$BF59`)
 
@@ -2921,7 +2923,7 @@ Witness (l1sum.py C042 C116 C196 C20B C414): m1 only: entered at 6262, the loop 
 | Called from | `MainMenu` (tail), `EditorFire` (tail) |
 | Calls | `ReadInput`, `DrawTable`, `DrawCursor`, `DrawAllBalls`, `PrintText`, `EditorCursorLeft`, `EditorCursorRight`, `EditorCursorUp`, `EditorCursorDown`, `EditorBox`, `EditorFire` (tail), `EditorExit` (tail) |
 | Reads | `$4000`-`$5AFE` (screen); `$827C` (`InputState`); `$86BA`-`$86BE` (`CursorX`, `CursorY`, `CursorSpeed`, `CursorAccel` and 1 more); `$8A95`-`$8AA3` (`BallRecords+13`, `BallOne`); `$B8BD` (`Control`); `$C117` (`EditorLoop+1`); 1 more ranges |
-| Writes | `$4000`-`$5AFF` (screen); `$5C48` (system); `$86BA`-`$86BE` (`CursorX`, `CursorY`, `CursorSpeed`, `CursorAccel` and 1 more); `$B8BD` (`Control`); `$C57B` (`EditorButtonsBlank`); `$C58D`-`$C590` (`EditorCursorSpeed`, `EditorBallSpeed`, `EditorPickedBall`, `EditorSavedMode`) |
+| Writes | `$4000`-`$5AFF` (screen); `$5C48` (`BORDCR`); `$86BA`-`$86BE` (`CursorX`, `CursorY`, `CursorSpeed`, `CursorAccel` and 1 more); `$B8BD` (`Control`); `$C57B` (`EditorButtonsBlank`); `$C58D`-`$C590` (`EditorCursorSpeed`, `EditorBallSpeed`, `EditorPickedBall`, `EditorSavedMode`) |
 | Ports out | `$07FE` |
 
 ### `EditorCursorLeft` (`$C196`)
@@ -3103,7 +3105,7 @@ With no object ball on the table: ClearTasks `$91CF`, then up to 150 frames (HAL
 
 | | |
 | --- | --- |
-| Runs | not reached in `game`; in the other recordings run into, not called (`runs/e1`) |
+| Runs | not reached in `game`; in the other recordings 140 runs of its first instruction, entered by a jump (`runs/e1` 140) |
 | Called from | `CallTask` |
 | Calls | `InstallTasks` (tail), `RemoveTasks`, `AimPowerReset`, `EditorAimReset` |
 | Reads | `$8A95`-`$8AE9` (`BallRecords+13`, `BallOne`, `BallTwo`, `BallThree` and 3 more) |
@@ -3116,7 +3118,7 @@ Power `$86BF` + 2 per frame while fire is held, back to 0 at `$86` (as AimPower 
 
 | | |
 | --- | --- |
-| Runs | not reached in `game`; in the other recordings run into, not called (`runs/e1`) |
+| Runs | not reached in `game`; in the other recordings 378 runs of its first instruction, entered by a jump (`runs/e1` 378) |
 | Called from | `CallTask` |
 | Calls | `InstallTasks` (tail), `RemoveTasks`, `ShotReset`, `AimShot`, `DrawCursor` |
 | Reads | `$827C` (`InputState`); `$86BF` (`Power`) |

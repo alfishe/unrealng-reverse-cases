@@ -146,8 +146,8 @@ in step with our original only for a while (bitmap diff of the screens against t
 the return address `$E406` pushed (SP = `$FFFE`), PC = `$ABD8`, the path the game takes when Rick leaves a level by
 its last exit (`PUT /registers/SP`, `/registers/PC`).
 
-**Stage 2's recordings** (`work/stage2/NOTES.md` "Recordings of stage 2"; all are `witness_builds`, counted in the
-witness lines only, because a snapshot start puts an entry at its PC). Each keeps its `session.ttd` and `l1.json` in
+**Stage 2's recordings** (`work/stage2/NOTES.md` "Recordings of stage 2"; all are `read_builds` with `no_entries`:
+their instructions and reads count, and a snapshot start's jumps out of its routine make no entries). Each keeps its `session.ttd` and `l1.json` in
 its folder:
 
 | Recording | Starts from | Frames | Command | Reached |
@@ -159,7 +159,7 @@ its folder:
 | `stage2/beeper48` | `work/stage1/probe/orig48.szx` (the original loaded on a 48K, the menu; no POKE) | 1 600 | as `ending2`, `--snapshot work/stage1/probe/orig48.szx --model 48K --inputs tests/inputs/beeper48.txt --frames 1600` | the 48K path: level 1 played, 98 beeper effects, all six branches |
 
 **The integration recordings** (`sh work/docs/integrate/capture.sh`, port base 37420, each instance stopped after;
-`witness_builds`). Each keeps `session.ttd` and `l1.json` in `work/docs/integrate/<name>/`; the input script's header
+`read_builds` with `no_entries`). Each keeps `session.ttd` and `l1.json` in `work/docs/integrate/<name>/`; the input script's header
 says the patch:
 
 | Recording | Starts from | Frames | Inputs | Reached |
