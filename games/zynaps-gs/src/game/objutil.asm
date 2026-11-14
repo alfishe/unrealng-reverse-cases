@@ -180,8 +180,6 @@ SceneryAt6:
   ADD A,$80
   LD L,A
   BIT 0,(IY+$06)
-
-; SceneryAt6Row2
 SceneryAt6Row2:
   JR Z,SceneryAt6Row2Test ; the second row (an entry point of the L1 recording:
                           ; the interrupt returned here)

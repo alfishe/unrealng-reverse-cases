@@ -49,12 +49,12 @@ Written by `python3 tools/fig_routines.py` (through `kit/refdocs.py`); edit `src
 | [`stars`](#stars) | `$8846`-`$8911` | 3 of 3 |
 | [`scroll`](#scroll) | `$8912`-`$8C3A` | 19 of 20 |
 | [`levels`](#levels) | `$8C3B`-`$8D34` | 1 of 1 |
-| [`scenery`](#scenery) | `$8D35`-`$8EDA` | 11 of 12 |
+| [`scenery`](#scenery) | `$8D35`-`$8EDA` | 10 of 11 |
 | [`sprites`](#sprites) | `$8EDB`-`$90B4` | 22 of 22 |
 | [`objgrid`](#objgrid) | `$90B5`-`$91EB` | 5 of 5 |
 | [`waves`](#waves) | `$91EC`-`$9462` | 7 of 7 |
 | [`movers`](#movers) | `$9463`-`$9929` | 31 of 32 |
-| [`objutil`](#objutil) | `$992A`-`$9A5A` | 14 of 14 |
+| [`objutil`](#objutil) | `$992A`-`$9A5A` | 13 of 13 |
 | [`player`](#player) | `$9A5B`-`$9C82` | 6 of 6 |
 | [`weapons`](#weapons) | `$9C83`-`$9F87` | 16 of 16 |
 | [`enemies`](#enemies) | `$9F88`-`$A0EA` | 3 of 3 |
@@ -66,7 +66,7 @@ Written by `python3 tools/fig_routines.py` (through `kit/refdocs.py`); edit `src
 | [`options`](#options) | `$A76F`-`$A7F6` | 3 of 3 |
 | [`hiscore`](#hiscore) | `$A7F7`-`$A8BD` | 2 of 3 |
 | [`panel`](#panel) | `$A8BE`-`$A9A0` | 3 of 5 |
-| [`interrupts`](#interrupts) | `$A9A1`-`$AB12` | 12 of 12 |
+| [`interrupts`](#interrupts) | `$A9A1`-`$AB12` | 11 of 11 |
 | [`hud`](#hud) | `$AB13`-`$AC06` | 3 of 3 |
 | [`events`](#events) | `$AC07`-`$AD65` | 27 of 27 |
 | [`wavescript`](#wavescript) | `$AD66`-`$AF48` | 30 of 30 |
@@ -190,7 +190,7 @@ Called from the play interrupt `$A9ED` once a pass (two frames) while playing (c
 | Runs (the GS game's own play: stage 2's TTD recording `r1` (Pentagon 128 + GS 512 KB, music) replayed by L1 over its frames 2951-4724, level 1 from the round start (1773 frames; zgsA's `work/zgsA/r1-play`, copied)) | 585 calls, 53,235 t-states own (0.04 %) |
 | Runs (the 48K case's `r1` (`../zynaps/work/r1`): all 12 levels and the wrap, 75000 frames (the same code at the same addresses, without the GS hooks)) | 36,542 calls, 3,334,174 t-states own (0.06 %) |
 | Runs (the 48K case's `c2` (`../zynaps/work/c2`): level 1 from the start, 1500 frames) | 659 calls, 60,206 t-states own (0.06 %) |
-| Called from | `l_A9EF` |
+| Called from | `PlayInterrupt` |
 | Calls | `RowStart` (tail) |
 | Writes | `$7F6F` (`RowsLeft`); `$85E1`-`$85E8` (`RenderDone+1`, `SentinelNode`, `RowEnd`) |
 
@@ -442,7 +442,7 @@ Called by the frame handler (c2: 659 entries, 37 per mille).
 | Runs (the GS game's own play: stage 2's TTD recording `r1` (Pentagon 128 + GS 512 KB, music) replayed by L1 over its frames 2951-4724, level 1 from the round start (1773 frames; zgsA's `work/zgsA/r1-play`, copied)) | 585 calls, 3,433,122 t-states own (2.70 %) |
 | Runs (the 48K case's `r1` (`../zynaps/work/r1`): all 12 levels and the wrap, 75000 frames (the same code at the same addresses, without the GS hooks)) | 36,542 calls, 214,262,766 t-states own (4.09 %) |
 | Runs (the 48K case's `c2` (`../zynaps/work/c2`): level 1 from the start, 1500 frames) | 659 calls, 3,877,411 t-states own (3.70 %) |
-| Called from | `l_A9EF` |
+| Called from | `PlayInterrupt` |
 | Calls | `Random` |
 | Reads | `$81DA` (`PlayFlags`); `$B700`-`$BFFF` (`data_B700`, `MapRingSpace`, `TileSource`) |
 | Writes | `$88F5`-`$88FA` (`StarDotOpcode+1`, `StarDot`); `$890F`-`$8910` (`MoveStarsDone+1`) |
@@ -483,7 +483,7 @@ Called from the frame handler cycle (c2: 229 entries, one per scroll step).
 | Runs (the GS game's own play: stage 2's TTD recording `r1` (Pentagon 128 + GS 512 KB, music) replayed by L1 over its frames 2951-4724, level 1 from the round start (1773 frames; zgsA's `work/zgsA/r1-play`, copied)) | 403 calls, 56,195 t-states own (0.04 %) |
 | Runs (the 48K case's `r1` (`../zynaps/work/r1`): all 12 levels and the wrap, 75000 frames (the same code at the same addresses, without the GS hooks)) | 9,658 calls, 1,183,829 t-states own (0.02 %) |
 | Runs (the 48K case's `c2` (`../zynaps/work/c2`): level 1 from the start, 1500 frames) | 229 calls, 32,223 t-states own (0.03 %) |
-| Called from | `l_A9EF`, `ReplayStep` |
+| Called from | `PlayInterrupt`, `ReplayStep` |
 | Reads | `$801C`-`$801D` (`ScrollColumn`); `$81DA` (`PlayFlags`) |
 | Writes | `$896F`-`$8975` (`BuildColumn+2`, `BuildColumnCell`, `BuildColumnLeft`) |
 
@@ -512,7 +512,9 @@ c2: 688 entries.
 
 | | |
 | --- | --- |
+| Runs (the GS game's own play: stage 2's TTD recording `r1` (Pentagon 128 + GS 512 KB, music) replayed by L1 over its frames 2951-4724, level 1 from the round start (1773 frames; zgsA's `work/zgsA/r1-play`, copied)) | 6,882 runs of its first instruction (entered by a jump or by running on, no routine of its own in the L1) |
 | Runs (the 48K case's `r1` (`../zynaps/work/r1`): all 12 levels and the wrap, 75000 frames (the same code at the same addresses, without the GS hooks)) | 138,858 calls, 4,979,328 t-states own (0.09 %) |
+| Runs (the 48K case's `c2` (`../zynaps/work/c2`): level 1 from the start, 1500 frames) | 3,948 runs of its first instruction (entered by a jump or by running on, no routine of its own in the L1) |
 | Called from | `BuildColumn` (falls into), `BuildColumnStep` (tail) |
 | Calls | `BuildCell` |
 
@@ -522,7 +524,9 @@ c2: 688 entries.
 
 | | |
 | --- | --- |
+| Runs (the GS game's own play: stage 2's TTD recording `r1` (Pentagon 128 + GS 512 KB, music) replayed by L1 over its frames 2951-4724, level 1 from the round start (1773 frames; zgsA's `work/zgsA/r1-play`, copied)) | 6,882 runs of its first instruction (entered by a jump or by running on, no routine of its own in the L1) |
 | Runs (the 48K case's `r1` (`../zynaps/work/r1`): all 12 levels and the wrap, 75000 frames (the same code at the same addresses, without the GS hooks)) | 5 calls, 6,720,140 t-states own (0.13 %) |
+| Runs (the 48K case's `c2` (`../zynaps/work/c2`): level 1 from the start, 1500 frames) | 3,948 runs of its first instruction (entered by a jump or by running on, no routine of its own in the L1) |
 | Called from | `BuildCellDone`, `GlyphBuilt` |
 | Calls | `BuildColumnStep` (falls into) |
 
@@ -532,7 +536,9 @@ c2: 688 entries.
 
 | | |
 | --- | --- |
+| Runs (the GS game's own play: stage 2's TTD recording `r1` (Pentagon 128 + GS 512 KB, music) replayed by L1 over its frames 2951-4724, level 1 from the round start (1773 frames; zgsA's `work/zgsA/r1-play`, copied)) | 6,882 runs of its first instruction (entered by a jump or by running on, no routine of its own in the L1) |
 | Runs (the 48K case's `r1` (`../zynaps/work/r1`): all 12 levels and the wrap, 75000 frames (the same code at the same addresses, without the GS hooks)) | 138,859 calls, 7,575,510 t-states own (0.14 %) |
+| Runs (the 48K case's `c2` (`../zynaps/work/c2`): level 1 from the start, 1500 frames) | 3,948 runs of its first instruction (entered by a jump or by running on, no routine of its own in the L1) |
 | Called from | `BuildColumnBack` (falls into), `PlayInterruptExit` |
 | Calls | `BuildColumnLoop` (tail), `ChainStep1End` |
 | Writes | `$896F`-`$8975` (`BuildColumn+2`, `BuildColumnCell`, `BuildColumnLeft`) |
@@ -561,7 +567,9 @@ A tile: BuildGlyph. Input: IX = the row record, HL = the map cell. c2: 3948 entr
 
 | | |
 | --- | --- |
+| Runs (the GS game's own play: stage 2's TTD recording `r1` (Pentagon 128 + GS 512 KB, music) replayed by L1 over its frames 2951-4724, level 1 from the round start (1773 frames; zgsA's `work/zgsA/r1-play`, copied)) | 156 runs of its first instruction (entered by a jump or by running on, no routine of its own in the L1) |
 | Runs (the 48K case's `r1` (`../zynaps/work/r1`): all 12 levels and the wrap, 75000 frames (the same code at the same addresses, without the GS hooks)) | 1 call, 80,403 t-states own (0.00 %) |
+| Runs (the 48K case's `c2` (`../zynaps/work/c2`): level 1 from the start, 1500 frames) | 132 runs of its first instruction (entered by a jump or by running on, no routine of its own in the L1) |
 | Called from | `GlyphBuilt` |
 | Calls | `BuildColumnBack` |
 | Reads | `$F140`-`$F280` (`RowRecords+20`); `$F2A0` (`RowRecords+372`); `$F2C0` (`RowRecords+404`); `$F2E0` (`RowRecords+436`); `$F300` (`RowRecords+468`); `$F320` (`RowRecords+500`); 2 more ranges |
@@ -595,7 +603,9 @@ c2: 1025 entries.
 
 | | |
 | --- | --- |
+| Runs (the GS game's own play: stage 2's TTD recording `r1` (Pentagon 128 + GS 512 KB, music) replayed by L1 over its frames 2951-4724, level 1 from the round start (1773 frames; zgsA's `work/zgsA/r1-play`, copied)) | 11,088 runs of its first instruction (entered by a jump or by running on, no routine of its own in the L1) |
 | Runs (the 48K case's `r1` (`../zynaps/work/r1`): all 12 levels and the wrap, 75000 frames (the same code at the same addresses, without the GS hooks)) | 152,864 calls, 7,163,268 t-states own (0.14 %) |
+| Runs (the 48K case's `c2` (`../zynaps/work/c2`): level 1 from the start, 1500 frames) | 8,200 runs of its first instruction (entered by a jump or by running on, no routine of its own in the L1) |
 | Called from | `BuildGlyph` (falls into), `GlyphShift4` (tail) |
 | Calls | `GlyphShift2` (falls into) |
 | Reads | `$5C00`-`$5EDB` (`TileGraphics`); `$5EF8`-`$5FDB` (`TileGraphics+760`); `$5FF8`-`$60DB` (`TileGraphics+1016`); `$60F8`-`$61DB` (`TileGraphics+1272`); `$61F8`-`$62DB` (`TileGraphics+1528`); `$62F8`-`$63DB` (`TileGraphics+1784`); 7 more ranges |
@@ -607,7 +617,9 @@ c2: 1025 entries.
 
 | | |
 | --- | --- |
+| Runs (the GS game's own play: stage 2's TTD recording `r1` (Pentagon 128 + GS 512 KB, music) replayed by L1 over its frames 2951-4724, level 1 from the round start (1773 frames; zgsA's `work/zgsA/r1-play`, copied)) | 11,088 runs of its first instruction (entered by a jump or by running on, no routine of its own in the L1) |
 | Runs (the 48K case's `r1` (`../zynaps/work/r1`): all 12 levels and the wrap, 75000 frames (the same code at the same addresses, without the GS hooks)) | 152,865 calls, 15,439,416 t-states own (0.29 %) |
+| Runs (the 48K case's `c2` (`../zynaps/work/c2`): level 1 from the start, 1500 frames) | 8,200 runs of its first instruction (entered by a jump or by running on, no routine of its own in the L1) |
 | Called from | `GlyphLine` (falls into), `PlayInterruptExit` |
 | Calls | `GlyphShift4` (falls into) |
 | Writes | `$C800`-`$CFFE` (`GlyphCacheUpper`); `$D800`-`$DFFE` (`GlyphCacheUpper+4096`) |
@@ -618,7 +630,9 @@ c2: 1025 entries.
 
 | | |
 | --- | --- |
+| Runs (the GS game's own play: stage 2's TTD recording `r1` (Pentagon 128 + GS 512 KB, music) replayed by L1 over its frames 2951-4724, level 1 from the round start (1773 frames; zgsA's `work/zgsA/r1-play`, copied)) | 11,088 runs of its first instruction (entered by a jump or by running on, no routine of its own in the L1) |
 | Runs (the 48K case's `r1` (`../zynaps/work/r1`): all 12 levels and the wrap, 75000 frames (the same code at the same addresses, without the GS hooks)) | 152,865 calls, 9,171,973 t-states own (0.17 %) |
+| Runs (the 48K case's `c2` (`../zynaps/work/c2`): level 1 from the start, 1500 frames) | 8,200 runs of its first instruction (entered by a jump or by running on, no routine of its own in the L1) |
 | Called from | `GlyphShift2` (falls into), `PlayInterruptExit` |
 | Calls | `GlyphLine` (tail), `GlyphMarkBits` (falls into) |
 | Reads | `$F13C`-`$F29D` (`RowRecords+16`); `$F2BC`-`$F2BD` (`RowRecords+400`); `$F2DC`-`$F2DD` (`RowRecords+432`); `$F2FC`-`$F2FD` (`RowRecords+464`); `$F31C`-`$F31D` (`RowRecords+496`); `$F33C`-`$F33D` (`RowRecords+528`); 1 more ranges |
@@ -630,7 +644,9 @@ c2: 1025 entries.
 
 | | |
 | --- | --- |
+| Runs (the GS game's own play: stage 2's TTD recording `r1` (Pentagon 128 + GS 512 KB, music) replayed by L1 over its frames 2951-4724, level 1 from the round start (1773 frames; zgsA's `work/zgsA/r1-play`, copied)) | 1,386 runs of its first instruction (entered by a jump or by running on, no routine of its own in the L1) |
 | Runs (the 48K case's `r1` (`../zynaps/work/r1`): all 12 levels and the wrap, 75000 frames (the same code at the same addresses, without the GS hooks)) | 19,109 calls, 1,652,046 t-states own (0.03 %) |
+| Runs (the 48K case's `c2` (`../zynaps/work/c2`): level 1 from the start, 1500 frames) | 1,025 runs of its first instruction (entered by a jump or by running on, no routine of its own in the L1) |
 | Called from | `GlyphShift4` (falls into), `PlayInterruptExit` |
 | Calls | `GlyphBuilt` (falls into) |
 | Reads | `$F13C`-`$F2A0` (`RowRecords+16`); `$F2BC`-`$F2C0` (`RowRecords+400`); `$F2DC`-`$F2E0` (`RowRecords+432`); `$F2FC`-`$F300` (`RowRecords+464`); `$F31C`-`$F320` (`RowRecords+496`); `$F33C`-`$F340` (`RowRecords+528`); 2 more ranges |
@@ -642,7 +658,9 @@ c2: 1025 entries.
 
 | | |
 | --- | --- |
+| Runs (the GS game's own play: stage 2's TTD recording `r1` (Pentagon 128 + GS 512 KB, music) replayed by L1 over its frames 2951-4724, level 1 from the round start (1773 frames; zgsA's `work/zgsA/r1-play`, copied)) | 1,386 runs of its first instruction (entered by a jump or by running on, no routine of its own in the L1) |
 | Runs (the 48K case's `r1` (`../zynaps/work/r1`): all 12 levels and the wrap, 75000 frames (the same code at the same addresses, without the GS hooks)) | 19,109 calls, 244,099 t-states own (0.00 %) |
+| Runs (the 48K case's `c2` (`../zynaps/work/c2`): level 1 from the start, 1500 frames) | 1,025 runs of its first instruction (entered by a jump or by running on, no routine of its own in the L1) |
 | Called from | `GlyphMarkBits` (falls into), `PlayInterruptExit` |
 | Calls | `BuildColumnBack`, `BuildCellDone` |
 
@@ -717,7 +735,7 @@ Called from the frame handler cycle (c2: 228 entries).
 | Runs (the GS game's own play: stage 2's TTD recording `r1` (Pentagon 128 + GS 512 KB, music) replayed by L1 over its frames 2951-4724, level 1 from the round start (1773 frames; zgsA's `work/zgsA/r1-play`, copied)) | 399 calls, 3,014,587 t-states own (2.37 %) |
 | Runs (the 48K case's `r1` (`../zynaps/work/r1`): all 12 levels and the wrap, 75000 frames (the same code at the same addresses, without the GS hooks)) | 9,647 calls, 62,617,919 t-states own (1.19 %) |
 | Runs (the 48K case's `c2` (`../zynaps/work/c2`): level 1 from the start, 1500 frames) | 228 calls, 1,871,733 t-states own (1.78 %) |
-| Called from | `l_A9EF`, `ReplayColumns` |
+| Called from | `PlayInterrupt`, `ReplayColumns` |
 | Calls | `PushNode`, `SetSpanHandler` |
 | Reads | `$7F70` (`EmptyRows`); `$801C`-`$8022` (`ScrollColumn`, `ScriptColumn`, `ScriptRoom`, `ScriptBusy` and 2 more); `$81DA`-`$81DC` (`PlayFlags`, `ScrollCount`); `$B700`-`$BFFF` (`data_B700`, `MapRingSpace`, `TileSource`); `$F12C`-`$F360` (`RowRecords`); `$F802`-`$FA36` (`NodePool+2`); 1 more ranges |
 | Writes | `$7F70` (`EmptyRows`); `$801C`-`$8022` (`ScrollColumn`, `ScriptColumn`, `ScriptRoom`, `ScriptBusy` and 2 more); `$81DB`-`$81DC` (`ScrollCount`); `$B700`-`$BFFF` (`data_B700`, `MapRingSpace`, `TileSource`); `$F12C`-`$F360` (`RowRecords`); `$F802`-`$FA36` (`NodePool+2`); 1 more ranges |
@@ -824,9 +842,9 @@ A = ScriptNumber (`$81DD`), RunScript, again. Its first RET came from StartScrip
 
 | | |
 | --- | --- |
-| Runs (the GS game's own play: stage 2's TTD recording `r1` (Pentagon 128 + GS 512 KB, music) replayed by L1 over its frames 2951-4724, level 1 from the round start (1773 frames; zgsA's `work/zgsA/r1-play`, copied)) | run into, not called, 120 t-states own (0.00 %) |
+| Runs (the GS game's own play: stage 2's TTD recording `r1` (Pentagon 128 + GS 512 KB, music) replayed by L1 over its frames 2951-4724, level 1 from the round start (1773 frames; zgsA's `work/zgsA/r1-play`, copied)) | 4 runs of its first instruction (entered by a jump or by running on, no routine of its own in the L1), 120 t-states own (0.00 %) |
 | Runs (the 48K case's `r1` (`../zynaps/work/r1`): all 12 levels and the wrap, 75000 frames (the same code at the same addresses, without the GS hooks)) | 78 calls, 2,670 t-states own (0.00 %) |
-| Runs (the 48K case's `c2` (`../zynaps/work/c2`): level 1 from the start, 1500 frames) | run into, not called, 30 t-states own (0.00 %) |
+| Runs (the 48K case's `c2` (`../zynaps/work/c2`): level 1 from the start, 1500 frames) | 1 run of its first instruction (entered by a jump or by running on, no routine of its own in the L1), 30 t-states own (0.00 %) |
 | Called from | `ResumeScript`, `ScriptMainAgain` (tail) |
 | Calls | `RunScript` |
 | Reads | `$81DD` (`ScriptNumber`) |
@@ -837,7 +855,7 @@ A = ScriptNumber (`$81DD`), RunScript, again. Its first RET came from StartScrip
 
 | | |
 | --- | --- |
-| Runs (the 48K case's `r1` (`../zynaps/work/r1`): all 12 levels and the wrap, 75000 frames (the same code at the same addresses, without the GS hooks)) | run into, not called, 936 t-states own (0.00 %) |
+| Runs (the 48K case's `r1` (`../zynaps/work/r1`): all 12 levels and the wrap, 75000 frames (the same code at the same addresses, without the GS hooks)) | 78 runs of its first instruction (entered by a jump or by running on, no routine of its own in the L1), 936 t-states own (0.00 %) |
 | Called from | `ScriptStep` |
 | Calls | `ScriptMain` (tail) |
 
@@ -865,23 +883,13 @@ Below `$80`: DrawGroup n, ScriptBusy = 0, YieldScript, go on. `$FF`: return. `$8
 
 | | |
 | --- | --- |
-| Runs (the 48K case's `r1` (`../zynaps/work/r1`): all 12 levels and the wrap, 75000 frames (the same code at the same addresses, without the GS hooks)) | 160 calls, 68,851 t-states own (0.00 %) |
-| Runs (the 48K case's `c2` (`../zynaps/work/c2`): level 1 from the start, 1500 frames) | 6 calls, 2,392 t-states own (0.00 %) |
-| Called from | `RunScript` (falls into), `ScriptReturn` (tail) |
+| Runs (the GS game's own play: stage 2's TTD recording `r1` (Pentagon 128 + GS 512 KB, music) replayed by L1 over its frames 2951-4724, level 1 from the round start (1773 frames; zgsA's `work/zgsA/r1-play`, copied)) | 38 runs of its first instruction (entered by a jump or by running on, no routine of its own in the L1) |
+| Runs (the 48K case's `r1` (`../zynaps/work/r1`): all 12 levels and the wrap, 75000 frames (the same code at the same addresses, without the GS hooks)) | 160 calls, 70,336 t-states own (0.00 %) |
+| Runs (the 48K case's `c2` (`../zynaps/work/c2`): level 1 from the start, 1500 frames) | 6 calls, 2,482 t-states own (0.00 %) |
+| Called from | `RunScript` (falls into) |
 | Calls | `YieldScript`, `ScriptMainAgain`, `RunScript`, `DrawGroup`, `ScriptSetCell` |
 | Reads | `$732F`-`$73DB` (`SceneryScripts`); `$7401`-`$7499` (`SceneryScripts+210`); `$8020`-`$8021` (`ScriptBusy`, `ScriptVariant`) |
 | Writes | `$8020`-`$8021` (`ScriptBusy`, `ScriptVariant`) |
-
-### `ScriptReturn` (`$8DC3`)
-
-**ScriptReturn**
-
-| | |
-| --- | --- |
-| Runs (the 48K case's `r1` (`../zynaps/work/r1`): all 12 levels and the wrap, 75000 frames (the same code at the same addresses, without the GS hooks)) | run into, not called, 1,485 t-states own (0.00 %) |
-| Runs (the 48K case's `c2` (`../zynaps/work/c2`): level 1 from the start, 1500 frames) | run into, not called, 90 t-states own (0.00 %) |
-| Calls | `ScriptStep` (tail) |
-| Writes | `$8021` (`ScriptVariant`) |
 
 ### `DrawGroup` (`$8DCA`)
 
@@ -1022,7 +1030,9 @@ Called from `$AD44` (c2: 35 entries).
 
 | | |
 | --- | --- |
+| Runs (the GS game's own play: stage 2's TTD recording `r1` (Pentagon 128 + GS 512 KB, music) replayed by L1 over its frames 2951-4724, level 1 from the round start (1773 frames; zgsA's `work/zgsA/r1-play`, copied)) | 49 runs of its first instruction (entered by a jump or by running on, no routine of its own in the L1) |
 | Runs (the 48K case's `r1` (`../zynaps/work/r1`): all 12 levels and the wrap, 75000 frames (the same code at the same addresses, without the GS hooks)) | 2,409 calls, 16,856 t-states own (0.00 %) |
+| Runs (the 48K case's `c2` (`../zynaps/work/c2`): level 1 from the start, 1500 frames) | 35 runs of its first instruction (entered by a jump or by running on, no routine of its own in the L1) |
 | Called from | `RotateSprite` (falls into), `PlayInterruptExit` |
 | Calls | `RotateLine` (falls into) |
 
@@ -1044,7 +1054,9 @@ Called from `$AD44` (c2: 35 entries).
 
 | | |
 | --- | --- |
+| Runs (the GS game's own play: stage 2's TTD recording `r1` (Pentagon 128 + GS 512 KB, music) replayed by L1 over its frames 2951-4724, level 1 from the round start (1773 frames; zgsA's `work/zgsA/r1-play`, copied)) | 1,176 runs of its first instruction (entered by a jump or by running on, no routine of its own in the L1) |
 | Runs (the 48K case's `r1` (`../zynaps/work/r1`): all 12 levels and the wrap, 75000 frames (the same code at the same addresses, without the GS hooks)) | 59,139 calls, 678,894 t-states own (0.01 %) |
+| Runs (the 48K case's `c2` (`../zynaps/work/c2`): level 1 from the start, 1500 frames) | 840 runs of its first instruction (entered by a jump or by running on, no routine of its own in the L1) |
 | Called from | `RotateLine` (falls into), `PlayInterruptExit` |
 | Calls | `RotateLineCarry` (falls into) |
 
@@ -1056,6 +1068,7 @@ Called from `$AD44` (c2: 35 entries).
 | --- | --- |
 | Runs (the GS game's own play: stage 2's TTD recording `r1` (Pentagon 128 + GS 512 KB, music) replayed by L1 over its frames 2951-4724, level 1 from the round start (1773 frames; zgsA's `work/zgsA/r1-play`, copied)) | 1,177 calls, 4,704 t-states own (0.00 %) |
 | Runs (the 48K case's `r1` (`../zynaps/work/r1`): all 12 levels and the wrap, 75000 frames (the same code at the same addresses, without the GS hooks)) | 59,137 calls, 236,582 t-states own (0.00 %) |
+| Runs (the 48K case's `c2` (`../zynaps/work/c2`): level 1 from the start, 1500 frames) | 840 runs of its first instruction (entered by a jump or by running on, no routine of its own in the L1) |
 | Called from | `RotateLineSave` (falls into), `PlayInterruptExit` |
 | Calls | `RotateByte` (falls into) |
 
@@ -1079,7 +1092,9 @@ Called from `$AD44` (c2: 35 entries).
 
 | | |
 | --- | --- |
+| Runs (the GS game's own play: stage 2's TTD recording `r1` (Pentagon 128 + GS 512 KB, music) replayed by L1 over its frames 2951-4724, level 1 from the round start (1773 frames; zgsA's `work/zgsA/r1-play`, copied)) | 3,528 runs of its first instruction (entered by a jump or by running on, no routine of its own in the L1) |
 | Runs (the 48K case's `r1` (`../zynaps/work/r1`): all 12 levels and the wrap, 75000 frames (the same code at the same addresses, without the GS hooks)) | 192,366 calls, 2,886,008 t-states own (0.06 %) |
+| Runs (the 48K case's `c2` (`../zynaps/work/c2`): level 1 from the start, 1500 frames) | 2,520 runs of its first instruction (entered by a jump or by running on, no routine of its own in the L1) |
 | Called from | `RotateByte` (falls into), `PlayInterruptExit` |
 | Calls | `RotateByteOut` (falls into) |
 | Reads | `$C200`-`$CFC7` (`GlyphCache+512`, `WaveCellSource`, `GlyphCacheUpper`); `$E790`-`$EBC7` (`SpriteCacheImages+72`); `$EC10`-`$F047` (`SpriteCacheImages+1224`) |
@@ -1093,6 +1108,7 @@ Called from `$AD44` (c2: 35 entries).
 | --- | --- |
 | Runs (the GS game's own play: stage 2's TTD recording `r1` (Pentagon 128 + GS 512 KB, music) replayed by L1 over its frames 2951-4724, level 1 from the round start (1773 frames; zgsA's `work/zgsA/r1-play`, copied)) | 3,529 calls, 92,923 t-states own (0.07 %) |
 | Runs (the 48K case's `r1` (`../zynaps/work/r1`): all 12 levels and the wrap, 75000 frames (the same code at the same addresses, without the GS hooks)) | 192,392 calls, 2,890,036 t-states own (0.06 %) |
+| Runs (the 48K case's `c2` (`../zynaps/work/c2`): level 1 from the start, 1500 frames) | 2,520 runs of its first instruction (entered by a jump or by running on, no routine of its own in the L1) |
 | Called from | `RotateByteShift` (falls into), `PlayInterruptExit` |
 | Calls | `RotateNextByte` (falls into) |
 
@@ -1102,6 +1118,7 @@ Called from `$AD44` (c2: 35 entries).
 
 | | |
 | --- | --- |
+| Runs (the GS game's own play: stage 2's TTD recording `r1` (Pentagon 128 + GS 512 KB, music) replayed by L1 over its frames 2951-4724, level 1 from the round start (1773 frames; zgsA's `work/zgsA/r1-play`, copied)) | 3,528 runs of its first instruction (entered by a jump or by running on, no routine of its own in the L1) |
 | Runs (the 48K case's `r1` (`../zynaps/work/r1`): all 12 levels and the wrap, 75000 frames (the same code at the same addresses, without the GS hooks)) | 192,604 calls, 2,205,969 t-states own (0.04 %) |
 | Runs (the 48K case's `c2` (`../zynaps/work/c2`): level 1 from the start, 1500 frames) | 2,522 calls, 79,981 t-states own (0.08 %) |
 | Called from | `RotateByteOut` (falls into), `PlayInterruptExit` |
@@ -1117,6 +1134,7 @@ Called from `$AD44` (c2: 35 entries).
 | --- | --- |
 | Runs (the GS game's own play: stage 2's TTD recording `r1` (Pentagon 128 + GS 512 KB, music) replayed by L1 over its frames 2951-4724, level 1 from the round start (1773 frames; zgsA's `work/zgsA/r1-play`, copied)) | 1,177 calls, 11,779 t-states own (0.01 %) |
 | Runs (the 48K case's `r1` (`../zynaps/work/r1`): all 12 levels and the wrap, 75000 frames (the same code at the same addresses, without the GS hooks)) | 59,138 calls, 804,476 t-states own (0.02 %) |
+| Runs (the 48K case's `c2` (`../zynaps/work/c2`): level 1 from the start, 1500 frames) | 840 runs of its first instruction (entered by a jump or by running on, no routine of its own in the L1) |
 | Called from | `RotateNextByte` (falls into), `PlayInterruptExit` |
 | Calls | `RotateLineMerge` (falls into) |
 
@@ -1128,6 +1146,7 @@ Called from `$AD44` (c2: 35 entries).
 | --- | --- |
 | Runs (the GS game's own play: stage 2's TTD recording `r1` (Pentagon 128 + GS 512 KB, music) replayed by L1 over its frames 2951-4724, level 1 from the round start (1773 frames; zgsA's `work/zgsA/r1-play`, copied)) | 1,177 calls, 23,539 t-states own (0.02 %) |
 | Runs (the 48K case's `r1` (`../zynaps/work/r1`): all 12 levels and the wrap, 75000 frames (the same code at the same addresses, without the GS hooks)) | 59,140 calls, 414,009 t-states own (0.01 %) |
+| Runs (the 48K case's `c2` (`../zynaps/work/c2`): level 1 from the start, 1500 frames) | 840 runs of its first instruction (entered by a jump or by running on, no routine of its own in the L1) |
 | Called from | `RotateLineWrap` (falls into), `PlayInterruptExit` |
 | Calls | `RotateLineStore` (falls into) |
 | Reads | `$C200`-`$C42F` (`GlyphCache+512`, `WaveCellSource`); `$C5F0`-`$C627` (`WaveCellSource+496`); `$C7E8`-`$C81F` (`WaveCellSource+1000`, `GlyphCacheUpper`); `$C9E0`-`$CA17` (`GlyphCacheUpper+480`); `$CBD8`-`$CC0F` (`GlyphCacheUpper+984`); `$CDD0`-`$CE07` (`GlyphCacheUpper+1488`); 1 more ranges |
@@ -1139,7 +1158,9 @@ Called from `$AD44` (c2: 35 entries).
 
 | | |
 | --- | --- |
+| Runs (the GS game's own play: stage 2's TTD recording `r1` (Pentagon 128 + GS 512 KB, music) replayed by L1 over its frames 2951-4724, level 1 from the round start (1773 frames; zgsA's `work/zgsA/r1-play`, copied)) | 1,176 runs of its first instruction (entered by a jump or by running on, no routine of its own in the L1) |
 | Runs (the 48K case's `r1` (`../zynaps/work/r1`): all 12 levels and the wrap, 75000 frames (the same code at the same addresses, without the GS hooks)) | 59,139 calls, 413,990 t-states own (0.01 %) |
+| Runs (the 48K case's `c2` (`../zynaps/work/c2`): level 1 from the start, 1500 frames) | 840 runs of its first instruction (entered by a jump or by running on, no routine of its own in the L1) |
 | Called from | `RotateLineMerge` (falls into), `PlayInterruptExit` |
 | Calls | `RotateLineNext` (falls into) |
 | Writes | `$C200`-`$C42F` (`GlyphCache+512`, `WaveCellSource`); `$C5F0`-`$C627` (`WaveCellSource+496`); `$C7E8`-`$C81F` (`WaveCellSource+1000`, `GlyphCacheUpper`); `$C9E0`-`$CA17` (`GlyphCacheUpper+480`); `$CBD8`-`$CC0F` (`GlyphCacheUpper+984`); `$CDD0`-`$CE07` (`GlyphCacheUpper+1488`); 1 more ranges |
@@ -1150,7 +1171,9 @@ Called from `$AD44` (c2: 35 entries).
 
 | | |
 | --- | --- |
+| Runs (the GS game's own play: stage 2's TTD recording `r1` (Pentagon 128 + GS 512 KB, music) replayed by L1 over its frames 2951-4724, level 1 from the round start (1773 frames; zgsA's `work/zgsA/r1-play`, copied)) | 1,176 runs of its first instruction (entered by a jump or by running on, no routine of its own in the L1) |
 | Runs (the 48K case's `r1` (`../zynaps/work/r1`): all 12 levels and the wrap, 75000 frames (the same code at the same addresses, without the GS hooks)) | 59,138 calls, 354,873 t-states own (0.01 %) |
+| Runs (the 48K case's `c2` (`../zynaps/work/c2`): level 1 from the start, 1500 frames) | 840 runs of its first instruction (entered by a jump or by running on, no routine of its own in the L1) |
 | Called from | `RotateLineStore` (falls into), `PlayInterruptExit` |
 | Calls | `RotateLineRestore` (falls into) |
 
@@ -1162,6 +1185,7 @@ Called from `$AD44` (c2: 35 entries).
 | --- | --- |
 | Runs (the GS game's own play: stage 2's TTD recording `r1` (Pentagon 128 + GS 512 KB, music) replayed by L1 over its frames 2951-4724, level 1 from the round start (1773 frames; zgsA's `work/zgsA/r1-play`, copied)) | 1,177 calls, 11,779 t-states own (0.01 %) |
 | Runs (the 48K case's `r1` (`../zynaps/work/r1`): all 12 levels and the wrap, 75000 frames (the same code at the same addresses, without the GS hooks)) | 59,139 calls, 686,844 t-states own (0.01 %) |
+| Runs (the 48K case's `c2` (`../zynaps/work/c2`): level 1 from the start, 1500 frames) | 840 runs of its first instruction (entered by a jump or by running on, no routine of its own in the L1) |
 | Called from | `RotateLineNext` (falls into), `PlayInterruptExit` |
 | Calls | `RotateLineCount` (falls into) |
 
@@ -1173,6 +1197,7 @@ Called from `$AD44` (c2: 35 entries).
 | --- | --- |
 | Runs (the GS game's own play: stage 2's TTD recording `r1` (Pentagon 128 + GS 512 KB, music) replayed by L1 over its frames 2951-4724, level 1 from the round start (1773 frames; zgsA's `work/zgsA/r1-play`, copied)) | 1,177 calls, 19,080 t-states own (0.02 %) |
 | Runs (the 48K case's `r1` (`../zynaps/work/r1`): all 12 levels and the wrap, 75000 frames (the same code at the same addresses, without the GS hooks)) | 59,137 calls, 958,947 t-states own (0.02 %) |
+| Runs (the 48K case's `c2` (`../zynaps/work/c2`): level 1 from the start, 1500 frames) | 840 runs of its first instruction (entered by a jump or by running on, no routine of its own in the L1) |
 | Called from | `RotateLineRestore` (falls into), `PlayInterruptExit` |
 | Calls | `RotateLine` (tail), `SpriteShiftNext` |
 
@@ -1270,7 +1295,7 @@ Called from `$A9ED` in phases 2-4 (494 entries in c2's 659 passes, 2 % of play's
 | Runs (the GS game's own play: stage 2's TTD recording `r1` (Pentagon 128 + GS 512 KB, music) replayed by L1 over its frames 2951-4724, level 1 from the round start (1773 frames; zgsA's `work/zgsA/r1-play`, copied)) | 438 calls, 1,876,431 t-states own (1.48 %) |
 | Runs (the 48K case's `r1` (`../zynaps/work/r1`): all 12 levels and the wrap, 75000 frames (the same code at the same addresses, without the GS hooks)) | 27,404 calls, 117,375,966 t-states own (2.24 %) |
 | Runs (the 48K case's `c2` (`../zynaps/work/c2`): level 1 from the start, 1500 frames) | 494 calls, 2,115,709 t-states own (2.02 %) |
-| Called from | `l_A9EF` |
+| Called from | `PlayInterrupt` |
 | Reads | `$7E9C`-`$7E9F` (`ShipDescriptor+8`); `$7EB6`-`$7EB9` (`SightDescriptor+8`); `$7ED0`-`$7EE0` (`LaserDescriptor+8`, `ShotDescriptor`); `$F373`-`$F374` (`PlayerObject+7`); `$F4FF`-`$F500` (`LaserShots+7`); `$F52B`-`$F52C` (`LaserShots+51`); 5 more ranges |
 | Writes | `$80BB` (`LaserHitMask`); `$91C3`-`$91C4` (`TestGridRestoreSp+1`); `$F379` (`PlayerHitMask`); `$F505` (`LaserShots+13`); `$F531` (`LaserShots+57`); `$F55D` (`LaserShots+101`); 4 more ranges |
 
@@ -1285,7 +1310,7 @@ Pushes 200 zero words down from `$FD90` (20 x 10 PUSH HL): the X bytes `$FC00-$F
 | Runs (the GS game's own play: stage 2's TTD recording `r1` (Pentagon 128 + GS 512 KB, music) replayed by L1 over its frames 2951-4724, level 1 from the round start (1773 frames; zgsA's `work/zgsA/r1-play`, copied)) | 446 calls, 1,124,812 t-states own (0.89 %) |
 | Runs (the 48K case's `r1` (`../zynaps/work/r1`): all 12 levels and the wrap, 75000 frames (the same code at the same addresses, without the GS hooks)) | 27,426 calls, 69,168,495 t-states own (1.32 %) |
 | Runs (the 48K case's `c2` (`../zynaps/work/c2`): level 1 from the start, 1500 frames) | 496 calls, 1,250,924 t-states own (1.19 %) |
-| Called from | `LevelSetUp`, `l_A9EF`, `RoundPlaySetup`, `TuneOrder` (tail) |
+| Called from | `LevelSetUp`, `PlayInterrupt`, `RoundPlaySetup`, `TuneOrder` (tail) |
 | Writes | `$91DF`-`$91E0` (`ClearGridRestoreSp+1`) |
 
 ### `JumpTable` (`$91E2`)
@@ -1454,9 +1479,9 @@ Frames left +`$1B` - 1: 0 fetches the next command; a count that was already 0 (
 
 | | |
 | --- | --- |
-| Runs (the GS game's own play: stage 2's TTD recording `r1` (Pentagon 128 + GS 512 KB, music) replayed by L1 over its frames 2951-4724, level 1 from the round start (1773 frames; zgsA's `work/zgsA/r1-play`, copied)) | run into, not called, 44,580 t-states own (0.04 %) |
-| Runs (the 48K case's `r1` (`../zynaps/work/r1`): all 12 levels and the wrap, 75000 frames (the same code at the same addresses, without the GS hooks)) | run into, not called, 4,847,339 t-states own (0.09 %) |
-| Runs (the 48K case's `c2` (`../zynaps/work/c2`): level 1 from the start, 1500 frames) | run into, not called, 75,596 t-states own (0.07 %) |
+| Runs (the GS game's own play: stage 2's TTD recording `r1` (Pentagon 128 + GS 512 KB, music) replayed by L1 over its frames 2951-4724, level 1 from the round start (1773 frames; zgsA's `work/zgsA/r1-play`, copied)) | 743 runs of its first instruction (entered by a jump or by running on, no routine of its own in the L1), 44,580 t-states own (0.04 %) |
+| Runs (the 48K case's `r1` (`../zynaps/work/r1`): all 12 levels and the wrap, 75000 frames (the same code at the same addresses, without the GS hooks)) | 77,837 runs of its first instruction (entered by a jump or by running on, no routine of its own in the L1), 4,847,339 t-states own (0.09 %) |
+| Runs (the 48K case's `c2` (`../zynaps/work/c2`): level 1 from the start, 1500 frames) | 1,151 runs of its first instruction (entered by a jump or by running on, no routine of its own in the L1), 75,596 t-states own (0.07 %) |
 | Called from | `JumpTable` |
 | Calls | `JumpTable` |
 
@@ -1496,7 +1521,7 @@ Carry: an instant command. Not run in c1/c2.
 
 | | |
 | --- | --- |
-| Runs (the 48K case's `r1` (`../zynaps/work/r1`): all 12 levels and the wrap, 75000 frames (the same code at the same addresses, without the GS hooks)) | run into, not called, 8,604 t-states own (0.00 %) |
+| Runs (the 48K case's `r1` (`../zynaps/work/r1`): all 12 levels and the wrap, 75000 frames (the same code at the same addresses, without the GS hooks)) | 152 runs of its first instruction (entered by a jump or by running on, no routine of its own in the L1), 8,604 t-states own (0.00 %) |
 | Called from | `JumpTable` |
 | Writes | `$F3B7` (`EnemyObjects+31`); `$F3E3` (`EnemyObjects+75`); `$F40F` (`EnemyObjects+119`); `$F43B` (`EnemyObjects+163`); `$F467` (`EnemyObjects+207`) |
 
@@ -1508,7 +1533,7 @@ Carry. Not run in c1/c2.
 
 | | |
 | --- | --- |
-| Runs (the 48K case's `r1` (`../zynaps/work/r1`): all 12 levels and the wrap, 75000 frames (the same code at the same addresses, without the GS hooks)) | run into, not called, 8,850 t-states own (0.00 %) |
+| Runs (the 48K case's `r1` (`../zynaps/work/r1`): all 12 levels and the wrap, 75000 frames (the same code at the same addresses, without the GS hooks)) | 118 runs of its first instruction (entered by a jump or by running on, no routine of its own in the L1), 8,850 t-states own (0.00 %) |
 | Called from | `JumpTable` |
 | Writes | `$F3BF`-`$F3C0` (`EnemyObjects+39`); `$F3EB`-`$F3EC` (`EnemyObjects+83`); `$F417`-`$F418` (`EnemyObjects+127`); `$F443`-`$F444` (`EnemyObjects+171`); `$F46F`-`$F470` (`EnemyObjects+215`) |
 
@@ -1520,7 +1545,7 @@ With scenery under the object (SceneryAt6): only X moves. Else Y moves with the 
 
 | | |
 | --- | --- |
-| Runs (the 48K case's `r1` (`../zynaps/work/r1`): all 12 levels and the wrap, 75000 frames (the same code at the same addresses, without the GS hooks)) | run into, not called, 2,035,992 t-states own (0.04 %) |
+| Runs (the 48K case's `r1` (`../zynaps/work/r1`): all 12 levels and the wrap, 75000 frames (the same code at the same addresses, without the GS hooks)) | 8,188 runs of its first instruction (entered by a jump or by running on, no routine of its own in the L1), 2,035,992 t-states own (0.04 %) |
 | Called from | `JumpTable` |
 | Calls | `PathOpAccelerate`, `SceneryAt6` |
 | Reads | `$F39B`-`$F3AB` (`EnemyObjects+3`); `$F3C7`-`$F3D7` (`EnemyObjects+47`); `$F3F3`-`$F403` (`EnemyObjects+91`); `$F41F`-`$F42F` (`EnemyObjects+135`); `$F44B`-`$F45B` (`EnemyObjects+179`) |
@@ -1558,9 +1583,9 @@ The target +`$29`/+`$2A` = the player `$F36C`, the turn rate +`$2B` = P, then Pa
 
 | | |
 | --- | --- |
-| Runs (the GS game's own play: stage 2's TTD recording `r1` (Pentagon 128 + GS 512 KB, music) replayed by L1 over its frames 2951-4724, level 1 from the round start (1773 frames; zgsA's `work/zgsA/r1-play`, copied)) | run into, not called, 808 t-states own (0.00 %) |
-| Runs (the 48K case's `r1` (`../zynaps/work/r1`): all 12 levels and the wrap, 75000 frames (the same code at the same addresses, without the GS hooks)) | run into, not called, 139,560 t-states own (0.00 %) |
-| Runs (the 48K case's `c2` (`../zynaps/work/c2`): level 1 from the start, 1500 frames) | run into, not called, 2,098 t-states own (0.00 %) |
+| Runs (the GS game's own play: stage 2's TTD recording `r1` (Pentagon 128 + GS 512 KB, music) replayed by L1 over its frames 2951-4724, level 1 from the round start (1773 frames; zgsA's `work/zgsA/r1-play`, copied)) | 8 runs of its first instruction (entered by a jump or by running on, no routine of its own in the L1), 808 t-states own (0.00 %) |
+| Runs (the 48K case's `r1` (`../zynaps/work/r1`): all 12 levels and the wrap, 75000 frames (the same code at the same addresses, without the GS hooks)) | 1,348 runs of its first instruction (entered by a jump or by running on, no routine of its own in the L1), 139,560 t-states own (0.00 %) |
+| Runs (the 48K case's `c2` (`../zynaps/work/c2`): level 1 from the start, 1500 frames) | 20 runs of its first instruction (entered by a jump or by running on, no routine of its own in the L1), 2,098 t-states own (0.00 %) |
 | Called from | `JumpTable` |
 | Calls | `PathOpMove`, `SetVelocity` |
 | Reads | `$F3AF` (`EnemyObjects+23`); `$F3DB` (`EnemyObjects+67`); `$F407` (`EnemyObjects+111`); `$F433` (`EnemyObjects+155`); `$F45F` (`EnemyObjects+199`) |
@@ -1574,7 +1599,7 @@ The target record +`$29`: no longer active, or of kind 3, makes it PathOpHomePla
 
 | | |
 | --- | --- |
-| Runs (the 48K case's `r1` (`../zynaps/work/r1`): all 12 levels and the wrap, 75000 frames (the same code at the same addresses, without the GS hooks)) | run into, not called, 8,330 t-states own (0.00 %) |
+| Runs (the 48K case's `r1` (`../zynaps/work/r1`): all 12 levels and the wrap, 75000 frames (the same code at the same addresses, without the GS hooks)) | 60 runs of its first instruction (entered by a jump or by running on, no routine of its own in the L1), 8,330 t-states own (0.00 %) |
 | Called from | `JumpTable` |
 | Calls | `PathOpHomePlayer` (tail), `PathHomeSetRate` (tail) |
 | Reads | `$F373`-`$F374` (`PlayerObject+7`); `$F39F`-`$F3A0` (`EnemyObjects+7`); `$F3C1`-`$F3C2` (`EnemyObjects+41`); `$F445`-`$F446` (`EnemyObjects+173`) |
@@ -1587,7 +1612,7 @@ Bit 0 of `$7F6C` set (a frame the playfield scrolls one step): X - `$40` (a quar
 
 | | |
 | --- | --- |
-| Runs (the GS game's own play: stage 2's TTD recording `r1` (Pentagon 128 + GS 512 KB, music) replayed by L1 over its frames 2951-4724, level 1 from the round start (1773 frames; zgsA's `work/zgsA/r1-play`, copied)) | run into, not called, 46,092 t-states own (0.04 %) |
+| Runs (the GS game's own play: stage 2's TTD recording `r1` (Pentagon 128 + GS 512 KB, music) replayed by L1 over its frames 2951-4724, level 1 from the round start (1773 frames; zgsA's `work/zgsA/r1-play`, copied)) | 334 runs of its first instruction (entered by a jump or by running on, no routine of its own in the L1), 46,092 t-states own (0.04 %) |
 | Runs (the 48K case's `r1` (`../zynaps/work/r1`): all 12 levels and the wrap, 75000 frames (the same code at the same addresses, without the GS hooks)) | 15,486 calls, 2,264,213 t-states own (0.04 %) |
 | Runs (the 48K case's `c2` (`../zynaps/work/c2`): level 1 from the start, 1500 frames) | 172 calls, 35,916 t-states own (0.03 %) |
 | Called from | `JumpTable`, `PathOpDive`, `PodStep` |
@@ -1612,7 +1637,7 @@ Vx = Vy = 0; the flags of XOR A: NC. Not run in c1/c2.
 
 | | |
 | --- | --- |
-| Runs (the 48K case's `r1` (`../zynaps/work/r1`): all 12 levels and the wrap, 75000 frames (the same code at the same addresses, without the GS hooks)) | run into, not called, 3,640 t-states own (0.00 %) |
+| Runs (the 48K case's `r1` (`../zynaps/work/r1`): all 12 levels and the wrap, 75000 frames (the same code at the same addresses, without the GS hooks)) | 30 runs of its first instruction (entered by a jump or by running on, no routine of its own in the L1), 3,640 t-states own (0.00 %) |
 | Called from | `JumpTable` |
 | Calls | `Random`, `PathOpMove`, `SetVelocity` |
 | Reads | `$F3AF` (`EnemyObjects+23`); `$F3DB` (`EnemyObjects+67`); `$F407` (`EnemyObjects+111`); `$F433` (`EnemyObjects+155`); `$F45F` (`EnemyObjects+199`) |
@@ -1626,7 +1651,7 @@ Reads the target word; +`$1F` - 1: not 0 = the path pointer goes to the target; 
 
 | | |
 | --- | --- |
-| Runs (the 48K case's `r1` (`../zynaps/work/r1`): all 12 levels and the wrap, 75000 frames (the same code at the same addresses, without the GS hooks)) | run into, not called, 17,995 t-states own (0.00 %) |
+| Runs (the 48K case's `r1` (`../zynaps/work/r1`): all 12 levels and the wrap, 75000 frames (the same code at the same addresses, without the GS hooks)) | 180 runs of its first instruction (entered by a jump or by running on, no routine of its own in the L1), 17,995 t-states own (0.00 %) |
 | Called from | `JumpTable` |
 | Calls | `PathReadWord` |
 | Reads | `$F3B7` (`EnemyObjects+31`); `$F3E3` (`EnemyObjects+75`); `$F40F` (`EnemyObjects+119`); `$F43B` (`EnemyObjects+163`); `$F467` (`EnemyObjects+207`) |
@@ -1640,9 +1665,9 @@ Above row 8: C = `$20` (Vy + Ay), else `$40` (Vy - Ay); PathOpAccelerate; NC. 10
 
 | | |
 | --- | --- |
-| Runs (the GS game's own play: stage 2's TTD recording `r1` (Pentagon 128 + GS 512 KB, music) replayed by L1 over its frames 2951-4724, level 1 from the round start (1773 frames; zgsA's `work/zgsA/r1-play`, copied)) | run into, not called, 31,106 t-states own (0.02 %) |
-| Runs (the 48K case's `r1` (`../zynaps/work/r1`): all 12 levels and the wrap, 75000 frames (the same code at the same addresses, without the GS hooks)) | run into, not called, 1,217,893 t-states own (0.02 %) |
-| Runs (the 48K case's `c2` (`../zynaps/work/c2`): level 1 from the start, 1500 frames) | run into, not called, 91,094 t-states own (0.09 %) |
+| Runs (the GS game's own play: stage 2's TTD recording `r1` (Pentagon 128 + GS 512 KB, music) replayed by L1 over its frames 2951-4724, level 1 from the round start (1773 frames; zgsA's `work/zgsA/r1-play`, copied)) | 404 runs of its first instruction (entered by a jump or by running on, no routine of its own in the L1), 31,106 t-states own (0.02 %) |
+| Runs (the 48K case's `r1` (`../zynaps/work/r1`): all 12 levels and the wrap, 75000 frames (the same code at the same addresses, without the GS hooks)) | 15,252 runs of its first instruction (entered by a jump or by running on, no routine of its own in the L1), 1,217,893 t-states own (0.02 %) |
+| Runs (the 48K case's `c2` (`../zynaps/work/c2`): level 1 from the start, 1500 frames) | 1,071 runs of its first instruction (entered by a jump or by running on, no routine of its own in the L1), 91,094 t-states own (0.09 %) |
 | Called from | `JumpTable` |
 | Calls | `PathOpAccelerate`, `RequestEffect` |
 | Reads | `$F39E` (`EnemyObjects+6`); `$F3CA` (`EnemyObjects+50`); `$F3F6` (`EnemyObjects+94`); `$F422` (`EnemyObjects+138`); `$F44E` (`EnemyObjects+182`) |
@@ -1655,7 +1680,7 @@ Above row 8: C = `$20` (Vy + Ay), else `$40` (Vy - Ay); PathOpAccelerate; NC. 10
 
 | | |
 | --- | --- |
-| Runs (the 48K case's `r1` (`../zynaps/work/r1`): all 12 levels and the wrap, 75000 frames (the same code at the same addresses, without the GS hooks)) | run into, not called, 11,745 t-states own (0.00 %) |
+| Runs (the 48K case's `r1` (`../zynaps/work/r1`): all 12 levels and the wrap, 75000 frames (the same code at the same addresses, without the GS hooks)) | 138 runs of its first instruction (entered by a jump or by running on, no routine of its own in the L1), 11,745 t-states own (0.00 %) |
 | Called from | `JumpTable` |
 | Calls | `DirectionTo`, `SetVelocity` |
 | Reads | `$F3AF` (`EnemyObjects+23`); `$F3DB` (`EnemyObjects+67`); `$F407` (`EnemyObjects+111`); `$F433` (`EnemyObjects+155`); `$F45F` (`EnemyObjects+199`) |
@@ -1708,7 +1733,7 @@ X below 32: C = 8 (Vx + Ax), else `$10`; Y below 8: `$20`, else `$40`; PathOpAcc
 
 | | |
 | --- | --- |
-| Runs (the 48K case's `r1` (`../zynaps/work/r1`): all 12 levels and the wrap, 75000 frames (the same code at the same addresses, without the GS hooks)) | run into, not called, 1,115,506 t-states own (0.02 %) |
+| Runs (the 48K case's `r1` (`../zynaps/work/r1`): all 12 levels and the wrap, 75000 frames (the same code at the same addresses, without the GS hooks)) | 8,158 runs of its first instruction (entered by a jump or by running on, no routine of its own in the L1), 1,115,506 t-states own (0.02 %) |
 | Called from | `JumpTable` |
 | Calls | `PathOpAccelerate` |
 | Reads | `$F39C`-`$F39E` (`EnemyObjects+4`); `$F3C8`-`$F3CA` (`EnemyObjects+48`); `$F3F4`-`$F3F6` (`EnemyObjects+92`); `$F420`-`$F422` (`EnemyObjects+136`); `$F44C`-`$F44E` (`EnemyObjects+180`) |
@@ -1721,9 +1746,9 @@ One object a frame (bit 7 of LandingFlag). After 8 failed tries in a row, or whe
 
 | | |
 | --- | --- |
-| Runs (the GS game's own play: stage 2's TTD recording `r1` (Pentagon 128 + GS 512 KB, music) replayed by L1 over its frames 2951-4724, level 1 from the round start (1773 frames; zgsA's `work/zgsA/r1-play`, copied)) | run into, not called, 2,990 t-states own (0.00 %) |
-| Runs (the 48K case's `r1` (`../zynaps/work/r1`): all 12 levels and the wrap, 75000 frames (the same code at the same addresses, without the GS hooks)) | run into, not called, 792,952 t-states own (0.02 %) |
-| Runs (the 48K case's `c2` (`../zynaps/work/c2`): level 1 from the start, 1500 frames) | run into, not called, 598 t-states own (0.00 %) |
+| Runs (the GS game's own play: stage 2's TTD recording `r1` (Pentagon 128 + GS 512 KB, music) replayed by L1 over its frames 2951-4724, level 1 from the round start (1773 frames; zgsA's `work/zgsA/r1-play`, copied)) | 5 runs of its first instruction (entered by a jump or by running on, no routine of its own in the L1), 2,990 t-states own (0.00 %) |
+| Runs (the 48K case's `r1` (`../zynaps/work/r1`): all 12 levels and the wrap, 75000 frames (the same code at the same addresses, without the GS hooks)) | 444 runs of its first instruction (entered by a jump or by running on, no routine of its own in the L1), 792,952 t-states own (0.02 %) |
+| Runs (the 48K case's `c2` (`../zynaps/work/c2`): level 1 from the start, 1500 frames) | 1 run of its first instruction (entered by a jump or by running on, no routine of its own in the L1), 598 t-states own (0.00 %) |
 | Called from | `JumpTable` |
 | Calls | `SceneryAt6`, `SceneryCell` |
 | Reads | `$974C` (`LandingFlag`); `$B800`-`$BFFF` (`MapRingSpace+209`, `TileSource`); `$F39E` (`EnemyObjects+6`); `$F3CA` (`EnemyObjects+50`); `$F3F6` (`EnemyObjects+94`); `$F422` (`EnemyObjects+138`); 1 more ranges |
@@ -1737,7 +1762,7 @@ A random byte below `$55` keeps it, below `$AA` + 1, else - 1; kept in 1-7 (0 re
 
 | | |
 | --- | --- |
-| Runs (the 48K case's `r1` (`../zynaps/work/r1`): all 12 levels and the wrap, 75000 frames (the same code at the same addresses, without the GS hooks)) | run into, not called, 28,295 t-states own (0.00 %) |
+| Runs (the 48K case's `r1` (`../zynaps/work/r1`): all 12 levels and the wrap, 75000 frames (the same code at the same addresses, without the GS hooks)) | 310 runs of its first instruction (entered by a jump or by running on, no routine of its own in the L1), 28,295 t-states own (0.00 %) |
 | Called from | `JumpTable` |
 | Calls | `Random` |
 | Reads | `$F3AF` (`EnemyObjects+23`); `$F3DB` (`EnemyObjects+67`); `$F407` (`EnemyObjects+111`); `$F433` (`EnemyObjects+155`); `$F45F` (`EnemyObjects+199`) |
@@ -1751,7 +1776,7 @@ X + Vx: outside columns 16-45 or on scenery: X back, Vx = -Vx. Y + Vy: Y 17 or m
 
 | | |
 | --- | --- |
-| Runs (the 48K case's `r1` (`../zynaps/work/r1`): all 12 levels and the wrap, 75000 frames (the same code at the same addresses, without the GS hooks)) | run into, not called, 9,772,567 t-states own (0.19 %) |
+| Runs (the 48K case's `r1` (`../zynaps/work/r1`): all 12 levels and the wrap, 75000 frames (the same code at the same addresses, without the GS hooks)) | 20,624 runs of its first instruction (entered by a jump or by running on, no routine of its own in the L1), 9,772,567 t-states own (0.19 %) |
 | Called from | `JumpTable` |
 | Calls | `SceneryAt6` |
 | Reads | `$F39B`-`$F3AB` (`EnemyObjects+3`); `$F3C7`-`$F3D7` (`EnemyObjects+47`); `$F3F3`-`$F403` (`EnemyObjects+91`); `$F41F`-`$F42F` (`EnemyObjects+135`); `$F44B`-`$F45B` (`EnemyObjects+179`) |
@@ -1765,7 +1790,7 @@ PathOpScroll, then, once its column is no more than the player's plus half the r
 
 | | |
 | --- | --- |
-| Runs (the 48K case's `r1` (`../zynaps/work/r1`): all 12 levels and the wrap, 75000 frames (the same code at the same addresses, without the GS hooks)) | run into, not called, 687,779 t-states own (0.01 %) |
+| Runs (the 48K case's `r1` (`../zynaps/work/r1`): all 12 levels and the wrap, 75000 frames (the same code at the same addresses, without the GS hooks)) | 4,292 runs of its first instruction (entered by a jump or by running on, no routine of its own in the L1), 687,779 t-states own (0.01 %) |
 | Called from | `JumpTable` |
 | Calls | `Random`, `PathOpScroll`, `SelfDestruct`, `SceneryAt6` |
 | Reads | `$F370`-`$F372` (`PlayerObject+4`); `$F39C`-`$F39E` (`EnemyObjects+4`); `$F3C8`-`$F3CA` (`EnemyObjects+48`); `$F3F4`-`$F3F6` (`EnemyObjects+92`); `$F420`-`$F422` (`EnemyObjects+136`); `$F44C`-`$F44E` (`EnemyObjects+180`) |
@@ -1779,7 +1804,7 @@ PathOpMove; Y 17 or more, X outside 16-46, or scenery under it: SelfDestruct. NC
 
 | | |
 | --- | --- |
-| Runs (the 48K case's `r1` (`../zynaps/work/r1`): all 12 levels and the wrap, 75000 frames (the same code at the same addresses, without the GS hooks)) | run into, not called, 44,545 t-states own (0.00 %) |
+| Runs (the 48K case's `r1` (`../zynaps/work/r1`): all 12 levels and the wrap, 75000 frames (the same code at the same addresses, without the GS hooks)) | 367 runs of its first instruction (entered by a jump or by running on, no routine of its own in the L1), 44,545 t-states own (0.00 %) |
 | Called from | `JumpTable` |
 | Calls | `PathOpMove`, `SelfDestruct`, `SceneryAt6` |
 | Reads | `$F39C`-`$F39E` (`EnemyObjects+4`); `$F3C8`-`$F3CA` (`EnemyObjects+48`); `$F3F4`-`$F3F6` (`EnemyObjects+92`); `$F420`-`$F422` (`EnemyObjects+136`); `$F44C`-`$F44E` (`EnemyObjects+180`) |
@@ -1792,7 +1817,7 @@ NC. Not run in c1/c2.
 
 | | |
 | --- | --- |
-| Runs (the 48K case's `r1` (`../zynaps/work/r1`): all 12 levels and the wrap, 75000 frames (the same code at the same addresses, without the GS hooks)) | run into, not called, 9,842 t-states own (0.00 %) |
+| Runs (the 48K case's `r1` (`../zynaps/work/r1`): all 12 levels and the wrap, 75000 frames (the same code at the same addresses, without the GS hooks)) | 703 runs of its first instruction (entered by a jump or by running on, no routine of its own in the L1), 9,842 t-states own (0.00 %) |
 | Called from | `JumpTable` |
 
 ### `SelfDestruct` (`$9892`)
@@ -1960,21 +1985,10 @@ The ship's and most movers' test: rows Y, Y + 1, Y + 2 of columns X and X + 1 (a
 | | |
 | --- | --- |
 | Runs (the GS game's own play: stage 2's TTD recording `r1` (Pentagon 128 + GS 512 KB, music) replayed by L1 over its frames 2951-4724, level 1 from the round start (1773 frames; zgsA's `work/zgsA/r1-play`, copied)) | 991 calls, 199,191 t-states own (0.16 %) |
-| Runs (the 48K case's `r1` (`../zynaps/work/r1`): all 12 levels and the wrap, 75000 frames (the same code at the same addresses, without the GS hooks)) | 134,520 calls, 10,086,924 t-states own (0.19 %) |
-| Runs (the 48K case's `c2` (`../zynaps/work/c2`): level 1 from the start, 1500 frames) | 1,227 calls, 92,222 t-states own (0.09 %) |
+| Runs (the 48K case's `r1` (`../zynaps/work/r1`): all 12 levels and the wrap, 75000 frames (the same code at the same addresses, without the GS hooks)) | 134,520 calls, 27,340,065 t-states own (0.52 %) |
+| Runs (the 48K case's `c2` (`../zynaps/work/c2`): level 1 from the start, 1500 frames) | 1,227 calls, 249,596 t-states own (0.24 %) |
 | Called from | `PathOpBounce`, `PathOpLand`, `PathOpBounceArena`, `PathOpDive`, `PathOpMoveFragile`, `PlayerHandler` |
-| Calls | `SceneryAt6Row2` (falls into), `SceneryCell` |
-| Reads | `$B700`-`$BF11` (`data_B700`, `MapRingSpace`, `TileSource`); `$BF26`-`$BF27` (`TileSource+806`); `$BF50`-`$BFB7` (`TileSource+848`); `$BFCE`-`$BFD6` (`TileSource+974`); `$BFEB`-`$BFEC` (`TileSource+1003`); `$F372` (`PlayerObject+6`); 5 more ranges |
-
-### `SceneryAt6Row2` (`$99E4`)
-
-**SceneryAt6Row2**
-
-| | |
-| --- | --- |
-| Runs (the 48K case's `r1` (`../zynaps/work/r1`): all 12 levels and the wrap, 75000 frames (the same code at the same addresses, without the GS hooks)) | 134,520 calls, 17,253,141 t-states own (0.33 %) |
-| Runs (the 48K case's `c2` (`../zynaps/work/c2`): level 1 from the start, 1500 frames) | 1,227 calls, 157,374 t-states own (0.15 %) |
-| Called from | `SceneryAt6` (falls into) |
+| Calls | `SceneryCell` |
 | Reads | `$B700`-`$C010` (`data_B700`, `MapRingSpace`, `TileSource`); `$C026`-`$C027` (`GlyphCache+38`); `$C050`-`$C0B7` (`GlyphCache+80`); `$C0CE`-`$C0D6` (`GlyphCache+206`); `$C0EB`-`$C0EC` (`GlyphCache+235`); `$F372` (`PlayerObject+6`); 5 more ranges |
 
 ### `SceneryCell` (`$99FF`)
@@ -2048,9 +2062,9 @@ The colour +`$25`: `$70`, or the flashing `$7F79` x 8 + `$40` while fire has bee
 
 | | |
 | --- | --- |
-| Runs (the GS game's own play: stage 2's TTD recording `r1` (Pentagon 128 + GS 512 KB, music) replayed by L1 over its frames 2951-4724, level 1 from the round start (1773 frames; zgsA's `work/zgsA/r1-play`, copied)) | run into, not called, 503,383 t-states own (0.40 %) |
-| Runs (the 48K case's `r1` (`../zynaps/work/r1`): all 12 levels and the wrap, 75000 frames (the same code at the same addresses, without the GS hooks)) | run into, not called, 32,438,068 t-states own (0.62 %) |
-| Runs (the 48K case's `c2` (`../zynaps/work/c2`): level 1 from the start, 1500 frames) | run into, not called, 613,496 t-states own (0.58 %) |
+| Runs (the GS game's own play: stage 2's TTD recording `r1` (Pentagon 128 + GS 512 KB, music) replayed by L1 over its frames 2951-4724, level 1 from the round start (1773 frames; zgsA's `work/zgsA/r1-play`, copied)) | 585 runs of its first instruction (entered by a jump or by running on, no routine of its own in the L1), 503,383 t-states own (0.40 %) |
+| Runs (the 48K case's `r1` (`../zynaps/work/r1`): all 12 levels and the wrap, 75000 frames (the same code at the same addresses, without the GS hooks)) | 36,542 runs of its first instruction (entered by a jump or by running on, no routine of its own in the L1), 32,438,068 t-states own (0.62 %) |
+| Runs (the 48K case's `c2` (`../zynaps/work/c2`): level 1 from the start, 1500 frames) | 659 runs of its first instruction (entered by a jump or by running on, no routine of its own in the L1), 613,496 t-states own (0.58 %) |
 | Called from | `JumpTable` |
 | Calls | `PathOpAccelerate`, `SceneryAt6`, `ClampRow`, `ClampColumn`, `FuelOut`, `FireLaser`, `ReadControls`, `TunePatternA` (tail) |
 | Reads | `$7F63` (`PassBit`); `$7F79`-`$7F7B` (`SpinnerColour`, `SpinnerColourStep`, `DeathTimer`); `$7F99`-`$7FA7` (`PlayerRecord`, `Players`, `Player1`); `$7FD4`-`$7FD7` (`Player2SideWeapon`, `Player2DoublePlasma`, `Player2LaserLevel`, `Player2Speed`); `$80BD`-`$80BF` (`HarmlessMaskA`, `HarmlessMaskB`, `ShipHistoryIndex`); `$80E6` (`Fuel`); 10 more ranges |
@@ -2065,6 +2079,7 @@ The colour +`$25`: `$70`, or the flashing `$7F79` x 8 + `$40` while fire has bee
 | | |
 | --- | --- |
 | Runs (the GS game's own play: stage 2's TTD recording `r1` (Pentagon 128 + GS 512 KB, music) replayed by L1 over its frames 2951-4724, level 1 from the round start (1773 frames; zgsA's `work/zgsA/r1-play`, copied)) | 4 calls, 2,772 t-states own (0.00 %) |
+| Runs (the 48K case's `c2` (`../zynaps/work/c2`): level 1 from the start, 1500 frames) | 2 runs of its first instruction (entered by a jump or by running on, no routine of its own in the L1) |
 | Called from | `TunePatternA` (tail) |
 | Calls | `ScatterDebris` |
 | Reads | `$F374`-`$F4D4` (`PlayerObject+8`, `EnemyObjects`, `EnemyShots`); `$F500` (`LaserShots+8`); `$F52C` (`LaserShots+52`); `$F558` (`LaserShots+96`); `$F584` (`LaserShots+140`); `$F5B0` (`PlasmaBall2+8`); 2 more ranges |
@@ -2264,9 +2279,9 @@ Gone on an enemy in its overlap mask (the harmless enemies of `$80BD`/`$80BE` an
 
 | | |
 | --- | --- |
-| Runs (the GS game's own play: stage 2's TTD recording `r1` (Pentagon 128 + GS 512 KB, music) replayed by L1 over its frames 2951-4724, level 1 from the round start (1773 frames; zgsA's `work/zgsA/r1-play`, copied)) | run into, not called, 10,034 t-states own (0.01 %) |
-| Runs (the 48K case's `r1` (`../zynaps/work/r1`): all 12 levels and the wrap, 75000 frames (the same code at the same addresses, without the GS hooks)) | run into, not called, 8,689,155 t-states own (0.17 %) |
-| Runs (the 48K case's `c2` (`../zynaps/work/c2`): level 1 from the start, 1500 frames) | run into, not called, 201,636 t-states own (0.19 %) |
+| Runs (the GS game's own play: stage 2's TTD recording `r1` (Pentagon 128 + GS 512 KB, music) replayed by L1 over its frames 2951-4724, level 1 from the round start (1773 frames; zgsA's `work/zgsA/r1-play`, copied)) | 44 runs of its first instruction (entered by a jump or by running on, no routine of its own in the L1), 10,034 t-states own (0.01 %) |
+| Runs (the 48K case's `r1` (`../zynaps/work/r1`): all 12 levels and the wrap, 75000 frames (the same code at the same addresses, without the GS hooks)) | 39,443 runs of its first instruction (entered by a jump or by running on, no routine of its own in the L1), 8,689,155 t-states own (0.17 %) |
+| Runs (the 48K case's `c2` (`../zynaps/work/c2`): level 1 from the start, 1500 frames) | 882 runs of its first instruction (entered by a jump or by running on, no routine of its own in the L1), 201,636 t-states own (0.19 %) |
 | Called from | `JumpTable` |
 | Calls | `SceneryAt2` |
 | Reads | `$80BA`-`$80BE` (`LaserShotsFree`, `LaserHitMask`, `ColourCycle`, `HarmlessMaskA` and 1 more); `$F4FB`-`$F505` (`LaserShots+3`); `$F527`-`$F531` (`LaserShots+47`) |
@@ -2314,9 +2329,9 @@ Flashes. A target (+`$29`) that is active and of kind 2: PathOpHome on it, its m
 
 | | |
 | --- | --- |
-| Runs (the GS game's own play: stage 2's TTD recording `r1` (Pentagon 128 + GS 512 KB, music) replayed by L1 over its frames 2951-4724, level 1 from the round start (1773 frames; zgsA's `work/zgsA/r1-play`, copied)) | run into, not called, 173,635 t-states own (0.14 %) |
-| Runs (the 48K case's `r1` (`../zynaps/work/r1`): all 12 levels and the wrap, 75000 frames (the same code at the same addresses, without the GS hooks)) | run into, not called, 18,787,283 t-states own (0.36 %) |
-| Runs (the 48K case's `c2` (`../zynaps/work/c2`): level 1 from the start, 1500 frames) | run into, not called, 305,329 t-states own (0.29 %) |
+| Runs (the GS game's own play: stage 2's TTD recording `r1` (Pentagon 128 + GS 512 KB, music) replayed by L1 over its frames 2951-4724, level 1 from the round start (1773 frames; zgsA's `work/zgsA/r1-play`, copied)) | 847 runs of its first instruction (entered by a jump or by running on, no routine of its own in the L1), 173,635 t-states own (0.14 %) |
+| Runs (the 48K case's `r1` (`../zynaps/work/r1`): all 12 levels and the wrap, 75000 frames (the same code at the same addresses, without the GS hooks)) | 91,790 runs of its first instruction (entered by a jump or by running on, no routine of its own in the L1), 18,787,283 t-states own (0.36 %) |
+| Runs (the 48K case's `c2` (`../zynaps/work/c2`): level 1 from the start, 1500 frames) | 1,412 runs of its first instruction (entered by a jump or by running on, no routine of its own in the L1), 305,329 t-states own (0.29 %) |
 | Called from | `JumpTable` |
 | Calls | `RunPath`, `FreeEnemySlot`, `EnemyEscaped`, `EnemyKilled`, `ClampRow`, `EnemyFire`, `StartExplosion`, `AddScore` |
 | Reads | `$80BB` (`LaserHitMask`); `$80E5` (`PlasmaHitMask`); `$F39C`-`$F3A5` (`EnemyObjects+4`); `$F3BC`-`$F3D1` (`EnemyObjects+36`); `$F3E8`-`$F3FD` (`EnemyObjects+80`); `$F414`-`$F429` (`EnemyObjects+124`); 2 more ranges |
@@ -2330,7 +2345,7 @@ As EnemyHandler without the plasma kill; with no lock (`$80E2` = 0) and its bit 
 
 | | |
 | --- | --- |
-| Runs (the 48K case's `r1` (`../zynaps/work/r1`): all 12 levels and the wrap, 75000 frames (the same code at the same addresses, without the GS hooks)) | run into, not called, 947,997 t-states own (0.02 %) |
+| Runs (the 48K case's `r1` (`../zynaps/work/r1`): all 12 levels and the wrap, 75000 frames (the same code at the same addresses, without the GS hooks)) | 3,255 runs of its first instruction (entered by a jump or by running on, no routine of its own in the L1), 947,997 t-states own (0.02 %) |
 | Called from | `JumpTable` |
 | Calls | `RunPath`, `FreeEnemySlot`, `EnemyEscaped`, `EnemyKilled`, `ClampRow`, `EnemyFire`, `StartExplosion`, `AddScore` |
 | Reads | `$80BB` (`LaserHitMask`); `$80E2`-`$80E4` (`LockMask`, `MissileHitMask`, `SightMask`); `$F39C`-`$F3A5` (`EnemyObjects+4`); `$F3BC`-`$F3D1` (`EnemyObjects+36`); `$F3E8`-`$F3FD` (`EnemyObjects+80`); `$F414`-`$F429` (`EnemyObjects+124`); 2 more ranges |
@@ -2344,7 +2359,7 @@ Columns 7-55. Its row mask +`$0B` = `$FE` shifted left once per row below row 11
 
 | | |
 | --- | --- |
-| Runs (the 48K case's `r1` (`../zynaps/work/r1`): all 12 levels and the wrap, 75000 frames (the same code at the same addresses, without the GS hooks)) | run into, not called, 1,504,025 t-states own (0.03 %) |
+| Runs (the 48K case's `r1` (`../zynaps/work/r1`): all 12 levels and the wrap, 75000 frames (the same code at the same addresses, without the GS hooks)) | 3,851 runs of its first instruction (entered by a jump or by running on, no routine of its own in the L1), 1,504,025 t-states own (0.03 %) |
 | Called from | `JumpTable` |
 | Calls | `RunPath`, `EnemyKilled`, `ClampRow`, `CycleColour`, `ScatterDebris`, `EnemyFire`, `AddScore` |
 | Reads | `$80BB` (`LaserHitMask`); `$80E2`-`$80E4` (`LockMask`, `MissileHitMask`, `SightMask`); `$F39C`-`$F3A5` (`EnemyObjects+4`); `$F3BC` (`EnemyObjects+36`) |
@@ -2386,9 +2401,9 @@ After frame 8 the explosion ends: removed (RemoveObject `$992A`) when +`$26` is 
 
 | | |
 | --- | --- |
-| Runs (the GS game's own play: stage 2's TTD recording `r1` (Pentagon 128 + GS 512 KB, music) replayed by L1 over its frames 2951-4724, level 1 from the round start (1773 frames; zgsA's `work/zgsA/r1-play`, copied)) | run into, not called, 37,368 t-states own (0.03 %) |
-| Runs (the 48K case's `r1` (`../zynaps/work/r1`): all 12 levels and the wrap, 75000 frames (the same code at the same addresses, without the GS hooks)) | run into, not called, 1,319,791 t-states own (0.03 %) |
-| Runs (the 48K case's `c2` (`../zynaps/work/c2`): level 1 from the start, 1500 frames) | run into, not called, 32,812 t-states own (0.03 %) |
+| Runs (the GS game's own play: stage 2's TTD recording `r1` (Pentagon 128 + GS 512 KB, music) replayed by L1 over its frames 2951-4724, level 1 from the round start (1773 frames; zgsA's `work/zgsA/r1-play`, copied)) | 376 runs of its first instruction (entered by a jump or by running on, no routine of its own in the L1), 37,368 t-states own (0.03 %) |
+| Runs (the 48K case's `r1` (`../zynaps/work/r1`): all 12 levels and the wrap, 75000 frames (the same code at the same addresses, without the GS hooks)) | 12,595 runs of its first instruction (entered by a jump or by running on, no routine of its own in the L1), 1,319,791 t-states own (0.03 %) |
+| Runs (the 48K case's `c2` (`../zynaps/work/c2`): level 1 from the start, 1500 frames) | 315 runs of its first instruction (entered by a jump or by running on, no routine of its own in the L1), 32,812 t-states own (0.03 %) |
 | Called from | `JumpTable` |
 | Calls | `FreeEnemySlot` (tail), `ExplosionToPod` (tail) |
 | Reads | `$7F62` (`PassCount`); `$F39A` (`EnemyObjects+2`); `$F3BD`-`$F3C6` (`EnemyObjects+37`); `$F3E9`-`$F3F2` (`EnemyObjects+81`); `$F415`-`$F41E` (`EnemyObjects+125`); `$F441`-`$F44A` (`EnemyObjects+169`); 1 more ranges |
@@ -2402,7 +2417,9 @@ A: the next frame (1-8). The colour +`$25` steps down by 8 (one INK step, the br
 
 | | |
 | --- | --- |
-| Runs | not reached in the recordings |
+| Runs (the GS game's own play: stage 2's TTD recording `r1` (Pentagon 128 + GS 512 KB, music) replayed by L1 over its frames 2951-4724, level 1 from the round start (1773 frames; zgsA's `work/zgsA/r1-play`, copied)) | 140 runs of its first instruction (entered by a jump or by running on, no routine of its own in the L1) |
+| Runs (the 48K case's `r1` (`../zynaps/work/r1`): all 12 levels and the wrap, 75000 frames (the same code at the same addresses, without the GS hooks)) | 5,663 runs of its first instruction (entered by a jump or by running on, no routine of its own in the L1) |
+| Runs (the 48K case's `c2` (`../zynaps/work/c2`): level 1 from the start, 1500 frames) | 133 runs of its first instruction (entered by a jump or by running on, no routine of its own in the L1) |
 
 ### `PodStep` (`$A1FD`)
 
@@ -2418,8 +2435,8 @@ Not collected: the pod moves with the scenery (ScrollObject `$9640`), its colour
 
 | | |
 | --- | --- |
-| Runs (the 48K case's `r1` (`../zynaps/work/r1`): all 12 levels and the wrap, 75000 frames (the same code at the same addresses, without the GS hooks)) | run into, not called, 1,456,894 t-states own (0.03 %) |
-| Runs (the 48K case's `c2` (`../zynaps/work/c2`): level 1 from the start, 1500 frames) | run into, not called, 22,659 t-states own (0.02 %) |
+| Runs (the 48K case's `r1` (`../zynaps/work/r1`): all 12 levels and the wrap, 75000 frames (the same code at the same addresses, without the GS hooks)) | 11,346 runs of its first instruction (entered by a jump or by running on, no routine of its own in the L1), 1,456,894 t-states own (0.03 %) |
+| Runs (the 48K case's `c2` (`../zynaps/work/c2`): level 1 from the start, 1500 frames) | 172 runs of its first instruction (entered by a jump or by running on, no routine of its own in the L1), 22,659 t-states own (0.02 %) |
 | Called from | `JumpTable` |
 | Calls | `PathOpScroll`, `FreeEnemySlot`, `AddScore`, `RequestEffect` |
 | Reads | `$7F99`-`$7FA3` (`PlayerRecord`, `Players`, `Player1`); `$80BC` (`ColourCycle`); `$80E6` (`Fuel`); `$8184` (`FireHeld`); `$81C5` (`EventRequests`); `$F379` (`PlayerHitMask`); 6 more ranges |
@@ -2433,8 +2450,8 @@ IY: the shot. It ends (FreeShot `$9941`) when its lifetime +`$26` runs out, when
 
 | | |
 | --- | --- |
-| Runs (the 48K case's `r1` (`../zynaps/work/r1`): all 12 levels and the wrap, 75000 frames (the same code at the same addresses, without the GS hooks)) | run into, not called, 2,238,080 t-states own (0.04 %) |
-| Runs (the 48K case's `c2` (`../zynaps/work/c2`): level 1 from the start, 1500 frames) | run into, not called, 4,139 t-states own (0.00 %) |
+| Runs (the 48K case's `r1` (`../zynaps/work/r1`): all 12 levels and the wrap, 75000 frames (the same code at the same addresses, without the GS hooks)) | 10,483 runs of its first instruction (entered by a jump or by running on, no routine of its own in the L1), 2,238,080 t-states own (0.04 %) |
+| Runs (the 48K case's `c2` (`../zynaps/work/c2`): level 1 from the start, 1500 frames) | 18 runs of its first instruction (entered by a jump or by running on, no routine of its own in the L1), 4,139 t-states own (0.00 %) |
 | Called from | `JumpTable` |
 | Calls | `PathOpHome`, `FreeObject`, `SceneryAt1` |
 | Reads | `$F379` (`PlayerHitMask`); `$F478`-`$F47A` (`EnemyShots+4`); `$F498`-`$F4A6` (`EnemyShots+36`); `$F4C4`-`$F4D2` (`EnemyShots+80`); `$F4F0`-`$F4F2` (`EnemyShots+124`) |
@@ -2463,6 +2480,8 @@ Callers: the hit handling at ScatterDebris and the enemy movers (EnemyHandler).
 | | |
 | --- | --- |
 | Runs (the GS game's own play: stage 2's TTD recording `r1` (Pentagon 128 + GS 512 KB, music) replayed by L1 over its frames 2951-4724, level 1 from the round start (1773 frames; zgsA's `work/zgsA/r1-play`, copied)) | 20 calls, 5,160 t-states own (0.00 %) |
+| Runs (the 48K case's `r1` (`../zynaps/work/r1`): all 12 levels and the wrap, 75000 frames (the same code at the same addresses, without the GS hooks)) | 809 runs of its first instruction (entered by a jump or by running on, no routine of its own in the L1) |
+| Runs (the 48K case's `c2` (`../zynaps/work/c2`): level 1 from the start, 1500 frames) | 19 runs of its first instruction (entered by a jump or by running on, no routine of its own in the L1) |
 | Called from | `ScatterDebris` |
 | Reads | `$80BD`-`$80BE` (`HarmlessMaskA`, `HarmlessMaskB`); `$F3BC` (`EnemyObjects+36`); `$F3E8` (`EnemyObjects+80`); `$F414` (`EnemyObjects+124`); `$F440` (`EnemyObjects+168`); `$F46C` (`EnemyObjects+212`) |
 | Writes | `$80BD`-`$80BE` (`HarmlessMaskA`, `HarmlessMaskB`); `$F398`-`$F3A3` (`EnemyObjects`); `$F3BD`-`$F3CF` (`EnemyObjects+37`); `$F3E9`-`$F3FB` (`EnemyObjects+81`); `$F415`-`$F427` (`EnemyObjects+125`); `$F441`-`$F453` (`EnemyObjects+169`); 1 more ranges |
@@ -2514,7 +2533,9 @@ Callers: PrintString, PrintBcd, PrintKeyName, HighScoreEntry.
 
 | | |
 | --- | --- |
+| Runs (the GS game's own play: stage 2's TTD recording `r1` (Pentagon 128 + GS 512 KB, music) replayed by L1 over its frames 2951-4724, level 1 from the round start (1773 frames; zgsA's `work/zgsA/r1-play`, copied)) | 200 runs of its first instruction (entered by a jump or by running on, no routine of its own in the L1) |
 | Runs (the 48K case's `r1` (`../zynaps/work/r1`): all 12 levels and the wrap, 75000 frames (the same code at the same addresses, without the GS hooks)) | 7,775 calls, 605,189 t-states own (0.01 %) |
+| Runs (the 48K case's `c2` (`../zynaps/work/c2`): level 1 from the start, 1500 frames) | 122 runs of its first instruction (entered by a jump or by running on, no routine of its own in the L1) |
 | Called from | `PrintChar` (falls into), `PlayInterruptExit` |
 | Calls | `PrintCharTest` (falls into) |
 | Reads | `$80AD` (`PrintPending`); `$A3A9`-`$A3AC` (`PrintControlTable+6`) |
@@ -2525,7 +2546,9 @@ Callers: PrintString, PrintBcd, PrintKeyName, HighScoreEntry.
 
 | | |
 | --- | --- |
+| Runs (the GS game's own play: stage 2's TTD recording `r1` (Pentagon 128 + GS 512 KB, music) replayed by L1 over its frames 2951-4724, level 1 from the round start (1773 frames; zgsA's `work/zgsA/r1-play`, copied)) | 184 runs of its first instruction (entered by a jump or by running on, no routine of its own in the L1) |
 | Runs (the 48K case's `r1` (`../zynaps/work/r1`): all 12 levels and the wrap, 75000 frames (the same code at the same addresses, without the GS hooks)) | 7,731 calls, 54,129 t-states own (0.00 %) |
+| Runs (the 48K case's `c2` (`../zynaps/work/c2`): level 1 from the start, 1500 frames) | 118 runs of its first instruction (entered by a jump or by running on, no routine of its own in the L1) |
 | Called from | `PrintCharSave` (falls into), `PlayInterruptExit` |
 | Calls | `PrintCharKind` (falls into) |
 
@@ -2535,7 +2558,9 @@ Callers: PrintString, PrintBcd, PrintKeyName, HighScoreEntry.
 
 | | |
 | --- | --- |
+| Runs (the GS game's own play: stage 2's TTD recording `r1` (Pentagon 128 + GS 512 KB, music) replayed by L1 over its frames 2951-4724, level 1 from the round start (1773 frames; zgsA's `work/zgsA/r1-play`, copied)) | 184 runs of its first instruction (entered by a jump or by running on, no routine of its own in the L1) |
 | Runs (the 48K case's `r1` (`../zynaps/work/r1`): all 12 levels and the wrap, 75000 frames (the same code at the same addresses, without the GS hooks)) | 7,731 calls, 998,127 t-states own (0.02 %) |
+| Runs (the 48K case's `c2` (`../zynaps/work/c2`): level 1 from the start, 1500 frames) | 118 runs of its first instruction (entered by a jump or by running on, no routine of its own in the L1) |
 | Called from | `PrintCharTest` (falls into), `PlayInterruptExit` |
 | Calls | `PrintCharGlyph` (falls into), `PrintCharDone` (tail) |
 | Reads | `$80AA`-`$80AC` (`PrintPos`, `PrintAttr`) |
@@ -2547,7 +2572,9 @@ Callers: PrintString, PrintBcd, PrintKeyName, HighScoreEntry.
 
 | | |
 | --- | --- |
+| Runs (the GS game's own play: stage 2's TTD recording `r1` (Pentagon 128 + GS 512 KB, music) replayed by L1 over its frames 2951-4724, level 1 from the round start (1773 frames; zgsA's `work/zgsA/r1-play`, copied)) | 168 runs of its first instruction (entered by a jump or by running on, no routine of its own in the L1) |
 | Runs (the 48K case's `r1` (`../zynaps/work/r1`): all 12 levels and the wrap, 75000 frames (the same code at the same addresses, without the GS hooks)) | 7,688 calls, 276,715 t-states own (0.01 %) |
+| Runs (the 48K case's `c2` (`../zynaps/work/c2`): level 1 from the start, 1500 frames) | 114 runs of its first instruction (entered by a jump or by running on, no routine of its own in the L1) |
 | Called from | `PrintCharKind` (falls into), `PlayInterruptExit` |
 | Calls | `PrintRomGlyph` (falls into) |
 
@@ -2557,7 +2584,9 @@ Callers: PrintString, PrintBcd, PrintKeyName, HighScoreEntry.
 
 | | |
 | --- | --- |
+| Runs (the GS game's own play: stage 2's TTD recording `r1` (Pentagon 128 + GS 512 KB, music) replayed by L1 over its frames 2951-4724, level 1 from the round start (1773 frames; zgsA's `work/zgsA/r1-play`, copied)) | 168 runs of its first instruction (entered by a jump or by running on, no routine of its own in the L1) |
 | Runs (the 48K case's `r1` (`../zynaps/work/r1`): all 12 levels and the wrap, 75000 frames (the same code at the same addresses, without the GS hooks)) | 7,687 calls, 576,364 t-states own (0.01 %) |
+| Runs (the 48K case's `c2` (`../zynaps/work/c2`): level 1 from the start, 1500 frames) | 114 runs of its first instruction (entered by a jump or by running on, no routine of its own in the L1) |
 | Called from | `PrintCharGlyph` (falls into), `PlayInterruptExit` |
 | Calls | `PrintCharRow` (falls into) |
 | Writes | `$4002`-`$401D` (screen); `$4102`-`$411D` (screen); `$4827`-`$4838` (screen); `$486C`-`$4873` (screen); `$4927`-`$4938` (screen); `$496C`-`$4973` (screen) |
@@ -2568,7 +2597,9 @@ Callers: PrintString, PrintBcd, PrintKeyName, HighScoreEntry.
 
 | | |
 | --- | --- |
+| Runs (the GS game's own play: stage 2's TTD recording `r1` (Pentagon 128 + GS 512 KB, music) replayed by L1 over its frames 2951-4724, level 1 from the round start (1773 frames; zgsA's `work/zgsA/r1-play`, copied)) | 1,008 runs of its first instruction (entered by a jump or by running on, no routine of its own in the L1) |
 | Runs (the 48K case's `r1` (`../zynaps/work/r1`): all 12 levels and the wrap, 75000 frames (the same code at the same addresses, without the GS hooks)) | 46,116 calls, 184,483 t-states own (0.00 %) |
+| Runs (the 48K case's `c2` (`../zynaps/work/c2`): level 1 from the start, 1500 frames) | 684 runs of its first instruction (entered by a jump or by running on, no routine of its own in the L1) |
 | Called from | `PrintRomGlyph` (falls into), `PrintCharBold` (tail) |
 | Calls | `PrintCharBold` (falls into) |
 
@@ -2578,7 +2609,9 @@ Callers: PrintString, PrintBcd, PrintKeyName, HighScoreEntry.
 
 | | |
 | --- | --- |
+| Runs (the GS game's own play: stage 2's TTD recording `r1` (Pentagon 128 + GS 512 KB, music) replayed by L1 over its frames 2951-4724, level 1 from the round start (1773 frames; zgsA's `work/zgsA/r1-play`, copied)) | 1,008 runs of its first instruction (entered by a jump or by running on, no routine of its own in the L1) |
 | Runs (the 48K case's `r1` (`../zynaps/work/r1`): all 12 levels and the wrap, 75000 frames (the same code at the same addresses, without the GS hooks)) | 46,117 calls, 2,184,763 t-states own (0.04 %) |
+| Runs (the 48K case's `c2` (`../zynaps/work/c2`): level 1 from the start, 1500 frames) | 684 runs of its first instruction (entered by a jump or by running on, no routine of its own in the L1) |
 | Called from | `PrintCharRow` (falls into), `PlayInterruptExit` |
 | Calls | `PrintCharRow` (tail), `PrintCharDone` (falls into) |
 | Writes | `$4202`-`$461D` (screen); `$4702`-`$471D` (screen); `$4A27`-`$4A73` (screen); `$4B27`-`$4B73` (screen); `$4C27`-`$4C73` (screen); `$4D27`-`$4D73` (screen); 2 more ranges |
@@ -2589,7 +2622,9 @@ Callers: PrintString, PrintBcd, PrintKeyName, HighScoreEntry.
 
 | | |
 | --- | --- |
+| Runs (the GS game's own play: stage 2's TTD recording `r1` (Pentagon 128 + GS 512 KB, music) replayed by L1 over its frames 2951-4724, level 1 from the round start (1773 frames; zgsA's `work/zgsA/r1-play`, copied)) | 184 runs of its first instruction (entered by a jump or by running on, no routine of its own in the L1) |
 | Runs (the 48K case's `r1` (`../zynaps/work/r1`): all 12 levels and the wrap, 75000 frames (the same code at the same addresses, without the GS hooks)) | 7,730 calls, 646,051 t-states own (0.01 %) |
+| Runs (the 48K case's `c2` (`../zynaps/work/c2`): level 1 from the start, 1500 frames) | 118 runs of its first instruction (entered by a jump or by running on, no routine of its own in the L1) |
 | Called from | `PrintCharKind` (tail), `PrintCharBold` (falls into) |
 | Calls | `PrintSetColumn`, `PrintSetRow`, `PrintBcdLeadNext`, `PrintBcdRestNext` |
 | Writes | `$80AD` (`PrintPending`) |
@@ -2646,9 +2681,9 @@ C: the column 0-31 of the print position.
 
 | | |
 | --- | --- |
-| Runs (the GS game's own play: stage 2's TTD recording `r1` (Pentagon 128 + GS 512 KB, music) replayed by L1 over its frames 2951-4724, level 1 from the round start (1773 frames; zgsA's `work/zgsA/r1-play`, copied)) | run into, not called, 360 t-states own (0.00 %) |
-| Runs (the 48K case's `r1` (`../zynaps/work/r1`): all 12 levels and the wrap, 75000 frames (the same code at the same addresses, without the GS hooks)) | run into, not called, 1,078 t-states own (0.00 %) |
-| Runs (the 48K case's `c2` (`../zynaps/work/c2`): level 1 from the start, 1500 frames) | run into, not called, 98 t-states own (0.00 %) |
+| Runs (the GS game's own play: stage 2's TTD recording `r1` (Pentagon 128 + GS 512 KB, music) replayed by L1 over its frames 2951-4724, level 1 from the round start (1773 frames; zgsA's `work/zgsA/r1-play`, copied)) | 8 runs of its first instruction (entered by a jump or by running on, no routine of its own in the L1), 360 t-states own (0.00 %) |
+| Runs (the 48K case's `r1` (`../zynaps/work/r1`): all 12 levels and the wrap, 75000 frames (the same code at the same addresses, without the GS hooks)) | 22 runs of its first instruction (entered by a jump or by running on, no routine of its own in the L1), 1,078 t-states own (0.00 %) |
+| Runs (the 48K case's `c2` (`../zynaps/work/c2`): level 1 from the start, 1500 frames) | 2 runs of its first instruction (entered by a jump or by running on, no routine of its own in the L1), 98 t-states own (0.00 %) |
 | Called from | `PrintCharDone` |
 | Calls | `PrintCodeDone` |
 | Reads | `$80AA` (`PrintPos`) |
@@ -2662,9 +2697,9 @@ C: the row 0-23: the print position's high byte `$58` + C / 8, bits 5-7 of the l
 
 | | |
 | --- | --- |
-| Runs (the GS game's own play: stage 2's TTD recording `r1` (Pentagon 128 + GS 512 KB, music) replayed by L1 over its frames 2951-4724, level 1 from the round start (1773 frames; zgsA's `work/zgsA/r1-play`, copied)) | run into, not called, 824 t-states own (0.00 %) |
-| Runs (the 48K case's `r1` (`../zynaps/work/r1`): all 12 levels and the wrap, 75000 frames (the same code at the same addresses, without the GS hooks)) | run into, not called, 2,266 t-states own (0.00 %) |
-| Runs (the 48K case's `c2` (`../zynaps/work/c2`): level 1 from the start, 1500 frames) | run into, not called, 206 t-states own (0.00 %) |
+| Runs (the GS game's own play: stage 2's TTD recording `r1` (Pentagon 128 + GS 512 KB, music) replayed by L1 over its frames 2951-4724, level 1 from the round start (1773 frames; zgsA's `work/zgsA/r1-play`, copied)) | 8 runs of its first instruction (entered by a jump or by running on, no routine of its own in the L1), 824 t-states own (0.00 %) |
+| Runs (the 48K case's `r1` (`../zynaps/work/r1`): all 12 levels and the wrap, 75000 frames (the same code at the same addresses, without the GS hooks)) | 22 runs of its first instruction (entered by a jump or by running on, no routine of its own in the L1), 2,266 t-states own (0.00 %) |
+| Runs (the 48K case's `c2` (`../zynaps/work/c2`): level 1 from the start, 1500 frames) | 2 runs of its first instruction (entered by a jump or by running on, no routine of its own in the L1), 206 t-states own (0.00 %) |
 | Called from | `PrintCharDone` |
 | Calls | `PrintCodeDone` |
 | Reads | `$80AA`-`$80AB` (`PrintPos`) |
@@ -2758,7 +2793,9 @@ Returns HL past the number. Callers: PrintPlayerScore and the title loop (Credit
 
 | | |
 | --- | --- |
+| Runs (the GS game's own play: stage 2's TTD recording `r1` (Pentagon 128 + GS 512 KB, music) replayed by L1 over its frames 2951-4724, level 1 from the round start (1773 frames; zgsA's `work/zgsA/r1-play`, copied)) | 56 runs of its first instruction (entered by a jump or by running on, no routine of its own in the L1) |
 | Runs (the 48K case's `r1` (`../zynaps/work/r1`): all 12 levels and the wrap, 75000 frames (the same code at the same addresses, without the GS hooks)) | 3,849 calls, 378,348 t-states own (0.01 %) |
+| Runs (the 48K case's `c2` (`../zynaps/work/c2`): level 1 from the start, 1500 frames) | 69 runs of its first instruction (entered by a jump or by running on, no routine of its own in the L1) |
 | Called from | `PrintBcd` (falls into), `PrintBcdLeadNext` (tail) |
 | Calls | `PrintChar`, `PrintBcdOut` (tail) |
 | Reads | `$7FFC`-`$7FFF` (`BcdScratch`) |
@@ -2770,7 +2807,9 @@ Returns HL past the number. Callers: PrintPlayerScore and the title loop (Credit
 
 | | |
 | --- | --- |
+| Runs (the GS game's own play: stage 2's TTD recording `r1` (Pentagon 128 + GS 512 KB, music) replayed by L1 over its frames 2951-4724, level 1 from the round start (1773 frames; zgsA's `work/zgsA/r1-play`, copied)) | 56 runs of its first instruction (entered by a jump or by running on, no routine of its own in the L1) |
 | Runs (the 48K case's `r1` (`../zynaps/work/r1`): all 12 levels and the wrap, 75000 frames (the same code at the same addresses, without the GS hooks)) | 3 calls, 50,115 t-states own (0.00 %) |
+| Runs (the 48K case's `c2` (`../zynaps/work/c2`): level 1 from the start, 1500 frames) | 59 runs of its first instruction (entered by a jump or by running on, no routine of its own in the L1) |
 | Called from | `PrintCharDone` |
 | Calls | `PrintBcdLeading` (tail), `PrintBcdRest` (falls into) |
 | Writes | `$80AC` (`PrintAttr`) |
@@ -2781,7 +2820,9 @@ Returns HL past the number. Callers: PrintPlayerScore and the title loop (Credit
 
 | | |
 | --- | --- |
+| Runs (the GS game's own play: stage 2's TTD recording `r1` (Pentagon 128 + GS 512 KB, music) replayed by L1 over its frames 2951-4724, level 1 from the round start (1773 frames; zgsA's `work/zgsA/r1-play`, copied)) | 8 runs of its first instruction (entered by a jump or by running on, no routine of its own in the L1) |
 | Runs (the 48K case's `r1` (`../zynaps/work/r1`): all 12 levels and the wrap, 75000 frames (the same code at the same addresses, without the GS hooks)) | 3,551 calls, 215,641 t-states own (0.00 %) |
+| Runs (the 48K case's `c2` (`../zynaps/work/c2`): level 1 from the start, 1500 frames) | 19 runs of its first instruction (entered by a jump or by running on, no routine of its own in the L1) |
 | Called from | `PrintBcdLeadNext` (falls into), `PrintBcdRestNext` (tail) |
 | Calls | `PrintBcdOut` (falls into) |
 | Reads | `$7FFD`-`$7FFF` (`BcdScratch+1`) |
@@ -2793,7 +2834,9 @@ Returns HL past the number. Callers: PrintPlayerScore and the title loop (Credit
 
 | | |
 | --- | --- |
+| Runs (the GS game's own play: stage 2's TTD recording `r1` (Pentagon 128 + GS 512 KB, music) replayed by L1 over its frames 2951-4724, level 1 from the round start (1773 frames; zgsA's `work/zgsA/r1-play`, copied)) | 8 runs of its first instruction (entered by a jump or by running on, no routine of its own in the L1) |
 | Runs (the 48K case's `r1` (`../zynaps/work/r1`): all 12 levels and the wrap, 75000 frames (the same code at the same addresses, without the GS hooks)) | 4,465 calls, 107,937 t-states own (0.00 %) |
+| Runs (the 48K case's `c2` (`../zynaps/work/c2`): level 1 from the start, 1500 frames) | 29 runs of its first instruction (entered by a jump or by running on, no routine of its own in the L1) |
 | Called from | `PrintBcdLeading` (tail), `PrintBcdRest` (falls into) |
 | Calls | `PrintChar` |
 
@@ -2803,7 +2846,9 @@ Returns HL past the number. Callers: PrintPlayerScore and the title loop (Credit
 
 | | |
 | --- | --- |
+| Runs (the GS game's own play: stage 2's TTD recording `r1` (Pentagon 128 + GS 512 KB, music) replayed by L1 over its frames 2951-4724, level 1 from the round start (1773 frames; zgsA's `work/zgsA/r1-play`, copied)) | 8 runs of its first instruction (entered by a jump or by running on, no routine of its own in the L1) |
 | Runs (the 48K case's `r1` (`../zynaps/work/r1`): all 12 levels and the wrap, 75000 frames (the same code at the same addresses, without the GS hooks)) | 4 calls, 122,074 t-states own (0.00 %) |
+| Runs (the 48K case's `c2` (`../zynaps/work/c2`): level 1 from the start, 1500 frames) | 29 runs of its first instruction (entered by a jump or by running on, no routine of its own in the L1) |
 | Called from | `PrintCharDone` |
 | Calls | `PrintBcdRest` (tail), `PrintPlayerScoreDone` |
 | Reads | `$7FFF` (`BcdScratch+3`) |
@@ -2851,7 +2896,9 @@ A: the player, 1 or 2. Player 1's score at column 2, player 2's at column 22 of 
 
 | | |
 | --- | --- |
+| Runs (the GS game's own play: stage 2's TTD recording `r1` (Pentagon 128 + GS 512 KB, music) replayed by L1 over its frames 2951-4724, level 1 from the round start (1773 frames; zgsA's `work/zgsA/r1-play`, copied)) | 8 runs of its first instruction (entered by a jump or by running on, no routine of its own in the L1) |
 | Runs (the 48K case's `r1` (`../zynaps/work/r1`): all 12 levels and the wrap, 75000 frames (the same code at the same addresses, without the GS hooks)) | 7 calls, 22,295 t-states own (0.00 %) |
+| Runs (the 48K case's `c2` (`../zynaps/work/c2`): level 1 from the start, 1500 frames) | 11 runs of its first instruction (entered by a jump or by running on, no routine of its own in the L1) |
 | Called from | `PrintBcdRestNext` |
 | Calls | `ScoreJobRating` |
 
@@ -3233,26 +3280,13 @@ Installed at `$B1DF`. Evidence: c2 L1 659 entries, 12 permille own time.
 
 | | |
 | --- | --- |
-| Runs (the GS game's own play: stage 2's TTD recording `r1` (Pentagon 128 + GS 512 KB, music) replayed by L1 over its frames 2951-4724, level 1 from the round start (1773 frames; zgsA's `work/zgsA/r1-play`, copied)) | 584 calls, 12,848 t-states own (0.01 %) |
+| Runs (the GS game's own play: stage 2's TTD recording `r1` (Pentagon 128 + GS 512 KB, music) replayed by L1 over its frames 2951-4724, level 1 from the round start (1773 frames; zgsA's `work/zgsA/r1-play`, copied)) | 584 calls, 1,142,794 t-states own (0.90 %) |
 | Runs (the 48K case's `r1` (`../zynaps/work/r1`): all 12 levels and the wrap, 75000 frames (the same code at the same addresses, without the GS hooks)) | 36,542 calls, 83,050,319 t-states own (1.58 %) |
 | Runs (the 48K case's `c2` (`../zynaps/work/c2`): level 1 from the start, 1500 frames) | 659 calls, 1,295,432 t-states own (1.23 %) |
 | Called from | `InterruptJump` (tail) |
-| Calls | `l_A9EF` (falls into) |
-| Reads | `$7F62`-`$7F65` (`PassCount`, `PassBit`, `PassDepth`, `PassPhase`); `$7F80`-`$7F89` (`SoundPattern1`, `ObjectBeep`, `ObjectBeepMask`, `SoundPattern2` and 3 more); `$80BC` (`ColourCycle`); `$81DA` (`PlayFlags`) |
-| Writes | `$7F62`-`$7F67` (`PassCount`, `PassBit`, `PassDepth`, `PassPhase` and 1 more); `$7F7F`-`$7F96` (`RowBeepMask`, `SoundPattern1`, `ObjectBeep`, `ObjectBeepMask` and 11 more); `$80BC` (`ColourCycle`); `$AAED`-`$AAF8` (`ChainStep1End`, `ChainDrawStrips2`, `ChainDrawStrips3`) |
-| Ports out | `$00FE` |
-
-### `l_A9EF` (`$A9EF`)
-
-**l_A9EF**
-
-| | |
-| --- | --- |
-| Runs (the GS game's own play: stage 2's TTD recording `r1` (Pentagon 128 + GS 512 KB, music) replayed by L1 over its frames 2951-4724, level 1 from the round start (1773 frames; zgsA's `work/zgsA/r1-play`, copied)) | 584 calls, 1,129,946 t-states own (0.89 %) |
-| Called from | `PlayInterrupt` (falls into) |
 | Calls | `DrawPlayfield`, `MoveStars`, `StartColumn`, `ScrollStep`, `TestHitGrid`, `ClearHitGrid`, `PanelFrame` |
-| Reads | `$7F62`-`$7F65` (`PassCount`, `PassBit`, `PassDepth`, `PassPhase`); `$80BC` (`ColourCycle`); `$81DA` (`PlayFlags`) |
-| Writes | `$7F62`-`$7F67` (`PassCount`, `PassBit`, `PassDepth`, `PassPhase` and 1 more); `$7F96` (`EffectTick`); `$80BC` (`ColourCycle`); `$AA29` (`PlayInterruptColour+2`); `$AAED`-`$AAF8` (`ChainStep1End`, `ChainDrawStrips2`, `ChainDrawStrips3`) |
+| Reads | `$7F62`-`$7F65` (`PassCount`, `PassBit`, `PassDepth`, `PassPhase`); `$7F80`-`$7F89` (`SoundPattern1`, `ObjectBeep`, `ObjectBeepMask`, `SoundPattern2` and 3 more); `$80BC` (`ColourCycle`); `$81DA` (`PlayFlags`) |
+| Writes | `$7F62`-`$7F67` (`PassCount`, `PassBit`, `PassDepth`, `PassPhase` and 1 more); `$7F7F`-`$7F96` (`RowBeepMask`, `SoundPattern1`, `ObjectBeep`, `ObjectBeepMask` and 11 more); `$80BC` (`ColourCycle`); `$AA29` (`PlayInterruptColour+2`); `$AAED`-`$AAF8` (`ChainStep1End`, `ChainDrawStrips2`, `ChainDrawStrips3`) |
 | Ports out | `$00FE` |
 
 ### `PlayPass` (`$AA96`)
@@ -3295,9 +3329,9 @@ CALL DrawStrips `$896D` then DI; RET (two NOPs when a nested pass chained step 2
 
 | | |
 | --- | --- |
-| Runs (the GS game's own play: stage 2's TTD recording `r1` (Pentagon 128 + GS 512 KB, music) replayed by L1 over its frames 2951-4724, level 1 from the round start (1773 frames; zgsA's `work/zgsA/r1-play`, copied)) | run into, not called, 4,557 t-states own (0.00 %) |
-| Runs (the 48K case's `r1` (`../zynaps/work/r1`): all 12 levels and the wrap, 75000 frames (the same code at the same addresses, without the GS hooks)) | run into, not called, 194,062 t-states own (0.00 %) |
-| Runs (the 48K case's `c2` (`../zynaps/work/c2`): level 1 from the start, 1500 frames) | run into, not called, 6,894 t-states own (0.01 %) |
+| Runs (the GS game's own play: stage 2's TTD recording `r1` (Pentagon 128 + GS 512 KB, music) replayed by L1 over its frames 2951-4724, level 1 from the round start (1773 frames; zgsA's `work/zgsA/r1-play`, copied)) | 147 runs of its first instruction (entered by a jump or by running on, no routine of its own in the L1), 4,557 t-states own (0.00 %) |
+| Runs (the 48K case's `r1` (`../zynaps/work/r1`): all 12 levels and the wrap, 75000 frames (the same code at the same addresses, without the GS hooks)) | 9,138 runs of its first instruction (entered by a jump or by running on, no routine of its own in the L1), 194,062 t-states own (0.00 %) |
+| Runs (the 48K case's `c2` (`../zynaps/work/c2`): level 1 from the start, 1500 frames) | 165 runs of its first instruction (entered by a jump or by running on, no routine of its own in the L1), 6,894 t-states own (0.01 %) |
 | Called from | `PlayChain` |
 | Calls | `BuildColumn` |
 
@@ -3307,7 +3341,9 @@ CALL DrawStrips `$896D` then DI; RET (two NOPs when a nested pass chained step 2
 
 | | |
 | --- | --- |
+| Runs (the GS game's own play: stage 2's TTD recording `r1` (Pentagon 128 + GS 512 KB, music) replayed by L1 over its frames 2951-4724, level 1 from the round start (1773 frames; zgsA's `work/zgsA/r1-play`, copied)) | 147 runs of its first instruction (entered by a jump or by running on, no routine of its own in the L1) |
 | Runs (the 48K case's `r1` (`../zynaps/work/r1`): all 12 levels and the wrap, 75000 frames (the same code at the same addresses, without the GS hooks)) | 6 calls, 168,340 t-states own (0.00 %) |
+| Runs (the 48K case's `c2` (`../zynaps/work/c2`): level 1 from the start, 1500 frames) | 165 runs of its first instruction (entered by a jump or by running on, no routine of its own in the L1) |
 | Called from | `BuildColumnStep` |
 | Calls | `ChainDrawStrips2` (falls into), `PlayInterruptExit` |
 
@@ -3317,9 +3353,9 @@ CALL DrawStrips `$896D` then DI; RET (two NOPs when a nested pass chained step 2
 
 | | |
 | --- | --- |
-| Runs (the GS game's own play: stage 2's TTD recording `r1` (Pentagon 128 + GS 512 KB, music) replayed by L1 over its frames 2951-4724, level 1 from the round start (1773 frames; zgsA's `work/zgsA/r1-play`, copied)) | run into, not called, 4,526 t-states own (0.00 %) |
+| Runs (the GS game's own play: stage 2's TTD recording `r1` (Pentagon 128 + GS 512 KB, music) replayed by L1 over its frames 2951-4724, level 1 from the round start (1773 frames; zgsA's `work/zgsA/r1-play`, copied)) | 146 runs of its first instruction (entered by a jump or by running on, no routine of its own in the L1), 4,526 t-states own (0.00 %) |
 | Runs (the 48K case's `r1` (`../zynaps/work/r1`): all 12 levels and the wrap, 75000 frames (the same code at the same addresses, without the GS hooks)) | 6 calls, 366,226 t-states own (0.01 %) |
-| Runs (the 48K case's `c2` (`../zynaps/work/c2`): level 1 from the start, 1500 frames) | run into, not called, 6,855 t-states own (0.01 %) |
+| Runs (the 48K case's `c2` (`../zynaps/work/c2`): level 1 from the start, 1500 frames) | 165 runs of its first instruction (entered by a jump or by running on, no routine of its own in the L1), 6,855 t-states own (0.01 %) |
 | Called from | `PlayChain`, `ChainStep1End` (falls into) |
 | Calls | `BuildColumn`, `PlayInterruptExit` |
 
@@ -3329,9 +3365,9 @@ CALL DrawStrips `$896D` then DI; RET (two NOPs when a nested pass chained step 2
 
 | | |
 | --- | --- |
-| Runs (the GS game's own play: stage 2's TTD recording `r1` (Pentagon 128 + GS 512 KB, music) replayed by L1 over its frames 2951-4724, level 1 from the round start (1773 frames; zgsA's `work/zgsA/r1-play`, copied)) | run into, not called, 4,526 t-states own (0.00 %) |
-| Runs (the 48K case's `r1` (`../zynaps/work/r1`): all 12 levels and the wrap, 75000 frames (the same code at the same addresses, without the GS hooks)) | run into, not called, 366,758 t-states own (0.01 %) |
-| Runs (the 48K case's `c2` (`../zynaps/work/c2`): level 1 from the start, 1500 frames) | run into, not called, 6,626 t-states own (0.01 %) |
+| Runs (the GS game's own play: stage 2's TTD recording `r1` (Pentagon 128 + GS 512 KB, music) replayed by L1 over its frames 2951-4724, level 1 from the round start (1773 frames; zgsA's `work/zgsA/r1-play`, copied)) | 146 runs of its first instruction (entered by a jump or by running on, no routine of its own in the L1), 4,526 t-states own (0.00 %) |
+| Runs (the 48K case's `r1` (`../zynaps/work/r1`): all 12 levels and the wrap, 75000 frames (the same code at the same addresses, without the GS hooks)) | 9,139 runs of its first instruction (entered by a jump or by running on, no routine of its own in the L1), 366,758 t-states own (0.01 %) |
+| Runs (the 48K case's `c2` (`../zynaps/work/c2`): level 1 from the start, 1500 frames) | 166 runs of its first instruction (entered by a jump or by running on, no routine of its own in the L1), 6,626 t-states own (0.01 %) |
 | Called from | `PlayChain` |
 | Calls | `BuildColumn`, `PlayInterruptExit` |
 
@@ -3343,9 +3379,9 @@ DI, `$7F65` = 0, so the next interrupt starts a new pass.
 
 | | |
 | --- | --- |
-| Runs (the GS game's own play: stage 2's TTD recording `r1` (Pentagon 128 + GS 512 KB, music) replayed by L1 over its frames 2951-4724, level 1 from the round start (1773 frames; zgsA's `work/zgsA/r1-play`, copied)) | run into, not called, 4,495 t-states own (0.00 %) |
-| Runs (the 48K case's `r1` (`../zynaps/work/r1`): all 12 levels and the wrap, 75000 frames (the same code at the same addresses, without the GS hooks)) | run into, not called, 315,052 t-states own (0.01 %) |
-| Runs (the 48K case's `c2` (`../zynaps/work/c2`): level 1 from the start, 1500 frames) | run into, not called, 5,818 t-states own (0.01 %) |
+| Runs (the GS game's own play: stage 2's TTD recording `r1` (Pentagon 128 + GS 512 KB, music) replayed by L1 over its frames 2951-4724, level 1 from the round start (1773 frames; zgsA's `work/zgsA/r1-play`, copied)) | 145 runs of its first instruction (entered by a jump or by running on, no routine of its own in the L1), 4,495 t-states own (0.00 %) |
+| Runs (the 48K case's `r1` (`../zynaps/work/r1`): all 12 levels and the wrap, 75000 frames (the same code at the same addresses, without the GS hooks)) | 9,128 runs of its first instruction (entered by a jump or by running on, no routine of its own in the L1), 315,052 t-states own (0.01 %) |
+| Runs (the 48K case's `c2` (`../zynaps/work/c2`): level 1 from the start, 1500 frames) | 164 runs of its first instruction (entered by a jump or by running on, no routine of its own in the L1), 5,818 t-states own (0.01 %) |
 | Called from | `PlayChain` |
 | Calls | `PlayInterruptExit` |
 | Writes | `$7F65` (`PassPhase`) |
@@ -3391,7 +3427,7 @@ Called from PlayInterrupt `$A9ED` (at `$AA87`) once a pass; c2: 659 entries in 6
 | Runs (the GS game's own play: stage 2's TTD recording `r1` (Pentagon 128 + GS 512 KB, music) replayed by L1 over its frames 2951-4724, level 1 from the round start (1773 frames; zgsA's `work/zgsA/r1-play`, copied)) | 585 calls, 481,719 t-states own (0.38 %) |
 | Runs (the 48K case's `r1` (`../zynaps/work/r1`): all 12 levels and the wrap, 75000 frames (the same code at the same addresses, without the GS hooks)) | 36,542 calls, 35,117,718 t-states own (0.67 %) |
 | Runs (the 48K case's `c2` (`../zynaps/work/c2`): level 1 from the start, 1500 frames) | 659 calls, 630,704 t-states own (0.60 %) |
-| Called from | `l_A9EF` |
+| Called from | `PlayInterrupt` |
 | Calls | `DrawSpinner` |
 | Reads | `$5AC6`-`$5AC7` (screen); `$7F62` (`PassCount`); `$7F77`-`$7F7A` (`PanelBurst`, `SpinnerFrame`, `SpinnerColour`, `SpinnerColourStep`); `$7F99`-`$7FA7` (`PlayerRecord`, `Players`, `Player1`); `$7FD7` (`Player2Speed`); `$80E6` (`Fuel`) |
 | Writes | `$5AAB`-`$5AF1` (screen); `$7F77`-`$7F7A` (`PanelBurst`, `SpinnerFrame`, `SpinnerColour`, `SpinnerColourStep`) |
@@ -3516,9 +3552,9 @@ Allows only bit 7 meanwhile (EventMask AND `$80`). Attributes `$46` (bright yell
 
 | | |
 | --- | --- |
-| Runs (the GS game's own play: stage 2's TTD recording `r1` (Pentagon 128 + GS 512 KB, music) replayed by L1 over its frames 2951-4724, level 1 from the round start (1773 frames; zgsA's `work/zgsA/r1-play`, copied)) | run into, not called, 896 t-states own (0.00 %) |
-| Runs (the 48K case's `r1` (`../zynaps/work/r1`): all 12 levels and the wrap, 75000 frames (the same code at the same addresses, without the GS hooks)) | run into, not called, 36,388 t-states own (0.00 %) |
-| Runs (the 48K case's `c2` (`../zynaps/work/c2`): level 1 from the start, 1500 frames) | run into, not called, 224 t-states own (0.00 %) |
+| Runs (the GS game's own play: stage 2's TTD recording `r1` (Pentagon 128 + GS 512 KB, music) replayed by L1 over its frames 2951-4724, level 1 from the round start (1773 frames; zgsA's `work/zgsA/r1-play`, copied)) | 4 runs of its first instruction (entered by a jump or by running on, no routine of its own in the L1), 896 t-states own (0.00 %) |
+| Runs (the 48K case's `r1` (`../zynaps/work/r1`): all 12 levels and the wrap, 75000 frames (the same code at the same addresses, without the GS hooks)) | 163 runs of its first instruction (entered by a jump or by running on, no routine of its own in the L1), 36,388 t-states own (0.00 %) |
+| Runs (the 48K case's `c2` (`../zynaps/work/c2`): level 1 from the start, 1500 frames) | 1 run of its first instruction (entered by a jump or by running on, no routine of its own in the L1), 224 t-states own (0.00 %) |
 | Called from | `JumpTable` |
 | Calls | `IconRow` |
 | Reads | `$7F99`-`$7FA3` (`PlayerRecord`, `Players`, `Player1`); `$7FD3` (`Player2PodSelector`); `$81C6` (`EventMask`) |
@@ -3530,7 +3566,9 @@ Allows only bit 7 meanwhile (EventMask AND `$80`). Attributes `$46` (bright yell
 
 | | |
 | --- | --- |
+| Runs (the GS game's own play: stage 2's TTD recording `r1` (Pentagon 128 + GS 512 KB, music) replayed by L1 over its frames 2951-4724, level 1 from the round start (1773 frames; zgsA's `work/zgsA/r1-play`, copied)) | 4 runs of its first instruction (entered by a jump or by running on, no routine of its own in the L1) |
 | Runs (the 48K case's `r1` (`../zynaps/work/r1`): all 12 levels and the wrap, 75000 frames (the same code at the same addresses, without the GS hooks)) | 1 call, 2,445 t-states own (0.00 %) |
+| Runs (the 48K case's `c2` (`../zynaps/work/c2`): level 1 from the start, 1500 frames) | 1 run of its first instruction (entered by a jump or by running on, no routine of its own in the L1) |
 | Called from | `IconLine` |
 | Calls | `IconRow` (falls into) |
 
@@ -3556,7 +3594,9 @@ In: DE the bytes (8 of the left cell, then 8 of the right), HL the screen addres
 
 | | |
 | --- | --- |
+| Runs (the GS game's own play: stage 2's TTD recording `r1` (Pentagon 128 + GS 512 KB, music) replayed by L1 over its frames 2951-4724, level 1 from the round start (1773 frames; zgsA's `work/zgsA/r1-play`, copied)) | 16 runs of its first instruction (entered by a jump or by running on, no routine of its own in the L1) |
 | Runs (the 48K case's `r1` (`../zynaps/work/r1`): all 12 levels and the wrap, 75000 frames (the same code at the same addresses, without the GS hooks)) | 652 calls, 13,834 t-states own (0.00 %) |
+| Runs (the 48K case's `c2` (`../zynaps/work/c2`): level 1 from the start, 1500 frames) | 4 runs of its first instruction (entered by a jump or by running on, no routine of its own in the L1) |
 | Called from | `IconRow` (falls into), `IconLine` (tail) |
 | Calls | `IconLine` (falls into) |
 
@@ -3566,7 +3606,9 @@ In: DE the bytes (8 of the left cell, then 8 of the right), HL the screen addres
 
 | | |
 | --- | --- |
+| Runs (the GS game's own play: stage 2's TTD recording `r1` (Pentagon 128 + GS 512 KB, music) replayed by L1 over its frames 2951-4724, level 1 from the round start (1773 frames; zgsA's `work/zgsA/r1-play`, copied)) | 128 runs of its first instruction (entered by a jump or by running on, no routine of its own in the L1) |
 | Runs (the 48K case's `r1` (`../zynaps/work/r1`): all 12 levels and the wrap, 75000 frames (the same code at the same addresses, without the GS hooks)) | 653 calls, 220,189 t-states own (0.00 %) |
+| Runs (the 48K case's `c2` (`../zynaps/work/c2`): level 1 from the start, 1500 frames) | 32 runs of its first instruction (entered by a jump or by running on, no routine of its own in the L1) |
 | Called from | `PlayInterruptExit`, `IconCell` (falls into) |
 | Calls | `EventDone`, `IconLowerRow`, `IconCell` (tail) |
 | Reads | `$B4AF`-`$B54E` (`PodIcons`) |
@@ -3580,8 +3622,8 @@ Drops bit 0 from the mask (a second effect request waits; the effect player post
 
 | | |
 | --- | --- |
-| Runs (the 48K case's `r1` (`../zynaps/work/r1`): all 12 levels and the wrap, 75000 frames (the same code at the same addresses, without the GS hooks)) | run into, not called, 102,275 t-states own (0.00 %) |
-| Runs (the 48K case's `c2` (`../zynaps/work/c2`): level 1 from the start, 1500 frames) | run into, not called, 2,365 t-states own (0.00 %) |
+| Runs (the 48K case's `r1` (`../zynaps/work/r1`): all 12 levels and the wrap, 75000 frames (the same code at the same addresses, without the GS hooks)) | 1,942 runs of its first instruction (entered by a jump or by running on, no routine of its own in the L1), 102,275 t-states own (0.00 %) |
+| Runs (the 48K case's `c2` (`../zynaps/work/c2`): level 1 from the start, 1500 frames) | 45 runs of its first instruction (entered by a jump or by running on, no routine of its own in the L1), 2,365 t-states own (0.00 %) |
 | Called from | `JumpTable` |
 | Calls | `EffectPlay` |
 | Reads | `$81C6` (`EventMask`) |
@@ -3606,8 +3648,8 @@ Allows only bit 7 meanwhile. Prints the current player's score (PrintPlayerScore
 
 | | |
 | --- | --- |
-| Runs (the 48K case's `r1` (`../zynaps/work/r1`): all 12 levels and the wrap, 75000 frames (the same code at the same addresses, without the GS hooks)) | run into, not called, 59,456 t-states own (0.00 %) |
-| Runs (the 48K case's `c2` (`../zynaps/work/c2`): level 1 from the start, 1500 frames) | run into, not called, 1,796 t-states own (0.00 %) |
+| Runs (the 48K case's `r1` (`../zynaps/work/r1`): all 12 levels and the wrap, 75000 frames (the same code at the same addresses, without the GS hooks)) | 903 runs of its first instruction (entered by a jump or by running on, no routine of its own in the L1), 59,456 t-states own (0.00 %) |
+| Runs (the 48K case's `c2` (`../zynaps/work/c2`): level 1 from the start, 1500 frames) | 9 runs of its first instruction (entered by a jump or by running on, no routine of its own in the L1), 1,796 t-states own (0.00 %) |
 | Called from | `JumpTable` |
 | Calls | `PrintPlayerScore` |
 | Reads | `$7F98`-`$7FA8` (`CurrentPlayer`, `PlayerRecord`, `Players`, `Player1`); `$800F` (`ExtraLifeScores`); `$81C6` (`EventMask`) |
@@ -3620,6 +3662,7 @@ Allows only bit 7 meanwhile. Prints the current player's score (PrintPlayerScore
 | | |
 | --- | --- |
 | Runs (the 48K case's `r1` (`../zynaps/work/r1`): all 12 levels and the wrap, 75000 frames (the same code at the same addresses, without the GS hooks)) | 7 calls, 121,600 t-states own (0.00 %) |
+| Runs (the 48K case's `c2` (`../zynaps/work/c2`): level 1 from the start, 1500 frames) | 9 runs of its first instruction (entered by a jump or by running on, no routine of its own in the L1) |
 | Called from | `PrintPlayerScoreDone` |
 | Calls | `WeaponRating`, `DrawLives`, `EventDone` |
 | Reads | `$7F99`-`$7FA8` (`PlayerRecord`, `Players`, `Player1`); `$800F`-`$8014` (`ExtraLifeScores`) |
@@ -3633,9 +3676,9 @@ Sets the mask to 0 (nothing interrupts it), then builds every entry between Draw
 
 | | |
 | --- | --- |
-| Runs (the GS game's own play: stage 2's TTD recording `r1` (Pentagon 128 + GS 512 KB, music) replayed by L1 over its frames 2951-4724, level 1 from the round start (1773 frames; zgsA's `work/zgsA/r1-play`, copied)) | run into, not called, 217 t-states own (0.00 %) |
-| Runs (the 48K case's `r1` (`../zynaps/work/r1`): all 12 levels and the wrap, 75000 frames (the same code at the same addresses, without the GS hooks)) | run into, not called, 10,664 t-states own (0.00 %) |
-| Runs (the 48K case's `c2` (`../zynaps/work/c2`): level 1 from the start, 1500 frames) | run into, not called, 155 t-states own (0.00 %) |
+| Runs (the GS game's own play: stage 2's TTD recording `r1` (Pentagon 128 + GS 512 KB, music) replayed by L1 over its frames 2951-4724, level 1 from the round start (1773 frames; zgsA's `work/zgsA/r1-play`, copied)) | 7 runs of its first instruction (entered by a jump or by running on, no routine of its own in the L1), 217 t-states own (0.00 %) |
+| Runs (the 48K case's `r1` (`../zynaps/work/r1`): all 12 levels and the wrap, 75000 frames (the same code at the same addresses, without the GS hooks)) | 344 runs of its first instruction (entered by a jump or by running on, no routine of its own in the L1), 10,664 t-states own (0.00 %) |
+| Runs (the 48K case's `c2` (`../zynaps/work/c2`): level 1 from the start, 1500 frames) | 5 runs of its first instruction (entered by a jump or by running on, no routine of its own in the L1), 155 t-states own (0.00 %) |
 | Called from | `JumpTable` |
 | Calls | `SpriteBuildNext` (falls into) |
 | Reads | `$81C6` (`EventMask`) |
@@ -3661,7 +3704,9 @@ Sets the mask to 0 (nothing interrupts it), then builds every entry between Draw
 
 | | |
 | --- | --- |
+| Runs (the GS game's own play: stage 2's TTD recording `r1` (Pentagon 128 + GS 512 KB, music) replayed by L1 over its frames 2951-4724, level 1 from the round start (1773 frames; zgsA's `work/zgsA/r1-play`, copied)) | 14 runs of its first instruction (entered by a jump or by running on, no routine of its own in the L1) |
 | Runs (the 48K case's `r1` (`../zynaps/work/r1`): all 12 levels and the wrap, 75000 frames (the same code at the same addresses, without the GS hooks)) | 689 calls, 66,342 t-states own (0.00 %) |
+| Runs (the 48K case's `c2` (`../zynaps/work/c2`): level 1 from the start, 1500 frames) | 10 runs of its first instruction (entered by a jump or by running on, no routine of its own in the L1) |
 | Called from | `PlayInterruptExit`, `SpriteBuildNext` (falls into) |
 | Calls | `EventDone`, `LoadCellSprite`, `SpriteBuildShifts` |
 | Reads | `$8024`-`$803D` (`DrawQueueRead`, `DrawQueueWrite`, `DrawQueue`) |
@@ -3732,7 +3777,9 @@ In: HL the descriptor. Its +4/+5 (the image's length), +9 (the shift pattern) an
 
 | | |
 | --- | --- |
+| Runs (the GS game's own play: stage 2's TTD recording `r1` (Pentagon 128 + GS 512 KB, music) replayed by L1 over its frames 2951-4724, level 1 from the round start (1773 frames; zgsA's `work/zgsA/r1-play`, copied)) | 49 runs of its first instruction (entered by a jump or by running on, no routine of its own in the L1) |
 | Runs (the 48K case's `r1` (`../zynaps/work/r1`): all 12 levels and the wrap, 75000 frames (the same code at the same addresses, without the GS hooks)) | 2,409 calls, 105,952 t-states own (0.00 %) |
+| Runs (the 48K case's `c2` (`../zynaps/work/c2`): level 1 from the start, 1500 frames) | 35 runs of its first instruction (entered by a jump or by running on, no routine of its own in the L1) |
 | Called from | `PlayInterruptExit`, `SpriteShiftRound` (falls into) |
 | Calls | `SpriteShiftCopy` (falls into) |
 
@@ -3742,6 +3789,7 @@ In: HL the descriptor. Its +4/+5 (the image's length), +9 (the shift pattern) an
 
 | | |
 | --- | --- |
+| Runs (the GS game's own play: stage 2's TTD recording `r1` (Pentagon 128 + GS 512 KB, music) replayed by L1 over its frames 2951-4724, level 1 from the round start (1773 frames; zgsA's `work/zgsA/r1-play`, copied)) | 3,528 runs of its first instruction (entered by a jump or by running on, no routine of its own in the L1) |
 | Runs (the 48K case's `r1` (`../zynaps/work/r1`): all 12 levels and the wrap, 75000 frames (the same code at the same addresses, without the GS hooks)) | 2,509 calls, 4,184,182 t-states own (0.08 %) |
 | Runs (the 48K case's `c2` (`../zynaps/work/c2`): level 1 from the start, 1500 frames) | 38 calls, 55,100 t-states own (0.05 %) |
 | Called from | `PlayInterruptExit`, `SpriteShiftTest` (falls into) |
@@ -3767,7 +3815,9 @@ In: HL the descriptor. Its +4/+5 (the image's length), +9 (the shift pattern) an
 
 | | |
 | --- | --- |
+| Runs (the GS game's own play: stage 2's TTD recording `r1` (Pentagon 128 + GS 512 KB, music) replayed by L1 over its frames 2951-4724, level 1 from the round start (1773 frames; zgsA's `work/zgsA/r1-play`, copied)) | 49 runs of its first instruction (entered by a jump or by running on, no routine of its own in the L1) |
 | Runs (the 48K case's `r1` (`../zynaps/work/r1`): all 12 levels and the wrap, 75000 frames (the same code at the same addresses, without the GS hooks)) | 2,409 calls, 33,255 t-states own (0.00 %) |
+| Runs (the 48K case's `c2` (`../zynaps/work/c2`): level 1 from the start, 1500 frames) | 35 runs of its first instruction (entered by a jump or by running on, no routine of its own in the L1) |
 | Called from | `PlayInterruptExit`, `SpriteShiftNext` (falls into) |
 | Calls | `SpriteBuildDone`, `SpriteShiftRound` (tail) |
 
@@ -3885,8 +3935,8 @@ In: A the condition (0-6). Out: carry when it holds; A, BC, DE, HL kept (A is th
 
 | | |
 | --- | --- |
-| Runs (the 48K case's `r1` (`../zynaps/work/r1`): all 12 levels and the wrap, 75000 frames (the same code at the same addresses, without the GS hooks)) | run into, not called, 27,885 t-states own (0.00 %) |
-| Runs (the 48K case's `c2` (`../zynaps/work/c2`): level 1 from the start, 1500 frames) | run into, not called, 55 t-states own (0.00 %) |
+| Runs (the 48K case's `r1` (`../zynaps/work/r1`): all 12 levels and the wrap, 75000 frames (the same code at the same addresses, without the GS hooks)) | 1,176 runs of its first instruction (entered by a jump or by running on, no routine of its own in the L1), 27,885 t-states own (0.00 %) |
+| Runs (the 48K case's `c2` (`../zynaps/work/c2`): level 1 from the start, 1500 frames) | 2 runs of its first instruction (entered by a jump or by running on, no routine of its own in the L1), 55 t-states own (0.00 %) |
 | Called from | `JumpTable` |
 
 ### `CondPositive` (`$AE18`)
@@ -3927,7 +3977,7 @@ In: A the condition (0-6). Out: carry when it holds; A, BC, DE, HL kept (A is th
 
 | | |
 | --- | --- |
-| Runs (the 48K case's `r1` (`../zynaps/work/r1`): all 12 levels and the wrap, 75000 frames (the same code at the same addresses, without the GS hooks)) | run into, not called, 28 t-states own (0.00 %) |
+| Runs (the 48K case's `r1` (`../zynaps/work/r1`): all 12 levels and the wrap, 75000 frames (the same code at the same addresses, without the GS hooks)) | 2 runs of its first instruction (entered by a jump or by running on, no routine of its own in the L1), 28 t-states own (0.00 %) |
 | Called from | `JumpTable` |
 
 ### `CmdSetFlag` (`$AE28`)
@@ -3977,7 +4027,7 @@ The scroll stops, EndPending (`$7F7C`) = 2 (the play loop ends with code 2: Leve
 
 | | |
 | --- | --- |
-| Runs (the 48K case's `r1` (`../zynaps/work/r1`): all 12 levels and the wrap, 75000 frames (the same code at the same addresses, without the GS hooks)) | run into, not called, 1,231 t-states own (0.00 %) |
+| Runs (the 48K case's `r1` (`../zynaps/work/r1`): all 12 levels and the wrap, 75000 frames (the same code at the same addresses, without the GS hooks)) | 11 runs of its first instruction (entered by a jump or by running on, no routine of its own in the L1), 1,231 t-states own (0.00 %) |
 | Called from | `JumpTable` |
 | Calls | `CmdScrollStop` |
 | Reads | `$7F99`-`$7F9A` (`PlayerRecord`) |
@@ -3997,9 +4047,9 @@ The scroll stops, EndPending (`$7F7C`) = 2 (the play loop ends with code 2: Leve
 
 | | |
 | --- | --- |
-| Runs (the GS game's own play: stage 2's TTD recording `r1` (Pentagon 128 + GS 512 KB, music) replayed by L1 over its frames 2951-4724, level 1 from the round start (1773 frames; zgsA's `work/zgsA/r1-play`, copied)) | run into, not called, 340 t-states own (0.00 %) |
-| Runs (the 48K case's `r1` (`../zynaps/work/r1`): all 12 levels and the wrap, 75000 frames (the same code at the same addresses, without the GS hooks)) | run into, not called, 5,704 t-states own (0.00 %) |
-| Runs (the 48K case's `c2` (`../zynaps/work/c2`): level 1 from the start, 1500 frames) | run into, not called, 88 t-states own (0.00 %) |
+| Runs (the GS game's own play: stage 2's TTD recording `r1` (Pentagon 128 + GS 512 KB, music) replayed by L1 over its frames 2951-4724, level 1 from the round start (1773 frames; zgsA's `work/zgsA/r1-play`, copied)) | 5 runs of its first instruction (entered by a jump or by running on, no routine of its own in the L1), 340 t-states own (0.00 %) |
+| Runs (the 48K case's `r1` (`../zynaps/work/r1`): all 12 levels and the wrap, 75000 frames (the same code at the same addresses, without the GS hooks)) | 73 runs of its first instruction (entered by a jump or by running on, no routine of its own in the L1), 5,704 t-states own (0.00 %) |
+| Runs (the 48K case's `c2` (`../zynaps/work/c2`): level 1 from the start, 1500 frames) | 1 run of its first instruction (entered by a jump or by running on, no routine of its own in the L1), 88 t-states own (0.00 %) |
 | Called from | `JumpTable` |
 | Calls | `ScriptWord` |
 | Writes | `$81E4`-`$81E5` (`ScriptCounter`) |
@@ -4020,8 +4070,8 @@ The word is read, ADC HL,DE with HL = `$FFFF` gives word - 1 with Z when it reac
 
 | | |
 | --- | --- |
-| Runs (the 48K case's `r1` (`../zynaps/work/r1`): all 12 levels and the wrap, 75000 frames (the same code at the same addresses, without the GS hooks)) | run into, not called, 112,823 t-states own (0.00 %) |
-| Runs (the 48K case's `c2` (`../zynaps/work/c2`): level 1 from the start, 1500 frames) | run into, not called, 324 t-states own (0.00 %) |
+| Runs (the 48K case's `r1` (`../zynaps/work/r1`): all 12 levels and the wrap, 75000 frames (the same code at the same addresses, without the GS hooks)) | 720 runs of its first instruction (entered by a jump or by running on, no routine of its own in the L1), 112,823 t-states own (0.00 %) |
+| Runs (the 48K case's `c2` (`../zynaps/work/c2`): level 1 from the start, 1500 frames) | 2 runs of its first instruction (entered by a jump or by running on, no routine of its own in the L1), 324 t-states own (0.00 %) |
 | Called from | `JumpTable` |
 | Calls | `ScriptSaveFlags`, `ScriptWord` |
 | Reads | `$81E4`-`$81E5` (`ScriptCounter`) |
@@ -4069,7 +4119,7 @@ Copies the VM state `$81D7-$81F9` (35 bytes, PC past this instruction) to the pl
 
 | | |
 | --- | --- |
-| Runs (the 48K case's `r1` (`../zynaps/work/r1`): all 12 levels and the wrap, 75000 frames (the same code at the same addresses, without the GS hooks)) | run into, not called, 18,125 t-states own (0.00 %) |
+| Runs (the 48K case's `r1` (`../zynaps/work/r1`): all 12 levels and the wrap, 75000 frames (the same code at the same addresses, without the GS hooks)) | 16 runs of its first instruction (entered by a jump or by running on, no routine of its own in the L1), 18,125 t-states own (0.00 %) |
 | Called from | `JumpTable` |
 | Reads | `$7F99`-`$7F9A` (`PlayerRecord`); `$81D7`-`$81F9` (`ScriptState`, `ScriptPC`, `PlayFlags`, `ScrollCount` and 8 more) |
 | Writes | `$7FA9`-`$7FCB` (`Player1LevelState`) |
@@ -4082,7 +4132,7 @@ For each record: +8 = 0, +6/+7 = `$85E4`; then of the 32 bytes below its pointer
 
 | | |
 | --- | --- |
-| Runs (the 48K case's `r1` (`../zynaps/work/r1`): all 12 levels and the wrap, 75000 frames (the same code at the same addresses, without the GS hooks)) | run into, not called, 214,426 t-states own (0.00 %) |
+| Runs (the 48K case's `r1` (`../zynaps/work/r1`): all 12 levels and the wrap, 75000 frames (the same code at the same addresses, without the GS hooks)) | 8 runs of its first instruction (entered by a jump or by running on, no routine of its own in the L1), 214,426 t-states own (0.00 %) |
 | Called from | `JumpTable` |
 | Reads | `$B700`-`$BFFF` (`data_B700`, `MapRingSpace`, `TileSource`); `$F12C`-`$F26D` (`RowRecords`); `$F28C`-`$F28D` (`RowRecords+352`); `$F2AC`-`$F2AD` (`RowRecords+384`); `$F2CC`-`$F2CD` (`RowRecords+416`); `$F2EC`-`$F2ED` (`RowRecords+448`); 3 more ranges |
 | Writes | `$B700`-`$BF03` (`data_B700`, `MapRingSpace`, `TileSource`); `$BF1E`-`$BF7F` (`TileSource+798`); `$BF93`-`$BFD7` (`TileSource+915`); `$BFEC`-`$BFFF` (`TileSource+1004`); `$F132`-`$F274` (`RowRecords+6`); `$F292`-`$F294` (`RowRecords+358`); 6 more ranges |
@@ -4093,7 +4143,7 @@ For each record: +8 = 0, +6/+7 = `$85E4`; then of the 32 bytes below its pointer
 
 | | |
 | --- | --- |
-| Runs (the 48K case's `r1` (`../zynaps/work/r1`): all 12 levels and the wrap, 75000 frames (the same code at the same addresses, without the GS hooks)) | run into, not called, 320 t-states own (0.00 %) |
+| Runs (the 48K case's `r1` (`../zynaps/work/r1`): all 12 levels and the wrap, 75000 frames (the same code at the same addresses, without the GS hooks)) | 5 runs of its first instruction (entered by a jump or by running on, no routine of its own in the L1), 320 t-states own (0.00 %) |
 | Called from | `JumpTable` |
 | Calls | `FreeEnemySlot`, `EnemyEscaped` |
 | Reads | `$F3A0` (`EnemyObjects+8`) |
@@ -4106,7 +4156,7 @@ A record counts when +8 has bits 5 and 7 set and +`$0D` is not `$FF`. The flags 
 
 | | |
 | --- | --- |
-| Runs (the 48K case's `r1` (`../zynaps/work/r1`): all 12 levels and the wrap, 75000 frames (the same code at the same addresses, without the GS hooks)) | run into, not called, 92,206 t-states own (0.00 %) |
+| Runs (the 48K case's `r1` (`../zynaps/work/r1`): all 12 levels and the wrap, 75000 frames (the same code at the same addresses, without the GS hooks)) | 456 runs of its first instruction (entered by a jump or by running on, no routine of its own in the L1), 92,206 t-states own (0.00 %) |
 | Called from | `JumpTable` |
 | Calls | `ScriptSaveFlags` |
 | Reads | `$F3A0`-`$F3A5` (`EnemyObjects+8`); `$F3CC`-`$F3D1` (`EnemyObjects+52`); `$F3F8`-`$F3FD` (`EnemyObjects+96`); `$F424`-`$F429` (`EnemyObjects+140`); `$F450`-`$F455` (`EnemyObjects+184`) |
@@ -4151,7 +4201,9 @@ A is stored in ReplayFast (`$7F76`, read by `$8DCA`: `$FF` skips the drawing). E
 
 | | |
 | --- | --- |
-| Runs | ran within another entry's routine (reached by a jump or by running on, its calls below), no runs of its own counted |
+| Runs (the GS game's own play: stage 2's TTD recording `r1` (Pentagon 128 + GS 512 KB, music) replayed by L1 over its frames 2951-4724, level 1 from the round start (1773 frames; zgsA's `work/zgsA/r1-play`, copied)) | 4 runs of its first instruction (entered by a jump or by running on, no routine of its own in the L1) |
+| Runs (the 48K case's `r1` (`../zynaps/work/r1`): all 12 levels and the wrap, 75000 frames (the same code at the same addresses, without the GS hooks)) | 11 runs of its first instruction (entered by a jump or by running on, no routine of its own in the L1) |
+| Runs (the 48K case's `c2` (`../zynaps/work/c2`): level 1 from the start, 1500 frames) | 1 run of its first instruction (entered by a jump or by running on, no routine of its own in the L1) |
 | Calls | `ScrollStep`, `ReplayStep` (tail) |
 
 ### `ReplayStep` (`$AF9A`)
@@ -4303,8 +4355,8 @@ The record's deaths +5 + 1, +8 and +9 zeroed (the side weapon and the double pla
 
 | | |
 | --- | --- |
-| Runs (the GS game's own play: stage 2's TTD recording `r1` (Pentagon 128 + GS 512 KB, music) replayed by L1 over its frames 2951-4724, level 1 from the round start (1773 frames; zgsA's `work/zgsA/r1-play`, copied)) | run into, not called, 672 t-states own (0.00 %) |
-| Runs (the 48K case's `c2` (`../zynaps/work/c2`): level 1 from the start, 1500 frames) | run into, not called, 205 t-states own (0.00 %) |
+| Runs (the GS game's own play: stage 2's TTD recording `r1` (Pentagon 128 + GS 512 KB, music) replayed by L1 over its frames 2951-4724, level 1 from the round start (1773 frames; zgsA's `work/zgsA/r1-play`, copied)) | 4 runs of its first instruction (entered by a jump or by running on, no routine of its own in the L1), 672 t-states own (0.00 %) |
+| Runs (the 48K case's `c2` (`../zynaps/work/c2`): level 1 from the start, 1500 frames) | 1 run of its first instruction (entered by a jump or by running on, no routine of its own in the L1), 205 t-states own (0.00 %) |
 | Called from | `JumpTable` |
 | Calls | `FuelOut`, `NextPlayer` |
 | Reads | `$7F99`-`$7FA1` (`PlayerRecord`, `Players`, `Player1`); `$7FD0`-`$7FD1` (`Player2Lives`, `Player2LivesLost`) |
@@ -4332,7 +4384,7 @@ The record's +6 + 1, wrapping from 12 to 0, SetLevelStart. Not in c1 or c2; r1 (
 
 | | |
 | --- | --- |
-| Runs (the 48K case's `r1` (`../zynaps/work/r1`): all 12 levels and the wrap, 75000 frames (the same code at the same addresses, without the GS hooks)) | run into, not called, 1,751 t-states own (0.00 %) |
+| Runs (the 48K case's `r1` (`../zynaps/work/r1`): all 12 levels and the wrap, 75000 frames (the same code at the same addresses, without the GS hooks)) | 11 runs of its first instruction (entered by a jump or by running on, no routine of its own in the L1), 1,751 t-states own (0.00 %) |
 | Called from | `JumpTable` |
 | Calls | `SetLevelStart` |
 | Reads | `$7F99`-`$7FA2` (`PlayerRecord`, `Players`, `Player1`) |
@@ -4421,6 +4473,7 @@ FrameRate `$7F6A` = `$C8`, `$7F6B` = 8; EventRequests = 0 and EventMask = `$FF`,
 | --- | --- |
 | Runs (the GS game's own play: stage 2's TTD recording `r1` (Pentagon 128 + GS 512 KB, music) replayed by L1 over its frames 2951-4724, level 1 from the round start (1773 frames; zgsA's `work/zgsA/r1-play`, copied)) | 291,458 calls, 2,041,121 t-states own (1.61 %) |
 | Runs (the 48K case's `r1` (`../zynaps/work/r1`): all 12 levels and the wrap, 75000 frames (the same code at the same addresses, without the GS hooks)) | 2,893,497 calls, 20,276,374 t-states own (0.39 %) |
+| Runs (the 48K case's `c2` (`../zynaps/work/c2`): level 1 from the start, 1500 frames) | 68,050 runs of its first instruction (entered by a jump or by running on, no routine of its own in the L1) |
 | Called from | `PlayInterruptExit`, `PlayLoopTest` (falls into) |
 | Calls | `PlayLoopAgain` (falls into) |
 | Reads | `$7F7D` (`EndCode`) |
@@ -4580,6 +4633,7 @@ Entered from EffectJob (event bit 0; c2: 106 entries in 73 frames, 45 from Effec
 | | |
 | --- | --- |
 | Runs (the 48K case's `r1` (`../zynaps/work/r1`): all 12 levels and the wrap, 75000 frames (the same code at the same addresses, without the GS hooks)) | 10,850 calls, 733,667 t-states own (0.01 %) |
+| Runs (the 48K case's `c2` (`../zynaps/work/c2`): level 1 from the start, 1500 frames) | 95 runs of its first instruction (entered by a jump or by running on, no routine of its own in the L1) |
 | Called from | `PlayInterruptExit`, `EffectPlay` (falls into) |
 | Calls | `EffectPeriod` (falls into) |
 | Writes | `$7F95` (`EffectFrames`) |
@@ -4613,6 +4667,7 @@ Entered from EffectJob (event bit 0; c2: 106 entries in 73 frames, 45 from Effec
 | | |
 | --- | --- |
 | Runs (the 48K case's `r1` (`../zynaps/work/r1`): all 12 levels and the wrap, 75000 frames (the same code at the same addresses, without the GS hooks)) | 992,760 calls, 6,956,627 t-states own (0.13 %) |
+| Runs (the 48K case's `c2` (`../zynaps/work/c2`): level 1 from the start, 1500 frames) | 9,785 runs of its first instruction (entered by a jump or by running on, no routine of its own in the L1) |
 | Called from | `PlayInterruptExit`, `EffectHalves` (falls into) |
 | Calls | `EffectHalf` (falls into) |
 
@@ -4747,6 +4802,7 @@ Entered from EffectJob (event bit 0; c2: 106 entries in 73 frames, 45 from Effec
 | | |
 | --- | --- |
 | Runs (the 48K case's `r1` (`../zynaps/work/r1`): all 12 levels and the wrap, 75000 frames (the same code at the same addresses, without the GS hooks)) | 993,066 calls, 14,559,330 t-states own (0.28 %) |
+| Runs (the 48K case's `c2` (`../zynaps/work/c2`): level 1 from the start, 1500 frames) | 9,785 runs of its first instruction (entered by a jump or by running on, no routine of its own in the L1) |
 | Called from | `PlayInterruptExit`, `EffectTickCheck` (falls into) |
 | Calls | `EffectTickTest` (falls into) |
 | Reads | `$7F96` (`EffectTick`) |
@@ -4769,6 +4825,7 @@ Entered from EffectJob (event bit 0; c2: 106 entries in 73 frames, 45 from Effec
 | | |
 | --- | --- |
 | Runs (the 48K case's `r1` (`../zynaps/work/r1`): all 12 levels and the wrap, 75000 frames (the same code at the same addresses, without the GS hooks)) | 992,669 calls, 13,788,428 t-states own (0.26 %) |
+| Runs (the 48K case's `c2` (`../zynaps/work/c2`): level 1 from the start, 1500 frames) | 9,785 runs of its first instruction (entered by a jump or by running on, no routine of its own in the L1) |
 | Called from | `PlayInterruptExit`, `EffectTickTest` (falls into) |
 | Calls | `EventDispatch`, `EffectPeriod` (tail) |
 
@@ -4792,6 +4849,7 @@ Entered from EffectJob (event bit 0; c2: 106 entries in 73 frames, 45 from Effec
 | | |
 | --- | --- |
 | Runs (the 48K case's `r1` (`../zynaps/work/r1`): all 12 levels and the wrap, 75000 frames (the same code at the same addresses, without the GS hooks)) | 30,372 calls, 8,067,507 t-states own (0.15 %) |
+| Runs (the 48K case's `c2` (`../zynaps/work/c2`): level 1 from the start, 1500 frames) | 478 runs of its first instruction (entered by a jump or by running on, no routine of its own in the L1) |
 | Called from | `PlayInterruptExit`, `EffectAfterJobs` (falls into) |
 | Calls | `EffectPlay` (tail), `EffectPeriod` (tail), `EffectEnd` (tail) |
 | Reads | `$7F8A`-`$7F96` (`EffectState`, `SegLenA`, `SegLenB`, `PitchA` and 3 more) |

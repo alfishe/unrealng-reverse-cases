@@ -132,8 +132,6 @@ ScriptCall:
   LD HL,(ScriptBusy)
   PUSH HL
   CALL RunScript
-
-; ScriptReturn
 ScriptReturn:
   POP AF                  ; back from a sub-script: the variant restored
   LD (ScriptVariant),A

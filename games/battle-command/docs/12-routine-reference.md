@@ -1,12 +1,14 @@
 # 12. Routine reference
 
 Every code entry of the game, in address order by module (`src/game/<module>.asm`). The name, the title and
-the description are the source's (`src/game/game.ann`); the rest is what the recordings saw: `work/stage1/c1g` (c1 from the game's entry at frame 23974, the loader left out: the title, the mission tape, Blast Em Mission played), and the case's other recordings (`case.json` `read_builds`, `code_builds`): their calls in a Runs row of their own, their callers, callees, reads and writes (`read_builds` only) with the others'. They are local, not in the repository; the WALKTHROUGH's commands rebuild them.
+the description are the source's (`src/game/game.ann`); the rest is what the recordings saw: `work/stage1/c1g` (c1 from the game's entry at frame 23974, the loader left out: the title, the mission tape, Blast Em Mission played), and the case's other recordings (`case.json` `read_builds`, `code_builds`, `witness_builds`): their calls in a Runs row of their own, their callers, callees, reads and writes (`read_builds` only) with the others'. They are local, not in the repository; the WALKTHROUGH's commands rebuild them.
 Runs count the calls of the entry itself; the time is its own t-states (callees excluded) and their share
 of the recording. Memory ranges name the label at or below their first byte (inner labels too, `Label+offset`)
 and the entries they cover. The interrupt's acceptance (the vector read, the return address pushed) is
 the handler's, not the interrupted routine's. An entry no recording reached says so; one the case's other
-recordings ran gives their calls.
+recordings ran gives their calls. An entry no routine of a recording starts at (entered by a jump, a table jump or
+by running on: L1 books its time to the routine it runs in) gives the runs of its first instruction, as its witness
+line counts them.
 Written by `kit/refdocs.py`; edit `src/game/game.ann`, then run `kit/mkgame.py --case . --install`
 (see [3. Build and load](03-build-and-load.md)) and `kit/refdocs.py --case .`.
 The parts of the medium (`case.json` `ref_parts`: Bank 3, Bank 4, Bank 6, Bank 7, Tape BASIC, Decryption chain and
@@ -54,7 +56,7 @@ Witness: L1 53953 (armour, c1, death, fuel, m1complete, m2erbe, m4complete, miss
 | | |
 | --- | --- |
 | Runs (c1 from the game's entry at frame 23974, the loader left out: the title, the mission tape, Blast Em Mission played) | 632 calls, 9,006 t-states own (0.00 %) |
-| Runs (the other recordings) | 14,450 calls (`stage1/death` 8,892, `stage1/play2` 2,342, `stage1/play` 1,779 and 2 more) |
+| Runs (the other recordings) | 53,321 calls (`stage2/rec/m4complete` 19,486, `docs/bcC/rec/armour` 9,704, `stage2/rec/m1complete` 9,501 and 6 more) |
 | Called from | `PlayerStep`, `CannonShellStep` (tail), `MortarShellStep`, `RunObjectHandlers`, `DragonflyStep` (tail), `PlayerHit`, `BounceDecay`, `ClusterRise`, `MineFall`, `SkeetStraight`, `SkeetZigZag`, `SpectreStep`, `SpectreDrift`, `PhantasmStep`, `HelicarrierWait`, `MissionHeader` (tail) |
 | Calls | `MoveObject` (tail) |
 
@@ -65,7 +67,7 @@ Witness: L1 53953 (armour, c1, death, fuel, m1complete, m2erbe, m4complete, miss
 | | |
 | --- | --- |
 | Runs (c1 from the game's entry at frame 23974, the loader left out: the title, the mission tape, Blast Em Mission played) | 486 calls, 6,516 t-states own (0.00 %) |
-| Runs (the other recordings) | 7,491 calls (`stage1/death` 3,232, `stage1/play2` 1,906, `stage1/play` 1,223 and 2 more) |
+| Runs (the other recordings) | 29,014 calls (`stage2/rec/m4complete` 9,301, `stage2/rec/m1complete` 7,814, `docs/bcC/rec/armour` 4,230 and 6 more) |
 | Called from | `TargetInConeBody`, `TurnToward`, `MissionHeader` |
 | Calls | `BearingTo` (tail) |
 
@@ -76,7 +78,7 @@ Witness: L1 53953 (armour, c1, death, fuel, m1complete, m2erbe, m4complete, miss
 | | |
 | --- | --- |
 | Runs (c1 from the game's entry at frame 23974, the loader left out: the title, the mission tape, Blast Em Mission played) | 17 calls, 183 t-states own (0.00 %) |
-| Runs (the other recordings) | 219 calls (`stage1/missions` 74, `stage1/play2` 64, `stage1/play` 50 and 2 more) |
+| Runs (the other recordings) | 1,393 calls (`stage2/rec/m4complete` 741, `stage2/rec/m1complete` 345, `docs/bcC/rec/armour` 81 and 6 more) |
 | Called from | `MissionHeader` |
 | Calls | `FindFreeObject` (tail) |
 
@@ -87,7 +89,7 @@ Witness: L1 53953 (armour, c1, death, fuel, m1complete, m2erbe, m4complete, miss
 | | |
 | --- | --- |
 | Runs (c1 from the game's entry at frame 23974, the loader left out: the title, the mission tape, Blast Em Mission played) | 28 calls, 357 t-states own (0.00 %) |
-| Runs (the other recordings) | 431 calls (`stage1/missions` 125, `stage1/death` 119, `stage1/play2` 103 and 2 more) |
+| Runs (the other recordings) | 1,207 calls (`stage2/rec/m1complete` 289, `stage2/rec/m4complete` 289, `docs/bcC/rec/armour` 180 and 6 more) |
 | Called from | `FireCannon`, `LaunchProjectile`, `ActivateMissionObjects`, `LaunchDragonfly`, `SkeetFire`, `PlaceHelicarrier`, `MissionHeader` |
 | Calls | `ObjectSetType` (tail) |
 
@@ -98,7 +100,7 @@ Witness: L1 53953 (armour, c1, death, fuel, m1complete, m2erbe, m4complete, miss
 | | |
 | --- | --- |
 | Runs (c1 from the game's entry at frame 23974, the loader left out: the title, the mission tape, Blast Em Mission played) | 28 calls, 360 t-states own (0.00 %) |
-| Runs (the other recordings) | 431 calls (`stage1/missions` 125, `stage1/death` 119, `stage1/play2` 103 and 2 more) |
+| Runs (the other recordings) | 1,207 calls (`stage2/rec/m1complete` 289, `stage2/rec/m4complete` 289, `docs/bcC/rec/armour` 180 and 6 more) |
 | Called from | `FireCannon`, `LaunchProjectile`, `ActivateMissionObjects`, `LaunchDragonfly`, `SkeetFire`, `PlaceHelicarrier`, `MissionHeader` |
 | Calls | `RegisterCollision` (tail) |
 
@@ -109,7 +111,7 @@ Witness: L1 53953 (armour, c1, death, fuel, m1complete, m2erbe, m4complete, miss
 | | |
 | --- | --- |
 | Runs (c1 from the game's entry at frame 23974, the loader left out: the title, the mission tape, Blast Em Mission played) | 13 calls, 188 t-states own (0.00 %) |
-| Runs (the other recordings) | 230 calls (`stage1/death` 114, `stage1/play2` 51, `stage1/play` 48 and 2 more) |
+| Runs (the other recordings) | 938 calls (`stage2/rec/m1complete` 271, `stage2/rec/m4complete` 271, `docs/bcC/rec/armour` 164 and 6 more) |
 | Called from | `KillTree`, `HitTest`, `RemoveObject`, `ActivateMissionObjects`, `FindSlot`, `PlaceHelicarrier`, `MissionHeader` |
 | Calls | `UnregisterCollision` (tail) |
 
@@ -120,7 +122,7 @@ Witness: L1 53953 (armour, c1, death, fuel, m1complete, m2erbe, m4complete, miss
 | | |
 | --- | --- |
 | Runs (c1 from the game's entry at frame 23974, the loader left out: the title, the mission tape, Blast Em Mission played) | 52 calls, 656 t-states own (0.00 %) |
-| Runs (the other recordings) | 532 calls (`stage1/play2` 168, `stage1/death` 159, `stage1/missions` 97 and 2 more) |
+| Runs (the other recordings) | 2,146 calls (`stage2/rec/m4complete` 802, `stage2/rec/m1complete` 623, `docs/bcC/rec/armour` 170 and 6 more) |
 | Called from | `Debris`, `DebrisVelocity`, `DebrisVelocityB`, `PlayerHit`, `SpectreStep`, `MissionHeader` |
 | Calls | `Random` (tail) |
 
@@ -131,7 +133,7 @@ Witness: L1 53953 (armour, c1, death, fuel, m1complete, m2erbe, m4complete, miss
 | | |
 | --- | --- |
 | Runs (c1 from the game's entry at frame 23974, the loader left out: the title, the mission tape, Blast Em Mission played) | 680 calls, 8,895 t-states own (0.00 %) |
-| Runs (the other recordings) | 17,513 calls (`stage1/death` 9,455, `stage1/play` 3,393, `stage1/play2` 2,339 and 2 more) |
+| Runs (the other recordings) | 51,131 calls (`stage2/rec/m4complete` 15,193, `stage2/rec/m1complete` 10,067, `stage1/death` 9,455 and 6 more) |
 | Called from | `ResetViewOrigin`, `BearingOctant`, `CameraSinCos`, `RadarAddBlip`, `MissionHeader` |
 | Calls | `NegateHL` (tail) |
 
@@ -142,8 +144,8 @@ Witness: L1 53953 (armour, c1, death, fuel, m1complete, m2erbe, m4complete, miss
 | | |
 | --- | --- |
 | Runs (c1 from the game's entry at frame 23974, the loader left out: the title, the mission tape, Blast Em Mission played) | 6,328 calls, 77,311 t-states own (0.01 %) |
-| Runs (the other recordings) | 173,252 calls (`stage1/death` 109,476, `stage1/play2` 22,376, `stage1/missions` 21,130 and 2 more) |
-| Called from | `PlayerStep`, `TestVertexNearX`, `LaunchProjectile`, `ShowMortarRange`, `InRange`, `TargetInConeBody`, `TurnToward`, `TerrainDiagonal`, `BoundaryCheck`, `SetAwolState`, `EngineTone`, `MissionHeader` |
+| Runs (the other recordings) | 515,000 calls (`stage2/rec/m4complete` 136,736, `docs/bcC/rec/armour` 116,503, `stage1/death` 109,476 and 6 more) |
+| Called from | `PlayerStep`, `TestVertexNearX`, `LaunchProjectile`, `ShowMortarRange`, `InRange`, `TargetInConeBody`, `TurnToward`, `TerrainDiagonal`, `BoundaryCheck`, `SetAwolState`, `EngineTone`, `HelicarrierTurn`, `MissionHeader` |
 | Calls | `AbsA` (tail) |
 
 ### `ApiVector09` (`$67D9`)
@@ -153,7 +155,7 @@ Witness: L1 53953 (armour, c1, death, fuel, m1complete, m2erbe, m4complete, miss
 | | |
 | --- | --- |
 | Runs (c1 from the game's entry at frame 23974, the loader left out: the title, the mission tape, Blast Em Mission played) | 9,736 calls, 141,530 t-states own (0.02 %) |
-| Runs (the other recordings) | 210,746 calls (`stage1/death` 120,834, `stage1/play2` 37,372, `stage1/play` 27,268 and 2 more) |
+| Runs (the other recordings) | 633,580 calls (`stage2/rec/m4complete` 183,022, `stage2/rec/m1complete` 151,692, `stage1/death` 120,834 and 6 more) |
 | Called from | `BoxRect16`, `RotateToView`, `MissionHeader` |
 | Calls | `MulWordByte` (tail) |
 
@@ -163,8 +165,8 @@ Witness: L1 53953 (armour, c1, death, fuel, m1complete, m2erbe, m4complete, miss
 
 | | |
 | --- | --- |
-| Runs | not reached in `stage1/c1g`; in the other recordings 153 calls (`stage1/missions` 146, `stage1/death` 6, `stage1/play2` 1) |
-| Called from | `CollisionPass`, `MissionHeader` (tail) |
+| Runs | not reached in `stage1/c1g`; in the other recordings 1,132 calls (`stage2/rec/m4complete` 976, `stage1/missions` 146, `stage1/death` 6 and 3 more) |
+| Called from | `CollisionPass`, `MissionHeader` |
 | Calls | `HitTest` (tail) |
 
 ### `ApiVector11` (`$67DF`)
@@ -173,7 +175,7 @@ Witness: L1 53953 (armour, c1, death, fuel, m1complete, m2erbe, m4complete, miss
 
 | | |
 | --- | --- |
-| Runs | not reached in `stage1/c1g`; in the other recordings 13 calls (`stage1/death` 12, `stage1/play2` 1) |
+| Runs | not reached in `stage1/c1g`; in the other recordings 36 calls (`stage2/rec/m4complete` 16, `stage1/death` 12, `stage2/rec/m1complete` 4 and 2 more) |
 | Called from | `KillTree`, `HitTest`, `Explode` |
 | Calls | `Debris` (tail) |
 
@@ -184,7 +186,7 @@ Witness: L1 53953 (armour, c1, death, fuel, m1complete, m2erbe, m4complete, miss
 | | |
 | --- | --- |
 | Runs (c1 from the game's entry at frame 23974, the loader left out: the title, the mission tape, Blast Em Mission played) | 1,932 calls, 24,817 t-states own (0.00 %) |
-| Runs (the other recordings) | 33,809 calls (`stage1/death` 13,488, `stage1/play` 7,416, `stage1/play2` 6,270 and 2 more) |
+| Runs (the other recordings) | 134,611 calls (`stage2/rec/m1complete` 52,125, `stage2/rec/m4complete` 39,137, `stage1/death` 13,488 and 6 more) |
 | Called from | `TerrainScanLoop`, `TerrainDiagonal`, `MissionHeader` |
 | Calls | `ByteToWorld` (tail) |
 
@@ -194,7 +196,7 @@ Witness: L1 53953 (armour, c1, death, fuel, m1complete, m2erbe, m4complete, miss
 
 | | |
 | --- | --- |
-| Runs | not reached in `stage1/c1g`; in the other recordings 4 calls (`stage1/death` 4) |
+| Runs | not reached in `stage1/c1g`; in the other recordings 9 calls (`stage1/death` 4, `stage2/rec/m4complete` 3, `stage2/rec/m1complete` 2) |
 | Called from | `KillMissionObject` |
 | Calls | `MarkDestroyed` (tail) |
 
@@ -205,7 +207,7 @@ Witness: L1 53953 (armour, c1, death, fuel, m1complete, m2erbe, m4complete, miss
 | | |
 | --- | --- |
 | Runs (c1 from the game's entry at frame 23974, the loader left out: the title, the mission tape, Blast Em Mission played) | 2,442 calls, 35,842 t-states own (0.01 %) |
-| Runs (the other recordings) | 56,373 calls (`stage1/death` 29,045, `stage1/missions` 9,030, `stage1/play2` 8,907 and 6 more) |
+| Runs (the other recordings) | 151,467 calls (`stage2/rec/m4complete` 43,678, `stage2/rec/m1complete` 30,009, `stage1/death` 29,045 and 11 more) |
 | Called from | `OpPolarPoints`, `BoxRect`, `BoxTilted`, `RotateVertex`, `RotateAndStore`, `ShowMortarRange`, `GridVectors`, `SetElevation`, `PlaceHelicarrier`, `MissionHeader` |
 | Calls | `SinCos8` (tail) |
 
@@ -216,8 +218,8 @@ Witness: L1 53953 (armour, c1, death, fuel, m1complete, m2erbe, m4complete, miss
 | | |
 | --- | --- |
 | Runs (c1 from the game's entry at frame 23974, the loader left out: the title, the mission tape, Blast Em Mission played) | 1 call, 10 t-states own (0.00 %) |
-| Runs (the other recordings) | 6 calls (`stage1/menu` 4, `stage1/missions` 1, `stage1/m10` 1) |
-| Called from | `PointerZones` |
+| Runs (the other recordings) | 10 calls (`stage1/menu` 4, `stage1/controls` 2, `stage1/missions` 1 and 3 more) |
+| Called from | `PointerZones`, `HelicarrierHit` (tail) |
 | Calls | `ScreenFour` (tail) |
 
 ### `ApiVector17` (`$67F1`)
@@ -227,7 +229,7 @@ Witness: L1 53953 (armour, c1, death, fuel, m1complete, m2erbe, m4complete, miss
 | | |
 | --- | --- |
 | Runs (c1 from the game's entry at frame 23974, the loader left out: the title, the mission tape, Blast Em Mission played) | 381 calls, 4,820 t-states own (0.00 %) |
-| Runs (the other recordings) | 5,854 calls (`stage1/death` 2,846, `stage1/play2` 1,264, `stage1/play` 842 and 2 more) |
+| Runs (the other recordings) | 20,266 calls (`stage2/rec/m4complete` 5,656, `stage2/rec/m1complete` 5,637, `docs/bcC/rec/armour` 2,975 and 6 more) |
 | Called from | `PlayerStep`, `MissionHeader` |
 | Calls | `TerrainCollision` (tail) |
 
@@ -237,7 +239,7 @@ Witness: L1 53953 (armour, c1, death, fuel, m1complete, m2erbe, m4complete, miss
 
 | | |
 | --- | --- |
-| Runs (c1 from the game's entry at frame 23974, the loader left out: the title, the mission tape, Blast Em Mission played) | run into, not called, 2,235 t-states own (0.00 %) |
+| Runs (c1 from the game's entry at frame 23974, the loader left out: the title, the mission tape, Blast Em Mission played) | 175 runs of its first instruction (entered by a jump or by running on, no routine of its own in the L1), 2,235 t-states own (0.00 %) |
 | Runs (the other recordings) | 17 calls (`stage1/missions` 17) |
 | Called from | `OpNative`, `BoxSquareTurret` |
 | Calls | `BoxSquare` (tail) |
@@ -248,8 +250,8 @@ Witness: L1 53953 (armour, c1, death, fuel, m1complete, m2erbe, m4complete, miss
 
 | | |
 | --- | --- |
-| Runs (c1 from the game's entry at frame 23974, the loader left out: the title, the mission tape, Blast Em Mission played) | run into, not called, 5,421 t-states own (0.00 %) |
-| Runs (the other recordings) | run into, not called (`stage1/play2`, `stage1/death`, `stage1/missions` and 6 more) |
+| Runs (c1 from the game's entry at frame 23974, the loader left out: the title, the mission tape, Blast Em Mission played) | 450 runs of its first instruction (entered by a jump or by running on, no routine of its own in the L1), 5,421 t-states own (0.00 %) |
+| Runs (the other recordings) | 13,805 runs of its first instruction, entered by a jump (`stage2/rec/m4complete` 3,211, `stage2/rec/m1complete` 3,107, `stage1/play2` 1,744 and 11 more) |
 | Called from | `OpNative` |
 | Calls | `BoxRect` (tail) |
 
@@ -259,8 +261,8 @@ Witness: L1 53953 (armour, c1, death, fuel, m1complete, m2erbe, m4complete, miss
 
 | | |
 | --- | --- |
-| Runs (c1 from the game's entry at frame 23974, the loader left out: the title, the mission tape, Blast Em Mission played) | run into, not called, 2,234 t-states own (0.00 %) |
-| Runs (the other recordings) | run into, not called (`stage1/death`, `stage1/play2`, `stage1/play` and 1 more) |
+| Runs (c1 from the game's entry at frame 23974, the loader left out: the title, the mission tape, Blast Em Mission played) | 155 runs of its first instruction (entered by a jump or by running on, no routine of its own in the L1), 2,234 t-states own (0.00 %) |
+| Runs (the other recordings) | 5,962 runs of its first instruction, entered by a jump (`stage2/rec/m1complete` 2,319, `stage1/death` 1,118, `stage2/rec/m4complete` 886 and 5 more) |
 | Called from | `OpNative` |
 | Calls | `BoxRect16` (tail) |
 
@@ -270,7 +272,7 @@ Witness: L1 53953 (armour, c1, death, fuel, m1complete, m2erbe, m4complete, miss
 
 | | |
 | --- | --- |
-| Runs | not reached in `stage1/c1g`; in the other recordings run into, not called (`stage1/missions`) |
+| Runs | not reached in `stage1/c1g`; in the other recordings 17 runs of its first instruction, entered by a jump (`stage1/missions` 17) |
 | Called from | `OpNative` |
 | Calls | `BoxSquareTurret` (tail) |
 
@@ -288,7 +290,7 @@ Witness: c1 frame 23974 (the bootstrap's `JP $68F4`, docs/03-build-and-load.md);
 
 | | |
 | --- | --- |
-| Runs (c1 from the game's entry at frame 23974, the loader left out: the title, the mission tape, Blast Em Mission played) | run into, not called, 6,195 t-states own (0.00 %) |
+| Runs (c1 from the game's entry at frame 23974, the loader left out: the title, the mission tape, Blast Em Mission played) | 1 run of its first instruction (entered by a jump or by running on, no routine of its own in the L1), 6,195 t-states own (0.00 %) |
 | Called from | `Bootstrap` |
 | Calls | `BorderBlack`, `PageBank6` |
 | Reads | `$8200`-`$82FF` (`Im2Table`) |
@@ -305,7 +307,7 @@ Witness: L1 19 (armour, c1, death, fuel, m1complete, m2erbe, m4complete, mission
 | | |
 | --- | --- |
 | Runs (c1 from the game's entry at frame 23974, the loader left out: the title, the mission tape, Blast Em Mission played) | 1 call, 17,718 t-states own (0.00 %) |
-| Runs (the other recordings) | 14 calls (`stage1/missions` 8, `stage1/play2` 3, `stage1/play` 1 and 2 more) |
+| Runs (the other recordings) | 18 calls (`stage1/missions` 8, `stage1/play2` 3, `stage1/play` 1 and 6 more) |
 | Calls | `PageBank6` (tail), `PageBank0`, `CameraToPlayer` |
 | Reads | `$C774`-`$C78A` (`CollisionTables+300`) |
 | Writes | `$C648`-`$C78A` (`CollisionTables`) |
@@ -325,7 +327,7 @@ Witness: L1 31 (armour, c1, death, fuel, m1complete, m2erbe, m4complete, mission
 | | |
 | --- | --- |
 | Runs (c1 from the game's entry at frame 23974, the loader left out: the title, the mission tape, Blast Em Mission played) | 1 call, 83,923 t-states own (0.01 %) |
-| Runs (the other recordings) | 26 calls (`stage1/missions` 16, `stage1/play` 4, `stage1/play2` 3 and 2 more) |
+| Runs (the other recordings) | 30 calls (`stage1/missions` 16, `stage1/play` 4, `stage1/play2` 3 and 6 more) |
 | Called from | `LoopHook` |
 | Calls | `PanelSetup`, `PageShadowScreen`, `PageBank6`, `PageBank0`, `SaveBank`, `RestoreBank`, `UpdateAmmoBars`, `DrawSlotIcons`, `DrawBank7Picture`, `ToggleNight`, `ResetSegmentWalk`, `ToggleRearView`, `RefreshWeaponPanel`, `SetBinoculars` |
 | Reads | `$7578` (`AwolState`); `$8475` (`BlinkLamp`); `$87FD` (`NightKey+1`); `$BA27` (`l_BA1F+8`); `$CEA8` (`ToggleBinoculars+1`); `$DBD9`-`$DBDB` (`MissionHeader+20`) |
@@ -343,7 +345,8 @@ Witness: L1 9770 (armour, c1, death, fuel, m1complete, m2erbe, m4complete, missi
 
 | | |
 | --- | --- |
-| Runs | not reached in `stage1/c1g`; in the other recordings 410 calls (`stage1/play2` 410) |
+| Runs (c1 from the game's entry at frame 23974, the loader left out: the title, the mission tape, Blast Em Mission played) | 119 runs of its first instruction (entered by a jump or by running on, no routine of its own in the L1) |
+| Runs (the other recordings) | 410 calls (`stage1/play2` 410) |
 | Called from | `PlayLoopTail` (tail) |
 | Calls | `ClearClipRow`, `PlayKeys`, `NoAction`, `Bank3Step`, `StartViewPass`, `SegmentVisibility`, `SetupClipWindow`, `SetCamera`, `CameraSinCosAgain`, `GroundDots`, `ActivateMissionObjects`, `TransformObjects`, `DrawObjectsInOrder`, `DrawRadar`, `DrawSightOverlay`, `CollisionPass`, `MineHud`, `PickupAnnounce` |
 | Writes | `$7256` (`FirstFrameHook`); `$A8C8` (`PlayerStep+1`) |
@@ -354,7 +357,8 @@ Witness: L1 9770 (armour, c1, death, fuel, m1complete, m2erbe, m4complete, missi
 
 | | |
 | --- | --- |
-| Runs | not reached in `stage1/c1g`; in the other recordings 23 calls (`stage1/play2` 23) |
+| Runs (c1 from the game's entry at frame 23974, the loader left out: the title, the mission tape, Blast Em Mission played) | 118 runs of its first instruction (entered by a jump or by running on, no routine of its own in the L1) |
+| Runs (the other recordings) | 23 calls (`stage1/play2` 23) |
 | Called from | `MineHud` (tail) |
 | Calls | `PlayLoop` (tail), `NextView` (falls into), `FlickerPlayer`, `FirstFrameHook`, `PageBank6`, `UpdateSlotBars`, `MessageOnce`, `RequestViewBlit`, `RunObjectHandlers`, `MissionHeader` |
 | Reads | `$8475` (`BlinkLamp`) |
@@ -367,7 +371,7 @@ Witness: L1 9770 (armour, c1, death, fuel, m1complete, m2erbe, m4complete, missi
 | | |
 | --- | --- |
 | Runs (c1 from the game's entry at frame 23974, the loader left out: the title, the mission tape, Blast Em Mission played) | 5 calls, 341 t-states own (0.00 %) |
-| Runs (the other recordings) | 121 calls (`stage1/missions` 50, `stage1/menu` 33, `stage1/play2` 12 and 6 more) |
+| Runs (the other recordings) | 147 calls (`stage1/missions` 50, `stage1/menu` 33, `stage1/play2` 12 and 11 more) |
 | Called from | `PlayLoopTail` (falls into), `DragonflyViewLoop` (tail), `StatusLoop` (tail), `BriefPage` (tail), `DamageLoop` (tail) |
 | Writes | `$6A6D` (`ViewChangeFlag+1`); `$8857` (`l_884C+11`) |
 
@@ -377,7 +381,8 @@ Witness: L1 9770 (armour, c1, death, fuel, m1complete, m2erbe, m4complete, missi
 
 | | |
 | --- | --- |
-| Runs | ran within another entry's routine (reached by a jump or by running on, its calls below), no runs of its own counted |
+| Runs (c1 from the game's entry at frame 23974, the loader left out: the title, the mission tape, Blast Em Mission played) | 5 runs of its first instruction (entered by a jump or by running on, no routine of its own in the L1) |
+| Runs (the other recordings) | 147 runs of its first instruction, entered by a jump (`stage1/missions` 50, `stage1/menu` 33, `stage1/play` 12 and 11 more) |
 | Calls | `StartMission`, `DragonflyViewLoop`, `StatusLoop`, `BriefPage`, `DamageLoop` |
 
 ### `ClearClipRow` (`$6A9D`)
@@ -389,7 +394,7 @@ The row of the back buffer `$90F1` (its line 75 + 16) set to `$FF` once a frame 
 | | |
 | --- | --- |
 | Runs (c1 from the game's entry at frame 23974, the loader left out: the title, the mission tape, Blast Em Mission played) | 119 calls, 87,087 t-states own (0.01 %) |
-| Runs (the other recordings) | 3,507 calls (`stage1/death` 2,510, `stage1/play2` 413, `stage1/missions` 273 and 2 more) |
+| Runs (the other recordings) | 9,675 calls (`stage1/death` 2,510, `docs/bcC/rec/armour` 2,396, `stage2/rec/m4complete` 2,237 and 6 more) |
 | Called from | `PlayLoop`, `DragonflyViewLoop` |
 | Reads | `$90F1`-`$910F` (`BackBuffer+1536`) |
 | Writes | `$90F1`-`$9110` (`BackBuffer+1536`) |
@@ -403,7 +408,7 @@ A = 0, C = 2, D = 6, E = `$18`, then `JP $6D22`. Called from bank 6 `$C53F` / `$
 | | |
 | --- | --- |
 | Runs (c1 from the game's entry at frame 23974, the loader left out: the title, the mission tape, Blast Em Mission played) | 1 call, 100 t-states own (0.00 %) |
-| Runs (the other recordings) | 40 calls (`stage1/missions` 16, `stage1/play2` 12, `stage1/play` 8 and 2 more) |
+| Runs (the other recordings) | 47 calls (`stage1/missions` 16, `stage1/play2` 12, `stage1/play` 8 and 6 more) |
 | Called from | `SelectWeapon` |
 | Calls | `ScreenRowFill` (tail) |
 
@@ -432,7 +437,7 @@ HL = `$75F7` (object 0, +7): if the byte is non-zero, XOR its low nibble with a 
 | | |
 | --- | --- |
 | Runs (c1 from the game's entry at frame 23974, the loader left out: the title, the mission tape, Blast Em Mission played) | 118 calls, 4,567 t-states own (0.00 %) |
-| Runs (the other recordings) | 3,483 calls (`stage1/death` 2,510, `stage1/play2` 413, `stage1/missions` 273 and 2 more) |
+| Runs (the other recordings) | 9,651 calls (`stage1/death` 2,510, `docs/bcC/rec/armour` 2,396, `stage2/rec/m4complete` 2,237 and 6 more) |
 | Called from | `PlayLoopTail` |
 | Reads | `$68BD` (`GaugeRecords+18`) |
 
@@ -445,7 +450,7 @@ Witness: L1 31 (armour, c1, death, fuel, m1complete, m2erbe, m4complete, mission
 | | |
 | --- | --- |
 | Runs (c1 from the game's entry at frame 23974, the loader left out: the title, the mission tape, Blast Em Mission played) | 1 call, 44 t-states own (0.00 %) |
-| Runs (the other recordings) | 26 calls (`stage1/missions` 16, `stage1/play` 4, `stage1/play2` 3 and 2 more) |
+| Runs (the other recordings) | 30 calls (`stage1/missions` 16, `stage1/play` 4, `stage1/play2` 3 and 6 more) |
 | Called from | `StartMission` |
 | Calls | `PageBank6`, `PageBank0` (tail) |
 
@@ -460,7 +465,7 @@ Witness: L1 9770 (armour, c1, death, fuel, m1complete, m2erbe, m4complete, missi
 | | |
 | --- | --- |
 | Runs (c1 from the game's entry at frame 23974, the loader left out: the title, the mission tape, Blast Em Mission played) | 119 calls, 20,428 t-states own (0.00 %) |
-| Runs (the other recordings) | 3,483 calls (`stage1/death` 2,510, `stage1/play2` 413, `stage1/missions` 273 and 2 more) |
+| Runs (the other recordings) | 9,651 calls (`stage1/death` 2,510, `docs/bcC/rec/armour` 2,396, `stage2/rec/m4complete` 2,237 and 6 more) |
 | Called from | `PlayLoop` |
 | Calls | `NoAction` (tail), `SelectDamage` (tail), `ScreenZero` (tail), `QuitKey` (tail), `NightKey` (tail), `MortarElevationDown` (tail), `AimLimit` (tail), `RearViewOff` (tail), `SelectWeapon` (tail), `ToggleBinoculars` (tail), `CycleBinocularZoom` (tail), `SetMineTimer` (tail), `SlamOff` (tail), `AutoFireOff` (tail), `PlaceHelicarrier` (tail) |
 | Reads | `$8978`-`$8979` (`KeyState`, `KeyCode`) |
@@ -486,8 +491,8 @@ Witness: L1 40369 (armour, c1, death, fuel, m1complete, m2erbe, m4complete, miss
 | | |
 | --- | --- |
 | Runs (c1 from the game's entry at frame 23974, the loader left out: the title, the mission tape, Blast Em Mission played) | 478 calls, 4,937 t-states own (0.00 %) |
-| Runs (the other recordings) | 13,925 calls (`stage1/death` 10,040, `stage1/play2` 1,641, `stage1/missions` 1,092 and 2 more) |
-| Called from | `PlayLoop`, `PlayKeys` (tail), `PlayerSteering` |
+| Runs (the other recordings) | 39,891 calls (`stage1/death` 10,040, `stage2/rec/m4complete` 9,827, `docs/bcC/rec/armour` 9,584 and 6 more) |
+| Called from | `PlayLoop`, `PlayKeys` (tail), `PlayerSteering`, `RunObjectHandlers` |
 | Calls | `SelectLoop` (falls into) |
 
 ### `SelectLoop` (`$6BB4`)
@@ -605,7 +610,7 @@ Witness: L1 7 (m1complete, m4complete, play).
 
 | | |
 | --- | --- |
-| Runs | not reached in `stage1/c1g`; in the other recordings 2 calls (`stage1/play` 2) |
+| Runs | not reached in `stage1/c1g`; in the other recordings 7 calls (`stage2/rec/m1complete` 3, `stage1/play` 2, `stage2/rec/m4complete` 2) |
 | Called from | `PlayKeys` (tail) |
 | Calls | `ApiVector03`, `ApiVector04`, `ApiVector05`, `ApiVector14`, `AbsHL` |
 | Reads | `$67A8`-`$67A9` (`WorldVars+5`); `$7612` (`PlayerHeading`); `$7E89`-`$7E8D` (`MissionParams+7`) |
@@ -621,7 +626,7 @@ Witness: L1 15 (play2).
 
 | | |
 | --- | --- |
-| Runs | not reached in `stage1/c1g`; in the other recordings run into, not called (`stage1/play2`) |
+| Runs | not reached in `stage1/c1g`; in the other recordings 15 runs of its first instruction, entered by a jump (`stage1/play2` 15) |
 | Called from | `OpNative` |
 | Reads | `$7AD1` (`PlayerY+1211`) |
 | Writes | `$D5D7` (`HelicarrierData+7`) |
@@ -636,7 +641,9 @@ Witness: m1complete frame 21558, m4complete 21299, one run each, then `$67EE` (w
 
 | | |
 | --- | --- |
-| Runs | not reached in the recordings |
+| Runs | not reached in `stage1/c1g`; in the other recordings 2 calls (`stage2/rec/m1complete` 1, `stage2/rec/m4complete` 1) |
+| Called from | `CollisionPass` |
+| Calls | `ApiVector16` (tail) |
 
 ### `HelicarrierTurn` (`$DAC4`)
 
@@ -646,7 +653,9 @@ Witness: m1complete frame 21558, m4complete 21299, one run each, then `$67EE` (w
 
 | | |
 | --- | --- |
-| Runs | not reached in the recordings |
+| Runs | not reached in `stage1/c1g`; in the other recordings 20 calls (`stage2/rec/m1complete` 11, `stage2/rec/m4complete` 9) |
+| Called from | `RunObjectHandlers` |
+| Calls | `ApiVector08` |
 
 ### `HelicarrierDescent` (`$DADE`)
 
@@ -656,7 +665,8 @@ The height goes 104, 96, ... 24 (one step a pass), then the handler `$6BB0` park
 
 | | |
 | --- | --- |
-| Runs | not reached in the recordings |
+| Runs | not reached in `stage1/c1g`; in the other recordings 20 calls (`stage2/rec/m1complete` 10, `stage2/rec/m4complete` 10) |
+| Called from | `RunObjectHandlers` |
 
 ### `HelicarrierInit` (`$DB00`)
 
@@ -668,7 +678,7 @@ Witness: L1 3 (m1complete, m4complete, play).
 
 | | |
 | --- | --- |
-| Runs | not reached in `stage1/c1g`; in the other recordings 1 call (`stage1/play` 1) |
+| Runs | not reached in `stage1/c1g`; in the other recordings 3 calls (`stage2/rec/m4complete` 1, `stage2/rec/m1complete` 1, `stage1/play` 1) |
 | Called from | `RunObjectHandlers` |
 | Writes | `$6760`-`$6767` (`FaceFlags+56`); `$7AF4`-`$7AF5` (`HelicarrierRecord+24`) |
 
@@ -682,7 +692,7 @@ Witness: L1 3 (m1complete, m4complete, play).
 
 | | |
 | --- | --- |
-| Runs | not reached in the recordings |
+| Runs | not reached in `stage1/c1g`; in the other recordings 3 runs of its first instruction, entered by a jump (`stage1/play` 1, `stage2/rec/m1complete` 1, `stage2/rec/m4complete` 1) |
 
 ### `HelicarrierCode` (`$DB1A`)
 
@@ -704,9 +714,9 @@ Witness: L1 220 (m1complete, m4complete, play).
 
 | | |
 | --- | --- |
-| Runs | not reached in `stage1/c1g`; in the other recordings 27 calls (`stage1/play` 27) |
+| Runs | not reached in `stage1/c1g`; in the other recordings 220 calls (`stage2/rec/m4complete` 108, `stage2/rec/m1complete` 85, `stage1/play` 27) |
 | Called from | `RunObjectHandlers` |
-| Calls | `ApiVector00`, `TurnToward` |
+| Calls | `ApiVector00`, `NegHL`, `TurnToward` |
 | Reads | `$7B00`-`$7B04` (`HelicarrierRecord+36`); `$7E89`-`$7E8D` (`MissionParams+7`) |
 
 ### `PickupAnnounce` (`$DB71`)
@@ -720,8 +730,9 @@ Witness: L1 9770 (armour, c1, death, fuel, m1complete, m2erbe, m4complete, missi
 | | |
 | --- | --- |
 | Runs (c1 from the game's entry at frame 23974, the loader left out: the title, the mission tape, Blast Em Mission played) | 119 calls, 3,940 t-states own (0.00 %) |
-| Runs (the other recordings) | 3,483 calls (`stage1/death` 2,510, `stage1/play2` 413, `stage1/missions` 273 and 2 more) |
+| Runs (the other recordings) | 9,651 calls (`stage1/death` 2,510, `docs/bcC/rec/armour` 2,396, `stage2/rec/m4complete` 2,237 and 6 more) |
 | Called from | `PlayLoop` |
+| Calls | `ScreenRowFill`, `PrintString` (tail) |
 | Reads | `$68E8` (`GoalFlag`) |
 
 ### `l_FE8F` (`$FE8F`)
@@ -730,7 +741,7 @@ Witness: L1 9770 (armour, c1, death, fuel, m1complete, m2erbe, m4complete, missi
 
 | | |
 | --- | --- |
-| Runs | not reached in `stage1/c1g`; in the other recordings run into, not called (`stage1/death`, `stage1/play2`, `stage1/play`) |
+| Runs | not reached in `stage1/c1g`; in the other recordings 8,026 runs of its first instruction, entered by a jump (`stage1/death` 3,778, `docs/bcC/rec/armour` 3,334, `stage2/rec/m4complete` 537 and 3 more) |
 | Called from | `OpNative` |
 | Writes | `$FD00`-`$FD07` (`MissionHeader+8507`); `$FE00`-`$FE07` (`MissionHeader+8763`); `$FF00`-`$FF07` (`data_FEBB+69`) |
 
@@ -747,7 +758,7 @@ Witness: L1 80 (armour, c1, death, fuel, m10, m1complete, m2erbe, m2ocean, m4com
 | | |
 | --- | --- |
 | Runs (c1 from the game's entry at frame 23974, the loader left out: the title, the mission tape, Blast Em Mission played) | 5 calls, 418 t-states own (0.00 %) |
-| Runs (the other recordings) | 61 calls (`stage1/missions` 19, `stage1/m2ocean` 11, `stage1/play2` 10 and 6 more) |
+| Runs (the other recordings) | 75 calls (`stage1/missions` 19, `stage1/m2ocean` 11, `stage1/play2` 10 and 10 more) |
 | Called from | `Entry`, `LoadBlock` |
 | Writes | `$6CF1` (`BorderNext+2`) |
 | Ports out | `$00FE` |
@@ -758,7 +769,8 @@ Witness: L1 80 (armour, c1, death, fuel, m10, m1complete, m2erbe, m2ocean, m4com
 
 | | |
 | --- | --- |
-| Runs | not reached in the recordings |
+| Runs (c1 from the game's entry at frame 23974, the loader left out: the title, the mission tape, Blast Em Mission played) | 5 runs of its first instruction (entered by a jump or by running on, no routine of its own in the L1) |
+| Runs (the other recordings) | 75 runs of its first instruction, entered by a jump (`stage1/missions` 19, `stage1/m2ocean` 11, `stage1/play2` 10 and 10 more) |
 
 ### `AttrBox` (`$6CFB`)
 
@@ -769,7 +781,7 @@ HL -> B (width), C (height), E (column), A (attribute), L (row); falls into Attr
 | | |
 | --- | --- |
 | Runs (c1 from the game's entry at frame 23974, the loader left out: the title, the mission tape, Blast Em Mission played) | 9 calls, 132 t-states own (0.00 %) |
-| Runs (the other recordings) | 337 calls (`stage1/missions` 153, `stage1/menu` 99, `stage1/play` 26 and 6 more) |
+| Runs (the other recordings) | 374 calls (`stage1/missions` 153, `stage1/menu` 99, `stage1/play` 26 and 11 more) |
 | Called from | `BriefPageText` (tail), `BriefingMapLegend`, `StatusMapLegend`, `NightBoxSelect` |
 | Calls | `AttrBoxAt` (falls into) |
 | Reads | `$88F3` (`NightBox`) |
@@ -784,7 +796,7 @@ Witness: L1 474 (armour, c1, controls, death, fuel, m10, m1complete, m2erbe, m2o
 | | |
 | --- | --- |
 | Runs (c1 from the game's entry at frame 23974, the loader left out: the title, the mission tape, Blast Em Mission played) | 11 calls, 64,438 t-states own (0.01 %) |
-| Runs (the other recordings) | 308 calls (`stage1/missions` 187, `stage1/play` 61, `stage1/play2` 27 and 2 more) |
+| Runs (the other recordings) | 349 calls (`stage1/missions` 187, `stage1/play` 61, `stage1/play2` 27 and 6 more) |
 | Called from | `AttrBox` (falls into), `SkyColours` |
 | Reads | `$88F4`-`$890F` (`NightBox+1`, `HourTable`, `SkyBoxes`) |
 | Writes | `$5800`-`$5AFF` (screen) |
@@ -795,7 +807,8 @@ Witness: L1 474 (armour, c1, controls, death, fuel, m10, m1complete, m2erbe, m2o
 
 | | |
 | --- | --- |
-| Runs | ran within another entry's routine (reached by a jump or by running on, its calls below), no runs of its own counted |
+| Runs (c1 from the game's entry at frame 23974, the loader left out: the title, the mission tape, Blast Em Mission played) | 11 runs of its first instruction (entered by a jump or by running on, no routine of its own in the L1) |
+| Runs (the other recordings) | 463 runs of its first instruction, entered by a jump (`stage1/missions` 187, `stage1/menu` 99, `stage1/play` 61 and 11 more) |
 | Calls | `AttrBoxRC` (falls into) |
 
 ### `AttrBoxRC` (`$6D05`)
@@ -806,7 +819,8 @@ Witness: L1 483 (armour, c1, controls, death, fuel, m10, m1complete, m2erbe, m2o
 
 | | |
 | --- | --- |
-| Runs | not reached in `stage1/c1g`; in the other recordings 70 calls (`stage1/play` 70) |
+| Runs (c1 from the game's entry at frame 23974, the loader left out: the title, the mission tape, Blast Em Mission played) | 11 runs of its first instruction (entered by a jump or by running on, no routine of its own in the L1) |
+| Runs (the other recordings) | 70 calls (`stage1/play` 70) |
 | Called from | `AttrBoxAtC` (falls into), `IconFrame` (tail) |
 | Calls | `LowTimes32` |
 | Writes | `$5802`-`$5807` (screen); `$5822`-`$5AAC` (screen); `$5AC4`-`$5AFD` (screen) |
@@ -820,8 +834,8 @@ Uses the line address table at `$6500` (2 bytes a pixel line). Witness: L1 224 (
 | | |
 | --- | --- |
 | Runs (c1 from the game's entry at frame 23974, the loader left out: the title, the mission tape, Blast Em Mission played) | 5 calls, 265,848 t-states own (0.04 %) |
-| Runs (the other recordings) | 193 calls (`stage1/missions` 65, `stage1/play2` 50, `stage1/menu` 36 and 6 more) |
-| Called from | `FillPanelRows` (tail) |
+| Runs (the other recordings) | 219 calls (`stage1/missions` 65, `stage1/play2` 50, `stage1/menu` 36 and 11 more) |
+| Called from | `FillPanelRows` (tail), `PickupAnnounce` |
 | Reads | `$6500`-`$667F` (`ScreenRowTable`) |
 | Writes | `$4000`-`$57FF` (screen) |
 
@@ -834,7 +848,7 @@ Uses the line address table at `$6500` (2 bytes a pixel line). Witness: L1 224 (
 | | |
 | --- | --- |
 | Runs (c1 from the game's entry at frame 23974, the loader left out: the title, the mission tape, Blast Em Mission played) | 1,746,889 calls, 46,341,318 t-states own (7.01 %) |
-| Runs (the other recordings) | 28,335,628 calls (`stage1/play2` 5,182,205, `stage1/m10` 5,128,479, `stage1/missions` 4,951,614 and 6 more) |
+| Runs (the other recordings) | 34,265,990 calls (`stage1/play2` 5,182,205, `stage1/m10` 5,128,479, `stage1/missions` 4,951,614 and 11 more) |
 | Calls | `ApiVector16`, `ScreenFromClick`, `ScreenZero`, `ScreenTwo`, `ShowBriefingMapOnce`, `ScreenOfMission`, `LoadMissionIfAllowed`, `LoadMissionHeader` |
 | Reads | `$9715`-`$9716` (`ClickState`, `ClickY`) |
 | Writes | `$6D43` (`PointerZones+1`); `$6D71`-`$6D72` (`l_6D49+40`) |
@@ -848,7 +862,7 @@ The line address table `$6500` again. Witness: L1 470 (armour, c1, controls, dea
 | | |
 | --- | --- |
 | Runs (c1 from the game's entry at frame 23974, the loader left out: the title, the mission tape, Blast Em Mission played) | 17 calls, 166,004 t-states own (0.03 %) |
-| Runs (the other recordings) | 393 calls (`stage1/missions` 149, `stage1/menu` 82, `stage1/play2` 71 and 6 more) |
+| Runs (the other recordings) | 453 calls (`stage1/missions` 149, `stage1/menu` 82, `stage1/play2` 71 and 11 more) |
 | Called from | `DrawIcon` (tail) |
 | Reads | `$6500`-`$654F` (`ScreenRowTable`); `$6560`-`$65EF` (`ScreenRowTable+96`); `$6610`-`$667F` (`ScreenRowTable+272`) |
 | Writes | `$400B`-`$4ADB` (screen); `$4B02`-`$4BDB` (screen); `$4C02`-`$4CDB` (screen); `$4D02`-`$4DDB` (screen); `$4E02`-`$4EDB` (screen); `$4F02`-`$4FDB` (screen); 1 more ranges |
@@ -862,7 +876,7 @@ Witness: L1 1405 (armour, c1, death, fuel, m10, m1complete, m2erbe, m2ocean, m4c
 | | |
 | --- | --- |
 | Runs (c1 from the game's entry at frame 23974, the loader left out: the title, the mission tape, Blast Em Mission played) | 58 calls, 3,487 t-states own (0.00 %) |
-| Runs (the other recordings) | 1,064 calls (`stage1/missions` 257, `stage1/menu` 252, `stage1/play2` 215 and 6 more) |
+| Runs (the other recordings) | 1,347 calls (`stage1/missions` 257, `stage1/menu` 252, `stage1/play2` 215 and 10 more) |
 | Called from | `CallControl` |
 | Calls | `CodeSmallAt` |
 | Reads | `$87F2` (`BlankMessage+2`); `$8C67`-`$8E86` (`BackBuffer+374`); `$BA70`-`$BAA1` (`ViewTexts+2`, `IrSightBlank`, `RearViewText`, `BinocularText` and 1 more); `$D0AD` (`MineHudText+2`); `$FDC2`-`$FFDD` (`MissionHeader+8701`, `l_FE8F`, `data_FEBB`) |
@@ -887,7 +901,7 @@ Witness: L1 1731 (armour, c1, death, fuel, m10, m1complete, m2erbe, m2ocean, m4c
 | | |
 | --- | --- |
 | Runs (c1 from the game's entry at frame 23974, the loader left out: the title, the mission tape, Blast Em Mission played) | 61 calls, 8,020 t-states own (0.00 %) |
-| Runs (the other recordings) | 1,362 calls (`stage1/menu` 456, `stage1/missions` 312, `stage1/play2` 224 and 6 more) |
+| Runs (the other recordings) | 1,670 calls (`stage1/menu` 456, `stage1/missions` 312, `stage1/play2` 224 and 10 more) |
 | Called from | `CodeSmallChars` (falls into), `SmallNewLine` |
 | Writes | `$6DEC` (`PrintSmallChar+4`); `$6DFD`-`$6DFE` (`PrintSmallChar+21`) |
 
@@ -900,7 +914,7 @@ Witness: L1 21016 (armour, c1, death, fuel, m10, m1complete, m2erbe, m2ocean, m4
 | | |
 | --- | --- |
 | Runs (c1 from the game's entry at frame 23974, the loader left out: the title, the mission tape, Blast Em Mission played) | 698 calls, 97,643 t-states own (0.01 %) |
-| Runs (the other recordings) | 16,941 calls (`stage1/menu` 6,385, `stage1/missions` 3,959, `stage1/play2` 2,258 and 6 more) |
+| Runs (the other recordings) | 20,318 calls (`stage1/menu` 6,385, `stage1/missions` 3,959, `stage1/play2` 2,258 and 10 more) |
 | Called from | `PrintSmallChar` |
 | Reads | `$6DEC` (`PrintSmallChar+4`); `$6DFD` (`PrintSmallChar+21`) |
 | Writes | `$6DEC` (`PrintSmallChar+4`); `$6DFD` (`PrintSmallChar+21`) |
@@ -914,7 +928,7 @@ Witness: L1 21016 (armour, c1, death, fuel, m10, m1complete, m2erbe, m2ocean, m4
 | | |
 | --- | --- |
 | Runs (c1 from the game's entry at frame 23974, the loader left out: the title, the mission tape, Blast Em Mission played) | 698 calls, 56,845 t-states own (0.01 %) |
-| Runs (the other recordings) | 16,941 calls (`stage1/menu` 6,385, `stage1/missions` 3,959, `stage1/play2` 2,258 and 6 more) |
+| Runs (the other recordings) | 20,318 calls (`stage1/menu` 6,385, `stage1/missions` 3,959, `stage1/play2` 2,258 and 10 more) |
 | Called from | `PrintSmallChar` |
 
 ### `PrintSmallChar` (`$6DE8`)
@@ -926,7 +940,7 @@ Witness: L1 21016 (armour, c1, death, fuel, m10, m1complete, m2erbe, m2ocean, m4
 | | |
 | --- | --- |
 | Runs (c1 from the game's entry at frame 23974, the loader left out: the title, the mission tape, Blast Em Mission played) | 698 calls, 930,873 t-states own (0.14 %) |
-| Runs (the other recordings) | 16,941 calls (`stage1/menu` 6,385, `stage1/missions` 3,959, `stage1/play2` 2,258 and 6 more) |
+| Runs (the other recordings) | 20,318 calls (`stage1/menu` 6,385, `stage1/missions` 3,959, `stage1/play2` 2,258 and 10 more) |
 | Called from | `PrintString` |
 | Calls | `SmallFontAdvance`, `SmallGlyph` |
 | Reads | `$4022`-`$4E98` (screen); `$4EEA`-`$4F98` (screen); `$502C`-`$51B4` (screen); `$5203`-`$569E` (screen); `$570A`-`$579E` (screen); `$650A`-`$6529` (`ScreenRowTable+10`); 4 more ranges |
@@ -951,7 +965,7 @@ Witness: L1 873 (armour, c1, controls, death, fuel, m1complete, m2erbe, m4comple
 | | |
 | --- | --- |
 | Runs (c1 from the game's entry at frame 23974, the loader left out: the title, the mission tape, Blast Em Mission played) | 4 calls, 315 t-states own (0.00 %) |
-| Runs (the other recordings) | 851 calls (`stage1/play` 524, `stage1/missions` 202, `stage1/play2` 70 and 3 more) |
+| Runs (the other recordings) | 869 calls (`stage1/play` 524, `stage1/missions` 202, `stage1/play2` 70 and 8 more) |
 | Called from | `CallControl` |
 | Calls | `CodeAt` |
 | Reads | `$7E31` (`ClockText+2`) |
@@ -966,7 +980,7 @@ Witness: L1 873 (armour, c1, controls, death, fuel, m1complete, m2erbe, m4comple
 | | |
 | --- | --- |
 | Runs (c1 from the game's entry at frame 23974, the loader left out: the title, the mission tape, Blast Em Mission played) | 4 calls, 790 t-states own (0.00 %) |
-| Runs (the other recordings) | 851 calls (`stage1/play` 524, `stage1/missions` 202, `stage1/play2` 70 and 3 more) |
+| Runs (the other recordings) | 869 calls (`stage1/play` 524, `stage1/missions` 202, `stage1/play2` 70 and 8 more) |
 | Called from | `CodeAtColumn` |
 | Reads | `$7E30` (`ClockText+1`) |
 | Writes | `$6F5D`-`$6F5E` (`CodeNewLine+16`); `$6FC2`-`$6FC3` (`PrintString+15`); `$6FFB`-`$6FFC` (`PrintChar+11`) |
@@ -980,7 +994,7 @@ Witness: L1 6723 (armour, c1, controls, death, fuel, m1complete, m2erbe, m4compl
 | | |
 | --- | --- |
 | Runs (c1 from the game's entry at frame 23974, the loader left out: the title, the mission tape, Blast Em Mission played) | 128 calls, 13,146 t-states own (0.00 %) |
-| Runs (the other recordings) | 6,189 calls (`stage1/play` 2,855, `stage1/missions` 1,576, `stage1/play2` 1,001 and 3 more) |
+| Runs (the other recordings) | 6,595 calls (`stage1/play` 2,855, `stage1/missions` 1,576, `stage1/play2` 1,001 and 8 more) |
 | Called from | `PrintChar` |
 
 ### `NextColumn` (`$6EE5`)
@@ -1001,7 +1015,7 @@ Witness: L1 226 (armour, death, m10, m1complete, m4complete, menu, missions, pla
 
 | | |
 | --- | --- |
-| Runs | not reached in `stage1/c1g`; in the other recordings 140 calls (`stage1/death` 62, `stage1/play2` 50, `stage1/play` 24 and 3 more) |
+| Runs | not reached in `stage1/c1g`; in the other recordings 226 calls (`stage1/death` 62, `docs/bcC/rec/armour` 55, `stage1/play2` 50 and 6 more) |
 | Called from | `CallControl` |
 | Reads | `$7A95` (`PlayerY+1151`); `$B8FC` (`IrViewHeight`); `$C527` (`WeaponVars`); `$CFF5` (`MineTimerCode+1`); `$D0AF`-`$D0B0` (`MineHudText+4`); `$FDCA`-`$FDCB` (`MissionHeader+8709`); 1 more ranges |
 | Writes | `$6F2F` (`NumberText+2`) |
@@ -1035,7 +1049,7 @@ Witness: L1 452 (armour, death, m10, m1complete, m4complete, menu, missions, pla
 
 | | |
 | --- | --- |
-| Runs | not reached in `stage1/c1g`; in the other recordings 280 calls (`stage1/death` 124, `stage1/play2` 100, `stage1/play` 48 and 3 more) |
+| Runs | not reached in `stage1/c1g`; in the other recordings 452 calls (`stage1/death` 124, `docs/bcC/rec/armour` 110, `stage1/play2` 100 and 6 more) |
 | Called from | `CodeNumberA` |
 | Writes | `$6F2D`-`$6F2E` (`NumberText`) |
 
@@ -1045,7 +1059,7 @@ Witness: L1 452 (armour, death, m10, m1complete, m4complete, menu, missions, pla
 
 | | |
 | --- | --- |
-| Runs | not reached in the recordings |
+| Runs | not reached in `stage1/c1g`; in the other recordings 452 runs of its first instruction, entered by a jump (`stage1/death` 124, `docs/bcC/rec/armour` 110, `stage1/play2` 100 and 6 more) |
 
 ### `CodeNewLine` (`$6F4D`)
 
@@ -1056,7 +1070,7 @@ Witness: L1 164 (armour, c1, controls, death, fuel, m1complete, m2erbe, m4comple
 | | |
 | --- | --- |
 | Runs (c1 from the game's entry at frame 23974, the loader left out: the title, the mission tape, Blast Em Mission played) | 10 calls, 1,732 t-states own (0.00 %) |
-| Runs (the other recordings) | 130 calls (`stage1/play2` 64, `stage1/menu` 24, `stage1/play` 22 and 3 more) |
+| Runs (the other recordings) | 154 calls (`stage1/play2` 64, `stage1/menu` 24, `stage1/play` 22 and 8 more) |
 | Called from | `CallControl` |
 | Reads | `$6FFB`-`$6FFC` (`PrintChar+11`) |
 | Writes | `$6F5D`-`$6F5E` (`CodeNewLine+16`); `$6FF8`-`$6FFC` (`PrintChar+8`) |
@@ -1070,7 +1084,7 @@ Witness: L1 326 (armour, c1, death, fuel, m10, m1complete, m2erbe, m2ocean, m4co
 | | |
 | --- | --- |
 | Runs (c1 from the game's entry at frame 23974, the loader left out: the title, the mission tape, Blast Em Mission played) | 3 calls, 320 t-states own (0.00 %) |
-| Runs (the other recordings) | 298 calls (`stage1/menu` 204, `stage1/missions` 55, `stage1/play` 15 and 6 more) |
+| Runs (the other recordings) | 323 calls (`stage1/menu` 204, `stage1/missions` 55, `stage1/play` 15 and 10 more) |
 | Called from | `CallControl` |
 | Calls | `SmallFontColumn` |
 | Reads | `$6DFA`-`$6DFB` (`PrintSmallChar+18`); `$6F58` (`CodeNewLine+11`) |
@@ -1085,7 +1099,7 @@ Witness: L1 187 (armour, c1, controls, death, fuel, m10, m1complete, m2erbe, m2o
 | | |
 | --- | --- |
 | Runs (c1 from the game's entry at frame 23974, the loader left out: the title, the mission tape, Blast Em Mission played) | 4 calls, 168 t-states own (0.00 %) |
-| Runs (the other recordings) | 163 calls (`stage1/menu` 55, `stage1/missions` 42, `stage1/play2` 38 and 6 more) |
+| Runs (the other recordings) | 183 calls (`stage1/menu` 55, `stage1/missions` 42, `stage1/play2` 38 and 11 more) |
 | Called from | `CallControl` |
 | Reads | `$8C64`-`$8D07` (`BackBuffer+371`); `$8D43`-`$8D7E` (`BackBuffer+594`); `$8DC0` (`BackBuffer+719`); `$8E04` (`BackBuffer+787`); `$8E49`-`$8E83` (`BackBuffer+856`) |
 | Writes | `$6F58` (`CodeNewLine+11`) |
@@ -1109,7 +1123,7 @@ Witness: L1 1463 (armour, c1, controls, death, fuel, m10, m1complete, m2erbe, m2
 | | |
 | --- | --- |
 | Runs (c1 from the game's entry at frame 23974, the loader left out: the title, the mission tape, Blast Em Mission played) | 18 calls, 846 t-states own (0.00 %) |
-| Runs (the other recordings) | 1,295 calls (`stage1/play` 544, `stage1/missions` 326, `stage1/menu` 181 and 6 more) |
+| Runs (the other recordings) | 1,445 calls (`stage1/play` 544, `stage1/missions` 326, `stage1/menu` 181 and 11 more) |
 | Called from | `CallControl` |
 | Reads | `$7E33` (`ClockText+4`); `$93DA`-`$94F1` (`BackBuffer+2281`); `$FDC4`-`$FDEF` (`MissionHeader+8703`) |
 | Writes | `$7025` (`l_7018+13`) |
@@ -1125,8 +1139,8 @@ Witness: L1 34892 (armour, c1, controls, death, fuel, m10, m1complete, m2erbe, m
 | | |
 | --- | --- |
 | Runs (c1 from the game's entry at frame 23974, the loader left out: the title, the mission tape, Blast Em Mission played) | 60 calls, 114,900 t-states own (0.02 %) |
-| Runs (the other recordings) | 2,068 calls (`stage1/play` 623, `stage1/missions` 446, `stage1/menu` 364 and 6 more) |
-| Called from | `CodeNumberA`, `BriefPageText`, `LoadDirectory`, `PrintRewind` (tail), `BriefingMapLegend` (tail), `StatusMapLegend`, `MessageOnce`, `PrintClock` (tail), `MessageTimer` (tail), `ToggleNight` (tail), `ShowMortarRange` (tail), `ToggleRearView` (tail), `WeaponSelectText` (tail), `SelectPlain`, `PrintAmmoAt` (tail), `SetBinoculars` (tail), `PrintElevation`, `StoreMineTimer` (tail), `MineHud`, `SlamOff`, `AutoFireOff` (tail), `SelectSpectre` (tail), `SelectPhantasm` (tail) |
+| Runs (the other recordings) | 2,449 calls (`stage1/play` 623, `stage1/missions` 446, `stage1/menu` 364 and 11 more) |
+| Called from | `CodeNumberA`, `BriefPageText`, `LoadDirectory`, `PrintRewind` (tail), `BriefingMapLegend` (tail), `StatusMapLegend`, `MessageOnce`, `PrintClock` (tail), `MessageTimer` (tail), `ToggleNight` (tail), `ShowMortarRange` (tail), `ToggleRearView` (tail), `WeaponSelectText` (tail), `SelectPlain`, `PrintAmmoAt` (tail), `SetBinoculars` (tail), `PrintElevation`, `StoreMineTimer` (tail), `MineHud`, `SlamOff`, `AutoFireOff` (tail), `SelectSpectre` (tail), `SelectPhantasm` (tail), `BoundaryCheck` (tail), `SetAwolState` (tail), `PickupAnnounce` (tail) |
 | Calls | `PrintSmallChar`, `PrintChar` |
 | Reads | `$6F2D`-`$6F30` (`NumberText`); `$6F93`-`$6FAA` (`ControlCodes+4`); `$7E2F`-`$7E39` (`ClockText`); `$8301`-`$8EAF` (`Armour`, `DamageBoardRecords`, `InterruptHandler`, `ClearMarkColumn` and 44 more); `$93D9`-`$9502` (`BackBuffer+2280`); `$BA6E`-`$BAAB` (`ViewTexts`, `IrSightBlank`, `RearViewText`, `BinocularText` and 1 more); 2 more ranges |
 | Writes | `$6FD7`-`$6FD8` (`CallControl+1`) |
@@ -1137,7 +1151,8 @@ Witness: L1 34892 (armour, c1, controls, death, fuel, m10, m1complete, m2erbe, m
 
 | | |
 | --- | --- |
-| Runs | ran within another entry's routine (reached by a jump or by running on, its calls below), no runs of its own counted |
+| Runs (c1 from the game's entry at frame 23974, the loader left out: the title, the mission tape, Blast Em Mission played) | 97 runs of its first instruction (entered by a jump or by running on, no routine of its own in the L1) |
+| Runs (the other recordings) | 4,547 runs of its first instruction, entered by a jump (`stage1/play` 1,238, `stage1/missions` 899, `stage1/menu` 747 and 11 more) |
 | Calls | `CodeSmallFont`, `CodeAtColumn`, `CodeNumber`, `CodeNewLine`, `SmallNewLine`, `CodeLeftMargin`, `CodeInk` |
 
 ### `PrintChar` (`$6FF0`)
@@ -1151,7 +1166,7 @@ Witness: L1 6723 (armour, c1, controls, death, fuel, m1complete, m2erbe, m4compl
 | | |
 | --- | --- |
 | Runs (c1 from the game's entry at frame 23974, the loader left out: the title, the mission tape, Blast Em Mission played) | 128 calls, 136,047 t-states own (0.02 %) |
-| Runs (the other recordings) | 6,189 calls (`stage1/play` 2,855, `stage1/missions` 1,576, `stage1/play2` 1,001 and 3 more) |
+| Runs (the other recordings) | 6,595 calls (`stage1/play` 2,855, `stage1/missions` 1,576, `stage1/play2` 1,001 and 8 more) |
 | Called from | `PrintString` |
 | Calls | `GlyphAddress` |
 | Reads | `$6550`-`$65BF` (`ScreenRowTable+80`); `$65D0`-`$660F` (`ScreenRowTable+208`); `$6620`-`$662F` (`ScreenRowTable+288`); `$6640`-`$664F` (`ScreenRowTable+320`); `$6F5D`-`$6F5E` (`CodeNewLine+16`); `$6FF8` (`PrintChar+8`) |
@@ -1166,7 +1181,7 @@ Witness: L1 1405 (armour, c1, death, fuel, m10, m1complete, m2erbe, m2ocean, m4c
 | | |
 | --- | --- |
 | Runs (c1 from the game's entry at frame 23974, the loader left out: the title, the mission tape, Blast Em Mission played) | 58 calls, 8,130 t-states own (0.00 %) |
-| Runs (the other recordings) | 1,064 calls (`stage1/missions` 257, `stage1/menu` 252, `stage1/play2` 215 and 6 more) |
+| Runs (the other recordings) | 1,347 calls (`stage1/missions` 257, `stage1/menu` 252, `stage1/play2` 215 and 10 more) |
 | Called from | `CodeSmallFont` |
 | Reads | `$87F1` (`BlankMessage+1`); `$8C66`-`$8E85` (`BackBuffer+373`); `$BA6F`-`$BAA0` (`ViewTexts+1`, `IrSightBlank`, `RearViewText`, `BinocularText` and 1 more); `$D0AC` (`MineHudText+1`); `$FDC1`-`$FFDC` (`MissionHeader+8700`, `l_FE8F`, `data_FEBB`) |
 | Writes | `$6DFA`-`$6DFB` (`PrintSmallChar+18`); `$6FC2`-`$6FC3` (`PrintString+15`) |
@@ -1184,7 +1199,7 @@ Witness: L1 11 (c1, controls, m10, m1complete, m4complete, menu, missions).
 | | |
 | --- | --- |
 | Runs (c1 from the game's entry at frame 23974, the loader left out: the title, the mission tape, Blast Em Mission played) | 1 call, 32 t-states own (0.00 %) |
-| Runs (the other recordings) | 6 calls (`stage1/menu` 4, `stage1/missions` 1, `stage1/m10` 1) |
+| Runs (the other recordings) | 10 calls (`stage1/menu` 4, `stage1/controls` 2, `stage2/rec/m1complete` 1 and 3 more) |
 | Called from | `ApiVector16` (tail) |
 | Calls | `SetScreen` (tail) |
 | Writes | `$6B45` (`PlayKeys+10`) |
@@ -1197,7 +1212,9 @@ Witness: known only from the code.
 
 | | |
 | --- | --- |
-| Runs | not reached in the recordings |
+| Runs | not reached in `stage1/c1g`; in the other recordings 2 calls (`docs/bcC/rec/armour` 1, `stage2/rec/fuel` 1) |
+| Called from | `PlayerStep`, `PlayerHit` (tail) |
+| Calls | `SetScreen` (tail) |
 
 ### `ScreenEight` (`$704E`)
 
@@ -1221,7 +1238,7 @@ Witness: L1 19 (armour, c1, death, fuel, m1complete, m2erbe, m4complete, mission
 | | |
 | --- | --- |
 | Runs (c1 from the game's entry at frame 23974, the loader left out: the title, the mission tape, Blast Em Mission played) | 1 call, 20 t-states own (0.00 %) |
-| Runs (the other recordings) | 14 calls (`stage1/missions` 8, `stage1/play2` 3, `stage1/death` 1 and 2 more) |
+| Runs (the other recordings) | 18 calls (`stage1/missions` 8, `stage1/play2` 3, `docs/bcC/rec/armour` 1 and 6 more) |
 | Called from | `PointerZones` |
 | Calls | `ScreenZero` (falls into) |
 | Writes | `$6B45` (`PlayKeys+10`) |
@@ -1235,7 +1252,7 @@ Witness: L1 108 (armour, c1, controls, death, fuel, m10, m1complete, m2erbe, m2o
 | | |
 | --- | --- |
 | Runs (c1 from the game's entry at frame 23974, the loader left out: the title, the mission tape, Blast Em Mission played) | 4 calls, 76 t-states own (0.00 %) |
-| Runs (the other recordings) | 85 calls (`stage1/missions` 41, `stage1/menu` 17, `stage1/play2` 9 and 6 more) |
+| Runs (the other recordings) | 104 calls (`stage1/missions` 41, `stage1/menu` 17, `stage1/play2` 9 and 11 more) |
 | Called from | `PlayKeys` (tail), `StatusKeys` (tail), `PointerZones`, `ScreenFromClick` (falls into), `MissionLoaded` (tail) |
 | Calls | `SetScreen` (tail) |
 | Reads | `$74E6`-`$74ED` (`ScreenList`); `$7504`-`$751D` (`ScreenList+30`) |
@@ -1249,7 +1266,7 @@ Witness: L1 13 (m4complete, menu).
 
 | | |
 | --- | --- |
-| Runs | not reached in `stage1/c1g`; in the other recordings 12 calls (`stage1/menu` 12) |
+| Runs | not reached in `stage1/c1g`; in the other recordings 13 calls (`stage1/menu` 12, `stage2/rec/m4complete` 1) |
 | Called from | `PointerZones`, `ScreenOfMission` (tail) |
 | Calls | `SetScreen` (falls into) |
 
@@ -1262,8 +1279,8 @@ Witness: L1 148 (armour, c1, controls, death, fuel, m10, m1complete, m2erbe, m2o
 | | |
 | --- | --- |
 | Runs (c1 from the game's entry at frame 23974, the loader left out: the title, the mission tape, Blast Em Mission played) | 5 calls, 1,072 t-states own (0.00 %) |
-| Runs (the other recordings) | 112 calls (`stage1/missions` 50, `stage1/menu` 33, `stage1/play2` 12 and 3 more) |
-| Called from | `ScreenFour` (tail), `ScreenEight` (tail), `ScreenZero` (tail), `ScreenTwo` (falls into) |
+| Runs (the other recordings) | 138 calls (`stage1/missions` 50, `stage1/menu` 33, `stage1/play2` 12 and 8 more) |
+| Called from | `ScreenFour` (tail), `ScreenSix` (tail), `ScreenEight` (tail), `ScreenZero` (tail), `ScreenTwo` (falls into) |
 | Calls | `SetViewFlag` (falls into) |
 | Reads | `$74E6`-`$7549` (`ScreenList`); `$756A`-`$7571` (`ScreenList+132`) |
 | Writes | `$6A6D` (`ViewChangeFlag+1`); `$6A99`-`$6A9A` (`NextView+8`); `$6D47`-`$6D48` (`PointerZones+5`); `$74E6`-`$74E7` (`ScreenList`) |
@@ -1276,7 +1293,8 @@ Witness: L1 150 (armour, c1, controls, death, fuel, m10, m1complete, m2erbe, m2o
 
 | | |
 | --- | --- |
-| Runs | not reached in `stage1/c1g`; in the other recordings 10 calls (`stage1/play` 10) |
+| Runs (c1 from the game's entry at frame 23974, the loader left out: the title, the mission tape, Blast Em Mission played) | 5 runs of its first instruction (entered by a jump or by running on, no routine of its own in the L1) |
+| Runs (the other recordings) | 10 calls (`stage1/play` 10) |
 | Called from | `SelectLoop` (tail), `SetScreen` (falls into) |
 | Writes | `$6A6D` (`ViewChangeFlag+1`) |
 
@@ -1319,7 +1337,7 @@ Pages bank 4, copies `$CB64` (32 bytes) via `$8AF1` to bank 6 `$CF85`, then `$CB
 | | |
 | --- | --- |
 | Runs (c1 from the game's entry at frame 23974, the loader left out: the title, the mission tape, Blast Em Mission played) | 1 call, 24,215 t-states own (0.00 %) |
-| Runs (the other recordings) | 31 calls (`stage1/menu` 12, `stage1/missions` 9, `stage1/play2` 3 and 6 more) |
+| Runs (the other recordings) | 35 calls (`stage1/menu` 12, `stage1/missions` 9, `stage1/play2` 3 and 10 more) |
 | Calls | `PageBank4`, `PageBank6`, `SaveBank`, `RestoreBank` (tail) |
 | Reads | `$8AF1`-`$8B10` (`BackBuffer`) |
 | Writes | `$8AF1`-`$8EF0` (`BackBuffer`) |
@@ -1333,7 +1351,7 @@ Record n of the 8-byte index at `$CCA6`: the offset, two words stored at `$7143`
 | | |
 | --- | --- |
 | Runs (c1 from the game's entry at frame 23974, the loader left out: the title, the mission tape, Blast Em Mission played) | 1 call, 23,761 t-states own (0.00 %) |
-| Runs (the other recordings) | 24 calls (`stage1/menu` 10, `stage1/missions` 8, `stage1/play2` 3 and 3 more) |
+| Runs (the other recordings) | 28 calls (`stage1/menu` 10, `stage1/missions` 8, `stage1/play2` 3 and 7 more) |
 | Calls | `PageBank4`, `PageBank6`, `SaveBank`, `RestoreBank` (tail) |
 | Reads | `$757D` (`ScreenOfMission+1`); `$8AF1`-`$8DA3` (`BackBuffer`) |
 | Writes | `$70A3`-`$70A4` (`BriefingTextOnce+5`); `$7143`-`$7152` (`CopyMissionText+77`); `$7C55`-`$7C56` (`FailReason+92`); `$8AF1`-`$8DA3` (`BackBuffer`) |
@@ -1347,7 +1365,7 @@ Loops until a header whose name is "DIRECTORY" (`$71B3`) loads, prints `$C90D` (
 | | |
 | --- | --- |
 | Runs (c1 from the game's entry at frame 23974, the loader left out: the title, the mission tape, Blast Em Mission played) | 1 call, 398 t-states own (0.00 %) |
-| Runs (the other recordings) | 12 calls (`stage1/play2` 3, `stage1/play` 2, `stage1/menu` 1 and 6 more) |
+| Runs (the other recordings) | 15 calls (`stage1/play2` 3, `stage1/play` 2, `stage1/menu` 1 and 9 more) |
 | Calls | `PrintString`, `PrintRewind`, `IsDirectoryHeader`, `IsCatalogue`, `LoadBlock`, `PageBank4`, `PageBank6` |
 | Reads | `$8AFC`-`$8AFD` (`BackBuffer+11`) |
 | Writes | `$8AF1` (`BackBuffer`) |
@@ -1361,7 +1379,7 @@ Witness: L1 31 (armour, c1, death, fuel, m10, m1complete, m2erbe, m2ocean, menu,
 | | |
 | --- | --- |
 | Runs (c1 from the game's entry at frame 23974, the loader left out: the title, the mission tape, Blast Em Mission played) | 2 calls, 86 t-states own (0.00 %) |
-| Runs (the other recordings) | 23 calls (`stage1/play2` 6, `stage1/play` 3, `stage1/menu` 2 and 6 more) |
+| Runs (the other recordings) | 29 calls (`stage1/play2` 6, `stage1/play` 3, `stage1/menu` 2 and 9 more) |
 | Called from | `LoadDirectory` |
 | Calls | `PrintString` (tail) |
 
@@ -1374,7 +1392,7 @@ Witness: L1 23 (armour, c1, death, fuel, m10, m1complete, m2erbe, m2ocean, m4com
 | | |
 | --- | --- |
 | Runs (c1 from the game's entry at frame 23974, the loader left out: the title, the mission tape, Blast Em Mission played) | 1 call, 39 t-states own (0.00 %) |
-| Runs (the other recordings) | 18 calls (`stage1/missions` 9, `stage1/play2` 3, `stage1/m2erbe` 1 and 5 more) |
+| Runs (the other recordings) | 22 calls (`stage1/missions` 9, `stage1/play2` 3, `stage2/rec/m4complete` 1 and 9 more) |
 | Called from | `LoadMissionHeader` |
 | Calls | `CompareB` (tail) |
 
@@ -1397,7 +1415,7 @@ Witness: L1 15 (armour, c1, death, fuel, m10, m1complete, m2erbe, m2ocean, menu,
 | | |
 | --- | --- |
 | Runs (c1 from the game's entry at frame 23974, the loader left out: the title, the mission tape, Blast Em Mission played) | 1 call, 51 t-states own (0.00 %) |
-| Runs (the other recordings) | 11 calls (`stage1/play2` 3, `stage1/m2ocean` 1, `stage1/death` 1 and 6 more) |
+| Runs (the other recordings) | 14 calls (`stage1/play2` 3, `stage1/m2ocean` 1, `docs/bcC/rec/armour` 1 and 9 more) |
 | Called from | `LoadDirectory` |
 | Calls | `CompareNine` (tail) |
 
@@ -1410,7 +1428,7 @@ Witness: L1 15 (armour, c1, death, fuel, m10, m1complete, m2erbe, m2ocean, menu,
 | | |
 | --- | --- |
 | Runs (c1 from the game's entry at frame 23974, the loader left out: the title, the mission tape, Blast Em Mission played) | 1 call, 20 t-states own (0.00 %) |
-| Runs (the other recordings) | 11 calls (`stage1/play2` 3, `stage1/death` 1, `stage1/m10` 1 and 6 more) |
+| Runs (the other recordings) | 14 calls (`stage1/play2` 3, `docs/bcC/rec/armour` 1, `stage1/death` 1 and 9 more) |
 | Called from | `LoadDirectory` |
 | Calls | `CompareNine` (falls into) |
 
@@ -1423,7 +1441,7 @@ Witness: L1 30 (armour, c1, death, fuel, m10, m1complete, m2erbe, m2ocean, menu,
 | | |
 | --- | --- |
 | Runs (c1 from the game's entry at frame 23974, the loader left out: the title, the mission tape, Blast Em Mission played) | 2 calls, 14 t-states own (0.00 %) |
-| Runs (the other recordings) | 22 calls (`stage1/play2` 6, `stage1/menu` 2, `stage1/death` 2 and 6 more) |
+| Runs (the other recordings) | 28 calls (`stage1/play2` 6, `stage1/menu` 2, `docs/bcC/rec/armour` 2 and 9 more) |
 | Called from | `IsDirectoryHeader` (tail), `IsCatalogue` (falls into) |
 | Calls | `CompareB` (falls into) |
 | Reads | `$71DD`-`$71EF` (`DirectoryName`, `CatalogueName`); `$8AF2`-`$8AFA` (`BackBuffer+1`) |
@@ -1437,7 +1455,7 @@ Witness: L1 454 (armour, c1, death, fuel, m10, m1complete, m2erbe, m2ocean, m4co
 | | |
 | --- | --- |
 | Runs (c1 from the game's entry at frame 23974, the loader left out: the title, the mission tape, Blast Em Mission played) | 3 calls, 1,283 t-states own (0.00 %) |
-| Runs (the other recordings) | 38 calls (`stage1/missions` 11, `stage1/play2` 9, `stage1/m2ocean` 3 and 5 more) |
+| Runs (the other recordings) | 47 calls (`stage1/missions` 11, `stage1/play2` 9, `stage1/m2ocean` 3 and 8 more) |
 | Called from | `IsMissionHeader` (tail), `CompareNine` (falls into) |
 | Reads | `$71D5`-`$71EF` (`MissionHeaderName+1`, `DirectoryName`, `CatalogueName`); `$8AF2`-`$8AFA` (`BackBuffer+1`) |
 
@@ -1454,7 +1472,7 @@ Under `DI`, with bank 6 `$D27C` (the pointer's save) and `$D283` = `$C010`, call
 | | |
 | --- | --- |
 | Runs (c1 from the game's entry at frame 23974, the loader left out: the title, the mission tape, Blast Em Mission played) | 4 calls, 1,615 t-states own (0.00 %) |
-| Runs (the other recordings) | 64 calls (`stage1/missions` 19, `stage1/m2ocean` 12, `stage1/play2` 10 and 6 more) |
+| Runs (the other recordings) | 78 calls (`stage1/missions` 19, `stage1/m2ocean` 12, `stage1/play2` 10 and 10 more) |
 | Called from | `LoadDirectory`, `LoadMissionHeader`, `RemarkMission` |
 | Calls | `BorderBlack`, `PageBank6`, `SaveBank`, `RestoreBank`, `LdBytes` |
 
@@ -1467,7 +1485,7 @@ The timings are the ROM's; the border colours of the stripes come from C. A bloc
 | | |
 | --- | --- |
 | Runs (c1 from the game's entry at frame 23974, the loader left out: the title, the mission tape, Blast Em Mission played) | 4 calls, 23,384,048 t-states own (3.54 %) |
-| Runs (the other recordings) | 64 calls (`stage1/missions` 19, `stage1/m2ocean` 12, `stage1/play2` 10 and 6 more) |
+| Runs (the other recordings) | 78 calls (`stage1/missions` 19, `stage1/m2ocean` 12, `stage1/play2` 10 and 10 more) |
 | Called from | `LoadBlock` |
 | Calls | `LdEdge2`, `LdEdge1` |
 | Writes | `$8AF1`-`$8B01` (`BackBuffer`); `$DBC5`-`$FB3E` (`MissionHeader`) |
@@ -1483,7 +1501,7 @@ Witness: L1 2102599 (armour, c1, death, fuel, m10, m1complete, m2erbe, m2ocean, 
 | | |
 | --- | --- |
 | Runs (c1 from the game's entry at frame 23974, the loader left out: the title, the mission tape, Blast Em Mission played) | 122,820 calls, 2,702,040 t-states own (0.41 %) |
-| Runs (the other recordings) | 1,559,293 calls (`stage1/missions` 520,787, `stage1/m2ocean` 269,839, `stage1/play2` 238,986 and 6 more) |
+| Runs (the other recordings) | 1,979,779 calls (`stage1/missions` 520,787, `stage1/m2ocean` 269,839, `stage1/play2` 238,986 and 10 more) |
 | Called from | `LdBytes` |
 | Calls | `LdEdge1` (falls into) |
 
@@ -1496,7 +1514,7 @@ Witness: L1 4378887 (armour, c1, death, fuel, m10, m1complete, m2erbe, m2ocean, 
 | | |
 | --- | --- |
 | Runs (c1 from the game's entry at frame 23974, the loader left out: the title, the mission tape, Blast Em Mission played) | 255,183 calls, 300,007,693 t-states own (45.37 %) |
-| Runs (the other recordings) | 3,252,027 calls (`stage1/missions` 1,067,529, `stage1/m2ocean` 563,928, `stage1/play2` 507,394 and 6 more) |
+| Runs (the other recordings) | 4,123,704 calls (`stage1/missions` 1,067,529, `stage1/m2ocean` 563,928, `stage1/play2` 507,394 and 10 more) |
 | Called from | `LdBytes`, `LdEdge2` (falls into) |
 | Ports in | `$7FFE` |
 | Ports out | `$09FE`, `$0AFE`, `$0DFE`, `$0EFE` |
@@ -1524,7 +1542,7 @@ Witness: L1 3076073 (armour, c1, controls, death, fuel, m10, m1complete, m2erbe,
 | | |
 | --- | --- |
 | Runs (c1 from the game's entry at frame 23974, the loader left out: the title, the mission tape, Blast Em Mission played) | 124 calls, 611,226 t-states own (0.09 %) |
-| Runs (the other recordings) | 3,614 calls (`stage1/death` 2,513, `stage1/play2` 425, `stage1/missions` 348 and 6 more) |
+| Runs (the other recordings) | 9,798 calls (`stage1/death` 2,513, `docs/bcC/rec/armour` 2,399, `stage2/rec/m4complete` 2,239 and 11 more) |
 | Called from | `BriefingMapLegend`, `StatusMapLegend`, `FirstFrameHook` |
 | Reads | `$83BA` (`BlitRequest+1`) |
 
@@ -1559,7 +1577,7 @@ Witness: L1 13555 (armour, c1, controls, death, fuel, m10, m1complete, m2erbe, m
 | | |
 | --- | --- |
 | Runs (c1 from the game's entry at frame 23974, the loader left out: the title, the mission tape, Blast Em Mission played) | 289 calls, 8,095 t-states own (0.00 %) |
-| Runs (the other recordings) | 6,283 calls (`stage1/death` 2,637, `stage1/play2` 1,458, `stage1/missions` 1,171 and 6 more) |
+| Runs (the other recordings) | 13,226 calls (`stage1/death` 2,637, `docs/bcC/rec/armour` 2,523, `stage2/rec/m4complete` 2,331 and 11 more) |
 | Called from | `PlayLoopTail`, `DragonflyViewLoop` |
 | Calls | `WaitFrameDone`, `PageBank0Main` (falls into) |
 | Writes | `$7256` (`FirstFrameHook`) |
@@ -1573,7 +1591,7 @@ Witness: L1 9925 (armour, c1, controls, death, fuel, m10, m1complete, m2erbe, m2
 | | |
 | --- | --- |
 | Runs (c1 from the game's entry at frame 23974, the loader left out: the title, the mission tape, Blast Em Mission played) | 124 calls, 633 t-states own (0.00 %) |
-| Runs (the other recordings) | 3,607 calls (`stage1/death` 2,512, `stage1/play2` 425, `stage1/missions` 316 and 6 more) |
+| Runs (the other recordings) | 9,801 calls (`stage1/death` 2,512, `docs/bcC/rec/armour` 2,400, `stage2/rec/m4complete` 2,244 and 11 more) |
 | Called from | `DamageLoop`, `FirstFrameHook` (falls into) |
 | Calls | `PageMain` (falls into) |
 
@@ -1586,7 +1604,7 @@ Witness: L1 10090 (armour, c1, controls, death, fuel, m10, m1complete, m2erbe, m
 | | |
 | --- | --- |
 | Runs (c1 from the game's entry at frame 23974, the loader left out: the title, the mission tape, Blast Em Mission played) | 130 calls, 5,516 t-states own (0.00 %) |
-| Runs (the other recordings) | 3,740 calls (`stage1/death` 2,515, `stage1/play2` 440, `stage1/missions` 374 and 6 more) |
+| Runs (the other recordings) | 9,960 calls (`stage1/death` 2,515, `docs/bcC/rec/armour` 2,404, `stage2/rec/m4complete` 2,251 and 11 more) |
 | Called from | `PageBank0Main` (falls into), `PageShadowScreen` (tail) |
 | Calls | `PageOut` (tail) |
 | Reads | `$728A` (`SaveBank+2`) |
@@ -1601,7 +1619,7 @@ Witness: L1 165 (armour, c1, controls, death, fuel, m10, m1complete, m2erbe, m2o
 | | |
 | --- | --- |
 | Runs (c1 from the game's entry at frame 23974, the loader left out: the title, the mission tape, Blast Em Mission played) | 6 calls, 149 t-states own (0.00 %) |
-| Runs (the other recordings) | 133 calls (`stage1/missions` 58, `stage1/menu` 33, `stage1/play2` 15 and 6 more) |
+| Runs (the other recordings) | 159 calls (`stage1/missions` 58, `stage1/menu` 33, `stage1/play2` 15 and 11 more) |
 | Called from | `StartMission`, `DragonflyViewLoop`, `StatusLoop`, `DamageLoop` |
 | Calls | `PageMain` (tail) |
 
@@ -1614,7 +1632,7 @@ Witness: L1 266011 (armour, c1, controls, death, fuel, m10, m1complete, m2erbe, 
 | | |
 | --- | --- |
 | Runs (c1 from the game's entry at frame 23974, the loader left out: the title, the mission tape, Blast Em Mission played) | 11,125 calls, 312,339 t-states own (0.05 %) |
-| Runs (the other recordings) | 147,491 calls (`stage1/missions` 65,118, `stage1/play2` 34,565, `stage1/death` 24,252 and 6 more) |
+| Runs (the other recordings) | 254,886 calls (`stage1/missions` 65,118, `stage2/rec/m4complete` 40,041, `stage1/play2` 34,565 and 11 more) |
 | Called from | `Bank3SetObject`, `Bank3Step`, `Bank3Lookup`, `Bank3Render`, `Bank3Fill`, `LoadMission`, `RemarkMission`, `Debris`, `DrawEntry` |
 | Calls | `PageBankA` (tail) |
 
@@ -1627,7 +1645,7 @@ Witness: L1 135412 (armour, c1, controls, death, fuel, m10, m1complete, m2erbe, 
 | | |
 | --- | --- |
 | Runs (c1 from the game's entry at frame 23974, the loader left out: the title, the mission tape, Blast Em Mission played) | 4,423 calls, 86,465 t-states own (0.01 %) |
-| Runs (the other recordings) | 72,017 calls (`stage1/death` 15,296, `stage1/play2` 14,436, `stage1/missions` 14,068 and 6 more) |
+| Runs (the other recordings) | 130,989 calls (`stage2/rec/m4complete` 20,168, `stage2/rec/m1complete` 17,662, `stage1/death` 15,296 and 11 more) |
 | Called from | `CopyCatalogueHead`, `CopyMissionText`, `LoadDirectory`, `Bank4Start`, `Bank4Tick`, `Bank4Call` |
 | Calls | `PageBankA` (tail) |
 
@@ -1640,7 +1658,7 @@ Witness: L1 142 (armour, c1, controls, death, fuel, m10, m1complete, m2erbe, m2o
 | | |
 | --- | --- |
 | Runs (c1 from the game's entry at frame 23974, the loader left out: the title, the mission tape, Blast Em Mission played) | 5 calls, 95 t-states own (0.00 %) |
-| Runs (the other recordings) | 115 calls (`stage1/missions` 50, `stage1/menu` 28, `stage1/play2` 12 and 6 more) |
+| Runs (the other recordings) | 137 calls (`stage1/missions` 50, `stage1/menu` 28, `stage1/play2` 12 and 11 more) |
 | Called from | `DrawBank7Picture` |
 | Calls | `PageBankA` (tail) |
 
@@ -1653,7 +1671,7 @@ Witness: L1 336465 (armour, c1, controls, death, fuel, m10, m1complete, m2erbe, 
 | | |
 | --- | --- |
 | Runs (c1 from the game's entry at frame 23974, the loader left out: the title, the mission tape, Blast Em Mission played) | 12,131 calls, 236,130 t-states own (0.04 %) |
-| Runs (the other recordings) | 193,204 calls (`stage1/missions` 39,950, `stage1/play2` 38,989, `stage1/death` 33,419 and 6 more) |
+| Runs (the other recordings) | 324,334 calls (`stage2/rec/m4complete` 41,577, `stage1/missions` 39,950, `stage1/play2` 38,989 and 11 more) |
 | Called from | `Entry`, `ResetCollisionTables` (tail), `StartMission`, `PlayLoopTail`, `DragonflyViewLoop`, `PanelSetup`, `StatusLoop`, `DamageLoop`, `ShowBriefingMapOnce`, `CopyCatalogueHead`, `CopyMissionText`, `LoadDirectory`, `LoadBlock`, `Bank3Render` (tail), `UpdateSlotBars`, `DrawBank7Picture`, `LoadMissionIfAllowed`, `PageBank6Kept` (tail), `QuitKey`, `LoadMissionHeader` (tail), `RemarkMission`, `MissionSetup` |
 | Calls | `PageBankA` (tail) |
 
@@ -1666,7 +1684,7 @@ Witness: L1 263276 (armour, c1, controls, death, fuel, m10, m1complete, m2erbe, 
 | | |
 | --- | --- |
 | Runs (c1 from the game's entry at frame 23974, the loader left out: the title, the mission tape, Blast Em Mission played) | 12,132 calls, 58,229 t-states own (0.01 %) |
-| Runs (the other recordings) | 168,750 calls (`stage1/missions` 69,617, `stage1/play2` 36,976, `stage1/death` 20,661 and 6 more) |
+| Runs (the other recordings) | 251,144 calls (`stage1/missions` 69,617, `stage1/play2` 36,976, `stage2/rec/m4complete` 24,201 and 11 more) |
 | Called from | `ResetCollisionTables`, `StartMission`, `DragonflyViewLoop`, `PanelSetup` (tail), `StatusLoop`, `DamageLoop`, `Bank0SoundOff`, `SoundTick`, `LoadMission`, `RemarkMission`, `MissionSetup` |
 | Calls | `PageBankA` (falls into) |
 
@@ -1679,7 +1697,7 @@ Witness: L1 1454779 (armour, c1, controls, death, fuel, m10, m1complete, m2erbe,
 | | |
 | --- | --- |
 | Runs (c1 from the game's entry at frame 23974, the loader left out: the title, the mission tape, Blast Em Mission played) | 54,728 calls, 810,821 t-states own (0.12 %) |
-| Runs (the other recordings) | 813,537 calls (`stage1/missions` 235,278, `stage1/play2` 172,428, `stage1/death` 143,043 and 6 more) |
+| Runs (the other recordings) | 1,400,051 calls (`stage1/missions` 235,278, `stage2/rec/m4complete` 201,057, `stage2/rec/m1complete` 172,833 and 11 more) |
 | Called from | `PageBank3` (tail), `PageBank4` (tail), `PageBank7` (tail), `PageBank6` (tail), `PageBank0` (falls into), `RestoreBank`, `DrawBank7Picture` (tail), `PageBankKept` (tail) |
 | Calls | `PageOut` (falls into) |
 | Writes | `$728A` (`SaveBank+2`) |
@@ -1691,7 +1709,7 @@ Witness: L1 1454779 (armour, c1, controls, death, fuel, m10, m1complete, m2erbe,
 | | |
 | --- | --- |
 | Runs (c1 from the game's entry at frame 23974, the loader left out: the title, the mission tape, Blast Em Mission played) | 54,858 calls, 2,447,543 t-states own (0.37 %) |
-| Runs (the other recordings) | 817,277 calls (`stage1/missions` 235,652, `stage1/play2` 172,868, `stage1/death` 145,558 and 6 more) |
+| Runs (the other recordings) | 1,410,011 calls (`stage1/missions` 235,652, `stage2/rec/m4complete` 203,308, `stage2/rec/m1complete` 174,349 and 11 more) |
 | Called from | `PageMain` (tail), `PageBankA` (falls into) |
 | Ports out | `$7FFD` |
 
@@ -1704,7 +1722,7 @@ Witness: L1 134817 (armour, c1, controls, death, fuel, m10, m1complete, m2erbe, 
 | | |
 | --- | --- |
 | Runs (c1 from the game's entry at frame 23974, the loader left out: the title, the mission tape, Blast Em Mission played) | 3,278 calls, 201,645 t-states own (0.03 %) |
-| Runs (the other recordings) | 48,310 calls (`stage1/death` 18,837, `stage1/play2` 10,541, `stage1/missions` 9,592 and 6 more) |
+| Runs (the other recordings) | 131,539 calls (`stage2/rec/m4complete` 36,009, `stage2/rec/m1complete` 25,001, `stage1/death` 18,837 and 11 more) |
 | Called from | `StartMission`, `ShowBriefingMapOnce`, `CopyCatalogueHead`, `CopyMissionText`, `LoadBlock`, `Bank3SetObject`, `Bank3Step`, `Bank3Lookup`, `Bank4Start`, `Bank0SoundOff`, `Bank4Call`, `UpdateSlotBars`, `Bank3Fill`, `QuitKey`, `Debris`, `DrawEntry` |
 | Writes | `$729D` (`RestoreBank+2`) |
 
@@ -1717,7 +1735,7 @@ Witness: L1 94721 (armour, c1, controls, death, fuel, m10, m1complete, m2erbe, m
 | | |
 | --- | --- |
 | Runs (c1 from the game's entry at frame 23974, the loader left out: the title, the mission tape, Blast Em Mission played) | 2,908 calls, 262,067 t-states own (0.04 %) |
-| Runs (the other recordings) | 35,608 calls (`stage1/death` 11,167, `stage1/play2` 8,320, `stage1/missions` 8,192 and 6 more) |
+| Runs (the other recordings) | 91,800 calls (`stage2/rec/m1complete` 20,348, `stage2/rec/m4complete` 19,058, `stage1/death` 11,167 and 11 more) |
 | Called from | `FillFaceList`, `FillFaceListClipped`, `OpFillPolys`, `OpFillPolysClipped` |
 | Calls | `PageBank3`, `SaveBank` |
 
@@ -1730,7 +1748,7 @@ Witness: L1 134816 (armour, c1, controls, death, fuel, m10, m1complete, m2erbe, 
 | | |
 | --- | --- |
 | Runs (c1 from the game's entry at frame 23974, the loader left out: the title, the mission tape, Blast Em Mission played) | 370 calls, 217,836 t-states own (0.03 %) |
-| Runs (the other recordings) | 12,693 calls (`stage1/death` 7,669, `stage1/play2` 2,220, `stage1/missions` 1,399 and 6 more) |
+| Runs (the other recordings) | 39,726 calls (`stage2/rec/m4complete` 16,951, `stage1/death` 7,669, `docs/bcC/rec/armour` 5,318 and 11 more) |
 | Called from | `StartMission`, `ShowBriefingMapOnce`, `CopyCatalogueHead` (tail), `CopyMissionText` (tail), `LoadBlock`, `Bank3Step` (tail), `Bank3Lookup` (tail), `Bank4Start` (tail), `Bank0SoundOff` (tail), `Bank4Call` (tail), `UpdateSlotBars`, `Bank3Fill` (tail), `QuitKey`, `Debris` (tail), `DrawEntry` |
 | Calls | `PageBankA` |
 
@@ -1743,7 +1761,7 @@ Witness: L1 9770 (armour, c1, death, fuel, m1complete, m2erbe, m4complete, missi
 | | |
 | --- | --- |
 | Runs (c1 from the game's entry at frame 23974, the loader left out: the title, the mission tape, Blast Em Mission played) | 119 calls, 11,780 t-states own (0.00 %) |
-| Runs (the other recordings) | 3,483 calls (`stage1/death` 2,510, `stage1/play2` 413, `stage1/missions` 273 and 2 more) |
+| Runs (the other recordings) | 9,651 calls (`stage1/death` 2,510, `docs/bcC/rec/armour` 2,396, `stage2/rec/m4complete` 2,237 and 6 more) |
 | Called from | `PlayLoop` |
 | Calls | `PageBank3`, `SaveBank`, `RestoreBank` (tail) |
 
@@ -1756,7 +1774,7 @@ Witness: L1 18311 (armour, c1, death, fuel, m1complete, m2erbe, m4complete, menu
 | | |
 | --- | --- |
 | Runs (c1 from the game's entry at frame 23974, the loader left out: the title, the mission tape, Blast Em Mission played) | 114 calls, 12,282 t-states own (0.00 %) |
-| Runs (the other recordings) | 4,882 calls (`stage1/death` 2,261, `stage1/play2` 1,192, `stage1/missions` 733 and 3 more) |
+| Runs (the other recordings) | 18,197 calls (`stage2/rec/m4complete` 11,640, `stage1/death` 2,261, `stage2/rec/m1complete` 1,311 and 7 more) |
 | Called from | `OpLines`, `OpLinesClipped` |
 | Calls | `PageBank3`, `SaveBank`, `RestoreBank` (tail) |
 
@@ -1769,7 +1787,7 @@ Witness: L1 3712 (armour, c1, controls, death, fuel, m10, m1complete, m2erbe, m2
 | | |
 | --- | --- |
 | Runs (c1 from the game's entry at frame 23974, the loader left out: the title, the mission tape, Blast Em Mission played) | 171 calls, 12,136 t-states own (0.00 %) |
-| Runs (the other recordings) | 2,768 calls (`stage1/play2` 1,045, `stage1/missions` 897, `stage1/play` 432 and 6 more) |
+| Runs (the other recordings) | 3,541 calls (`stage1/play2` 1,045, `stage1/missions` 897, `stage1/play` 432 and 11 more) |
 | Calls | `PageBank3`, `PageBank6` (tail), `RunScript` |
 
 ### `Bank4Start` (`$72C6`)
@@ -1781,7 +1799,7 @@ Witness: L1 22 (c1, controls, fuel, m2erbe, menu, missions, play, play2).
 | | |
 | --- | --- |
 | Runs (c1 from the game's entry at frame 23974, the loader left out: the title, the mission tape, Blast Em Mission played) | 2 calls, 225 t-states own (0.00 %) |
-| Runs (the other recordings) | 17 calls (`stage1/missions` 8, `stage1/menu` 4, `stage1/play2` 3 and 2 more) |
+| Runs (the other recordings) | 20 calls (`stage1/missions` 8, `stage1/menu` 4, `stage1/play2` 3 and 4 more) |
 | Calls | `PageBank4`, `SaveBank`, `RestoreBank` (tail) |
 
 ### `Bank4Tick` (`$72D2`)
@@ -1793,7 +1811,7 @@ Witness: L1 135242 (armour, c1, controls, death, fuel, m10, m1complete, m2erbe, 
 | | |
 | --- | --- |
 | Runs (c1 from the game's entry at frame 23974, the loader left out: the title, the mission tape, Blast Em Mission played) | 4,415 calls, 274,701 t-states own (0.04 %) |
-| Runs (the other recordings) | 71,878 calls (`stage1/death` 15,291, `stage1/play2` 14,418, `stage1/missions` 14,024 and 6 more) |
+| Runs (the other recordings) | 130,827 calls (`stage2/rec/m4complete` 20,165, `stage2/rec/m1complete` 17,657, `stage1/death` 15,291 and 11 more) |
 | Called from | `InterruptHandler` |
 | Calls | `PageBank4`, `PageBank6Kept`, `PageBankKept` (tail) |
 
@@ -1806,7 +1824,7 @@ Witness: L1 26 (armour, c1, controls, fuel, m1complete, m2erbe, m4complete, menu
 | | |
 | --- | --- |
 | Runs (c1 from the game's entry at frame 23974, the loader left out: the title, the mission tape, Blast Em Mission played) | 2 calls, 145 t-states own (0.00 %) |
-| Runs (the other recordings) | 17 calls (`stage1/missions` 8, `stage1/menu` 4, `stage1/play2` 3 and 2 more) |
+| Runs (the other recordings) | 24 calls (`stage1/missions` 8, `stage1/menu` 4, `stage1/play2` 3 and 7 more) |
 | Calls | `PageBank0`, `SaveBank`, `RestoreBank` (tail), `SilenceAY` |
 
 ### `Bank4Call` (`$72E9`)
@@ -1818,7 +1836,7 @@ Witness: L1 32 (armour, c1, controls, death, fuel, m10, m1complete, m2erbe, m2oc
 | | |
 | --- | --- |
 | Runs (c1 from the game's entry at frame 23974, the loader left out: the title, the mission tape, Blast Em Mission played) | 2 calls, 126 t-states own (0.00 %) |
-| Runs (the other recordings) | 25 calls (`stage1/missions` 9, `stage1/menu` 5, `stage1/play2` 3 and 6 more) |
+| Runs (the other recordings) | 30 calls (`stage1/missions` 9, `stage1/menu` 5, `stage1/play2` 3 and 10 more) |
 | Calls | `PageBank4`, `SaveBank`, `RestoreBank` (tail) |
 
 ## hud
@@ -1874,7 +1892,7 @@ Witness: L1 9769 (armour, c1, death, fuel, m1complete, m2erbe, m4complete, missi
 | | |
 | --- | --- |
 | Runs (c1 from the game's entry at frame 23974, the loader left out: the title, the mission tape, Blast Em Mission played) | 118 calls, 11,794 t-states own (0.00 %) |
-| Runs (the other recordings) | 3,483 calls (`stage1/death` 2,510, `stage1/play2` 413, `stage1/missions` 273 and 2 more) |
+| Runs (the other recordings) | 9,651 calls (`stage1/death` 2,510, `docs/bcC/rec/armour` 2,396, `stage2/rec/m4complete` 2,237 and 6 more) |
 | Called from | `PlayLoopTail` |
 | Calls | `PageBank6`, `SaveBank`, `RestoreBank`, `UpdateAmmoBars` (falls into) |
 
@@ -1887,7 +1905,7 @@ Witness: L1 9800 (armour, c1, death, fuel, m1complete, m2erbe, m4complete, missi
 | | |
 | --- | --- |
 | Runs (c1 from the game's entry at frame 23974, the loader left out: the title, the mission tape, Blast Em Mission played) | 119 calls, 94,726 t-states own (0.01 %) |
-| Runs (the other recordings) | 3,509 calls (`stage1/death` 2,511, `stage1/play2` 416, `stage1/missions` 289 and 2 more) |
+| Runs (the other recordings) | 9,681 calls (`stage1/death` 2,511, `docs/bcC/rec/armour` 2,397, `stage2/rec/m4complete` 2,238 and 6 more) |
 | Called from | `StartMission`, `UpdateSlotBars` (falls into) |
 | Reads | `$68C9`-`$68E0` (`SlotGauges`); `$8368`-`$837A` (`WeaponSlots`) |
 | Writes | `$68CA`-`$68DC` (`SlotGauges+1`); `$737B` (`l_737A+1`) |
@@ -1898,7 +1916,8 @@ Witness: L1 9800 (armour, c1, death, fuel, m1complete, m2erbe, m4complete, missi
 
 | | |
 | --- | --- |
-| Runs | not reached in the recordings |
+| Runs (c1 from the game's entry at frame 23974, the loader left out: the title, the mission tape, Blast Em Mission played) | 119 runs of its first instruction (entered by a jump or by running on, no routine of its own in the L1) |
+| Runs (the other recordings) | 9,681 runs of its first instruction, entered by a jump (`stage1/death` 2,511, `docs/bcC/rec/armour` 2,397, `stage2/rec/m4complete` 2,238 and 6 more) |
 
 ### `l_7362` (`$7362`)
 
@@ -1906,7 +1925,8 @@ Witness: L1 9800 (armour, c1, death, fuel, m1complete, m2erbe, m4complete, missi
 
 | | |
 | --- | --- |
-| Runs | ran within another entry's routine (reached by a jump or by running on, its calls below), no runs of its own counted |
+| Runs (c1 from the game's entry at frame 23974, the loader left out: the title, the mission tape, Blast Em Mission played) | 119 runs of its first instruction (entered by a jump or by running on, no routine of its own in the L1) |
+| Runs (the other recordings) | 11,433 runs of its first instruction, entered by a jump (`stage1/death` 2,511, `docs/bcC/rec/armour` 2,397, `stage2/rec/m4complete` 2,238 and 6 more) |
 | Calls | `DrawBar` |
 
 ### `DrawDamagePanel` (`$7383`)
@@ -1931,7 +1951,7 @@ Witness: L1 31 (armour, c1, death, fuel, m1complete, m2erbe, m4complete, mission
 | | |
 | --- | --- |
 | Runs (c1 from the game's entry at frame 23974, the loader left out: the title, the mission tape, Blast Em Mission played) | 1 call, 1,116 t-states own (0.00 %) |
-| Runs (the other recordings) | 26 calls (`stage1/missions` 16, `stage1/play` 4, `stage1/play2` 3 and 2 more) |
+| Runs (the other recordings) | 30 calls (`stage1/missions` 16, `stage1/play` 4, `stage1/play2` 3 and 6 more) |
 | Called from | `StartMission` |
 | Calls | `DrawIcon` |
 | Reads | `$68CD`-`$68E0` (`SlotGauges+4`); `$8368`-`$837A` (`WeaponSlots`) |
@@ -1945,7 +1965,7 @@ Witness: L1 133 (armour, c1, death, fuel, m1complete, m2erbe, m4complete, missio
 | | |
 | --- | --- |
 | Runs (c1 from the game's entry at frame 23974, the loader left out: the title, the mission tape, Blast Em Mission played) | 4 calls, 819 t-states own (0.00 %) |
-| Runs (the other recordings) | 113 calls (`stage1/missions` 64, `stage1/play` 25, `stage1/play2` 12 and 2 more) |
+| Runs (the other recordings) | 129 calls (`stage1/missions` 64, `stage1/play` 25, `stage1/play2` 12 and 6 more) |
 | Called from | `DrawDamagePanel`, `DrawSlotIcons` |
 | Calls | `CopyGraphic` (tail) |
 | Reads | `$75CA`-`$75EF` (`IconTable`) |
@@ -1973,7 +1993,7 @@ Witness: L1 10058 (armour, c1, death, fuel, m1complete, m2erbe, m4complete, miss
 | | |
 | --- | --- |
 | Runs (c1 from the game's entry at frame 23974, the loader left out: the title, the mission tape, Blast Em Mission played) | 139 calls, 17,261 t-states own (0.00 %) |
-| Runs (the other recordings) | 3,655 calls (`stage1/death` 2,523, `stage1/play2` 457, `stage1/missions` 362 and 2 more) |
+| Runs (the other recordings) | 9,919 calls (`stage1/death` 2,523, `docs/bcC/rec/armour` 2,405, `stage2/rec/m4complete` 2,283 and 6 more) |
 | Calls | `BarLines` (tail) |
 | Writes | `$7476`-`$747D` (`BarLines+18`); `$7494`-`$7497` (`l_747E+22`) |
 
@@ -1986,7 +2006,7 @@ Witness: L1 11561 (armour, c1, death, fuel, m1complete, m2erbe, m4complete, miss
 | | |
 | --- | --- |
 | Runs (c1 from the game's entry at frame 23974, the loader left out: the title, the mission tape, Blast Em Mission played) | 119 calls, 12,389 t-states own (0.00 %) |
-| Runs (the other recordings) | 5,270 calls (`stage1/death` 2,511, `stage1/play2` 1,418, `stage1/play` 1,009 and 2 more) |
+| Runs (the other recordings) | 11,442 calls (`stage1/death` 2,511, `docs/bcC/rec/armour` 2,397, `stage2/rec/m4complete` 2,238 and 6 more) |
 | Called from | `DrawWeaponBars`, `l_7362` |
 | Calls | `BarLines` (falls into) |
 | Writes | `$7476`-`$747D` (`BarLines+18`); `$7494`-`$7497` (`l_747E+22`) |
@@ -2000,7 +2020,7 @@ Witness: L1 21619 (armour, c1, death, fuel, m1complete, m2erbe, m4complete, miss
 | | |
 | --- | --- |
 | Runs (c1 from the game's entry at frame 23974, the loader left out: the title, the mission tape, Blast Em Mission played) | 258 calls, 757,422 t-states own (0.11 %) |
-| Runs (the other recordings) | 8,925 calls (`stage1/death` 5,034, `stage1/play2` 1,875, `stage1/play` 1,270 and 2 more) |
+| Runs (the other recordings) | 21,361 calls (`stage1/death` 5,034, `docs/bcC/rec/armour` 4,802, `stage2/rec/m4complete` 4,521 and 6 more) |
 | Called from | `DrawBarWide` (tail), `DrawBar` (falls into) |
 | Reads | `$6500`-`$654F` (`ScreenRowTable`); `$6570`-`$659F` (`ScreenRowTable+112`); `$65C0`-`$65EF` (`ScreenRowTable+192`); `$6610`-`$665F` (`ScreenRowTable+272`) |
 | Writes | `$400A`-`$4ADD` (screen); `$4B16`-`$4BDD` (screen); `$4C16`-`$4CDD` (screen); `$4D16`-`$4DDD` (screen); `$4E16`-`$4EDD` (screen); `$4F16`-`$4FDD` (screen); 2 more ranges |
@@ -2014,7 +2034,7 @@ The panels and frames of the views are bank 7's pictures (DE = `$DD75` play, `$F
 | | |
 | --- | --- |
 | Runs (c1 from the game's entry at frame 23974, the loader left out: the title, the mission tape, Blast Em Mission played) | 5 calls, 888 t-states own (0.00 %) |
-| Runs (the other recordings) | 115 calls (`stage1/missions` 50, `stage1/menu` 28, `stage1/play2` 12 and 6 more) |
+| Runs (the other recordings) | 137 calls (`stage1/missions` 50, `stage1/menu` 28, `stage1/play2` 12 and 11 more) |
 | Called from | `StartMission`, `DragonflyViewLoop`, `StatusLoop`, `DamageLoop` |
 | Calls | `PageBank7`, `PageBank6`, `PageBankA` (tail) |
 | Reads | `$728A` (`SaveBank+2`) |
@@ -2029,7 +2049,7 @@ Witness: L1 19 (armour, c1, death, fuel, m1complete, m2erbe, m4complete, mission
 | | |
 | --- | --- |
 | Runs (c1 from the game's entry at frame 23974, the loader left out: the title, the mission tape, Blast Em Mission played) | 1 call, 19 t-states own (0.00 %) |
-| Runs (the other recordings) | 14 calls (`stage1/missions` 8, `stage1/play2` 3, `stage1/play` 1 and 2 more) |
+| Runs (the other recordings) | 18 calls (`stage1/missions` 8, `stage1/play2` 3, `stage1/play` 1 and 6 more) |
 | Calls | `Bank3Fill` (tail) |
 
 ### `Bank3Fill5F` (`$74CD`)
@@ -2041,7 +2061,7 @@ Witness: L1 19 (armour, c1, death, fuel, m1complete, m2erbe, m4complete, mission
 | | |
 | --- | --- |
 | Runs (c1 from the game's entry at frame 23974, the loader left out: the title, the mission tape, Blast Em Mission played) | 1 call, 7 t-states own (0.00 %) |
-| Runs (the other recordings) | 14 calls (`stage1/missions` 8, `stage1/play2` 3, `stage1/m2erbe` 1 and 2 more) |
+| Runs (the other recordings) | 18 calls (`stage1/missions` 8, `stage1/play2` 3, `stage1/m2erbe` 1 and 6 more) |
 | Calls | `Bank3Fill` (falls into) |
 
 ### `Bank3Fill` (`$74CF`)
@@ -2053,7 +2073,7 @@ Witness: L1 38 (armour, c1, death, fuel, m1complete, m2erbe, m4complete, mission
 | | |
 | --- | --- |
 | Runs (c1 from the game's entry at frame 23974, the loader left out: the title, the mission tape, Blast Em Mission played) | 2 calls, 208 t-states own (0.00 %) |
-| Runs (the other recordings) | 28 calls (`stage1/missions` 16, `stage1/play2` 6, `stage1/m2erbe` 2 and 2 more) |
+| Runs (the other recordings) | 36 calls (`stage1/missions` 16, `stage1/play2` 6, `stage1/m2erbe` 2 and 6 more) |
 | Called from | `Bank3FillFF` (tail), `Bank3Fill5F` (falls into) |
 | Calls | `PageBank3`, `SaveBank`, `RestoreBank` (tail) |
 
@@ -2087,7 +2107,8 @@ Witness: known only from the code (entered by a jump from `$75B8`).
 
 | | |
 | --- | --- |
-| Runs | ran within another entry's routine (reached by a jump or by running on, its calls below), no runs of its own counted |
+| Runs (c1 from the game's entry at frame 23974, the loader left out: the title, the mission tape, Blast Em Mission played) | 1 run of its first instruction (entered by a jump or by running on, no routine of its own in the L1) |
+| Runs (the other recordings) | 18 runs of its first instruction, entered by a jump (`stage1/missions` 8, `stage1/play2` 3, `docs/bcC/rec/armour` 1 and 6 more) |
 | Calls | `ScreenZero` (tail) |
 
 ### `LoadMissionIfAllowed` (`$759A`)
@@ -2099,7 +2120,7 @@ If the current mission (C) is 9 (Grand Finale), the nine bytes `$6799-$67A1` are
 | | |
 | --- | --- |
 | Runs (c1 from the game's entry at frame 23974, the loader left out: the title, the mission tape, Blast Em Mission played) | 1 call, 232 t-states own (0.00 %) |
-| Runs (the other recordings) | 17 calls (`stage1/missions` 9, `stage1/play2` 3, `stage1/m10` 1 and 4 more) |
+| Runs (the other recordings) | 21 calls (`stage1/missions` 9, `stage1/play2` 3, `stage1/m10` 1 and 8 more) |
 | Called from | `PointerZones` |
 | Calls | `PageBank6`, `MissionDone`, `LoadMission` |
 | Reads | `$6799`-`$67A1` (`MissionsDone`); `$757D` (`ScreenOfMission+1`) |
@@ -2113,7 +2134,7 @@ Witness: L1 32 (armour, c1, death, fuel, m10, m1complete, m2erbe, m2ocean, m4com
 | | |
 | --- | --- |
 | Runs (c1 from the game's entry at frame 23974, the loader left out: the title, the mission tape, Blast Em Mission played) | 1 call, 75 t-states own (0.00 %) |
-| Runs (the other recordings) | 27 calls (`stage1/menu` 10, `stage1/missions` 9, `stage1/play2` 3 and 5 more) |
+| Runs (the other recordings) | 31 calls (`stage1/menu` 10, `stage1/missions` 9, `stage1/play2` 3 and 9 more) |
 | Called from | `ScreenOfMission`, `LoadMissionIfAllowed` |
 | Reads | `$6799`-`$67A2` (`MissionsDone`); `$757D` (`ScreenOfMission+1`) |
 
@@ -2130,7 +2151,7 @@ Witness: L1 116 (armour, c1, death, m1complete, m4complete, play2).
 | | |
 | --- | --- |
 | Runs (c1 from the game's entry at frame 23974, the loader left out: the title, the mission tape, Blast Em Mission played) | 20 calls, 1,464 t-states own (0.00 %) |
-| Runs (the other recordings) | 41 calls (`stage1/play2` 40, `stage1/death` 1) |
+| Runs (the other recordings) | 96 calls (`stage2/rec/m1complete` 44, `stage1/play2` 40, `stage2/rec/m4complete` 10 and 2 more) |
 | Called from | `PlayerHit` |
 | Reads | `$762F` (`PlayerY+25`); `$7797` (`PlayerY+385`); `$77D3` (`PlayerY+445`); `$78C3` (`PlayerY+685`); `$7977` (`PlayerY+865`); `$79B3` (`PlayerY+925`); 4 more ranges |
 | Writes | `$7D5D`-`$7D64` (`MessageOnce`) |
@@ -2144,7 +2165,7 @@ Patched to `RET` after one run. Witness: L1 9769 (armour, c1, death, fuel, m1com
 | | |
 | --- | --- |
 | Runs (c1 from the game's entry at frame 23974, the loader left out: the title, the mission tape, Blast Em Mission played) | 118 calls, 4,432 t-states own (0.00 %) |
-| Runs (the other recordings) | 3,483 calls (`stage1/death` 2,510, `stage1/play2` 413, `stage1/missions` 273 and 2 more) |
+| Runs (the other recordings) | 9,651 calls (`stage1/death` 2,510, `docs/bcC/rec/armour` 2,396, `stage2/rec/m4complete` 2,237 and 6 more) |
 | Called from | `PlayLoopTail` |
 | Calls | `PrintString`, `SoundEffectA`, `SoundExplosion` |
 | Writes | `$7D5D` (`MessageOnce`); `$87D7` (`MessageTimer+1`) |
@@ -2160,7 +2181,7 @@ Patched to `RET` after one run. Witness: L1 9769 (armour, c1, death, fuel, m1com
 | | |
 | --- | --- |
 | Runs (c1 from the game's entry at frame 23974, the loader left out: the title, the mission tape, Blast Em Mission played) | 4,124 calls, 625,584 t-states own (0.09 %) |
-| Runs (the other recordings) | 65,529 calls (`stage1/play2` 12,957, `stage1/missions` 12,811, `stage1/death` 12,655 and 6 more) |
+| Runs (the other recordings) | 117,533 calls (`stage2/rec/m4complete` 17,835, `stage2/rec/m1complete` 16,026, `stage1/play2` 12,957 and 11 more) |
 | Called from | `InterruptHandler` |
 | Calls | `ClampStep` (falls into), `PointerFire`, `ReadControls` |
 | Reads | `$83BF` (`PointerShown+1`); `$985E`-`$985F` (`StepX`, `StepY`) |
@@ -2173,7 +2194,7 @@ Patched to `RET` after one run. Witness: L1 9769 (armour, c1, death, fuel, m1com
 | | |
 | --- | --- |
 | Runs (c1 from the game's entry at frame 23974, the loader left out: the title, the mission tape, Blast Em Mission played) | 6,180 calls, 400,749 t-states own (0.06 %) |
-| Runs (the other recordings) | 92,258 calls (`stage1/missions` 19,996, `stage1/play2` 19,046, `stage1/menu` 13,868 and 6 more) |
+| Runs (the other recordings) | 117,054 calls (`stage1/missions` 19,996, `stage1/play2` 19,046, `stage1/menu` 13,868 and 11 more) |
 | Called from | `PointerTick` (falls into) |
 | Reads | `$7DC0`-`$7DC1` (`PointerPos`) |
 | Writes | `$7DC0`-`$7DC1` (`PointerPos`) |
@@ -2187,7 +2208,7 @@ Witness: L1 121657 (armour, c1, controls, death, fuel, m10, m1complete, m2erbe, 
 | | |
 | --- | --- |
 | Runs (c1 from the game's entry at frame 23974, the loader left out: the title, the mission tape, Blast Em Mission played) | 4,124 calls, 159,201 t-states own (0.02 %) |
-| Runs (the other recordings) | 65,529 calls (`stage1/play2` 12,957, `stage1/missions` 12,811, `stage1/death` 12,655 and 6 more) |
+| Runs (the other recordings) | 117,533 calls (`stage2/rec/m4complete` 17,835, `stage2/rec/m1complete` 16,026, `stage1/play2` 12,957 and 11 more) |
 | Called from | `PointerTick` |
 | Reads | `$7C51`-`$7C53` (`FailReason+88`); `$9717`-`$9718` (`FireHeld`, `FireCount`) |
 | Writes | `$6D43` (`PointerZones+1`); `$9715`-`$9718` (`ClickState`, `ClickY`, `FireHeld`, `FireCount`) |
@@ -2201,7 +2222,7 @@ The seconds, minutes and hours are in `$68EA`. A `NOP` while it runs; the missio
 | | |
 | --- | --- |
 | Runs (c1 from the game's entry at frame 23974, the loader left out: the title, the mission tape, Blast Em Mission played) | 4,124 calls, 395,013 t-states own (0.06 %) |
-| Runs (the other recordings) | 65,529 calls (`stage1/play2` 12,957, `stage1/missions` 12,811, `stage1/death` 12,655 and 6 more) |
+| Runs (the other recordings) | 117,532 calls (`stage2/rec/m4complete` 17,834, `stage2/rec/m1complete` 16,026, `stage1/play2` 12,957 and 11 more) |
 | Called from | `InterruptHandler` |
 | Reads | `$68EA`-`$68EC` (`MissionClock`) |
 | Writes | `$68EA`-`$68EC` (`MissionClock`); `$7DFD` (`ClockTick+2`) |
@@ -2229,9 +2250,9 @@ Witness: L1 121657 (armour, c1, controls, death, fuel, m10, m1complete, m2erbe, 
 | | |
 | --- | --- |
 | Runs (c1 from the game's entry at frame 23974, the loader left out: the title, the mission tape, Blast Em Mission played) | 4,124 calls, 251,564 t-states own (0.04 %) |
-| Runs (the other recordings) | 65,529 calls (`stage1/play2` 12,957, `stage1/missions` 12,811, `stage1/death` 12,655 and 6 more) |
+| Runs (the other recordings) | 117,533 calls (`stage2/rec/m4complete` 17,834, `stage2/rec/m1complete` 16,026, `stage1/play2` 12,957 and 11 more) |
 | Called from | `InterruptHandler` |
-| Calls | `PageBank0`, `PageBank6Kept`, `PageBankKept` (tail), `SoundFrame` |
+| Calls | `PageBank0`, `ClearPointerState` (falls into), `PageBank6Kept`, `PageBankKept` (tail), `SoundFrame` |
 
 ### `ClearPointerState` (`$7E7A`)
 
@@ -2242,7 +2263,8 @@ Witness: L1 3734 (armour, c1, controls, death, fuel, m10, m1complete, m2erbe, m2
 | | |
 | --- | --- |
 | Runs (c1 from the game's entry at frame 23974, the loader left out: the title, the mission tape, Blast Em Mission played) | 171 calls, 8,134 t-states own (0.00 %) |
-| Runs (the other recordings) | 2,779 calls (`stage1/play2` 1,045, `stage1/missions` 898, `stage1/play` 433 and 6 more) |
+| Runs (the other recordings) | 3,563 calls (`stage1/play2` 1,045, `stage1/missions` 898, `stage1/play` 433 and 11 more) |
+| Called from | `SoundTick` (falls into) |
 | Writes | `$66CE` (`PolyClipVars+2`); `$6D43` (`PointerZones+1`) |
 
 ### `InterruptHandler` (`$8383`)
@@ -2254,9 +2276,9 @@ Witness: L1 121657 (armour, c1, controls, death, fuel, m10, m1complete, m2erbe, 
 | | |
 | --- | --- |
 | Runs (c1 from the game's entry at frame 23974, the loader left out: the title, the mission tape, Blast Em Mission played) | 4,124 calls, 1,987,279 t-states own (0.30 %) |
-| Runs (the other recordings) | 65,529 calls (`stage1/play2` 12,957, `stage1/missions` 12,811, `stage1/death` 12,655 and 6 more) |
-| Entered by | the interrupt, 38,000 times in 209 routines |
-| Calls | `Bank4Tick`, `PointerTick`, `ClockTick`, `SoundTick`, `ClearMarkColumn`, `HandlerExit` (tail), `PageBank6Kept`, `PageBankKept`, `BlinkWarning`, `BlinkLamp`, `KeyRepeat`, `MessageTimer`, `TimeOfDay`, `SkyColours`, `NightColours`, `CopyPointer`, `ViewBlitFront`, `ViewBlitWide`, `ViewBlitNarrow`, `ClearBlitRequest` |
+| Runs (the other recordings) | 117,533 calls (`stage2/rec/m4complete` 17,834, `stage2/rec/m1complete` 16,026, `stage1/play2` 12,957 and 11 more) |
+| Entered by | the interrupt, 74,709 times in 231 routines |
+| Calls | `Bank4Tick`, `PointerTick`, `ClockTick`, `SoundTick`, `ClearMarkColumn`, `HandlerExit` (tail), `PageBank6Kept`, `PageBankKept`, `BlinkWarning`, `BlinkLamp`, `KeyRepeat`, `MessageTimer`, `TimeOfDay`, `SkyColours`, `NightColours`, `CopyPointer`, `ViewBlitLow`, `ViewBlitFront`, `ViewBlitWide`, `ViewBlitNarrow`, `ClearBlitRequest` |
 | Reads | `$82FF`-`$8300` (`Im2Table+255`); `$83BF` (`PointerShown+1`) |
 | Writes | `$815D`-`$81FE` (`LoadAttrLeftover+281`, `ImJump`, `Stack`); `$842B`-`$842C` (`SavedSP+1`); `$FD00`-`$FD07` (`MissionHeader+8507`); `$FD42`-`$FD53` (`MissionHeader+8573`); `$FE00`-`$FE07` (`MissionHeader+8763`); `$FE42`-`$FE53` (`MissionHeader+8829`); 2 more ranges |
 
@@ -2269,7 +2291,7 @@ Witness: L1 3717 (armour, c1, controls, death, fuel, m10, m1complete, m2erbe, m2
 | | |
 | --- | --- |
 | Runs (c1 from the game's entry at frame 23974, the loader left out: the title, the mission tape, Blast Em Mission played) | 171 calls, 336,408 t-states own (0.05 %) |
-| Runs (the other recordings) | 2,773 calls (`stage1/play2` 1,042, `stage1/missions` 897, `stage1/play` 430 and 6 more) |
+| Runs (the other recordings) | 3,546 calls (`stage1/play2` 1,042, `stage1/missions` 897, `stage1/play` 430 and 11 more) |
 | Called from | `InterruptHandler` |
 | Calls | `HandlerExit` (tail), `PageBank6Kept`, `PageBankKept`, `CopyPointer` |
 | Writes | `$8AF1`-`$8FF3` (`BackBuffer`); `$9011`-`$9013` (`BackBuffer+1312`); `$9031`-`$9033` (`BackBuffer+1344`); `$9051`-`$9053` (`BackBuffer+1376`); `$9071`-`$9073` (`BackBuffer+1408`); `$9091`-`$9093` (`BackBuffer+1440`); 2 more ranges |
@@ -2281,7 +2303,7 @@ Witness: L1 3717 (armour, c1, controls, death, fuel, m10, m1complete, m2erbe, m2
 | | |
 | --- | --- |
 | Runs (c1 from the game's entry at frame 23974, the loader left out: the title, the mission tape, Blast Em Mission played) | 1,205 calls, 698,006 t-states own (0.11 %) |
-| Runs (the other recordings) | 22,173 calls (`stage1/death` 10,155, `stage1/play2` 4,476, `stage1/missions` 3,710 and 6 more) |
+| Runs (the other recordings) | 62,552 calls (`stage2/rec/m4complete` 16,879, `stage2/rec/m1complete` 13,404, `stage1/death` 10,155 and 11 more) |
 | Called from | `InterruptHandler` (tail), `ClearMarkColumn` (tail) |
 
 ### `PageBank6Kept` (`$8431`)
@@ -2293,7 +2315,7 @@ Witness: L1 318515 (armour, c1, controls, death, fuel, m10, m1complete, m2erbe, 
 | | |
 | --- | --- |
 | Runs (c1 from the game's entry at frame 23974, the loader left out: the title, the mission tape, Blast Em Mission played) | 11,629 calls, 418,788 t-states own (0.06 %) |
-| Runs (the other recordings) | 183,536 calls (`stage1/play2` 36,898, `stage1/missions` 36,833, `stage1/death` 30,572 and 6 more) |
+| Runs (the other recordings) | 306,886 calls (`stage2/rec/m4complete` 39,049, `stage1/play2` 36,898, `stage1/missions` 36,833 and 11 more) |
 | Called from | `Bank4Tick`, `SoundTick`, `InterruptHandler`, `ClearMarkColumn` |
 | Calls | `PageBank6` (tail) |
 | Reads | `$728A` (`SaveBank+2`) |
@@ -2308,7 +2330,7 @@ Witness: L1 318515 (armour, c1, controls, death, fuel, m10, m1complete, m2erbe, 
 | | |
 | --- | --- |
 | Runs (c1 from the game's entry at frame 23974, the loader left out: the title, the mission tape, Blast Em Mission played) | 11,629 calls, 197,693 t-states own (0.03 %) |
-| Runs (the other recordings) | 183,536 calls (`stage1/play2` 36,898, `stage1/missions` 36,833, `stage1/death` 30,572 and 6 more) |
+| Runs (the other recordings) | 306,886 calls (`stage2/rec/m4complete` 39,049, `stage1/play2` 36,898, `stage1/missions` 36,833 and 11 more) |
 | Called from | `Bank4Tick` (tail), `SoundTick` (tail), `InterruptHandler`, `ClearMarkColumn` |
 | Calls | `PageBankA` (tail) |
 
@@ -2334,7 +2356,7 @@ Witness: L1 121656 (armour, c1, controls, death, fuel, m10, m1complete, m2erbe, 
 | | |
 | --- | --- |
 | Runs (c1 from the game's entry at frame 23974, the loader left out: the title, the mission tape, Blast Em Mission played) | 4,124 calls, 76,770 t-states own (0.01 %) |
-| Runs (the other recordings) | 65,529 calls (`stage1/play2` 12,957, `stage1/missions` 12,811, `stage1/death` 12,655 and 6 more) |
+| Runs (the other recordings) | 117,532 calls (`stage2/rec/m4complete` 17,834, `stage2/rec/m1complete` 16,026, `stage1/play2` 12,957 and 11 more) |
 | Called from | `InterruptHandler` |
 | Reads | `$5078` (screen); `$5758` (screen) |
 | Writes | `$5078` (screen); `$5758` (screen); `$845B` (`BlinkWarning+2`) |
@@ -2348,7 +2370,7 @@ Witness: L1 121656 (armour, c1, controls, death, fuel, m10, m1complete, m2erbe, 
 | | |
 | --- | --- |
 | Runs (c1 from the game's entry at frame 23974, the loader left out: the title, the mission tape, Blast Em Mission played) | 4,124 calls, 41,240 t-states own (0.01 %) |
-| Runs (the other recordings) | 65,529 calls (`stage1/play2` 12,957, `stage1/missions` 12,811, `stage1/death` 12,655 and 6 more) |
+| Runs (the other recordings) | 117,532 calls (`stage2/rec/m4complete` 17,834, `stage2/rec/m1complete` 16,026, `stage1/play2` 12,957 and 11 more) |
 | Called from | `InterruptHandler` |
 | Reads | `$525C` (screen); `$535C` (screen); `$545C` (screen); `$555C` (screen) |
 | Writes | `$525C` (screen); `$535C` (screen); `$545C` (screen); `$555C` (screen); `$8477` (`BlinkLamp+2`) |
@@ -2362,7 +2384,7 @@ Witness: L1 121657 (armour, c1, controls, death, fuel, m10, m1complete, m2erbe, 
 | | |
 | --- | --- |
 | Runs (c1 from the game's entry at frame 23974, the loader left out: the title, the mission tape, Blast Em Mission played) | 4,124 calls, 327,948 t-states own (0.05 %) |
-| Runs (the other recordings) | 65,529 calls (`stage1/play2` 12,957, `stage1/missions` 12,811, `stage1/death` 12,655 and 6 more) |
+| Runs (the other recordings) | 117,533 calls (`stage2/rec/m4complete` 17,835, `stage2/rec/m1complete` 16,026, `stage1/play2` 12,957 and 11 more) |
 | Called from | `InterruptHandler` |
 | Calls | `ScanKeyboard` |
 | Reads | `$8978`-`$897A` (`KeyState`, `KeyCode`, `KeyRepeatCount`) |
@@ -2377,7 +2399,7 @@ Witness: L1 121657 (armour, c1, controls, death, fuel, m10, m1complete, m2erbe, 
 | | |
 | --- | --- |
 | Runs (c1 from the game's entry at frame 23974, the loader left out: the title, the mission tape, Blast Em Mission played) | 4,124 calls, 102,614 t-states own (0.02 %) |
-| Runs (the other recordings) | 65,529 calls (`stage1/play2` 12,957, `stage1/missions` 12,811, `stage1/death` 12,655 and 6 more) |
+| Runs (the other recordings) | 117,533 calls (`stage2/rec/m4complete` 17,835, `stage2/rec/m1complete` 16,026, `stage1/play2` 12,957 and 11 more) |
 | Called from | `InterruptHandler` |
 | Calls | `PrintString` (tail) |
 | Writes | `$87D7` (`MessageTimer+1`) |
@@ -2403,7 +2425,7 @@ Witness: L1 37 (armour, c1, death, fuel, m1complete, m2erbe, m4complete, mission
 | | |
 | --- | --- |
 | Runs (c1 from the game's entry at frame 23974, the loader left out: the title, the mission tape, Blast Em Mission played) | 1 call, 151 t-states own (0.00 %) |
-| Runs (the other recordings) | 32 calls (`stage1/missions` 16, `stage1/play` 10, `stage1/play2` 3 and 2 more) |
+| Runs (the other recordings) | 36 calls (`stage1/missions` 16, `stage1/play` 10, `stage1/play2` 3 and 6 more) |
 | Called from | `StartMission`, `NightKey` (falls into) |
 | Calls | `PrintString` (tail) |
 | Reads | `$88FB`-`$8907` (`HourTable+3`) |
@@ -2418,7 +2440,7 @@ Witness: L1 121656 (armour, c1, controls, death, fuel, m10, m1complete, m2erbe, 
 | | |
 | --- | --- |
 | Runs (c1 from the game's entry at frame 23974, the loader left out: the title, the mission tape, Blast Em Mission played) | 4,124 calls, 936,113 t-states own (0.14 %) |
-| Runs (the other recordings) | 65,529 calls (`stage1/play2` 12,957, `stage1/missions` 12,811, `stage1/death` 12,655 and 6 more) |
+| Runs (the other recordings) | 117,532 calls (`stage2/rec/m4complete` 17,834, `stage2/rec/m1complete` 16,026, `stage1/play2` 12,957 and 11 more) |
 | Called from | `InterruptHandler` |
 | Reads | `$68EC` (`MissionClock+2`); `$88F8`-`$8904` (`HourTable`) |
 | Writes | `$8823`-`$8824` (`l_8818+11`); `$8845` (`l_8841+4`); `$885F` (`SkyColours`); `$88D6` (`NightBoxSelect+1`) |
@@ -2432,7 +2454,7 @@ Witness: L1 13586 (armour, c1, controls, death, fuel, m10, m1complete, m2erbe, m
 | | |
 | --- | --- |
 | Runs (c1 from the game's entry at frame 23974, the loader left out: the title, the mission tape, Blast Em Mission played) | 291 calls, 4,367 t-states own (0.00 %) |
-| Runs (the other recordings) | 6,349 calls (`stage1/death` 2,636, `stage1/play2` 1,461, `stage1/missions` 1,213 and 6 more) |
+| Runs (the other recordings) | 13,295 calls (`stage1/death` 2,636, `docs/bcC/rec/armour` 2,523, `stage2/rec/m4complete` 2,331 and 11 more) |
 | Called from | `InterruptHandler` |
 | Calls | `AttrBoxAt` |
 | Reads | `$5940` (screen); `$5960`-`$596E` (screen); `$59A0`-`$59AA` (screen); `$5A02` (screen); `$87FD` (`NightKey+1`); `$8823`-`$8824` (`l_8818+11`); 1 more ranges |
@@ -2444,7 +2466,8 @@ Witness: L1 13586 (armour, c1, controls, death, fuel, m10, m1complete, m2erbe, m
 
 | | |
 | --- | --- |
-| Runs | not reached in `stage1/c1g`; in the other recordings 3 calls (`stage1/play` 3) |
+| Runs (c1 from the game's entry at frame 23974, the loader left out: the title, the mission tape, Blast Em Mission played) | 1 run of its first instruction (entered by a jump or by running on, no routine of its own in the L1) |
+| Runs (the other recordings) | 3 calls (`stage1/play` 3) |
 | Called from | `NightBoxSelect` (tail) |
 | Reads | `$5940` (screen); `$5960`-`$596E` (screen); `$59A0`-`$59AA` (screen) |
 | Writes | `$59C0`-`$59E2` (screen); `$59FD`-`$59FE` (screen) |
@@ -2458,7 +2481,7 @@ Witness: L1 13586 (armour, c1, controls, death, fuel, m10, m1complete, m2erbe, m
 | | |
 | --- | --- |
 | Runs (c1 from the game's entry at frame 23974, the loader left out: the title, the mission tape, Blast Em Mission played) | 291 calls, 3,192 t-states own (0.00 %) |
-| Runs (the other recordings) | 6,349 calls (`stage1/death` 2,636, `stage1/play2` 1,461, `stage1/missions` 1,213 and 6 more) |
+| Runs (the other recordings) | 13,295 calls (`stage1/death` 2,636, `docs/bcC/rec/armour` 2,523, `stage2/rec/m4complete` 2,331 and 11 more) |
 | Called from | `InterruptHandler` |
 | Writes | `$757A` (`AwolState+2`); `$88CF` (`NightColours`) |
 
@@ -2468,7 +2491,7 @@ Witness: L1 13586 (armour, c1, controls, death, fuel, m10, m1complete, m2erbe, m
 
 | | |
 | --- | --- |
-| Runs | ran within another entry's routine (reached by a jump or by running on, its calls below), no runs of its own counted |
+| Runs | not reached in `stage1/c1g`; in the other recordings 3 runs of its first instruction, entered by a jump (`stage1/play` 3) |
 | Calls | `AttrBox`, `CopySkyRows` (tail) |
 
 ### `ScanKeyboard` (`$8910`)
@@ -2480,7 +2503,7 @@ Witness: L1 121657 (armour, c1, controls, death, fuel, m10, m1complete, m2erbe, 
 | | |
 | --- | --- |
 | Runs (c1 from the game's entry at frame 23974, the loader left out: the title, the mission tape, Blast Em Mission played) | 4,124 calls, 7,389,409 t-states own (1.12 %) |
-| Runs (the other recordings) | 65,529 calls (`stage1/play2` 12,957, `stage1/missions` 12,811, `stage1/death` 12,655 and 6 more) |
+| Runs (the other recordings) | 117,533 calls (`stage2/rec/m4complete` 17,835, `stage2/rec/m1complete` 16,026, `stage1/play2` 12,957 and 11 more) |
 | Called from | `KeyRepeat` |
 | Reads | `$8950`-`$8978` (`KeyCodes`, `KeyState`) |
 | Writes | `$8978`-`$897D` (`KeyState`, `KeyCode`, `KeyRepeatCount`) |
@@ -2495,7 +2518,7 @@ Witness: L1 61639 (armour, c1, controls, death, fuel, m10, m1complete, m2erbe, m
 | | |
 | --- | --- |
 | Runs (c1 from the game's entry at frame 23974, the loader left out: the title, the mission tape, Blast Em Mission played) | 3,092 calls, 191,748 t-states own (0.03 %) |
-| Runs (the other recordings) | 46,146 calls (`stage1/missions` 10,006, `stage1/play2` 9,526, `stage1/menu` 6,938 and 6 more) |
+| Runs (the other recordings) | 58,547 calls (`stage1/missions` 10,006, `stage1/play2` 9,526, `stage1/menu` 6,938 and 11 more) |
 | Called from | `InterruptHandler`, `ClearMarkColumn` |
 | Reads | `$7DC0`-`$7DC1` (`PointerPos`) |
 | Writes | `$7C51`-`$7C53` (`FailReason+88`) |
@@ -2513,6 +2536,7 @@ Runs once at c1 frame 23974 (docs/03-build-and-load.md); dead after the entry. W
 | | |
 | --- | --- |
 | Runs (c1 from the game's entry at frame 23974, the loader left out: the title, the mission tape, Blast Em Mission played) | run into, not called, 30,344 t-states own (0.00 %) |
+| Runs (the other recordings) | 1 run of its first instruction, entered by a jump (`stage1/controls` 1) |
 | Calls | `Entry` |
 | Writes | `$BA93`-`$BFFF` (`BinocularText`, `GroundDots`, `GridVectors`, `PlotGroundDot` and 24 more) |
 | Ports out | `$7FFD` |
@@ -2530,7 +2554,7 @@ Pages bank 0, `$CC1E` with IX = `$75F0`; clears `$BA27`, `$CEA8`, `$87FD`, `$C4D
 | | |
 | --- | --- |
 | Runs (c1 from the game's entry at frame 23974, the loader left out: the title, the mission tape, Blast Em Mission played) | 1 call, 714,554 t-states own (0.11 %) |
-| Runs (the other recordings) | 15 calls (`stage1/missions` 8, `stage1/play2` 3, `stage1/death` 1 and 3 more) |
+| Runs (the other recordings) | 19 calls (`stage1/missions` 8, `stage1/play2` 3, `docs/bcC/rec/armour` 1 and 7 more) |
 | Called from | `LoadMissionIfAllowed` |
 | Calls | `PageBank3`, `PageBank0`, `MissionSetup` (tail), `MissionTimeSetup`, `ResetPlayerHandler` |
 | Reads | `$757D` (`ScreenOfMission+1`); `$7E2E` (`LastLoadedMission`); `$DBC5` (`MissionHeader`); `$DBDA`-`$DBDC` (`MissionHeader+21`); `$DBED`-`$FB3E` (`MissionHeader+40`) |
@@ -2545,7 +2569,7 @@ Witness: L1 25 (armour, c1, death, fuel, m10, m1complete, m2erbe, m2ocean, m4com
 | | |
 | --- | --- |
 | Runs (c1 from the game's entry at frame 23974, the loader left out: the title, the mission tape, Blast Em Mission played) | 1 call, 318 t-states own (0.00 %) |
-| Runs (the other recordings) | 20 calls (`stage1/missions` 9, `stage1/play2` 3, `stage1/search` 3 and 5 more) |
+| Runs (the other recordings) | 24 calls (`stage1/missions` 9, `stage1/play2` 3, `stage1/search` 3 and 9 more) |
 | Called from | `PointerZones` |
 | Calls | `IsMissionHeader`, `LoadBlock`, `PageBank6` (tail), `MarkMission` (falls into) |
 | Reads | `$8AFA`-`$8AFD` (`BackBuffer+9`) |
@@ -2559,7 +2583,8 @@ Witness: L1 35 (armour, c1, death, fuel, m10, m1complete, m2erbe, m2ocean, m4com
 
 | | |
 | --- | --- |
-| Runs | not reached in `stage1/c1g`; in the other recordings 24 calls (`stage1/missions` 17, `stage1/play2` 5, `stage1/m2erbe` 2) |
+| Runs (c1 from the game's entry at frame 23974, the loader left out: the title, the mission tape, Blast Em Mission played) | 1 run of its first instruction (entered by a jump or by running on, no routine of its own in the L1) |
+| Runs (the other recordings) | 26 calls (`stage1/missions` 17, `stage1/play2` 5, `stage2/rec/m4complete` 2 and 1 more) |
 | Called from | `LoadMissionHeader` (falls into), `RemarkMission` (tail) |
 | Writes | `$5902` (screen); `$5922` (screen); `$5942`-`$5962` (screen); `$5982` (screen); `$59A2` (screen); `$59C2` (screen); 4 more ranges |
 
@@ -2572,7 +2597,7 @@ Witness: L1 36 (armour, c1, death, fuel, m10, m1complete, m2erbe, m2ocean, m4com
 | | |
 | --- | --- |
 | Runs (c1 from the game's entry at frame 23974, the loader left out: the title, the mission tape, Blast Em Mission played) | 1 call, 28 t-states own (0.00 %) |
-| Runs (the other recordings) | 31 calls (`stage1/menu` 12, `stage1/missions` 9, `stage1/play2` 3 and 6 more) |
+| Runs (the other recordings) | 35 calls (`stage1/menu` 12, `stage1/missions` 9, `stage1/play2` 3 and 10 more) |
 | Calls | `LoadBlock`, `PageBank3`, `PageBank6`, `PageBank0`, `MarkMission` (tail), `MissionSetup` (falls into), `SpacePressed`, `MissionTimeSetup` |
 | Reads | `$8547` (`HeaderMission`) |
 
@@ -2584,7 +2609,8 @@ Witness: L1 19 (armour, c1, death, fuel, m1complete, m2erbe, m4complete, mission
 
 | | |
 | --- | --- |
-| Runs | not reached in `stage1/c1g`; in the other recordings 3 calls (`stage1/play2` 3) |
+| Runs (c1 from the game's entry at frame 23974, the loader left out: the title, the mission tape, Blast Em Mission played) | 1 run of its first instruction (entered by a jump or by running on, no routine of its own in the L1) |
+| Runs (the other recordings) | 3 calls (`stage1/play2` 3) |
 | Called from | `LoadMission` (tail), `RemarkMission` (falls into) |
 | Calls | `PageBank6`, `PageBank0` |
 | Reads | `$757D` (`ScreenOfMission+1`); `$DBDC` (`MissionHeader+23`); `$DBF1`-`$DCBB` (`MissionHeader+44`) |
@@ -2611,7 +2637,7 @@ Witness: L1 19 (armour, c1, death, fuel, m1complete, m2erbe, m4complete, mission
 | | |
 | --- | --- |
 | Runs (c1 from the game's entry at frame 23974, the loader left out: the title, the mission tape, Blast Em Mission played) | 1 call, 395 t-states own (0.00 %) |
-| Runs (the other recordings) | 14 calls (`stage1/missions` 8, `stage1/play2` 3, `stage1/m2erbe` 1 and 2 more) |
+| Runs (the other recordings) | 18 calls (`stage1/missions` 8, `stage1/play2` 3, `stage1/m2erbe` 1 and 6 more) |
 | Called from | `LoadMission`, `RemarkMission` |
 | Reads | `$DBE1`-`$DBEA` (`MissionHeader+28`); `$DBFE`-`$DBFF` (`MissionHeader+57`) |
 | Writes | `$68EA`-`$68EC` (`MissionClock`); `$6A67`-`$6A68` (`PlayLoopTail+16`); `$7611`-`$7618` (`PlayerHandler+9`, `PlayerHeading`, `PlayerX`, `PlayerY`); `$7DFB` (`ClockTick`) |
@@ -2628,7 +2654,9 @@ Saves `SP` at `$8A3E`, HL = `$8BF1`, the row count `$47`, `SP` = ScreenRowTable 
 
 | | |
 | --- | --- |
-| Runs | not reached in the recordings |
+| Runs | not reached in `stage1/c1g`; in the other recordings 1,546 calls (`stage2/rec/m4complete` 1,016, `stage2/rec/m1complete` 530) |
+| Called from | `InterruptHandler` |
+| Calls | `ViewBlitFront` (tail) |
 
 ### `ViewBlitFront` (`$8999`)
 
@@ -2645,8 +2673,8 @@ Witness: L1 8222 (armour, c1, death, fuel, m1complete, m2erbe, m4complete, missi
 | | |
 | --- | --- |
 | Runs (c1 from the game's entry at frame 23974, the loader left out: the title, the mission tape, Blast Em Mission played) | 118 calls, 6,496,678 t-states own (0.98 %) |
-| Runs (the other recordings) | 3,482 calls (`stage1/death` 2,509, `stage1/play2` 413, `stage1/missions` 273 and 2 more) |
-| Called from | `InterruptHandler` |
+| Runs (the other recordings) | 8,104 calls (`stage1/death` 2,509, `docs/bcC/rec/armour` 2,396, `stage2/rec/m4complete` 1,221 and 6 more) |
+| Called from | `InterruptHandler`, `ViewBlitLow` (tail) |
 | Reads | `$8AF1`-`$95D3` (`BackBuffer`); `$95EE`-`$95F3` (`BackBuffer+2813`); `$960E`-`$9613` (`BackBuffer+2845`); `$962E`-`$9633` (`BackBuffer+2877`); `$964E`-`$9653` (`BackBuffer+2909`); `$966E`-`$9673` (`BackBuffer+2941`); 3 more ranges |
 | Writes | `$4080`-`$48E2` (screen); `$48FD`-`$49E2` (screen); `$49FD`-`$4AE2` (screen); `$4AFD`-`$4BE2` (screen); `$4BFD`-`$4CE2` (screen); `$4CFD`-`$4DE2` (screen); 4 more ranges |
 
@@ -2661,7 +2689,7 @@ Witness: L1 768 (armour, c1, controls, death, fuel, m10, m1complete, m2erbe, m2o
 | | |
 | --- | --- |
 | Runs (c1 from the game's entry at frame 23974, the loader left out: the title, the mission tape, Blast Em Mission played) | 52 calls, 2,796,700 t-states own (0.42 %) |
-| Runs (the other recordings) | 389 calls (`stage1/menu` 135, `stage1/missions` 126, `stage1/play2` 51 and 6 more) |
+| Runs (the other recordings) | 716 calls (`stage2/rec/fuel` 294, `stage1/menu` 135, `stage1/missions` 126 and 10 more) |
 | Called from | `InterruptHandler` |
 | Reads | `$8AF1`-`$95B0` (`BackBuffer`) |
 | Writes | `$4800`-`$505F` (screen); `$5100`-`$515F` (screen); `$5200`-`$525F` (screen); `$5300`-`$535F` (screen); `$5400`-`$545F` (screen); `$5500`-`$555F` (screen); 3 more ranges |
@@ -2690,7 +2718,7 @@ Witness: L1 13586 (armour, c1, controls, death, fuel, m10, m1complete, m2erbe, m
 | | |
 | --- | --- |
 | Runs (c1 from the game's entry at frame 23974, the loader left out: the title, the mission tape, Blast Em Mission played) | 291 calls, 7,992 t-states own (0.00 %) |
-| Runs (the other recordings) | 6,349 calls (`stage1/death` 2,636, `stage1/play2` 1,461, `stage1/missions` 1,213 and 6 more) |
+| Runs (the other recordings) | 13,295 calls (`stage1/death` 2,636, `docs/bcC/rec/armour` 2,523, `stage2/rec/m4complete` 2,331 and 11 more) |
 | Called from | `InterruptHandler` |
 | Writes | `$83BA` (`BlitRequest+1`) |
 
@@ -2707,7 +2735,7 @@ Witness: L1 13569 (armour, c1, controls, death, fuel, m10, m1complete, m2erbe, m
 | | |
 | --- | --- |
 | Runs (c1 from the game's entry at frame 23974, the loader left out: the title, the mission tape, Blast Em Mission played) | 290 calls, 5,282,350 t-states own (0.80 %) |
-| Runs (the other recordings) | 6,338 calls (`stage1/death` 2,636, `stage1/play2` 1,461, `stage1/missions` 1,212 and 6 more) |
+| Runs (the other recordings) | 13,279 calls (`stage1/death` 2,636, `docs/bcC/rec/armour` 2,522, `stage2/rec/m4complete` 2,331 and 11 more) |
 | Called from | `StartViewPass` |
 | Writes | `$9711`-`$9712` (`l_96FE+19`) |
 
@@ -2720,7 +2748,7 @@ Witness: L1 22892 (armour, c1, death, fuel, m1complete, m2erbe, m4complete, menu
 | | |
 | --- | --- |
 | Runs (c1 from the game's entry at frame 23974, the loader left out: the title, the mission tape, Blast Em Mission played) | 114 calls, 8,892 t-states own (0.00 %) |
-| Runs (the other recordings) | 6,050 calls (`stage1/death` 2,494, `stage1/play2` 1,548, `stage1/missions` 975 and 3 more) |
+| Runs (the other recordings) | 22,778 calls (`stage2/rec/m4complete` 14,954, `stage1/death` 2,494, `stage1/play2` 1,548 and 7 more) |
 | Called from | `OpLines`, `OpLinesClipped` |
 | Calls | `ClipLineCodes` |
 
@@ -2733,7 +2761,7 @@ Witness: L1 22892 (armour, c1, death, fuel, m1complete, m2erbe, m4complete, menu
 | | |
 | --- | --- |
 | Runs (c1 from the game's entry at frame 23974, the loader left out: the title, the mission tape, Blast Em Mission played) | 114 calls, 7,752 t-states own (0.00 %) |
-| Runs (the other recordings) | 6,050 calls (`stage1/death` 2,494, `stage1/play2` 1,548, `stage1/missions` 975 and 3 more) |
+| Runs (the other recordings) | 22,778 calls (`stage2/rec/m4complete` 14,954, `stage1/death` 2,494, `stage1/play2` 1,548 and 7 more) |
 | Called from | `ClipLine2D` |
 | Calls | `ClipOneEnd` (falls into), `ClipAccept` (tail), `ClipReject` (tail), `OutCode` |
 | Reads | `$A17E`-`$A17F` (`ClipWindow+2`) |
@@ -2747,7 +2775,7 @@ Witness: L1 4809 (death, m1complete, m4complete, missions).
 
 | | |
 | --- | --- |
-| Runs | not reached in `stage1/c1g`; in the other recordings 160 calls (`stage1/missions` 160) |
+| Runs | not reached in `stage1/c1g`; in the other recordings 4,751 calls (`stage2/rec/m4complete` 4,591, `stage1/missions` 160) |
 | Called from | `ClipLineCodes` (falls into), `ClipBothEnds` |
 | Calls | `SwapLineEnds`, `ClipToRight` (tail), `ClipToBottom` (tail), `ClipToLeft` (tail), `ClipToCorner` (tail) |
 | Reads | `$A17E`-`$A17F` (`ClipWindow+2`) |
@@ -2761,7 +2789,7 @@ Witness: L1 5050 (death, m1complete, m4complete, missions).
 
 | | |
 | --- | --- |
-| Runs | not reached in `stage1/c1g`; in the other recordings 273 calls (`stage1/missions` 216, `stage1/death` 57) |
+| Runs | not reached in `stage1/c1g`; in the other recordings 5,050 calls (`stage2/rec/m4complete` 4,776, `stage1/missions` 216, `stage1/death` 57 and 1 more) |
 | Called from | `ClipOneEnd` |
 
 ### `ClipBothEnds` (`$A218`)
@@ -2774,7 +2802,7 @@ Witness: L1 761 (m4complete, missions).
 
 | | |
 | --- | --- |
-| Runs | not reached in `stage1/c1g`; in the other recordings run into, not called (`stage1/missions`) |
+| Runs | not reached in `stage1/c1g`; in the other recordings 761 runs of its first instruction, entered by a jump (`stage2/rec/m4complete` 609, `stage1/missions` 152) |
 | Calls | `ClipOneEnd`, `ClipAccept` (falls into), `ClipReject` (tail), `OutCode` |
 | Reads | `$985C`-`$985D` (`InputState`); `$A17C`-`$A17E` (`ClipWindow`) |
 | Writes | `$985C`-`$985D` (`InputState`); `$A292`-`$A2A2` (`l_A26E+36`, `ClipAccept`) |
@@ -2788,7 +2816,7 @@ Witness: L1 13978 (armour, c1, death, fuel, m1complete, m2erbe, m4complete, menu
 | | |
 | --- | --- |
 | Runs (c1 from the game's entry at frame 23974, the loader left out: the title, the mission tape, Blast Em Mission played) | 114 calls, 1,596 t-states own (0.00 %) |
-| Runs (the other recordings) | 4,771 calls (`stage1/death` 2,204, `stage1/play2` 1,192, `stage1/missions` 679 and 3 more) |
+| Runs (the other recordings) | 13,864 calls (`stage2/rec/m4complete` 7,419, `stage1/death` 2,204, `stage2/rec/m1complete` 1,310 and 7 more) |
 | Called from | `ClipLineCodes` (tail), `ClipBothEnds` (falls into) |
 
 ### `ClipToRight` (`$A2BA`)
@@ -2799,7 +2827,7 @@ Witness: L1 400 (death, m4complete, missions).
 
 | | |
 | --- | --- |
-| Runs | not reached in `stage1/c1g`; in the other recordings 120 calls (`stage1/missions` 99, `stage1/death` 21) |
+| Runs | not reached in `stage1/c1g`; in the other recordings 400 calls (`stage2/rec/m4complete` 280, `stage1/missions` 99, `stage1/death` 21) |
 | Called from | `ClipOneEnd` (tail) |
 | Calls | `ClipBisectStep` |
 | Reads | `$A180`-`$A183` (`ClipWindow+4`) |
@@ -2812,7 +2840,7 @@ Witness: L1 551 (death, m1complete, m4complete, missions).
 
 | | |
 | --- | --- |
-| Runs | not reached in `stage1/c1g`; in the other recordings 80 calls (`stage1/missions` 45, `stage1/death` 35) |
+| Runs | not reached in `stage1/c1g`; in the other recordings 551 calls (`stage2/rec/m4complete` 470, `stage1/missions` 45, `stage1/death` 35 and 1 more) |
 | Called from | `ClipOneEnd` (tail) |
 | Calls | `ClipBisectStep` |
 | Reads | `$A17C`-`$A183` (`ClipWindow`) |
@@ -2825,9 +2853,9 @@ Witness: L1 171 (m4complete, missions).
 
 | | |
 | --- | --- |
-| Runs | not reached in `stage1/c1g`; in the other recordings 14 calls (`stage1/missions` 14) |
+| Runs | not reached in `stage1/c1g`; in the other recordings 171 calls (`stage2/rec/m4complete` 157, `stage1/missions` 14) |
 | Called from | `ClipOneEnd` (tail) |
-| Calls | `ClipBisectStep` |
+| Calls | `ClipBisectStep`, `BisectToInside` |
 | Reads | `$A17E`-`$A183` (`ClipWindow+2`) |
 
 ### `ClipToCorner` (`$A352`)
@@ -2838,7 +2866,7 @@ Witness: L1 633 (death, m4complete, missions).
 
 | | |
 | --- | --- |
-| Runs | not reached in `stage1/c1g`; in the other recordings 3 calls (`stage1/missions` 2, `stage1/death` 1) |
+| Runs | not reached in `stage1/c1g`; in the other recordings 633 calls (`stage2/rec/m4complete` 630, `stage1/missions` 2, `stage1/death` 1) |
 | Called from | `ClipOneEnd` (tail) |
 | Calls | `BisectToInside` |
 | Reads | `$A17C`-`$A183` (`ClipWindow`) |
@@ -2851,7 +2879,7 @@ Witness: L1 4581 (armour, death, m1complete, m4complete, missions, play, play2).
 
 | | |
 | --- | --- |
-| Runs | not reached in `stage1/c1g`; in the other recordings 1,168 calls (`stage1/play2` 356, `stage1/play` 337, `stage1/missions` 242 and 1 more) |
+| Runs | not reached in `stage1/c1g`; in the other recordings 4,581 calls (`stage2/rec/m4complete` 3,314, `stage1/play2` 356, `stage1/play` 337 and 4 more) |
 | Called from | `ClipLineCodes` (tail), `ClipBothEnds` (tail) |
 
 ### `ClipBisectStep` (`$A381`)
@@ -2862,7 +2890,7 @@ Witness: L1 8285 (death, m1complete, m4complete, missions).
 
 | | |
 | --- | --- |
-| Runs | not reached in `stage1/c1g`; in the other recordings 214 calls (`stage1/missions` 158, `stage1/death` 56) |
+| Runs | not reached in `stage1/c1g`; in the other recordings 1,122 calls (`stage2/rec/m4complete` 907, `stage1/missions` 158, `stage1/death` 56 and 1 more) |
 | Called from | `ClipToRight`, `ClipToBottom`, `ClipToLeft` |
 
 ### `OutCode` (`$A3AC`)
@@ -2874,7 +2902,7 @@ Witness: L1 46545 (armour, c1, death, fuel, m1complete, m2erbe, m4complete, menu
 | | |
 | --- | --- |
 | Runs (c1 from the game's entry at frame 23974, the loader left out: the title, the mission tape, Blast Em Mission played) | 228 calls, 30,096 t-states own (0.00 %) |
-| Runs (the other recordings) | 12,252 calls (`stage1/death` 4,988, `stage1/play2` 3,096, `stage1/missions` 2,102 and 3 more) |
+| Runs (the other recordings) | 46,317 calls (`stage2/rec/m4complete` 30,517, `stage1/death` 4,988, `stage1/play2` 3,096 and 7 more) |
 | Called from | `ClipLineCodes`, `ClipBothEnds` |
 | Reads | `$A17C`-`$A17E` (`ClipWindow`) |
 
@@ -2886,8 +2914,8 @@ Witness: L1 13621 (death, m4complete, missions).
 
 | | |
 | --- | --- |
-| Runs | not reached in `stage1/c1g`; in the other recordings 3 calls (`stage1/missions` 2, `stage1/death` 1) |
-| Called from | `ClipToCorner` |
+| Runs | not reached in `stage1/c1g`; in the other recordings 3,687 calls (`stage2/rec/m4complete` 3,684, `stage1/missions` 2, `stage1/death` 1) |
+| Called from | `ClipToLeft`, `ClipToCorner` |
 
 ### `NearClipLineEnd` (`$A422`)
 
@@ -2897,7 +2925,7 @@ Witness: L1 5069 (death, m4complete, missions).
 
 | | |
 | --- | --- |
-| Runs | not reached in `stage1/c1g`; in the other recordings 266 calls (`stage1/missions` 220, `stage1/death` 46) |
+| Runs | not reached in `stage1/c1g`; in the other recordings 5,069 calls (`stage2/rec/m4complete` 4,803, `stage1/missions` 220, `stage1/death` 46) |
 | Called from | `OpLinesClipped` |
 | Calls | `NearClipLine` (tail) |
 
@@ -2912,7 +2940,7 @@ Witness: L1 17666 (armour, c1, death, m1complete, m2erbe, m4complete, missions, 
 | | |
 | --- | --- |
 | Runs (c1 from the game's entry at frame 23974, the loader left out: the title, the mission tape, Blast Em Mission played) | 146 calls, 514,607 t-states own (0.08 %) |
-| Runs (the other recordings) | 2,964 calls (`stage1/death` 1,501, `stage1/missions` 737, `stage1/play` 422 and 2 more) |
+| Runs (the other recordings) | 17,520 calls (`stage2/rec/m4complete` 8,828, `stage2/rec/m1complete` 4,478, `stage1/death` 1,501 and 5 more) |
 | Called from | `OpLinesClipped`, `NearClipLineEnd` (tail), `ClipPolyNear` |
 | Calls | `FetchVertexXY`, `FetchVertexDepth`, `Divide`, `DivideByLog`, `NegHL` |
 | Reads | `$67B2`-`$67B5` (`WorldVars+15`); `$9A72`-`$9A73` (`l_9A5E+20`); `$9AA3`-`$9AA4` (`l_9A9E+5`); `$9ABB`-`$9ABC` (`l_9A9E+29`) |
@@ -2927,7 +2955,7 @@ Witness: L1 35332 (armour, c1, death, m1complete, m2erbe, m4complete, missions, 
 | | |
 | --- | --- |
 | Runs (c1 from the game's entry at frame 23974, the loader left out: the title, the mission tape, Blast Em Mission played) | 292 calls, 49,932 t-states own (0.01 %) |
-| Runs (the other recordings) | 5,928 calls (`stage1/death` 3,002, `stage1/missions` 1,474, `stage1/play` 844 and 2 more) |
+| Runs (the other recordings) | 35,040 calls (`stage2/rec/m4complete` 17,656, `stage2/rec/m1complete` 8,956, `stage1/death` 3,002 and 5 more) |
 | Called from | `NearClipLine` |
 | Reads | `$9A8E`-`$9A8F` (`l_9A85+9`); `$9AB3`-`$9AB4` (`l_9A9E+21`); `$FD00`-`$FD07` (`MissionHeader+8507`); `$FD30`-`$FD4B` (`MissionHeader+8555`); `$FE00`-`$FE07` (`MissionHeader+8763`); `$FE30`-`$FE4B` (`MissionHeader+8811`) |
 | Writes | `$A503`-`$A504` (`FetchVertexDepth+18`) |
@@ -2941,7 +2969,7 @@ Witness: L1 35332 (armour, c1, death, m1complete, m2erbe, m4complete, missions, 
 | | |
 | --- | --- |
 | Runs (c1 from the game's entry at frame 23974, the loader left out: the title, the mission tape, Blast Em Mission played) | 292 calls, 37,376 t-states own (0.01 %) |
-| Runs (the other recordings) | 5,928 calls (`stage1/death` 3,002, `stage1/missions` 1,474, `stage1/play` 844 and 2 more) |
+| Runs (the other recordings) | 35,040 calls (`stage2/rec/m4complete` 17,656, `stage2/rec/m1complete` 8,956, `stage1/death` 3,002 and 5 more) |
 | Called from | `NearClipLine` |
 | Reads | `$9A6C`-`$9A73` (`l_9A5E+14`); `$FF00`-`$FF07` (`data_FEBB+69`); `$FF30`-`$FF4B` (`data_FEBB+117`) |
 
@@ -2956,7 +2984,7 @@ Witness: L1 13393 (armour, c1, death, m1complete, m2erbe, m4complete, missions, 
 | | |
 | --- | --- |
 | Runs (c1 from the game's entry at frame 23974, the loader left out: the title, the mission tape, Blast Em Mission played) | 73 calls, 50,982 t-states own (0.01 %) |
-| Runs (the other recordings) | 3,914 calls (`stage1/death` 2,606, `stage1/play` 667, `stage1/missions` 364 and 2 more) |
+| Runs (the other recordings) | 13,320 calls (`stage2/rec/m1complete` 5,057, `stage2/rec/m4complete` 2,972, `stage1/death` 2,606 and 5 more) |
 | Called from | `FillFaceListClipped`, `l_A109` |
 | Calls | `NearClipLine`, `AppendPolyVertex` |
 | Reads | `$66CC`-`$66CD` (`PolyClipVars`); `$6798` (`GameVars`); `$67B1` (`WorldVars+14`); `$68A9` (`PanelGauges+1`); `$87A6`-`$87A7` (`ModelMissile+49`); `$87BF`-`$87C0` (`ModelMissile+74`); 10 more ranges |
@@ -2971,7 +2999,7 @@ Witness: L1 15876 (armour, c1, death, m1complete, m2erbe, m4complete, missions, 
 | | |
 | --- | --- |
 | Runs (c1 from the game's entry at frame 23974, the loader left out: the title, the mission tape, Blast Em Mission played) | 146 calls, 14,190 t-states own (0.00 %) |
-| Runs (the other recordings) | 4,022 calls (`stage1/death` 2,109, `stage1/missions` 1,049, `stage1/play` 486 and 2 more) |
+| Runs (the other recordings) | 15,730 calls (`stage2/rec/m1complete` 6,616, `stage2/rec/m4complete` 3,382, `stage1/death` 2,109 and 5 more) |
 | Called from | `ClipPolyNear` |
 | Reads | `$66D5` (`PolyOutCount`) |
 | Writes | `$66D5` (`PolyOutCount`); `$6700`-`$6717` (`PolyVerts`) |
@@ -2987,7 +3015,7 @@ Witness: L1 721062 (armour, c1, controls, death, fuel, m10, m1complete, m2erbe, 
 | | |
 | --- | --- |
 | Runs (c1 from the game's entry at frame 23974, the loader left out: the title, the mission tape, Blast Em Mission played) | 17,109 calls, 2,369,353 t-states own (0.36 %) |
-| Runs (the other recordings) | 265,747 calls (`stage1/death` 133,852, `stage1/play2` 47,330, `stage1/missions` 42,707 and 6 more) |
+| Runs (the other recordings) | 703,953 calls (`stage2/rec/m4complete` 165,965, `stage1/death` 133,852, `stage2/rec/m1complete` 127,512 and 11 more) |
 | Called from | `OpProject`, `NearClipLine`, `ShowMortarRange`, `BearingLookup`, `PlotGroundDot` |
 | Calls | `DivideByLog` (falls into) |
 | Reads | `$5C00`-`$5DFF` (`LogFraction`, `LogInteger`) |
@@ -3003,7 +3031,7 @@ Witness: L1 1184207 (armour, c1, controls, death, fuel, m10, m1complete, m2erbe,
 | | |
 | --- | --- |
 | Runs (c1 from the game's entry at frame 23974, the loader left out: the title, the mission tape, Blast Em Mission played) | 30,613 calls, 8,889,499 t-states own (1.34 %) |
-| Runs (the other recordings) | 442,277 calls (`stage1/death` 207,792, `stage1/play2` 81,736, `stage1/missions` 78,498 and 6 more) |
+| Runs (the other recordings) | 1,153,594 calls (`stage2/rec/m4complete` 269,653, `stage2/rec/m1complete` 211,114, `stage1/death` 207,792 and 11 more) |
 | Called from | `OpProject`, `NearClipLine`, `Divide` (falls into), `PlotGroundDot` |
 | Calls | `ApplySign` (falls into), `ZeroQuotient` (tail) |
 | Reads | `$5C00`-`$5EFF` (`LogFraction`, `LogInteger`, `ExpFraction`) |
@@ -3018,7 +3046,7 @@ Witness: L1 1109957 (armour, c1, controls, death, fuel, m10, m1complete, m2erbe,
 | | |
 | --- | --- |
 | Runs (c1 from the game's entry at frame 23974, the loader left out: the title, the mission tape, Blast Em Mission played) | 28,656 calls, 1,028,625 t-states own (0.16 %) |
-| Runs (the other recordings) | 397,259 calls (`stage1/death` 198,736, `stage1/play2` 75,218, `stage1/missions` 74,760 and 2 more) |
+| Runs (the other recordings) | 1,058,876 calls (`stage2/rec/m4complete` 250,122, `stage1/death` 198,736, `stage2/rec/m1complete` 197,725 and 6 more) |
 | Called from | `DivideByLog` (falls into), `ZeroQuotient` |
 
 ### `ZeroQuotient` (`$A765`)
@@ -3030,7 +3058,7 @@ Witness: L1 74250 (armour, c1, controls, death, fuel, m10, m1complete, m2erbe, m
 | | |
 | --- | --- |
 | Runs (c1 from the game's entry at frame 23974, the loader left out: the title, the mission tape, Blast Em Mission played) | 1,957 calls, 43,073 t-states own (0.01 %) |
-| Runs (the other recordings) | 22,536 calls (`stage1/death` 9,056, `stage1/play2` 6,518, `stage1/missions` 3,738 and 2 more) |
+| Runs (the other recordings) | 70,070 calls (`stage2/rec/m4complete` 19,531, `stage2/rec/m1complete` 13,389, `docs/bcC/rec/armour` 10,374 and 6 more) |
 | Called from | `DivideByLog` (tail) |
 | Calls | `ApplySign` |
 
@@ -3043,8 +3071,8 @@ Witness: L1 786174 (armour, c1, controls, death, fuel, m10, m1complete, m2erbe, 
 | | |
 | --- | --- |
 | Runs (c1 from the game's entry at frame 23974, the loader left out: the title, the mission tape, Blast Em Mission played) | 20,465 calls, 818,942 t-states own (0.12 %) |
-| Runs (the other recordings) | 286,230 calls (`stage1/death` 124,659, `stage1/play2` 60,497, `stage1/missions` 50,225 and 6 more) |
-| Called from | `OpProject`, `NearClipLine`, `BoxSquare`, `BoxHeights`, `BoxRect16`, `BoxRect`, `BoxTilted`, `GroundDots`, `PlotGroundDot`, `RotateToView`, `CollisionPass`, `HitSide` |
+| Runs (the other recordings) | 765,709 calls (`stage2/rec/m4complete` 194,559, `stage2/rec/m1complete` 157,352, `stage1/death` 124,659 and 11 more) |
+| Called from | `OpProject`, `NearClipLine`, `BoxSquare`, `BoxHeights`, `BoxRect16`, `BoxRect`, `BoxTilted`, `GroundDots`, `PlotGroundDot`, `RotateToView`, `CollisionPass`, `HitSide`, `HelicarrierWait` |
 
 ### `Random` (`$A779`)
 
@@ -3055,7 +3083,7 @@ Witness: L1 2198 (armour, c1, death, fuel, m1complete, m2erbe, m4complete, missi
 | | |
 | --- | --- |
 | Runs (c1 from the game's entry at frame 23974, the loader left out: the title, the mission tape, Blast Em Mission played) | 52 calls, 9,412 t-states own (0.00 %) |
-| Runs (the other recordings) | 532 calls (`stage1/play2` 168, `stage1/death` 159, `stage1/missions` 97 and 2 more) |
+| Runs (the other recordings) | 2,146 calls (`stage2/rec/m4complete` 802, `stage2/rec/m1complete` 623, `docs/bcC/rec/armour` 170 and 6 more) |
 | Called from | `ApiVector06` (tail) |
 | Writes | `$A77C`-`$A788` (`Random+3`) |
 
@@ -3068,7 +3096,7 @@ Witness: L1 521328 (armour, c1, death, fuel, m1complete, m2erbe, m4complete, mis
 | | |
 | --- | --- |
 | Runs (c1 from the game's entry at frame 23974, the loader left out: the title, the mission tape, Blast Em Mission played) | 6,328 calls, 125,956 t-states own (0.02 %) |
-| Runs (the other recordings) | 173,252 calls (`stage1/death` 109,476, `stage1/play2` 22,376, `stage1/missions` 21,130 and 2 more) |
+| Runs (the other recordings) | 515,000 calls (`stage2/rec/m4complete` 136,736, `docs/bcC/rec/armour` 116,503, `stage1/death` 109,476 and 6 more) |
 | Called from | `ApiVector08` (tail) |
 
 ### `NegDE` (`$A79E`)
@@ -3080,7 +3108,7 @@ Witness: L1 12022 (armour, c1, death, fuel, m1complete, m2erbe, m4complete, miss
 | | |
 | --- | --- |
 | Runs (c1 from the game's entry at frame 23974, the loader left out: the title, the mission tape, Blast Em Mission played) | 368 calls, 14,758 t-states own (0.00 %) |
-| Runs (the other recordings) | 1,860 calls (`stage1/play2` 767, `stage1/death` 500, `stage1/missions` 378 and 2 more) |
+| Runs (the other recordings) | 11,654 calls (`stage2/rec/m4complete` 4,626, `stage2/rec/m1complete` 3,653, `docs/bcC/rec/armour` 1,409 and 6 more) |
 | Called from | `BearingOctant` |
 
 ### `NegAbsHL` (`$A7A6`)
@@ -3101,7 +3129,7 @@ Witness: L1 6 (m1complete, m4complete, play).
 
 | | |
 | --- | --- |
-| Runs | not reached in `stage1/c1g`; in the other recordings 2 calls (`stage1/play` 2) |
+| Runs | not reached in `stage1/c1g`; in the other recordings 6 calls (`stage2/rec/m1complete` 2, `stage1/play` 2, `stage2/rec/m4complete` 2) |
 | Called from | `PlaceHelicarrier` |
 | Calls | `NegateHL` (falls into) |
 
@@ -3114,7 +3142,7 @@ Witness: L1 51813 (armour, c1, death, fuel, m1complete, m2erbe, m4complete, miss
 | | |
 | --- | --- |
 | Runs (c1 from the game's entry at frame 23974, the loader left out: the title, the mission tape, Blast Em Mission played) | 680 calls, 27,200 t-states own (0.00 %) |
-| Runs (the other recordings) | 17,514 calls (`stage1/death` 9,455, `stage1/play` 3,394, `stage1/play2` 2,339 and 2 more) |
+| Runs (the other recordings) | 51,133 calls (`stage2/rec/m4complete` 15,194, `stage2/rec/m1complete` 10,067, `stage1/death` 9,455 and 6 more) |
 | Called from | `ApiVector07` (tail), `AbsHL` (falls into) |
 
 ### `HighTimes32` (`$A7B6`)
@@ -3126,7 +3154,7 @@ Witness: L1 177524 (armour, c1, controls, death, fuel, m10, m1complete, m2erbe, 
 | | |
 | --- | --- |
 | Runs (c1 from the game's entry at frame 23974, the loader left out: the title, the mission tape, Blast Em Mission played) | 3,911 calls, 15,644 t-states own (0.00 %) |
-| Runs (the other recordings) | 66,854 calls (`stage1/death` 33,069, `stage1/play2` 12,731, `stage1/missions` 10,050 and 6 more) |
+| Runs (the other recordings) | 173,613 calls (`stage2/rec/m4complete` 34,501, `stage2/rec/m1complete` 33,594, `stage1/death` 33,069 and 11 more) |
 | Called from | `PlotBackBuffer` |
 | Calls | `LowTimes32` (falls into) |
 
@@ -3139,7 +3167,7 @@ Witness: L1 178905 (armour, c1, controls, death, fuel, m10, m1complete, m2erbe, 
 | | |
 | --- | --- |
 | Runs (c1 from the game's entry at frame 23974, the loader left out: the title, the mission tape, Blast Em Mission played) | 3,986 calls, 287,265 t-states own (0.04 %) |
-| Runs (the other recordings) | 68,020 calls (`stage1/death` 33,098, `stage1/play2` 13,048, `stage1/missions` 10,456 and 6 more) |
+| Runs (the other recordings) | 174,919 calls (`stage2/rec/m4complete` 34,534, `stage2/rec/m1complete` 33,626, `stage1/death` 33,098 and 11 more) |
 | Called from | `AttrBoxRC`, `HighTimes32` (falls into) |
 
 ### `MulSigned` (`$A7BF`)
@@ -3153,7 +3181,7 @@ Witness: L1 240864 (armour, c1, controls, death, fuel, m10, m1complete, m2erbe, 
 | | |
 | --- | --- |
 | Runs (c1 from the game's entry at frame 23974, the loader left out: the title, the mission tape, Blast Em Mission played) | 10,436 calls, 1,713,228 t-states own (0.26 %) |
-| Runs (the other recordings) | 95,556 calls (`stage1/missions` 28,398, `stage1/play2` 23,764, `stage1/death` 16,546 and 6 more) |
+| Runs (the other recordings) | 230,428 calls (`stage2/rec/m4complete` 45,148, `stage2/rec/m1complete` 42,290, `stage2/rec/fuel` 29,652 and 11 more) |
 | Called from | `TestFace` |
 | Reads | `$5F00`-`$60FF` (`SquareLow`, `SquareHigh`) |
 
@@ -3166,7 +3194,7 @@ Witness: L1 205999 (armour, c1, controls, death, fuel, m10, m1complete, m2erbe, 
 | | |
 | --- | --- |
 | Runs (c1 from the game's entry at frame 23974, the loader left out: the title, the mission tape, Blast Em Mission played) | 3,614 calls, 653,683 t-states own (0.10 %) |
-| Runs (the other recordings) | 62,281 calls (`stage1/death` 29,302, `stage1/play2` 14,652, `stage1/missions` 8,104 and 6 more) |
+| Runs (the other recordings) | 202,385 calls (`stage2/rec/m4complete` 70,196, `stage2/rec/m1complete` 38,342, `stage1/death` 29,302 and 11 more) |
 | Called from | `OpPolarPoints`, `BoxSquare`, `BoxRect`, `BoxTilted`, `RotatePair`, `ShowMortarRange`, `MoveObject` |
 | Reads | `$5F00`-`$60FF` (`SquareLow`, `SquareHigh`) |
 
@@ -3181,7 +3209,7 @@ Witness: L1 643316 (armour, c1, death, fuel, m1complete, m2erbe, m4complete, mis
 | | |
 | --- | --- |
 | Runs (c1 from the game's entry at frame 23974, the loader left out: the title, the mission tape, Blast Em Mission played) | 9,736 calls, 4,312,095 t-states own (0.65 %) |
-| Runs (the other recordings) | 210,746 calls (`stage1/death` 120,834, `stage1/play2` 37,372, `stage1/play` 27,268 and 2 more) |
+| Runs (the other recordings) | 633,580 calls (`stage2/rec/m4complete` 183,022, `stage2/rec/m1complete` 151,692, `stage1/death` 120,834 and 6 more) |
 | Called from | `ApiVector09` (tail) |
 | Reads | `$5F00`-`$60FF` (`SquareLow`, `SquareHigh`) |
 
@@ -3194,7 +3222,7 @@ Witness: L1 153909 (armour, c1, controls, death, fuel, m10, m1complete, m2erbe, 
 | | |
 | --- | --- |
 | Runs (c1 from the game's entry at frame 23974, the loader left out: the title, the mission tape, Blast Em Mission played) | 2,442 calls, 152,836 t-states own (0.02 %) |
-| Runs (the other recordings) | 56,373 calls (`stage1/death` 29,045, `stage1/missions` 9,030, `stage1/play2` 8,907 and 6 more) |
+| Runs (the other recordings) | 151,467 calls (`stage2/rec/m4complete` 43,678, `stage2/rec/m1complete` 30,009, `stage1/death` 29,045 and 11 more) |
 | Called from | `ApiVector14` (tail) |
 | Reads | `$6300`-`$63FF` (`Sine8`) |
 
@@ -3207,7 +3235,7 @@ Witness: L1 12234 (armour, c1, death, fuel, m1complete, m4complete, missions, pl
 | | |
 | --- | --- |
 | Runs (c1 from the game's entry at frame 23974, the loader left out: the title, the mission tape, Blast Em Mission played) | 310 calls, 22,989 t-states own (0.00 %) |
-| Runs (the other recordings) | 4,660 calls (`stage1/death` 2,236, `stage1/play2` 1,496, `stage1/play` 528 and 1 more) |
+| Runs (the other recordings) | 11,924 calls (`stage2/rec/m1complete` 4,638, `stage1/death` 2,236, `stage2/rec/m4complete` 1,772 and 5 more) |
 | Called from | `BoxRect16` |
 | Reads | `$6100`-`$62FE` (`Sine16Low`, `Sine16High`) |
 
@@ -3220,7 +3248,7 @@ Witness: L1 75445 (armour, c1, death, fuel, m1complete, m2erbe, m4complete, miss
 | | |
 | --- | --- |
 | Runs (c1 from the game's entry at frame 23974, the loader left out: the title, the mission tape, Blast Em Mission played) | 870 calls, 73,773 t-states own (0.01 %) |
-| Runs (the other recordings) | 22,071 calls (`stage1/death` 14,279, `stage1/play2` 3,322, `stage1/play` 2,329 and 2 more) |
+| Runs (the other recordings) | 74,575 calls (`stage2/rec/m4complete` 24,771, `docs/bcC/rec/armour` 14,668, `stage1/death` 14,279 and 6 more) |
 | Called from | `BoxTilted`, `CameraSinCos`, `MoveObject` |
 | Reads | `$6300`-`$63FF` (`Sine8`) |
 
@@ -3235,8 +3263,8 @@ Witness: L1 95537 (armour, c1, death, fuel, m1complete, m2erbe, m4complete, miss
 | | |
 | --- | --- |
 | Runs (c1 from the game's entry at frame 23974, the loader left out: the title, the mission tape, Blast Em Mission played) | 1,516 calls, 237,466 t-states own (0.04 %) |
-| Runs (the other recordings) | 35,496 calls (`stage1/death` 23,934, `stage1/play2` 5,450, `stage1/play` 3,192 and 2 more) |
-| Called from | `PlotGroundDot` (tail) |
+| Runs (the other recordings) | 94,021 calls (`stage1/death` 23,934, `docs/bcC/rec/armour` 22,613, `stage2/rec/m4complete` 18,115 and 6 more) |
+| Called from | `FillFaceListClipped` (tail), `PlotGroundDot` (tail) |
 | Calls | `HighTimes32` |
 | Reads | `$7C49`-`$7C50` (`FailReason+80`); `$9111`-`$9130` (`BackBuffer+1568`); `$9152`-`$96CE` (`BackBuffer+1633`) |
 | Writes | `$9111`-`$9130` (`BackBuffer+1568`); `$9152`-`$96CE` (`BackBuffer+1633`) |
@@ -3254,7 +3282,7 @@ Witness: L1 121657 (armour, c1, controls, death, fuel, m10, m1complete, m2erbe, 
 | | |
 | --- | --- |
 | Runs (c1 from the game's entry at frame 23974, the loader left out: the title, the mission tape, Blast Em Mission played) | 4,124 calls, 136,092 t-states own (0.02 %) |
-| Runs (the other recordings) | 65,529 calls (`stage1/play2` 12,957, `stage1/missions` 12,811, `stage1/death` 12,655 and 6 more) |
+| Runs (the other recordings) | 117,533 calls (`stage2/rec/m4complete` 17,835, `stage2/rec/m1complete` 16,026, `stage1/play2` 12,957 and 11 more) |
 | Called from | `PointerTick` |
 | Calls | `CallTableEntry` (tail) |
 | Reads | `$67B6` (`ControlDevice`) |
@@ -3267,7 +3295,7 @@ Witness: menu, 11 runs in frames 115-140 after OPTIONS 1 (Sinclair selected; ent
 
 | | |
 | --- | --- |
-| Runs | not reached in `stage1/c1g`; in the other recordings run into, not called (`stage1/menu`) |
+| Runs | not reached in `stage1/c1g`; in the other recordings 185 runs of its first instruction, entered by a jump (`stage1/menu` 185) |
 | Called from | `CallTableEntry` |
 | Calls | `InvertDirections` (tail) |
 | Ports in | `$EFFE` |
@@ -3280,7 +3308,7 @@ Witness: known only from the code (entered by `JP (HL)`).
 
 | | |
 | --- | --- |
-| Runs | not reached in `stage1/c1g`; in the other recordings run into, not called (`stage1/menu`) |
+| Runs | not reached in `stage1/c1g`; in the other recordings 1,040 runs of its first instruction, entered by a jump (`stage1/menu` 1,040) |
 | Called from | `CallTableEntry` |
 | Calls | `InvertDirections` (falls into) |
 | Ports in | `$7FFE`, `$EFFE`, `$F7FE` |
@@ -3305,8 +3333,9 @@ Witness: L1 121627 (armour, c1, controls, death, fuel, m10, m1complete, m2erbe, 
 
 | | |
 | --- | --- |
-| Runs | not reached in `stage1/c1g`; in the other recordings 7,559 calls (`stage1/menu` 7,559) |
-| Called from | `InvertDirections` (falls into), `ReadKeys` (tail) |
+| Runs (c1 from the game's entry at frame 23974, the loader left out: the title, the mission tape, Blast Em Mission played) | 4,124 runs of its first instruction (entered by a jump or by running on, no routine of its own in the L1) |
+| Runs (the other recordings) | 7,771 calls (`stage1/menu` 7,559, `stage1/controls` 212) |
+| Called from | `InvertDirections` (falls into), `ReadKempston` (tail), `ReadKeys` (tail) |
 | Reads | `$67B7`-`$67BA` (`RepeatY`, `LastDirections`, `RepeatX`); `$9719` (`StepFrames`); `$985E`-`$985F` (`StepX`, `StepY`) |
 | Writes | `$67B7`-`$67BA` (`RepeatY`, `LastDirections`, `RepeatX`); `$985E`-`$985F` (`StepX`, `StepY`) |
 
@@ -3318,7 +3347,9 @@ Reads X (`AND $7F`, doubled) and Y (inverted), stores them at `$67BB`, then the 
 
 | | |
 | --- | --- |
-| Runs | not reached in the recordings |
+| Runs | not reached in `stage1/c1g`; in the other recordings 30 runs of its first instruction, entered by a jump (`stage1/controls` 30) |
+| Called from | `CallTableEntry` |
+| Ports in | `$FBDF`, `$FFDF` |
 
 ### `ReadKempston` (`$9833`)
 
@@ -3328,7 +3359,10 @@ Witness: known only from the code (entered by `JP (HL)`; controls runs it).
 
 | | |
 | --- | --- |
-| Runs | not reached in the recordings |
+| Runs | not reached in `stage1/c1g`; in the other recordings 121 runs of its first instruction, entered by a jump (`stage1/controls` 121) |
+| Called from | `CallTableEntry` |
+| Calls | `DecodeDirections` (tail) |
+| Ports in | `$331F` |
 
 ### `ReadKeys` (`$9844`)
 
@@ -3338,8 +3372,8 @@ Witness: known only from the code (entered by `JP (HL)`; every recording runs it
 
 | | |
 | --- | --- |
-| Runs (c1 from the game's entry at frame 23974, the loader left out: the title, the mission tape, Blast Em Mission played) | run into, not called, 2,338,971 t-states own (0.35 %) |
-| Runs (the other recordings) | run into, not called (`stage1/death`, `stage1/play2`, `stage1/missions` and 6 more) |
+| Runs (c1 from the game's entry at frame 23974, the loader left out: the title, the mission tape, Blast Em Mission played) | 4,124 runs of its first instruction (entered by a jump or by running on, no routine of its own in the L1), 2,338,971 t-states own (0.35 %) |
+| Runs (the other recordings) | 116,157 runs of its first instruction, entered by a jump (`stage2/rec/m4complete` 17,835, `stage2/rec/m1complete` 16,026, `stage1/play2` 12,957 and 11 more) |
 | Called from | `CallTableEntry` |
 | Calls | `DecodeDirections` (tail) |
 | Reads | `$67B7`-`$67BA` (`RepeatY`, `LastDirections`, `RepeatX`); `$9719` (`StepFrames`); `$985E`-`$986B` (`StepX`, `KeyTable`) |
@@ -3355,9 +3389,9 @@ Witness: L1 121657 (armour, c1, controls, death, fuel, m10, m1complete, m2erbe, 
 | | |
 | --- | --- |
 | Runs (c1 from the game's entry at frame 23974, the loader left out: the title, the mission tape, Blast Em Mission played) | 4,124 calls, 185,580 t-states own (0.03 %) |
-| Runs (the other recordings) | 65,529 calls (`stage1/play2` 12,957, `stage1/missions` 12,811, `stage1/death` 12,655 and 6 more) |
+| Runs (the other recordings) | 117,533 calls (`stage2/rec/m4complete` 17,835, `stage2/rec/m1complete` 16,026, `stage1/play2` 12,957 and 11 more) |
 | Called from | `ReadControls` (tail) |
-| Calls | `ReadSinclair`, `ReadCursor`, `ReadKeys`, `TableEntry` |
+| Calls | `ReadSinclair`, `ReadCursor`, `ReadMouse`, `ReadKempston`, `ReadKeys`, `TableEntry` |
 | Reads | `$9723`-`$972C` (`DeviceReaders`) |
 
 ### `TableEntry` (`$987C`)
@@ -3369,7 +3403,7 @@ Witness: L1 121657 (armour, c1, controls, death, fuel, m10, m1complete, m2erbe, 
 | | |
 | --- | --- |
 | Runs (c1 from the game's entry at frame 23974, the loader left out: the title, the mission tape, Blast Em Mission played) | 4,124 calls, 94,852 t-states own (0.01 %) |
-| Runs (the other recordings) | 65,529 calls (`stage1/play2` 12,957, `stage1/missions` 12,811, `stage1/death` 12,655 and 6 more) |
+| Runs (the other recordings) | 117,533 calls (`stage2/rec/m4complete` 17,835, `stage2/rec/m1complete` 16,026, `stage1/play2` 12,957 and 11 more) |
 | Called from | `CallTableEntry` |
 
 ## render
@@ -3387,7 +3421,7 @@ Witness: L1 13569 (armour, c1, controls, death, fuel, m10, m1complete, m2erbe, m
 | | |
 | --- | --- |
 | Runs (c1 from the game's entry at frame 23974, the loader left out: the title, the mission tape, Blast Em Mission played) | 290 calls, 5,227,327 t-states own (0.79 %) |
-| Runs (the other recordings) | 6,338 calls (`stage1/death` 2,636, `stage1/play2` 1,461, `stage1/missions` 1,212 and 6 more) |
+| Runs (the other recordings) | 13,279 calls (`stage1/death` 2,636, `docs/bcC/rec/armour` 2,522, `stage2/rec/m4complete` 2,331 and 11 more) |
 | Called from | `PlayLoop`, `DragonflyViewLoop` |
 | Calls | `ClearBackBuffer` |
 | Reads | `$83BA` (`BlitRequest+1`) |
@@ -3401,7 +3435,7 @@ Witness: L1 13587 (armour, c1, controls, death, fuel, m10, m1complete, m2erbe, m
 | | |
 | --- | --- |
 | Runs (c1 from the game's entry at frame 23974, the loader left out: the title, the mission tape, Blast Em Mission played) | 291 calls, 8,730 t-states own (0.00 %) |
-| Runs (the other recordings) | 6,350 calls (`stage1/death` 2,637, `stage1/play2` 1,461, `stage1/missions` 1,213 and 6 more) |
+| Runs (the other recordings) | 13,296 calls (`stage1/death` 2,637, `docs/bcC/rec/armour` 2,523, `stage2/rec/m4complete` 2,331 and 11 more) |
 | Called from | `PlayLoopTail`, `DragonflyViewLoop` |
 | Writes | `$83BA` (`BlitRequest+1`) |
 
@@ -3444,7 +3478,7 @@ Witness: L1 319386 (armour, c1, controls, death, fuel, m10, m1complete, m2erbe, 
 | | |
 | --- | --- |
 | Runs (c1 from the game's entry at frame 23974, the loader left out: the title, the mission tape, Blast Em Mission played) | 7,859 calls, 995,308 t-states own (0.15 %) |
-| Runs (the other recordings) | 122,646 calls (`stage1/death` 47,346, `stage1/play2` 28,155, `stage1/missions` 21,478 and 6 more) |
+| Runs (the other recordings) | 311,527 calls (`stage2/rec/m4complete` 76,815, `stage2/rec/m1complete` 62,378, `stage1/death` 47,346 and 11 more) |
 | Called from | `Bank3Render`, `ScriptNext` (tail), `OpTranslate` (tail), `DrawSegmentStyle`, `DrawModel`, `DrawEntry` |
 | Reads | `$7E8F`-`$7FAF` (`MissionParams+13`); `$8739`-`$87D5` (`ModelMine`, `ModelMissile`); `$98E1`-`$990E` (`OpcodeTable`); `$D5D0`-`$D673` (`HelicarrierData`); `$D934`-`$D9A4` (`BinocularIcons+96`); `$E94D`-`$E98B` (`MissionHeader+3464`); 2 more ranges |
 | Writes | `$9928`-`$9929` (`sub_9927+1`) |
@@ -3455,8 +3489,9 @@ Witness: L1 319386 (armour, c1, controls, death, fuel, m10, m1complete, m2erbe, 
 
 | | |
 | --- | --- |
-| Runs | ran within another entry's routine (reached by a jump or by running on, its calls below), no runs of its own counted |
-| Calls | `OpNative`, `OpVertexProgram`, `OpProject`, `OpLines`, `OpTestFaces`, `OpCall`, `OpReturn`, `OpOrderByFace`, `OpFillFaces`, `OpFillFacesClipped`, `OpFillPolys`, `OpFillBackFaces`, `OpLinesClipped`, `OpTranslate`, `OpFillPolysClipped`, `OpFillBackFacesClipped`, `OpPolarPoints`, `ScriptDrawCarried` |
+| Runs (c1 from the game's entry at frame 23974, the loader left out: the title, the mission tape, Blast Em Mission played) | 6,892 runs of its first instruction (entered by a jump or by running on, no routine of its own in the L1) |
+| Runs (the other recordings) | 259,455 runs of its first instruction, entered by a jump (`stage2/rec/m4complete` 62,796, `stage2/rec/m1complete` 51,735, `stage1/death` 36,766 and 11 more) |
+| Calls | `OpNative`, `OpVertexProgram`, `OpProject`, `OpLines`, `OpTestFaces`, `OpJumpIfVisible`, `OpCall`, `OpReturn`, `OpOrderByFace`, `OpFillFaces`, `OpFillFacesClipped`, `OpFillPolys`, `OpFillBackFaces`, `OpLinesClipped`, `OpTranslate`, `OpFillPolysClipped`, `OpFillBackFacesClipped`, `OpPolarPoints`, `ScriptDrawCarried` |
 
 ### `ScriptNext` (`$992A`)
 
@@ -3467,8 +3502,8 @@ Witness: L1 266356 (armour, c1, controls, death, fuel, m10, m1complete, m2erbe, 
 | | |
 | --- | --- |
 | Runs (c1 from the game's entry at frame 23974, the loader left out: the title, the mission tape, Blast Em Mission played) | 6,677 calls, 68,948 t-states own (0.01 %) |
-| Runs (the other recordings) | 96,956 calls (`stage1/death` 32,614, `stage1/play2` 23,835, `stage1/missions` 18,315 and 6 more) |
-| Called from | `OpVertexProgram` (tail), `OpProject` (tail), `OpLines` (tail), `StoreFaceFlag` (tail), `OpCall`, `OpReturn` (tail), `OpOrderByFace` (tail), `FillFaceList` (tail), `FillFaceListClipped` (tail), `OpFillPolys` (tail), `OpLinesClipped` (tail), `OpFillPolysClipped` (tail), `OpPolarPoints` (tail), `l_AA5B` (tail), `BoxHeights` (tail), `BoxTilted` (tail), `ScriptDrawCarried` (tail) |
+| Runs (the other recordings) | 246,706 calls (`stage2/rec/m4complete` 61,407, `stage2/rec/m1complete` 50,308, `stage1/death` 32,614 and 11 more) |
+| Called from | `OpVertexProgram` (tail), `OpProject` (tail), `OpLines` (tail), `StoreFaceFlag` (tail), `OpJumpIfVisible` (tail), `OpCall`, `OpReturn` (tail), `OpOrderByFace` (tail), `FillFaceList` (tail), `FillFaceListClipped` (tail), `OpFillPolys` (tail), `OpLinesClipped` (tail), `OpFillPolysClipped` (tail), `OpPolarPoints` (tail), `l_AA5B` (tail), `BoxHeights` (tail), `BoxTilted` (tail), `ScriptDrawCarried` (tail) |
 | Calls | `RunScript` (tail) |
 
 ### `OpNative` (`$992D`)
@@ -3482,9 +3517,9 @@ Witness: L1 38166 (armour, c1, controls, death, fuel, m10, m1complete, m2erbe, m
 | | |
 | --- | --- |
 | Runs (c1 from the game's entry at frame 23974, the loader left out: the title, the mission tape, Blast Em Mission played) | 944 calls, 59,070 t-states own (0.01 %) |
-| Runs (the other recordings) | 14,270 calls (`stage1/death` 7,075, `stage1/play2` 3,366, `stage1/missions` 1,751 and 6 more) |
+| Runs (the other recordings) | 37,222 calls (`stage2/rec/m4complete` 8,513, `stage2/rec/m1complete` 7,901, `stage1/death` 7,075 and 11 more) |
 | Called from | `sub_9927` |
-| Calls | `ApiVector18`, `ApiVector19`, `ApiVector20`, `ApiVector21`, `BoxRect`, `BoxTilted`, `CopyHudGlyphs`, `CopyHelicarrierState`, `MissionHeader`, `l_FE8F` |
+| Calls | `ApiVector18`, `ApiVector19`, `ApiVector20`, `ApiVector21`, `BoxRect`, `BoxTilted`, `CopyHudGlyphs`, `CopyHelicarrierState`, `HelicarrierTemplate`, `MissionHeader`, `l_FE8F` |
 | Reads | `$7E90`-`$7F5D` (`MissionParams+14`); `$873A`-`$8777` (`ModelMine+1`, `ModelMissile`); `$D5D1`-`$D5D5` (`HelicarrierData+1`); `$D935`-`$D93C` (`BinocularIcons+97`); `$E94E`-`$E94F` (`MissionHeader+3465`); `$EB26`-`$FA08` (`MissionHeader+3937`); 1 more ranges |
 
 ### `OpVertexProgram` (`$9938`)
@@ -3498,7 +3533,7 @@ Witness: L1 24235 (armour, c1, controls, death, fuel, m10, m1complete, m2erbe, m
 | | |
 | --- | --- |
 | Runs (c1 from the game's entry at frame 23974, the loader left out: the title, the mission tape, Blast Em Mission played) | 855 calls, 7,298,543 t-states own (1.10 %) |
-| Runs (the other recordings) | 9,854 calls (`stage1/play2` 2,724, `stage1/death` 2,520, `stage1/missions` 2,094 and 6 more) |
+| Runs (the other recordings) | 23,380 calls (`stage2/rec/m1complete` 5,465, `stage2/rec/m4complete` 4,250, `stage1/play2` 2,724 and 11 more) |
 | Called from | `sub_9927` |
 | Calls | `ScriptNext` (tail) |
 | Reads | `$7ED1`-`$7F74` (`MissionParams+79`); `$8740`-`$8783` (`ModelMine+7`, `ModelMissile`); `$D5DA`-`$D612` (`HelicarrierData+10`); `$D93E`-`$D97E` (`BinocularIcons+106`); `$E954`-`$E95A` (`MissionHeader+3471`); `$EB2C`-`$EE67` (`MissionHeader+3943`); 4 more ranges |
@@ -3515,7 +3550,7 @@ Witness: L1 56575 (armour, c1, controls, death, fuel, m10, m1complete, m2erbe, m
 | | |
 | --- | --- |
 | Runs (c1 from the game's entry at frame 23974, the loader left out: the title, the mission tape, Blast Em Mission played) | 1,168 calls, 6,885,988 t-states own (1.04 %) |
-| Runs (the other recordings) | 21,720 calls (`stage1/death` 10,925, `stage1/play2` 3,909, `stage1/missions` 3,297 and 6 more) |
+| Runs (the other recordings) | 55,407 calls (`stage2/rec/m4complete` 14,010, `stage1/death` 10,925, `stage2/rec/m1complete` 10,673 and 11 more) |
 | Called from | `sub_9927` |
 | Calls | `ScriptNext` (tail), `Divide`, `DivideByLog`, `NegHL` |
 | Reads | `$7E96`-`$7F86` (`MissionParams+20`); `$8745`-`$8786` (`ModelMine+12`, `ModelMissile`); `$D614`-`$D615` (`HelicarrierData+68`); `$D980`-`$D981` (`BinocularIcons+172`); `$E95C`-`$E95D` (`MissionHeader+3479`); `$EB58`-`$FA18` (`MissionHeader+3987`); 3 more ranges |
@@ -3532,7 +3567,7 @@ Witness: L1 5137 (armour, c1, death, fuel, m1complete, m2erbe, m4complete, menu,
 | | |
 | --- | --- |
 | Runs (c1 from the game's entry at frame 23974, the loader left out: the title, the mission tape, Blast Em Mission played) | 114 calls, 64,657 t-states own (0.01 %) |
-| Runs (the other recordings) | 1,428 calls (`stage1/play2` 563, `stage1/death` 359, `stage1/missions` 242 and 3 more) |
+| Runs (the other recordings) | 5,023 calls (`stage2/rec/m4complete` 2,238, `stage2/rec/m1complete` 1,047, `stage1/play2` 563 and 7 more) |
 | Called from | `sub_9927` |
 | Calls | `Bank3Lookup`, `ScriptNext` (tail), `ClipLine2D` |
 | Reads | `$7FA6`-`$7FAE` (`MissionParams+292`); `$D983`-`$D9A3` (`BinocularIcons+175`); `$EBA7`-`$EBA9` (`MissionHeader+4066`); `$EC1F`-`$EC2B` (`MissionHeader+4186`); `$ED12`-`$ED14` (`MissionHeader+4429`); `$EE73`-`$EE75` (`MissionHeader+4782`); 4 more ranges |
@@ -3561,7 +3596,7 @@ Witness: L1 24102 (armour, c1, controls, death, fuel, m10, m1complete, m2erbe, m
 | | |
 | --- | --- |
 | Runs (c1 from the game's entry at frame 23974, the loader left out: the title, the mission tape, Blast Em Mission played) | 816 calls, 89,342 t-states own (0.01 %) |
-| Runs (the other recordings) | 8,478 calls (`stage1/play2` 2,590, `stage1/death` 2,050, `stage1/missions` 1,832 and 6 more) |
+| Runs (the other recordings) | 23,286 calls (`stage2/rec/m4complete` 6,230, `stage2/rec/m1complete` 5,185, `stage1/play2` 2,590 and 11 more) |
 | Called from | `sub_9927` |
 | Calls | `TestFace` (falls into) |
 | Reads | `$7E99`-`$7F77` (`MissionParams+23`); `$8748`-`$8789` (`ModelMine+15`, `ModelMissile`); `$9BDA` (`TestFace+23`); `$D617`-`$D618` (`HelicarrierData+71`); `$E95F`-`$E960` (`MissionHeader+3482`); `$EBC1`-`$EEE3` (`MissionHeader+4092`); 4 more ranges |
@@ -3578,7 +3613,7 @@ Witness: L1 133984 (armour, c1, controls, death, fuel, m10, m1complete, m2erbe, 
 | | |
 | --- | --- |
 | Runs (c1 from the game's entry at frame 23974, the loader left out: the title, the mission tape, Blast Em Mission played) | 5,328 calls, 4,569,194 t-states own (0.69 %) |
-| Runs (the other recordings) | 39,962 calls (`stage1/missions` 14,203, `stage1/play2` 12,266, `stage1/death` 8,757 and 1 more) |
+| Runs (the other recordings) | 104,268 calls (`stage2/rec/m4complete` 29,821, `stage2/rec/m1complete` 25,645, `stage1/missions` 14,203 and 4 more) |
 | Called from | `OpTestFaces` (falls into), `StoreFaceFlag` (tail) |
 | Calls | `StoreFaceFlag` (falls into), `ScaleToBytes`, `FacePartlyBehind` (tail), `FaceAllBehind` (tail), `MulSigned` |
 | Reads | `$7E9B`-`$7F83` (`MissionParams+25`); `$874A`-`$878F` (`ModelMine+17`, `ModelMissile`); `$9BDA` (`TestFace+23`); `$D619`-`$D630` (`HelicarrierData+73`); `$E961`-`$E96C` (`MissionHeader+3484`); `$EBC3`-`$EEEF` (`MissionHeader+4094`); 4 more ranges |
@@ -3593,7 +3628,7 @@ Witness: L1 133984 (armour, c1, controls, death, fuel, m10, m1complete, m2erbe, 
 | | |
 | --- | --- |
 | Runs (c1 from the game's entry at frame 23974, the loader left out: the title, the mission tape, Blast Em Mission played) | 5,328 calls, 330,495 t-states own (0.05 %) |
-| Runs (the other recordings) | 39,962 calls (`stage1/missions` 14,203, `stage1/play2` 12,266, `stage1/death` 8,757 and 1 more) |
+| Runs (the other recordings) | 104,268 calls (`stage2/rec/m4complete` 29,821, `stage2/rec/m1complete` 25,645, `stage1/missions` 14,203 and 4 more) |
 | Called from | `TestFace` (falls into), `FacePartlyBehind` (tail), `FaceAllBehind` (tail) |
 | Calls | `ScriptNext` (tail), `TestFace` (tail) |
 | Writes | `$6728`-`$674F` (`FaceFlags`); `$9C6B` (`StoreFaceFlag+1`) |
@@ -3609,7 +3644,7 @@ Witness: L1 247063 (armour, c1, controls, death, fuel, m10, m1complete, m2erbe, 
 | | |
 | --- | --- |
 | Runs (c1 from the game's entry at frame 23974, the loader left out: the title, the mission tape, Blast Em Mission played) | 10,436 calls, 539,832 t-states own (0.08 %) |
-| Runs (the other recordings) | 95,556 calls (`stage1/missions` 28,398, `stage1/play2` 23,764, `stage1/death` 16,546 and 6 more) |
+| Runs (the other recordings) | 230,428 calls (`stage2/rec/m4complete` 45,148, `stage2/rec/m1complete` 42,290, `stage2/rec/fuel` 29,652 and 11 more) |
 | Called from | `TestFace` |
 
 ### `FacePartlyBehind` (`$9CA3`)
@@ -3621,7 +3656,7 @@ Witness: L1 1130 (c1, death, m1complete, m4complete).
 | | |
 | --- | --- |
 | Runs (c1 from the game's entry at frame 23974, the loader left out: the title, the mission tape, Blast Em Mission played) | 5 calls, 185 t-states own (0.00 %) |
-| Runs (the other recordings) | 6 calls (`stage1/death` 6) |
+| Runs (the other recordings) | 1,125 calls (`stage2/rec/m4complete` 565, `stage2/rec/m1complete` 554, `stage1/death` 6) |
 | Called from | `TestFace` (tail) |
 | Calls | `StoreFaceFlag` (tail) |
 
@@ -3634,7 +3669,7 @@ Witness: L1 12422 (armour, c1, death, m1complete, m4complete, missions, play, pl
 | | |
 | --- | --- |
 | Runs (c1 from the game's entry at frame 23974, the loader left out: the title, the mission tape, Blast Em Mission played) | 105 calls, 3,885 t-states own (0.00 %) |
-| Runs (the other recordings) | 1,018 calls (`stage1/death` 478, `stage1/play2` 384, `stage1/play` 152 and 1 more) |
+| Runs (the other recordings) | 12,317 calls (`stage2/rec/m4complete` 6,682, `stage2/rec/m1complete` 3,946, `docs/bcC/rec/armour` 671 and 4 more) |
 | Called from | `TestFace` (tail) |
 | Calls | `StoreFaceFlag` (tail) |
 
@@ -3648,7 +3683,9 @@ Witness: known only from the code (no recording runs it).
 
 | | |
 | --- | --- |
-| Runs | not reached in the recordings |
+| Runs | not reached in `stage1/c1g`; in the other recordings 39 calls (`stage2/rec/m4complete` 39) |
+| Called from | `sub_9927` |
+| Calls | `ScriptNext` (tail) |
 
 ### `OpJumpIfVisible2` (`$9CE8`)
 
@@ -3669,7 +3706,7 @@ Witness: L1 1496 (armour, c1, controls, death, fuel, m10, m1complete, m2erbe, m2
 | | |
 | --- | --- |
 | Runs (c1 from the game's entry at frame 23974, the loader left out: the title, the mission tape, Blast Em Mission played) | 100 calls, 11,536 t-states own (0.00 %) |
-| Runs (the other recordings) | 746 calls (`stage1/menu` 262, `stage1/missions` 236, `stage1/play2` 98 and 6 more) |
+| Runs (the other recordings) | 1,396 calls (`stage2/rec/fuel` 586, `stage1/menu` 262, `stage1/missions` 236 and 10 more) |
 | Called from | `sub_9927` |
 | Calls | `ScriptNext` |
 
@@ -3684,7 +3721,7 @@ Witness: L1 27230 (armour, c1, controls, death, fuel, m10, m1complete, m2erbe, m
 | | |
 | --- | --- |
 | Runs (c1 from the game's entry at frame 23974, the loader left out: the title, the mission tape, Blast Em Mission played) | 994 calls, 53,695 t-states own (0.01 %) |
-| Runs (the other recordings) | 11,733 calls (`stage1/missions` 3,361, `stage1/play2` 3,037, `stage1/menu` 1,833 and 6 more) |
+| Runs (the other recordings) | 26,236 calls (`stage2/rec/m4complete` 5,624, `stage2/rec/fuel` 4,403, `stage2/rec/m1complete` 3,391 and 11 more) |
 | Called from | `sub_9927` |
 | Calls | `ScriptNext` (tail) |
 | Writes | `$9D26`-`$9D27` (`l_9D25+1`) |
@@ -3710,7 +3747,7 @@ Witness: L1 12854 (armour, c1, controls, death, fuel, m10, m1complete, m2erbe, m
 | | |
 | --- | --- |
 | Runs (c1 from the game's entry at frame 23974, the loader left out: the title, the mission tape, Blast Em Mission played) | 447 calls, 124,404 t-states own (0.02 %) |
-| Runs (the other recordings) | 5,482 calls (`stage1/missions` 1,561, `stage1/play2` 1,470, `stage1/play` 838 and 6 more) |
+| Runs (the other recordings) | 12,407 calls (`stage2/rec/m4complete` 2,812, `stage2/rec/fuel` 1,909, `stage2/rec/m1complete` 1,686 and 11 more) |
 | Called from | `sub_9927` |
 | Calls | `ScriptNext` (tail) |
 | Reads | `$6728`-`$6748` (`FaceFlags`); `$8791`-`$87AE` (`ModelMissile+28`); `$EBEC`-`$EC90` (`MissionHeader+4135`); `$F3C8`-`$F3CC` (`MissionHeader+6147`); `$F5B8`-`$F5BC` (`MissionHeader+6643`) |
@@ -3727,7 +3764,7 @@ Witness: L1 27293 (armour, c1, controls, death, fuel, m10, m1complete, m2erbe, m
 | | |
 | --- | --- |
 | Runs (c1 from the game's entry at frame 23974, the loader left out: the title, the mission tape, Blast Em Mission played) | 806 calls, 2,334,904 t-states own (0.35 %) |
-| Runs (the other recordings) | 10,296 calls (`stage1/play2` 3,011, `stage1/missions` 2,713, `stage1/death` 1,657 and 6 more) |
+| Runs (the other recordings) | 26,487 calls (`stage2/rec/m4complete` 6,835, `stage2/rec/m1complete` 5,069, `stage1/play2` 3,011 and 11 more) |
 | Called from | `sub_9927` |
 | Calls | `FillFaceList` (falls into) |
 | Reads | `$6728`-`$6749` (`FaceFlags`); `$68AA` (`PanelGauges+2`); `$7EA8`-`$7FA4` (`MissionParams+38`); `$8757`-`$87CA` (`ModelMine+30`, `ModelMissile`); `$EC79`-`$ECAC` (`MissionHeader+4276`); `$F15C`-`$F17C` (`MissionHeader+5527`); 5 more ranges |
@@ -3743,7 +3780,8 @@ Witness: L1 28219 (armour, c1, controls, death, fuel, m10, m1complete, m2erbe, m
 
 | | |
 | --- | --- |
-| Runs | not reached in `stage1/c1g`; in the other recordings 5,753 calls (`stage1/play2` 3,023, `stage1/missions` 2,730) |
+| Runs (c1 from the game's entry at frame 23974, the loader left out: the title, the mission tape, Blast Em Mission played) | 806 runs of its first instruction (entered by a jump or by running on, no routine of its own in the L1) |
+| Runs (the other recordings) | 20,398 calls (`stage2/rec/m4complete` 7,033, `stage2/rec/m1complete` 5,633, `stage1/play2` 3,023 and 2 more) |
 | Called from | `OpFillFaces` (falls into), `OpFillBackFaces` (tail) |
 | Calls | `Bank3SetObject`, `ScriptNext` (tail) |
 | Reads | `$6728`-`$674E` (`FaceFlags`); `$6760`-`$6767` (`FaceFlags+56`); `$68AA` (`PanelGauges+2`); `$7EA8`-`$7FA4` (`MissionParams+38`); `$8757`-`$87CA` (`ModelMine+30`, `ModelMissile`); `$D632`-`$D672` (`HelicarrierData+98`); 5 more ranges |
@@ -3758,7 +3796,7 @@ Witness: L1 6425 (armour, c1, controls, death, fuel, m1complete, m4complete, mis
 | | |
 | --- | --- |
 | Runs (c1 from the game's entry at frame 23974, the loader left out: the title, the mission tape, Blast Em Mission played) | 257 calls, 1,799 t-states own (0.00 %) |
-| Runs (the other recordings) | 2,198 calls (`stage1/play2` 863, `stage1/death` 828, `stage1/play` 297 and 1 more) |
+| Runs (the other recordings) | 6,167 calls (`stage2/rec/m1complete` 2,347, `stage2/rec/m4complete` 1,319, `stage1/play2` 863 and 5 more) |
 | Called from | `sub_9927` |
 | Calls | `FillFaceListClipped` (falls into) |
 
@@ -3773,9 +3811,9 @@ Witness: L1 14717 (armour, c1, controls, death, fuel, m1complete, m4complete, mi
 | | |
 | --- | --- |
 | Runs (c1 from the game's entry at frame 23974, the loader left out: the title, the mission tape, Blast Em Mission played) | 296 calls, 1,231,798 t-states own (0.19 %) |
-| Runs (the other recordings) | 5,482 calls (`stage1/play2` 2,334, `stage1/death` 1,645, `stage1/play` 1,248 and 1 more) |
+| Runs (the other recordings) | 14,420 calls (`stage2/rec/m1complete` 4,800, `stage2/rec/m4complete` 3,366, `stage1/play2` 2,334 and 5 more) |
 | Called from | `OpFillFacesClipped` (falls into), `OpFillBackFacesClipped` (tail) |
-| Calls | `Bank3SetObject`, `ScriptNext` (tail), `ClipPolyNear` |
+| Calls | `Bank3SetObject`, `ScriptNext` (tail), `ClipPolyNear`, `PlotBackBuffer` (tail) |
 | Reads | `$66D5` (`PolyOutCount`); `$6728`-`$672F` (`FaceFlags`); `$6748`-`$674F` (`FaceFlags+32`); `$68AA` (`PanelGauges+2`); `$87A0`-`$87D3` (`ModelMissile+43`); `$E96E`-`$E98A` (`MissionHeader+3497`); 10 more ranges |
 | Writes | `$66CC`-`$66D5` (`PolyClipVars`, `PolyWorkSpare`, `PolyOutCount`); `$6700`-`$671F` (`PolyVerts`); `$6798` (`GameVars`); `$68A9`-`$68AA` (`PanelGauges+1`); `$7579` (`AwolState+1`); `$9E3B`-`$9E40` (`l_9E34+7`, `l_9E3C`); 1 more ranges |
 
@@ -3788,7 +3826,7 @@ Witness: L1 11527 (armour, c1, death, fuel, m1complete, m2erbe, m4complete, menu
 | | |
 | --- | --- |
 | Runs (c1 from the game's entry at frame 23974, the loader left out: the title, the mission tape, Blast Em Mission played) | 114 calls, 95,470 t-states own (0.01 %) |
-| Runs (the other recordings) | 5,457 calls (`stage1/death` 4,137, `stage1/play2` 493, `stage1/missions` 408 and 3 more) |
+| Runs (the other recordings) | 11,413 calls (`stage1/death` 4,137, `docs/bcC/rec/armour` 3,496, `stage2/rec/m4complete` 1,220 and 7 more) |
 | Called from | `sub_9927` |
 | Calls | `Bank3SetObject`, `ScriptNext` (tail) |
 | Reads | `$68AA` (`PanelGauges+2`); `$EBA0`-`$EBA5` (`MissionHeader+4059`); `$EE6C`-`$EE71` (`MissionHeader+4775`); `$F0F8`-`$F0FD` (`MissionHeader+5427`); `$F9C4`-`$F9C9` (`MissionHeader+7679`); `$FC00`-`$FC0F` (`MissionHeader+8251`); 2 more ranges |
@@ -3802,7 +3840,7 @@ Witness: L1 926 (armour, m1complete, m4complete, missions, play2).
 
 | | |
 | --- | --- |
-| Runs | not reached in `stage1/c1g`; in the other recordings 29 calls (`stage1/missions` 17, `stage1/play2` 12) |
+| Runs | not reached in `stage1/c1g`; in the other recordings 926 calls (`stage2/rec/m1complete` 564, `stage2/rec/m4complete` 198, `docs/bcC/rec/armour` 135 and 2 more) |
 | Called from | `sub_9927` |
 | Calls | `FillFaceList` (tail) |
 | Writes | `$9DAD`-`$9DB2` (`l_9DA6+7`) |
@@ -3815,7 +3853,7 @@ Witness: L1 5538 (death, m1complete, m4complete, missions).
 
 | | |
 | --- | --- |
-| Runs | not reached in `stage1/c1g`; in the other recordings 785 calls (`stage1/death` 545, `stage1/missions` 240) |
+| Runs | not reached in `stage1/c1g`; in the other recordings 5,538 calls (`stage2/rec/m4complete` 4,679, `stage1/death` 545, `stage1/missions` 240 and 1 more) |
 | Called from | `sub_9927` |
 | Calls | `Bank3Lookup`, `ScriptNext` (tail), `ClipLine2D`, `NearClipLineEnd`, `NearClipLine` |
 | Reads | `$6798` (`GameVars`); `$F139`-`$F141` (`MissionHeader+5492`); `$FC00`-`$FC0F` (`MissionHeader+8251`); `$FC68`-`$FC6F` (`MissionHeader+8355`); `$FC80`-`$FC97` (`MissionHeader+8379`); `$FF9C`-`$FFA0` (`data_FEBB+225`) |
@@ -3858,7 +3896,7 @@ Witness: L1 15521 (armour, c1, death, fuel, m1complete, m2erbe, m4complete, miss
 | | |
 | --- | --- |
 | Runs (c1 from the game's entry at frame 23974, the loader left out: the title, the mission tape, Blast Em Mission played) | 238 calls, 294,901 t-states own (0.04 %) |
-| Runs (the other recordings) | 6,933 calls (`stage1/death` 4,423, `stage1/play` 891, `stage1/play2` 826 and 2 more) |
+| Runs (the other recordings) | 15,283 calls (`stage1/death` 4,423, `stage2/rec/m1complete` 4,275, `stage2/rec/m4complete` 2,296 and 6 more) |
 | Called from | `sub_9927` |
 | Calls | `Bank3SetObject`, `ScriptNext` (tail) |
 | Reads | `$66D5` (`PolyOutCount`); `$68AA` (`PanelGauges+2`); `$F12F`-`$F137` (`MissionHeader+5482`); `$FC00`-`$FC0F` (`MissionHeader+8251`); `$FC70`-`$FC87` (`MissionHeader+8363`); `$FF84`-`$FF96` (`data_FEBB+201`) |
@@ -3870,7 +3908,8 @@ Witness: L1 15521 (armour, c1, death, fuel, m1complete, m2erbe, m4complete, miss
 
 | | |
 | --- | --- |
-| Runs | ran within another entry's routine (reached by a jump or by running on, its calls below), no runs of its own counted |
+| Runs (c1 from the game's entry at frame 23974, the loader left out: the title, the mission tape, Blast Em Mission played) | 71 runs of its first instruction (entered by a jump or by running on, no routine of its own in the L1) |
+| Runs (the other recordings) | 9,104 runs of its first instruction, entered by a jump (`stage2/rec/m1complete` 3,141, `stage1/death` 2,317, `stage2/rec/m4complete` 1,455 and 5 more) |
 | Calls | `ClipPolyNear` |
 
 ### `OpFillBackFacesClipped` (`$A114`)
@@ -3882,7 +3921,7 @@ Witness: L1 8292 (armour, c1, death, fuel, m1complete, m4complete, missions, pla
 | | |
 | --- | --- |
 | Runs (c1 from the game's entry at frame 23974, the loader left out: the title, the mission tape, Blast Em Mission played) | 39 calls, 682 t-states own (0.00 %) |
-| Runs (the other recordings) | 3,284 calls (`stage1/play2` 1,471, `stage1/play` 951, `stage1/death` 817 and 1 more) |
+| Runs (the other recordings) | 8,253 calls (`stage2/rec/m1complete` 2,453, `stage2/rec/m4complete` 2,047, `stage1/play2` 1,471 and 5 more) |
 | Called from | `sub_9927` |
 | Calls | `FillFaceListClipped` (tail) |
 
@@ -3896,7 +3935,7 @@ Witness: L1 723 (armour, m1complete, m4complete, play2).
 
 | | |
 | --- | --- |
-| Runs | not reached in `stage1/c1g`; in the other recordings 4 calls (`stage1/play2` 4) |
+| Runs | not reached in `stage1/c1g`; in the other recordings 723 calls (`stage2/rec/m4complete` 486, `stage2/rec/m1complete` 188, `docs/bcC/rec/armour` 45 and 1 more) |
 | Called from | `sub_9927` |
 | Calls | `ApiVector14`, `ScriptNext` (tail), `MulFrac` |
 | Reads | `$68E7` (`MissionScore+5`); `$EFC6`-`$EFCA` (`MissionHeader+5121`); `$EFDF`-`$EFE1` (`MissionHeader+5146`) |
@@ -3938,7 +3977,7 @@ Witness: L1 3795 (armour, c1, death, m1complete, m4complete, missions, play, pla
 | | |
 | --- | --- |
 | Runs (c1 from the game's entry at frame 23974, the loader left out: the title, the mission tape, Blast Em Mission played) | 175 calls, 90,613 t-states own (0.01 %) |
-| Runs (the other recordings) | 308 calls (`stage1/play2` 164, `stage1/death` 83, `stage1/missions` 60 and 1 more) |
+| Runs (the other recordings) | 3,620 calls (`stage2/rec/m4complete` 2,216, `stage2/rec/m1complete` 742, `docs/bcC/rec/armour` 354 and 4 more) |
 | Called from | `ApiVector18` (tail) |
 | Calls | `NegHL`, `MulFrac`, `BoxHeights` (falls into) |
 | Reads | `$6300`-`$6393` (`Sine8`); `$63AE`-`$63FE` (`Sine8+174`); `$68E7` (`MissionScore+5`); `$EC9F`-`$ECA0` (`MissionHeader+4314`); `$EEDB`-`$EEDC` (`MissionHeader+4886`); `$F146`-`$F147` (`MissionHeader+5505`); 1 more ranges |
@@ -3953,7 +3992,7 @@ Witness: L1 24903 (armour, c1, controls, death, fuel, m10, m1complete, m2erbe, m
 | | |
 | --- | --- |
 | Runs (c1 from the game's entry at frame 23974, the loader left out: the title, the mission tape, Blast Em Mission played) | 830 calls, 226,456 t-states own (0.03 %) |
-| Runs (the other recordings) | 8,742 calls (`stage1/play2` 2,704, `stage1/death` 2,571, `stage1/missions` 1,665 and 6 more) |
+| Runs (the other recordings) | 24,073 calls (`stage2/rec/m4complete` 6,313, `stage2/rec/m1complete` 6,175, `stage1/play2` 2,704 and 11 more) |
 | Called from | `BoxSquare` (falls into), `BoxRect16` (tail), `BoxRect` (tail) |
 | Calls | `ScriptNext` (tail), `NegHL`, `l_AA5B` (tail) |
 | Reads | `$7E94`-`$7F60` (`MissionParams+18`); `$873E`-`$877A` (`ModelMine+5`, `ModelMissile`); `$D5D8` (`HelicarrierData+8`); `$D939` (`BinocularIcons+101`); `$E952` (`MissionHeader+3469`); `$EB2A`-`$EEDD` (`MissionHeader+3941`); 1 more ranges |
@@ -3970,7 +4009,7 @@ Witness: L1 6117 (armour, c1, death, fuel, m1complete, m4complete, missions, pla
 | | |
 | --- | --- |
 | Runs (c1 from the game's entry at frame 23974, the loader left out: the title, the mission tape, Blast Em Mission played) | 155 calls, 114,057 t-states own (0.02 %) |
-| Runs (the other recordings) | 2,330 calls (`stage1/death` 1,118, `stage1/play2` 748, `stage1/play` 264 and 1 more) |
+| Runs (the other recordings) | 5,962 calls (`stage2/rec/m1complete` 2,319, `stage1/death` 1,118, `stage2/rec/m4complete` 886 and 5 more) |
 | Called from | `ApiVector20` (tail) |
 | Calls | `ApiVector09`, `NegHL`, `SinCos16`, `BoxHeights` (tail) |
 | Reads | `$68E7` (`MissionScore+5`); `$E950`-`$E951` (`MissionHeader+3467`); `$EBA9`-`$EBAA` (`MissionHeader+4068`); `$EBF3`-`$EBF4` (`MissionHeader+4142`); `$ECBB`-`$ECBC` (`MissionHeader+4342`); `$ECDB`-`$ECDC` (`MissionHeader+4374`); 7 more ranges |
@@ -3987,7 +4026,7 @@ Witness: L1 14991 (armour, c1, controls, death, fuel, m10, m1complete, m2erbe, m
 | | |
 | --- | --- |
 | Runs (c1 from the game's entry at frame 23974, the loader left out: the title, the mission tape, Blast Em Mission played) | 450 calls, 366,609 t-states own (0.06 %) |
-| Runs (the other recordings) | 5,740 calls (`stage1/play2` 1,744, `stage1/death` 1,363, `stage1/missions` 1,288 and 6 more) |
+| Runs (the other recordings) | 13,805 calls (`stage2/rec/m4complete` 3,211, `stage2/rec/m1complete` 3,107, `stage1/play2` 1,744 and 11 more) |
 | Called from | `ApiVector19` (tail), `OpNative` |
 | Calls | `ApiVector14`, `NegHL`, `MulFrac`, `BoxHeights` (tail) |
 | Reads | `$68E7` (`MissionScore+5`); `$7E92`-`$7F5F` (`MissionParams+16`); `$873C`-`$8779` (`ModelMine+3`, `ModelMissile`); `$D5D6`-`$D5D7` (`HelicarrierData+6`); `$D937`-`$D938` (`BinocularIcons+99`); `$EB28`-`$EB9D` (`MissionHeader+3939`); 4 more ranges |
@@ -4003,7 +4042,7 @@ Witness: L1 1818 (armour, death, m1complete, m4complete, play2).
 
 | | |
 | --- | --- |
-| Runs | not reached in `stage1/c1g`; in the other recordings run into, not called (`stage1/death`, `stage1/play2`) |
+| Runs | not reached in `stage1/c1g`; in the other recordings 1,818 runs of its first instruction, entered by a jump (`stage2/rec/m4complete` 811, `stage1/death` 367, `stage2/rec/m1complete` 314 and 2 more) |
 | Called from | `OpNative` |
 | Calls | `ApiVector14`, `ScriptNext` (tail), `NegHL`, `MulFrac`, `SinCosHalf`, `RotatePair` |
 | Reads | `$68E6`-`$68E7` (`MissionScore+4`); `$ABFE` (`BoxTiltPitch+1`); `$FD4C`-`$FD51` (`MissionHeader+8583`); `$FEC7`-`$FEC9` (`data_FEBB+12`); `$FF4C`-`$FF51` (`data_FEBB+145`) |
@@ -4017,7 +4056,7 @@ Witness: L1 5454 (armour, death, m1complete, m4complete, play2).
 
 | | |
 | --- | --- |
-| Runs | not reached in `stage1/c1g`; in the other recordings 1,563 calls (`stage1/death` 1,101, `stage1/play2` 462) |
+| Runs | not reached in `stage1/c1g`; in the other recordings 5,454 calls (`stage2/rec/m4complete` 2,433, `stage1/death` 1,101, `stage2/rec/m1complete` 942 and 2 more) |
 | Called from | `BoxTilted` |
 | Calls | `MulFrac` |
 | Reads | `$AD04`-`$AD05` (`RollSinCos`) |
@@ -4040,9 +4079,9 @@ Witness: L1 9769 (armour, c1, death, fuel, m1complete, m2erbe, m4complete, missi
 | | |
 | --- | --- |
 | Runs (c1 from the game's entry at frame 23974, the loader left out: the title, the mission tape, Blast Em Mission played) | 102 calls, 41,430 t-states own (0.01 %) |
-| Runs (the other recordings) | 3,503 calls (`stage1/death` 2,510, `stage1/play2` 390, `stage1/missions` 307 and 2 more) |
+| Runs (the other recordings) | 9,667 calls (`stage1/death` 2,510, `docs/bcC/rec/armour` 2,396, `stage2/rec/m4complete` 2,236 and 6 more) |
 | Called from | `RunObjectHandlers` |
-| Calls | `ApiVector00`, `ApiVector08`, `ApiVector17`, `PlayerSteering` (falls into), `BoundaryCheck` |
+| Calls | `ApiVector00`, `ApiVector08`, `ApiVector17`, `ScreenSix`, `PlayerSteering` (falls into), `BoundaryCheck` |
 | Reads | `$6A99`-`$6A9A` (`NextView+8`); `$6D43` (`PointerZones+1`); `$75F7` (`PlayerSpeed`); `$7612` (`PlayerHeading`); `$7C57`-`$7C58` (`Fuel`); `$8978`-`$8979` (`KeyState`, `KeyCode`); 4 more ranges |
 | Writes | `$66CE` (`PolyClipVars+2`); `$6D43` (`PointerZones+1`); `$75F7` (`PlayerSpeed`); `$7608`-`$7612` (`PlayerHandler`, `PlayerHeading`); `$7C57`-`$7C58` (`Fuel`); `$7E8E` (`MissionParams+12`); 2 more ranges |
 
@@ -4057,7 +4096,7 @@ Witness: L1 9802 (armour, c1, death, fuel, m1complete, m2erbe, m4complete, missi
 | | |
 | --- | --- |
 | Runs (c1 from the game's entry at frame 23974, the loader left out: the title, the mission tape, Blast Em Mission played) | 115 calls, 14,742 t-states own (0.00 %) |
-| Runs (the other recordings) | 409 calls (`stage1/play2` 409) |
+| Runs (the other recordings) | 4,149 calls (`stage2/rec/m4complete` 2,237, `stage2/rec/m1complete` 1,503, `stage1/play2` 409) |
 | Called from | `PlayerStep` (falls into), `BounceDecay` (tail) |
 | Calls | `NoAction`, `FireCannon`, `FireMortar`, `FirePhoenixRr`, `FireBansheeRr`, `FirePhoenixIr`, `FireBansheeIr`, `LaunchDragonfly`, `FireClusterBomb`, `DropMine`, `SkeetFire`, `FirePhantasm`, `FireSpectre` |
 | Reads | `$6A99`-`$6A9A` (`NextView+8`); `$6D43` (`PointerZones+1`); `$7612` (`PlayerHeading`); `$985E` (`StepX`); `$A9FD` (`FireCooldown`); `$BA27` (`l_BA1F+8`) |
@@ -4085,7 +4124,7 @@ Witness: L1 146 (armour, death, m1complete, m4complete, play, play2).
 
 | | |
 | --- | --- |
-| Runs | not reached in `stage1/c1g`; in the other recordings 69 calls (`stage1/death` 60, `stage1/play2` 6, `stage1/play` 3) |
+| Runs | not reached in `stage1/c1g`; in the other recordings 146 calls (`stage1/death` 60, `docs/bcC/rec/armour` 53, `stage2/rec/m4complete` 19 and 3 more) |
 | Called from | `FireCannon` (tail), `LaunchProjectile`, `SkeetFire` (tail) |
 | Writes | `$A9FD` (`FireCooldown`) |
 
@@ -4099,7 +4138,7 @@ Witness: L1 148 (armour, death, m1complete, m4complete, play, play2).
 
 | | |
 | --- | --- |
-| Runs | not reached in `stage1/c1g`; in the other recordings 70 calls (`stage1/death` 60, `stage1/play2` 6, `stage1/play` 4) |
+| Runs | not reached in `stage1/c1g`; in the other recordings 148 calls (`stage1/death` 60, `docs/bcC/rec/armour` 53, `stage2/rec/m4complete` 20 and 3 more) |
 | Called from | `FireCannon`, `LaunchProjectile`, `LaunchDragonfly`, `SkeetFire` |
 | Calls | `FindProjectileSlot`, `SoundFire` |
 | Reads | `$836D`-`$837F` (`WeaponSlots+5`) |
@@ -4115,7 +4154,7 @@ Witness: L1 139 (armour, death, m1complete, m4complete, play2).
 
 | | |
 | --- | --- |
-| Runs | not reached in `stage1/c1g`; in the other recordings 61 calls (`stage1/death` 60, `stage1/play2` 1) |
+| Runs | not reached in `stage1/c1g`; in the other recordings 139 calls (`stage1/death` 60, `docs/bcC/rec/armour` 53, `stage2/rec/m4complete` 20 and 2 more) |
 | Called from | `PlayerSteering` |
 | Calls | `ApiVector03`, `ApiVector04`, `SetFireCooldown` (tail), `ConsumeAmmo`, `PrintAmmo`, `SelectAmmoPointer` |
 | Reads | `$67A5`-`$67AC` (`WorldVars+2`); `$C53C` (`CurrentSlot`) |
@@ -4131,7 +4170,7 @@ Witness: L1 11958 (armour, death, m1complete, m4complete, play2).
 
 | | |
 | --- | --- |
-| Runs | not reached in `stage1/c1g`; in the other recordings 5,682 calls (`stage1/death` 5,582, `stage1/play2` 100) |
+| Runs | not reached in `stage1/c1g`; in the other recordings 11,958 calls (`stage1/death` 5,582, `docs/bcC/rec/armour` 4,965, `stage2/rec/m4complete` 965 and 2 more) |
 | Called from | `RunObjectHandlers` |
 | Calls | `ApiVector00` (tail), `RemoveObject` (tail) |
 | Reads | `$765D`-`$7711` (`PlayerY+71`); `$7789` (`PlayerY+371`); `$77C5` (`PlayerY+431`); `$78B5` (`PlayerY+671`); `$792D` (`PlayerY+791`); `$79E1` (`PlayerY+971`); 2 more ranges |
@@ -4194,7 +4233,7 @@ Witness: L1 24 (armour, death, m1complete, m4complete, play2).
 
 | | |
 | --- | --- |
-| Runs | not reached in `stage1/c1g`; in the other recordings 8 calls (`stage1/death` 7, `stage1/play2` 1) |
+| Runs | not reached in `stage1/c1g`; in the other recordings 24 calls (`stage2/rec/m4complete` 12, `stage1/death` 7, `docs/bcC/rec/armour` 2 and 2 more) |
 | Called from | `CollisionPass`, `ClusterBlast` (tail) |
 | Calls | `ApiVector11`, `SoundExplosion` |
 
@@ -4473,7 +4512,7 @@ Witness: L1 1 (play).
 
 | | |
 | --- | --- |
-| Runs | not reached in the recordings |
+| Runs | not reached in `stage1/c1g`; in the other recordings 1 run of its first instruction, entered by a jump (`stage1/play` 1) |
 
 ### `DragonflyRetake` (`$C31B`)
 
@@ -4511,7 +4550,7 @@ Witness: L1 20 (armour, c1, death, fuel, m1complete, m2erbe, m4complete, mission
 | | |
 | --- | --- |
 | Runs (c1 from the game's entry at frame 23974, the loader left out: the title, the mission tape, Blast Em Mission played) | 1 call, 75 t-states own (0.00 %) |
-| Runs (the other recordings) | 15 calls (`stage1/missions` 8, `stage1/play2` 3, `stage1/play` 2 and 2 more) |
+| Runs (the other recordings) | 19 calls (`stage1/missions` 8, `stage1/play2` 3, `stage1/play` 2 and 6 more) |
 | Called from | `ResetCollisionTables`, `RecallDragonfly` (falls into) |
 | Reads | `$75F3` (`ObjectTable+3`) |
 | Writes | `$75F3` (`ObjectTable+3`); `$B9F4`-`$B9F5` (`BearingTable+22`) |
@@ -4588,7 +4627,7 @@ Witness: L1 169 (armour, death, m1complete, m4complete, play, play2).
 
 | | |
 | --- | --- |
-| Runs | not reached in `stage1/c1g`; in the other recordings 86 calls (`stage1/death` 62, `stage1/play2` 17, `stage1/play` 7) |
+| Runs | not reached in `stage1/c1g`; in the other recordings 169 calls (`stage1/death` 62, `docs/bcC/rec/armour` 55, `stage2/rec/m4complete` 21 and 3 more) |
 | Called from | `FireCannon`, `LaunchProjectile`, `SelectWeapon` (tail), `DropMine` (tail) |
 | Calls | `PrintAmmoAt` (falls into) |
 | Reads | `$C53C` (`CurrentSlot`); `$D114` (`SlotShown`) |
@@ -4617,7 +4656,7 @@ Witness: L1 17 (armour, death, m1complete, m4complete, play, play2).
 
 | | |
 | --- | --- |
-| Runs | not reached in `stage1/c1g`; in the other recordings 14 calls (`stage1/play2` 9, `stage1/play` 4, `stage1/death` 1) |
+| Runs | not reached in `stage1/c1g`; in the other recordings 17 calls (`stage1/play2` 9, `stage1/play` 4, `docs/bcC/rec/armour` 1 and 3 more) |
 | Called from | `SelectWeapon` |
 | Writes | `$BA13` (`SetCamera+29`); `$C4DC` (`l_C4DB+1`) |
 
@@ -4631,7 +4670,7 @@ Witness: L1 17 (armour, death, m1complete, m4complete, play, play2).
 
 | | |
 | --- | --- |
-| Runs | not reached in `stage1/c1g`; in the other recordings 14 calls (`stage1/play2` 9, `stage1/play` 4, `stage1/death` 1) |
+| Runs | not reached in `stage1/c1g`; in the other recordings 17 calls (`stage1/play2` 9, `stage1/play` 4, `stage2/rec/m1complete` 1 and 3 more) |
 | Called from | `PlayKeys` (tail) |
 | Calls | `FillPanelRows`, `InvertPanelB`, `ShowMortarRange`, `SelectPhoenix`, `SelectPlain`, `PrintAmmo` (tail), `PrintSlotStatus`, `PrintElevation`, `ElevationZero`, `RetType11`, `SelectSpectre`, `SelectSlam`, `SelectPhantasm`, `SoundSelect` |
 | Reads | `$68C9`-`$68DF` (`SlotGauges`); `$7B91`-`$7BF8` (`PlayWorkspace+1`); `$8368`-`$837F` (`WeaponSlots`); `$C529`-`$C53C` (`WeaponVars+2`, `AmmoPointers`, `CurrentSlot`) |
@@ -4648,7 +4687,7 @@ Witness: L1 31 (armour, c1, death, fuel, m1complete, m2erbe, m4complete, mission
 | | |
 | --- | --- |
 | Runs (c1 from the game's entry at frame 23974, the loader left out: the title, the mission tape, Blast Em Mission played) | 1 call, 28 t-states own (0.00 %) |
-| Runs (the other recordings) | 26 calls (`stage1/missions` 16, `stage1/play` 4, `stage1/play2` 3 and 2 more) |
+| Runs (the other recordings) | 30 calls (`stage1/missions` 16, `stage1/play` 4, `stage1/play2` 3 and 6 more) |
 | Called from | `StartMission` |
 | Calls | `InvertPanelB`, `WeaponSelectText` (tail) |
 | Reads | `$68D5`-`$68DB` (`SlotGauges+12`); `$C529` (`WeaponVars+2`) |
@@ -4666,9 +4705,9 @@ Witness: L1 116 (armour, c1, death, m1complete, m4complete, play2).
 | | |
 | --- | --- |
 | Runs (c1 from the game's entry at frame 23974, the loader left out: the title, the mission tape, Blast Em Mission played) | 20 calls, 12,196 t-states own (0.00 %) |
-| Runs (the other recordings) | 41 calls (`stage1/play2` 40, `stage1/death` 1) |
+| Runs (the other recordings) | 96 calls (`stage2/rec/m1complete` 44, `stage1/play2` 40, `stage2/rec/m4complete` 10 and 2 more) |
 | Called from | `CollisionPass` |
-| Calls | `ApiVector00`, `ApiVector06`, `SetMessage`, `HitSide`, `SetBounce` (tail) |
+| Calls | `ApiVector00`, `ApiVector06`, `ScreenSix` (tail), `SetMessage`, `HitSide`, `SetBounce` (tail) |
 | Reads | `$68AB`-`$68DB` (`GaugeRecords`, `SlotGauges`); `$75F7` (`PlayerSpeed`); `$762D`-`$7640` (`PlayerY+23`); `$7795`-`$77A8` (`PlayerY+383`); `$77C3`-`$77E4` (`PlayerY+429`); `$77FF`-`$7800` (`PlayerY+489`); 11 more ranges |
 | Writes | `$68AB`-`$68DB` (`GaugeRecords`, `SlotGauges`); `$75F7` (`PlayerSpeed`); `$8301`-`$8304` (`Armour`) |
 
@@ -4683,7 +4722,7 @@ Witness: L1 86 (c1, m1complete, m4complete, play2).
 | | |
 | --- | --- |
 | Runs (c1 from the game's entry at frame 23974, the loader left out: the title, the mission tape, Blast Em Mission played) | 18 calls, 1,521 t-states own (0.00 %) |
-| Runs (the other recordings) | 25 calls (`stage1/play2` 25) |
+| Runs (the other recordings) | 68 calls (`stage2/rec/m1complete` 40, `stage1/play2` 25, `stage2/rec/m4complete` 3) |
 | Called from | `PlayerHit` |
 | Calls | `NegHL` |
 
@@ -4710,7 +4749,7 @@ Witness: L1 43 (c1, m1complete, m4complete, play2).
 | | |
 | --- | --- |
 | Runs (c1 from the game's entry at frame 23974, the loader left out: the title, the mission tape, Blast Em Mission played) | 16 calls, 1,475 t-states own (0.00 %) |
-| Runs (the other recordings) | 23 calls (`stage1/play2` 23) |
+| Runs (the other recordings) | 27 calls (`stage1/play2` 23, `stage2/rec/m1complete` 3, `stage2/rec/m4complete` 1) |
 | Called from | `RunObjectHandlers` |
 | Calls | `ApiVector00`, `PlayerSteering` (tail), `ResetPlayerHandler` (tail) |
 | Reads | `$75F7` (`PlayerSpeed`) |
@@ -4727,7 +4766,7 @@ Witness: L1 28 (armour, c1, death, fuel, m1complete, m2erbe, m2ocean, m4complete
 | | |
 | --- | --- |
 | Runs (c1 from the game's entry at frame 23974, the loader left out: the title, the mission tape, Blast Em Mission played) | 4 calls, 268 t-states own (0.00 %) |
-| Runs (the other recordings) | 19 calls (`stage1/missions` 8, `stage1/play2` 7, `stage1/death` 1 and 3 more) |
+| Runs (the other recordings) | 24 calls (`stage1/missions` 8, `stage1/play2` 7, `stage2/rec/m1complete` 2 and 7 more) |
 | Called from | `LoadMission`, `BounceDecay` (tail) |
 | Writes | `$75F7` (`PlayerSpeed`); `$7608`-`$7609` (`PlayerHandler`) |
 
@@ -4742,7 +4781,7 @@ Witness: L1 11 (c1, m1complete, m4complete, play2).
 | | |
 | --- | --- |
 | Runs (c1 from the game's entry at frame 23974, the loader left out: the title, the mission tape, Blast Em Mission played) | 3 calls, 155 t-states own (0.00 %) |
-| Runs (the other recordings) | 4 calls (`stage1/play2` 4) |
+| Runs (the other recordings) | 8 calls (`stage1/play2` 4, `stage2/rec/m1complete` 3, `stage2/rec/m4complete` 1) |
 | Called from | `PlayerHit` (tail) |
 | Writes | `$7608`-`$7609` (`PlayerHandler`) |
 
@@ -4876,7 +4915,7 @@ Witness: L1 4 (play2).
 
 | | |
 | --- | --- |
-| Runs | ran within another entry's routine (reached by a jump or by running on, its calls below), no runs of its own counted |
+| Runs | not reached in `stage1/c1g`; in the other recordings 4 runs of its first instruction, entered by a jump (`stage1/play2` 4) |
 | Calls | `PrintString` (tail) |
 
 ### `DropMine` (`$D005`)
@@ -4921,7 +4960,7 @@ Witness: L1 2 (play2).
 
 | | |
 | --- | --- |
-| Runs | not reached in the recordings |
+| Runs | not reached in `stage1/c1g`; in the other recordings 2 runs of its first instruction, entered by a jump (`stage1/play2` 2) |
 
 ### `MineHud` (`$D093`)
 
@@ -5194,7 +5233,7 @@ Witness: L1 1 (play2).
 
 | | |
 | --- | --- |
-| Runs | ran within another entry's routine (reached by a jump or by running on, its calls below), no runs of its own counted |
+| Runs | not reached in `stage1/c1g`; in the other recordings 1 run of its first instruction, entered by a jump (`stage1/play2` 1) |
 | Calls | `LaunchProjectile` (tail), `SetElevation`, `SelectAmmoPointer` |
 
 ### `SelectSpectre` (`$D34E`)
@@ -5254,7 +5293,7 @@ Witness: L1 156 (armour, death, m1complete, m4complete, play, play2).
 
 | | |
 | --- | --- |
-| Runs | not reached in `stage1/c1g`; in the other recordings 78 calls (`stage1/death` 60, `stage1/play2` 12, `stage1/play` 6) |
+| Runs | not reached in `stage1/c1g`; in the other recordings 156 calls (`stage1/death` 60, `docs/bcC/rec/armour` 53, `stage2/rec/m4complete` 20 and 3 more) |
 | Called from | `FireCannon`, `FireMortar`, `FirePhoenixRr`, `FireBansheeRr`, `FirePhoenixIr`, `FireBansheeIr`, `LaunchDragonfly`, `FireClusterBomb`, `DropMine`, `SkeetFire`, `LaunchSpectre`, `LaunchPhantasm` |
 | Reads | `$C534`-`$C53B` (`AmmoPointers`) |
 | Writes | `$B551`-`$B552` (`ConsumeAmmo+1`) |
@@ -5361,7 +5400,7 @@ Witness: L1 47 (play).
 
 | | |
 | --- | --- |
-| Runs | not reached in `stage1/c1g`; in the other recordings run into, not called (`stage1/play`) |
+| Runs | not reached in `stage1/c1g`; in the other recordings 47 runs of its first instruction, entered by a jump (`stage1/play` 47) |
 | Called from | `OpNative` |
 | Calls | `CopyHudGlyphsB` (falls into) |
 
@@ -5391,9 +5430,9 @@ Witness: L1 9082 (armour, c1, death, fuel, m1complete, m2erbe, m4complete, missi
 | | |
 | --- | --- |
 | Runs (c1 from the game's entry at frame 23974, the loader left out: the title, the mission tape, Blast Em Mission played) | 43 calls, 8,428 t-states own (0.00 %) |
-| Runs (the other recordings) | 3,096 calls (`stage1/death` 2,491, `stage1/play` 232, `stage1/missions` 176 and 2 more) |
+| Runs (the other recordings) | 9,039 calls (`stage1/death` 2,491, `docs/bcC/rec/armour` 2,377, `stage2/rec/m4complete` 2,131 and 6 more) |
 | Called from | `PlayerStep` |
-| Calls | `ApiVector08` |
+| Calls | `ApiVector08`, `PrintString` (tail), `SetAwolState` |
 | Reads | `$BC12`-`$BC1D` (`l_BBFB+23`); `$DBD0`-`$DBD1` (`MissionHeader+11`) |
 
 ### `SetAwolState` (`$D4E9`)
@@ -5407,8 +5446,9 @@ Witness: L1 9039 (armour, c1, death, fuel, m1complete, m2erbe, m4complete, missi
 | | |
 | --- | --- |
 | Runs (c1 from the game's entry at frame 23974, the loader left out: the title, the mission tape, Blast Em Mission played) | 43 calls, 1,212 t-states own (0.00 %) |
-| Runs (the other recordings) | 3,053 calls (`stage1/death` 2,491, `stage1/play` 227, `stage1/play2` 171 and 2 more) |
-| Calls | `ApiVector08` |
+| Runs (the other recordings) | 8,996 calls (`stage1/death` 2,491, `docs/bcC/rec/armour` 2,377, `stage2/rec/m4complete` 2,131 and 6 more) |
+| Called from | `BoundaryCheck` |
+| Calls | `ApiVector08`, `PrintString` (tail) |
 | Reads | `$7578` (`AwolState`) |
 
 ## objects
@@ -5426,7 +5466,7 @@ Witness: L1 45560 (armour, c1, death, fuel, m1complete, m2erbe, m4complete, miss
 | | |
 | --- | --- |
 | Runs (c1 from the game's entry at frame 23974, the loader left out: the title, the mission tape, Blast Em Mission played) | 1,045 calls, 182,838 t-states own (0.03 %) |
-| Runs (the other recordings) | 14,562 calls (`stage1/death` 7,338, `stage1/play2` 3,902, `stage1/play` 1,861 and 2 more) |
+| Runs (the other recordings) | 44,515 calls (`stage2/rec/m4complete` 13,463, `stage2/rec/m1complete` 10,292, `stage1/death` 7,338 and 6 more) |
 | Called from | `RadarPlotList` |
 | Reads | `$5036`-`$509A` (screen); `$5136`-`$519A` (screen); `$5236`-`$529A` (screen); `$5336`-`$547A` (screen); `$5516`-`$557A` (screen); `$5616`-`$567A` (screen); 3 more ranges |
 | Writes | `$5036`-`$509A` (screen); `$5136`-`$519A` (screen); `$5236`-`$529A` (screen); `$5336`-`$557A` (screen); `$5616`-`$567A` (screen); `$5716`-`$577A` (screen) |
@@ -5442,7 +5482,7 @@ Witness: L1 29500 (armour, c1, death, fuel, m1complete, m2erbe, m4complete, miss
 | | |
 | --- | --- |
 | Runs (c1 from the game's entry at frame 23974, the loader left out: the title, the mission tape, Blast Em Mission played) | 486 calls, 193,080 t-states own (0.03 %) |
-| Runs (the other recordings) | 7,491 calls (`stage1/death` 3,232, `stage1/play2` 1,906, `stage1/play` 1,223 and 2 more) |
+| Runs (the other recordings) | 29,014 calls (`stage2/rec/m4complete` 9,301, `stage2/rec/m1complete` 7,814, `docs/bcC/rec/armour` 4,230 and 6 more) |
 | Called from | `ApiVector01` (tail) |
 | Calls | `BearingOctant` (tail) |
 | Reads | `$7613`-`$7690` (`PlayerX`, `PlayerY`); `$76C7`-`$76CC` (`PlayerY+177`); `$7703`-`$7708` (`PlayerY+237`); `$773F`-`$78AC` (`PlayerY+297`); `$78E3`-`$7924` (`PlayerY+717`); `$795B`-`$7A50` (`PlayerY+837`); 4 more ranges |
@@ -5473,7 +5513,7 @@ Witness: L1 29 (armour, death, m1complete, m4complete, play, play2).
 
 | | |
 | --- | --- |
-| Runs | not reached in `stage1/c1g`; in the other recordings 26 calls (`stage1/play2` 15, `stage1/play` 10, `stage1/death` 1) |
+| Runs | not reached in `stage1/c1g`; in the other recordings 29 calls (`stage1/play2` 15, `stage1/play` 10, `stage2/rec/m1complete` 1 and 3 more) |
 | Called from | `SelectWeapon`, `RefreshWeaponPanel` |
 | Calls | `InvertPanelRows` (falls into) |
 | Reads | `$400B`-`$405C` (screen); `$410B`-`$415C` (screen); `$420B`-`$425C` (screen); `$430B`-`$435C` (screen); `$440B`-`$445C` (screen); `$450B`-`$455C` (screen); 3 more ranges |
@@ -5504,7 +5544,7 @@ Witness: L1 237 (armour, m1complete, play2).
 
 | | |
 | --- | --- |
-| Runs | not reached in `stage1/c1g`; in the other recordings 4 calls (`stage1/play2` 4) |
+| Runs | not reached in `stage1/c1g`; in the other recordings 237 calls (`stage2/rec/m1complete` 188, `docs/bcC/rec/armour` 45, `stage1/play2` 4) |
 | Called from | `sub_9927` |
 | Calls | `ScriptNext` (tail) |
 | Writes | `$B825`-`$B826` (`ScriptDrawCarriedReturn+1`) |
@@ -5520,7 +5560,7 @@ Witness: L1 27342 (armour, c1, death, fuel, m1complete, m2erbe, m4complete, miss
 | | |
 | --- | --- |
 | Runs (c1 from the game's entry at frame 23974, the loader left out: the title, the mission tape, Blast Em Mission played) | 559 calls, 364,258 t-states own (0.06 %) |
-| Runs (the other recordings) | 9,194 calls (`stage1/death` 6,208, `stage1/play2` 1,689, `stage1/play` 758 and 2 more) |
+| Runs (the other recordings) | 26,783 calls (`stage2/rec/m4complete` 6,596, `stage1/death` 6,208, `stage2/rec/m1complete` 6,001 and 6 more) |
 | Called from | `DrawEntry` (tail) |
 | Reads | `$67A6` (`WorldVars+3`); `$757A` (`AwolState+2`); `$762E`-`$7A68` (`PlayerY+24`); `$7A80`-`$7AA4` (`PlayerY+1130`); `$7ABC`-`$7AE0` (`PlayerY+1190`, `HelicarrierRecord`); `$7AF8`-`$7B0C` (`HelicarrierRecord+28`) |
 | Writes | `$68E7` (`MissionScore+5`); `$757A` (`AwolState+2`); `$9A6C`-`$9A6D` (`l_9A5E+14`); `$9A8E`-`$9A8F` (`l_9A85+9`); `$9AB3`-`$9AB4` (`l_9A9E+21`); `$A12C` (`OpPolarPoints+19`); 1 more ranges |
@@ -5535,7 +5575,8 @@ Witness: L1 27342 (armour, c1, death, fuel, m1complete, m2erbe, m4complete, miss
 
 | | |
 | --- | --- |
-| Runs | ran within another entry's routine (reached by a jump or by running on, its calls below), no runs of its own counted |
+| Runs (c1 from the game's entry at frame 23974, the loader left out: the title, the mission tape, Blast Em Mission played) | 559 runs of its first instruction (entered by a jump or by running on, no routine of its own in the L1) |
+| Runs (the other recordings) | 26,783 runs of its first instruction, entered by a jump (`stage2/rec/m4complete` 6,596, `stage1/death` 6,208, `stage2/rec/m1complete` 6,001 and 6 more) |
 | Calls | `RunScript` |
 
 ### `MissileHit` (`$B8A8`)
@@ -5558,7 +5599,7 @@ Witness: L1 134 (armour, death, m1complete, m4complete, play, play2).
 
 | | |
 | --- | --- |
-| Runs | not reached in `stage1/c1g`; in the other recordings 53 calls (`stage1/death` 50, `stage1/play` 2, `stage1/play2` 1) |
+| Runs | not reached in `stage1/c1g`; in the other recordings 110 calls (`stage1/death` 50, `docs/bcC/rec/armour` 48, `stage2/rec/m4complete` 6 and 3 more) |
 | Called from | `CannonShellStep` (tail), `MortarShellStep` (tail) |
 | Calls | `ApiVector05` |
 | Writes | `$762E`-`$76A6` (`PlayerY+24`); `$76E2` (`PlayerY+204`); `$775A` (`PlayerY+324`); `$7796` (`PlayerY+384`); `$7886` (`PlayerY+624`); `$78FE` (`PlayerY+744`); 5 more ranges |
@@ -5574,7 +5615,7 @@ Witness: L1 29500 (armour, c1, death, fuel, m1complete, m2erbe, m4complete, miss
 | | |
 | --- | --- |
 | Runs (c1 from the game's entry at frame 23974, the loader left out: the title, the mission tape, Blast Em Mission played) | 486 calls, 46,321 t-states own (0.01 %) |
-| Runs (the other recordings) | 7,491 calls (`stage1/death` 3,232, `stage1/play2` 1,906, `stage1/play` 1,223 and 2 more) |
+| Runs (the other recordings) | 29,014 calls (`stage2/rec/m4complete` 9,301, `stage2/rec/m1complete` 7,814, `docs/bcC/rec/armour` 4,230 and 6 more) |
 | Called from | `BearingTo` (tail) |
 | Calls | `ApiVector07`, `NegDE`, `BearingRatio` |
 
@@ -5589,7 +5630,7 @@ Witness: L1 29500 (armour, c1, death, fuel, m1complete, m2erbe, m4complete, miss
 | | |
 | --- | --- |
 | Runs (c1 from the game's entry at frame 23974, the loader left out: the title, the mission tape, Blast Em Mission played) | 486 calls, 32,321 t-states own (0.00 %) |
-| Runs (the other recordings) | 7,491 calls (`stage1/death` 3,232, `stage1/play2` 1,906, `stage1/play` 1,223 and 2 more) |
+| Runs (the other recordings) | 29,014 calls (`stage2/rec/m4complete` 9,301, `stage2/rec/m1complete` 7,814, `docs/bcC/rec/armour` 4,230 and 6 more) |
 | Called from | `BearingOctant` |
 | Calls | `BearingLookup` (tail) |
 
@@ -5604,7 +5645,7 @@ Witness: L1 29500 (armour, c1, death, fuel, m1complete, m2erbe, m4complete, miss
 | | |
 | --- | --- |
 | Runs (c1 from the game's entry at frame 23974, the loader left out: the title, the mission tape, Blast Em Mission played) | 486 calls, 190,511 t-states own (0.03 %) |
-| Runs (the other recordings) | 7,491 calls (`stage1/death` 3,232, `stage1/play2` 1,906, `stage1/play` 1,223 and 2 more) |
+| Runs (the other recordings) | 29,014 calls (`stage2/rec/m4complete` 9,301, `stage2/rec/m1complete` 7,814, `docs/bcC/rec/armour` 4,230 and 6 more) |
 | Called from | `BearingRatio` (tail) |
 | Calls | `Divide` |
 | Reads | `$B9DE`-`$B9F5` (`BearingTable`) |
@@ -5622,7 +5663,7 @@ Witness: L1 9837 (armour, c1, death, fuel, m1complete, m2erbe, m4complete, missi
 | | |
 | --- | --- |
 | Runs (c1 from the game's entry at frame 23974, the loader left out: the title, the mission tape, Blast Em Mission played) | 119 calls, 549,568 t-states own (0.08 %) |
-| Runs (the other recordings) | 3,550 calls (`stage1/death` 2,510, `stage1/play2` 413, `stage1/missions` 307 and 2 more) |
+| Runs (the other recordings) | 9,718 calls (`stage1/death` 2,510, `docs/bcC/rec/armour` 2,396, `stage2/rec/m4complete` 2,237 and 6 more) |
 | Called from | `PlayLoop`, `DragonflyViewLoop`, `StatusLoop`, `DamageLoop` |
 | Calls | `ApiVector03`, `ApiVector04`, `ApiVector05`, `CopyHeading`, `FindSlot`, `InRange` |
 | Reads | `$75F0`-`$784A` (`ObjectTable`, `PlayerHeight`, `PlayerSpeed`, `PlayerHandler` and 3 more); `$7884`-`$7886` (`PlayerY+622`); `$78C0`-`$78C2` (`PlayerY+682`); `$78FC`-`$78FE` (`PlayerY+742`); `$7938`-`$7976` (`PlayerY+802`); `$79B2` (`PlayerY+924`); 8 more ranges |
@@ -5639,7 +5680,7 @@ Witness: L1 365 (armour, c1, death, fuel, m1complete, m2erbe, m4complete, missio
 | | |
 | --- | --- |
 | Runs (c1 from the game's entry at frame 23974, the loader left out: the title, the mission tape, Blast Em Mission played) | 11 calls, 796 t-states own (0.00 %) |
-| Runs (the other recordings) | 183 calls (`stage1/missions` 79, `stage1/death` 37, `stage1/play2` 36 and 2 more) |
+| Runs (the other recordings) | 354 calls (`stage1/missions` 79, `stage2/rec/m1complete` 71, `docs/bcC/rec/armour` 46 and 6 more) |
 | Called from | `ActivateMissionObjects` |
 | Calls | `CopyPosition` (falls into) |
 | Reads | `$DCB2`-`$DD1C` (`MissionHeader+237`); `$DD32`-`$DD48` (`MissionHeader+365`); `$DD78`-`$DE96` (`MissionHeader+435`); `$DEBE` (`MissionHeader+761`); `$DEF4` (`MissionHeader+815`); `$DF16`-`$DF3C` (`MissionHeader+849`); 2 more ranges |
@@ -5656,7 +5697,7 @@ Witness: L1 730 (armour, c1, death, fuel, m1complete, m2erbe, m4complete, missio
 | | |
 | --- | --- |
 | Runs (c1 from the game's entry at frame 23974, the loader left out: the title, the mission tape, Blast Em Mission played) | 22 calls, 2,286 t-states own (0.00 %) |
-| Runs (the other recordings) | 366 calls (`stage1/missions` 158, `stage1/death` 74, `stage1/play2` 72 and 2 more) |
+| Runs (the other recordings) | 708 calls (`stage1/missions` 158, `stage2/rec/m1complete` 142, `docs/bcC/rec/armour` 92 and 6 more) |
 | Called from | `CopyHeading` (falls into) |
 | Calls | `WordToWorld` |
 | Reads | `$DCB4`-`$DD21` (`MissionHeader+239`); `$DD34`-`$DD4D` (`MissionHeader+367`); `$DD7A`-`$DE9B` (`MissionHeader+437`); `$DEC0`-`$DEC3` (`MissionHeader+763`); `$DEF6`-`$DEF9` (`MissionHeader+817`); `$DF18`-`$DF41` (`MissionHeader+851`); 2 more ranges |
@@ -5672,7 +5713,7 @@ Witness: L1 148 (armour, death, m1complete, m4complete, play, play2).
 
 | | |
 | --- | --- |
-| Runs | not reached in `stage1/c1g`; in the other recordings 70 calls (`stage1/death` 60, `stage1/play2` 6, `stage1/play` 4) |
+| Runs | not reached in `stage1/c1g`; in the other recordings 148 calls (`stage1/death` 60, `docs/bcC/rec/armour` 53, `stage2/rec/m4complete` 20 and 3 more) |
 | Called from | `ConsumeAmmo` |
 | Calls | `FindFreeObjectD` (tail) |
 
@@ -5687,7 +5728,7 @@ Witness: L1 1410 (armour, c1, death, fuel, m1complete, m2erbe, m4complete, missi
 | | |
 | --- | --- |
 | Runs (c1 from the game's entry at frame 23974, the loader left out: the title, the mission tape, Blast Em Mission played) | 17 calls, 9,784 t-states own (0.00 %) |
-| Runs (the other recordings) | 219 calls (`stage1/missions` 74, `stage1/play2` 64, `stage1/play` 50 and 2 more) |
+| Runs (the other recordings) | 1,393 calls (`stage2/rec/m4complete` 741, `stage2/rec/m1complete` 345, `docs/bcC/rec/armour` 81 and 6 more) |
 | Called from | `ApiVector02` (tail) |
 | Calls | `FindFreeObjectD` (falls into) |
 | Reads | `$762E`-`$78FE` (`PlayerY+24`); `$793A` (`PlayerY+804`); `$7976` (`PlayerY+864`); `$79B2` (`PlayerY+924`); `$79EE` (`PlayerY+984`); `$7A2A` (`PlayerY+1044`); 2 more ranges |
@@ -5702,7 +5743,8 @@ Witness: L1 1558 (armour, c1, death, fuel, m1complete, m2erbe, m4complete, missi
 
 | | |
 | --- | --- |
-| Runs | not reached in `stage1/c1g`; in the other recordings 206 calls (`stage1/death` 82, `stage1/play2` 70, `stage1/play` 54) |
+| Runs (c1 from the game's entry at frame 23974, the loader left out: the title, the mission tape, Blast Em Mission played) | 17 runs of its first instruction (entered by a jump or by running on, no routine of its own in the L1) |
+| Runs (the other recordings) | 1,451 calls (`stage2/rec/m4complete` 761, `stage2/rec/m1complete` 350, `docs/bcC/rec/armour` 134 and 3 more) |
 | Called from | `FindProjectileSlot` (tail), `FindFreeObject` (falls into) |
 | Calls | `FindFreeLoop` (tail) |
 | Reads | `$762E`-`$793A` (`PlayerY+24`); `$7976` (`PlayerY+864`); `$79B2` (`PlayerY+924`); `$79EE` (`PlayerY+984`); `$7A2A` (`PlayerY+1044`); `$7A66` (`PlayerY+1104`); 2 more ranges |
@@ -5718,7 +5760,7 @@ Witness: L1 1146 (armour, c1, death, fuel, m1complete, m2erbe, m4complete, missi
 | | |
 | --- | --- |
 | Runs (c1 from the game's entry at frame 23974, the loader left out: the title, the mission tape, Blast Em Mission played) | 28 calls, 1,848 t-states own (0.00 %) |
-| Runs (the other recordings) | 415 calls (`stage1/missions` 123, `stage1/death` 118, `stage1/play2` 100 and 2 more) |
+| Runs (the other recordings) | 1,118 calls (`stage2/rec/m4complete` 262, `stage2/rec/m1complete` 252, `docs/bcC/rec/armour` 171 and 6 more) |
 | Called from | `FindFreeObjectD` (tail), `FindSlot` (tail) |
 | Writes | `$C95C` (`RegisterCollision+5`); `$C973`-`$C974` (`l_C96D+6`) |
 
@@ -5733,7 +5775,7 @@ Witness: L1 543 (armour, c1, death, fuel, m1complete, m2erbe, m4complete, missio
 | | |
 | --- | --- |
 | Runs (c1 from the game's entry at frame 23974, the loader left out: the title, the mission tape, Blast Em Mission played) | 11 calls, 6,912 t-states own (0.00 %) |
-| Runs (the other recordings) | 185 calls (`stage1/missions` 79, `stage1/death` 37, `stage1/play2` 36 and 2 more) |
+| Runs (the other recordings) | 532 calls (`stage2/rec/m1complete` 189, `stage2/rec/m4complete` 101, `stage1/missions` 79 and 6 more) |
 | Called from | `ActivateMissionObjects` |
 | Calls | `ApiVector05`, `FindFreeLoop` (tail) |
 | Reads | `$762E`-`$78FF` (`PlayerY+24`); `$793A`-`$793B` (`PlayerY+804`); `$7976`-`$7977` (`PlayerY+864`); `$79B2`-`$79B3` (`PlayerY+924`); `$79EE`-`$79EF` (`PlayerY+984`); `$7A2A`-`$7A2B` (`PlayerY+1044`); 2 more ranges |
@@ -5750,7 +5792,7 @@ Witness: L1 1235 (armour, c1, death, fuel, m1complete, m2erbe, m4complete, missi
 | | |
 | --- | --- |
 | Runs (c1 from the game's entry at frame 23974, the loader left out: the title, the mission tape, Blast Em Mission played) | 28 calls, 38,149 t-states own (0.01 %) |
-| Runs (the other recordings) | 431 calls (`stage1/missions` 125, `stage1/death` 119, `stage1/play2` 103 and 2 more) |
+| Runs (the other recordings) | 1,207 calls (`stage2/rec/m4complete` 289, `stage2/rec/m1complete` 289, `docs/bcC/rec/armour` 180 and 6 more) |
 | Called from | `ApiVector03` (tail) |
 | Reads | `$B3CA`-`$B405` (`ShellTemplate80`); `$B47E`-`$B54F` (`ShellTemplate80+180`); `$DBD7`-`$DBD8` (`MissionHeader+18`); `$DE5F`-`$DE7C` (`MissionHeader+666`); `$DEB9`-`$DEF4` (`MissionHeader+756`); `$DF09`-`$E1C4` (`MissionHeader+836`); 2 more ranges |
 | Writes | `$762D`-`$7994` (`PlayerY+23`); `$79B1`-`$79D0` (`PlayerY+923`); `$79ED`-`$7A0C` (`PlayerY+983`); `$7A29`-`$7A48` (`PlayerY+1043`); `$7A65`-`$7A84` (`PlayerY+1103`); `$7AA1`-`$7AC0` (`PlayerY+1163`); 2 more ranges |
@@ -5766,7 +5808,7 @@ Witness: L1 198222 (armour, c1, death, fuel, m1complete, m2erbe, m4complete, mis
 | | |
 | --- | --- |
 | Runs (c1 from the game's entry at frame 23974, the loader left out: the title, the mission tape, Blast Em Mission played) | 2,613 calls, 227,113 t-states own (0.03 %) |
-| Runs (the other recordings) | 70,373 calls (`stage1/death` 47,698, `stage1/play2` 9,278, `stage1/missions` 6,198 and 2 more) |
+| Runs (the other recordings) | 195,609 calls (`docs/bcC/rec/armour` 52,779, `stage1/death` 47,698, `stage2/rec/m4complete` 40,067 and 6 more) |
 | Called from | `ActivateMissionObjects` |
 | Calls | `ApiVector08` |
 
@@ -5781,7 +5823,7 @@ Witness: L1 730 (armour, c1, death, fuel, m1complete, m2erbe, m4complete, missio
 | | |
 | --- | --- |
 | Runs (c1 from the game's entry at frame 23974, the loader left out: the title, the mission tape, Blast Em Mission played) | 22 calls, 1,906 t-states own (0.00 %) |
-| Runs (the other recordings) | 366 calls (`stage1/missions` 158, `stage1/death` 74, `stage1/play2` 72 and 2 more) |
+| Runs (the other recordings) | 708 calls (`stage1/missions` 158, `stage2/rec/m1complete` 142, `docs/bcC/rec/armour` 92 and 6 more) |
 | Called from | `CopyPosition` |
 
 ### `TransformObjects` (`$BD98`)
@@ -5795,7 +5837,7 @@ Witness: L1 9837 (armour, c1, death, fuel, m1complete, m2erbe, m4complete, missi
 | | |
 | --- | --- |
 | Runs (c1 from the game's entry at frame 23974, the loader left out: the title, the mission tape, Blast Em Mission played) | 119 calls, 1,790,960 t-states own (0.27 %) |
-| Runs (the other recordings) | 3,550 calls (`stage1/death` 2,510, `stage1/play2` 413, `stage1/missions` 307 and 2 more) |
+| Runs (the other recordings) | 9,718 calls (`stage1/death` 2,510, `docs/bcC/rec/armour` 2,396, `stage2/rec/m4complete` 2,237 and 6 more) |
 | Called from | `PlayLoop`, `DragonflyViewLoop`, `StatusLoop`, `DamageLoop` |
 | Calls | `RotateToView`, `OnScreen`, `ClearDepthTree`, `DepthInsert`, `RadarAddBlip` |
 | Reads | `$66D0`-`$66D3` (`PolyWorkSpare+1`); `$67A7`-`$67AE` (`WorldVars+4`); `$762E`-`$79F2` (`PlayerY+24`); `$7A0F`-`$7A14` (`PlayerY+1017`); `$7A2A`-`$7A2E` (`PlayerY+1044`); `$7A4B`-`$7A50` (`PlayerY+1077`); 9 more ranges |
@@ -5812,7 +5854,7 @@ Witness: L1 103866 (armour, c1, death, fuel, m1complete, m2erbe, m4complete, mis
 | | |
 | --- | --- |
 | Runs (c1 from the game's entry at frame 23974, the loader left out: the title, the mission tape, Blast Em Mission played) | 1,677 calls, 323,721 t-states own (0.05 %) |
-| Runs (the other recordings) | 32,872 calls (`stage1/death` 18,315, `stage1/play2` 6,343, `stage1/play` 4,489 and 2 more) |
+| Runs (the other recordings) | 102,189 calls (`stage2/rec/m4complete` 28,620, `stage2/rec/m1complete` 25,287, `stage1/death` 18,315 and 6 more) |
 | Called from | `TransformObjects` |
 | Calls | `OnScreenX` (falls into) |
 | Reads | `$7642`-`$7ACC` (`PlayerY+44`); `$7AF2`-`$7AF3` (`HelicarrierRecord+22`); `$7B07`-`$7B08` (`HelicarrierRecord+43`) |
@@ -5827,7 +5869,8 @@ Witness: L1 103879 (armour, c1, death, fuel, m1complete, m2erbe, m4complete, mis
 
 | | |
 | --- | --- |
-| Runs | not reached in `stage1/c1g`; in the other recordings 6,356 calls (`stage1/play2` 6,356) |
+| Runs (c1 from the game's entry at frame 23974, the loader left out: the title, the mission tape, Blast Em Mission played) | 1,677 runs of its first instruction (entered by a jump or by running on, no routine of its own in the L1) |
+| Runs (the other recordings) | 6,356 calls (`stage1/play2` 6,356) |
 | Called from | `OnScreen` (falls into), `MissileSeek` |
 | Reads | `$7642`-`$7A18` (`PlayerY+44`); `$7A3E`-`$7A3F` (`PlayerY+1064`); `$7A53`-`$7A54` (`PlayerY+1085`); `$7A7A`-`$7A7B` (`PlayerY+1124`); `$7A8F`-`$7A90` (`PlayerY+1145`); `$7AB6`-`$7AB7` (`PlayerY+1184`); 1 more ranges |
 
@@ -5842,7 +5885,7 @@ Witness: L1 9837 (armour, c1, death, fuel, m1complete, m2erbe, m4complete, missi
 | | |
 | --- | --- |
 | Runs (c1 from the game's entry at frame 23974, the loader left out: the title, the mission tape, Blast Em Mission played) | 119 calls, 7,394 t-states own (0.00 %) |
-| Runs (the other recordings) | 3,550 calls (`stage1/death` 2,510, `stage1/play2` 413, `stage1/missions` 307 and 2 more) |
+| Runs (the other recordings) | 9,718 calls (`stage1/death` 2,510, `docs/bcC/rec/armour` 2,396, `stage2/rec/m4complete` 2,237 and 6 more) |
 | Called from | `TransformObjects` |
 | Writes | `$66D4` (`PolyWorkSpare+5`); `$6800` (`PlayWork`); `$BF22`-`$BF23` (`DepthTreeVars+2`) |
 
@@ -5857,7 +5900,7 @@ Witness: L1 29277 (armour, c1, death, fuel, m1complete, m2erbe, m4complete, miss
 | | |
 | --- | --- |
 | Runs (c1 from the game's entry at frame 23974, the loader left out: the title, the mission tape, Blast Em Mission played) | 562 calls, 222,304 t-states own (0.03 %) |
-| Runs (the other recordings) | 9,829 calls (`stage1/death` 6,575, `stage1/play2` 1,843, `stage1/play` 783 and 2 more) |
+| Runs (the other recordings) | 28,715 calls (`stage2/rec/m4complete` 7,407, `stage1/death` 6,575, `stage2/rec/m1complete` 6,315 and 6 more) |
 | Called from | `TransformObjects` |
 | Reads | `$66D4` (`PolyWorkSpare+5`); `$6800`-`$6850` (`PlayWork`); `$BF20`-`$BF23` (`DepthTreeVars`) |
 | Writes | `$66D4` (`PolyWorkSpare+5`); `$6800`-`$6859` (`PlayWork`); `$BF20`-`$BF23` (`DepthTreeVars`) |
@@ -5873,7 +5916,7 @@ Witness: L1 9794 (armour, c1, death, fuel, m1complete, m2erbe, m4complete, missi
 | | |
 | --- | --- |
 | Runs (c1 from the game's entry at frame 23974, the loader left out: the title, the mission tape, Blast Em Mission played) | 119 calls, 82,123 t-states own (0.01 %) |
-| Runs (the other recordings) | 3,507 calls (`stage1/death` 2,510, `stage1/play2` 413, `stage1/missions` 273 and 2 more) |
+| Runs (the other recordings) | 9,675 calls (`stage1/death` 2,510, `docs/bcC/rec/armour` 2,396, `stage2/rec/m4complete` 2,237 and 6 more) |
 | Called from | `PlayLoop`, `DragonflyViewLoop` |
 | Calls | `DrawEntry` |
 | Reads | `$66D4` (`PolyWorkSpare+5`); `$6802`-`$6857` (`PlayWork+2`) |
@@ -5889,7 +5932,7 @@ Witness: L1 29160 (armour, c1, death, fuel, m1complete, m2erbe, m4complete, miss
 | | |
 | --- | --- |
 | Runs (c1 from the game's entry at frame 23974, the loader left out: the title, the mission tape, Blast Em Mission played) | 559 calls, 24,256 t-states own (0.00 %) |
-| Runs (the other recordings) | 9,715 calls (`stage1/death` 6,575, `stage1/play2` 1,843, `stage1/play` 758 and 2 more) |
+| Runs (the other recordings) | 28,601 calls (`stage2/rec/m4complete` 7,407, `stage1/death` 6,575, `stage2/rec/m1complete` 6,315 and 6 more) |
 | Called from | `DrawObjectsInOrder` |
 | Calls | `PageBank3`, `SaveBank`, `RestoreBank`, `RunScript`, `DrawObject` (tail) |
 | Reads | `$67A6` (`WorldVars+3`); `$6804`-`$685B` (`PlayWork+4`) |
@@ -5906,7 +5949,7 @@ Witness: L1 53953 (armour, c1, death, fuel, m1complete, m2erbe, m4complete, miss
 | | |
 | --- | --- |
 | Runs (c1 from the game's entry at frame 23974, the loader left out: the title, the mission tape, Blast Em Mission played) | 632 calls, 315,573 t-states own (0.05 %) |
-| Runs (the other recordings) | 14,450 calls (`stage1/death` 8,892, `stage1/play2` 2,342, `stage1/play` 1,779 and 2 more) |
+| Runs (the other recordings) | 53,321 calls (`stage2/rec/m4complete` 19,486, `docs/bcC/rec/armour` 9,704, `stage2/rec/m1complete` 9,501 and 6 more) |
 | Called from | `ApiVector00` (tail) |
 | Calls | `MulFrac`, `SinCosHalf` |
 | Reads | `$75F7`-`$7708` (`PlayerSpeed`, `PlayerHandler`, `PlayerHeading`, `PlayerX` and 1 more); `$775F`-`$7A8C` (`PlayerY+329`); `$7AA7` (`PlayerY+1169`); `$7AC1`-`$7AC8` (`PlayerY+1195`); `$7AE3` (`HelicarrierRecord+7`); `$7AFD`-`$7B04` (`HelicarrierRecord+33`); 1 more ranges |
@@ -5923,9 +5966,9 @@ Witness: L1 9836 (armour, c1, death, fuel, m1complete, m2erbe, m4complete, missi
 | | |
 | --- | --- |
 | Runs (c1 from the game's entry at frame 23974, the loader left out: the title, the mission tape, Blast Em Mission played) | 118 calls, 445,594 t-states own (0.07 %) |
-| Runs (the other recordings) | 3,550 calls (`stage1/death` 2,510, `stage1/play2` 413, `stage1/missions` 307 and 2 more) |
+| Runs (the other recordings) | 9,718 calls (`stage1/death` 2,510, `docs/bcC/rec/armour` 2,396, `stage2/rec/m4complete` 2,237 and 6 more) |
 | Called from | `PlayLoopTail`, `DragonflyViewLoop`, `StatusLoop`, `DamageLoop` |
-| Calls | `ApiVector00`, `PlayerStep`, `CannonShellStep`, `MortarShellStep`, `DragonflyStep`, `BounceDecay`, `ClusterRise`, `ClusterParachute`, `ClusterBlast`, `MineFall`, `MineCountdown`, `SkeetStraight`, `SkeetZigZag`, `SpectreStep`, `SpectreDrift`, `PhantasmStep`, `PhantasmSpin`, `HelicarrierInit`, `HelicarrierWait`, `MissionHeader` |
+| Calls | `ApiVector00`, `NoAction`, `PlayerStep`, `CannonShellStep`, `MortarShellStep`, `DragonflyStep`, `BounceDecay`, `ClusterRise`, `ClusterParachute`, `ClusterBlast`, `MineFall`, `MineCountdown`, `SkeetStraight`, `SkeetZigZag`, `SpectreStep`, `SpectreDrift`, `PhantasmStep`, `PhantasmSpin`, `HelicarrierTurn`, `HelicarrierDescent`, `HelicarrierInit`, `HelicarrierWait`, `MissionHeader` |
 | Reads | `$75F2`-`$7AB9` (`ObjectTable+2`, `PlayerHeight`, `PlayerSpeed`, `PlayerHandler` and 3 more); `$7ADE`-`$7ADF` (`HelicarrierRecord+2`); `$7AF4`-`$7AF5` (`HelicarrierRecord+24`); `$7B1A` (`HelicarrierRecord+62`); `$7B56` (`HelicarrierRecord+122`) |
 | Writes | `$C04B`-`$C050` (`l_C030+27`, `l_C04F`) |
 
@@ -5940,7 +5983,7 @@ Witness: L1 9770 (armour, c1, death, fuel, m1complete, m2erbe, m4complete, missi
 | | |
 | --- | --- |
 | Runs (c1 from the game's entry at frame 23974, the loader left out: the title, the mission tape, Blast Em Mission played) | 119 calls, 117,822 t-states own (0.02 %) |
-| Runs (the other recordings) | 3,483 calls (`stage1/death` 2,510, `stage1/play2` 413, `stage1/missions` 273 and 2 more) |
+| Runs (the other recordings) | 9,651 calls (`stage1/death` 2,510, `docs/bcC/rec/armour` 2,396, `stage2/rec/m4complete` 2,237 and 6 more) |
 | Called from | `PlayLoop` |
 | Calls | `ClearRadar` |
 | Reads | `$6768`-`$6780` (`FaceFlags+64`); `$68C3` (`GaugeRecords+24`); `$7BFB`-`$7BFC` (`FailReason+2`) |
@@ -5956,7 +5999,8 @@ Witness: L1 9770 (armour, c1, death, fuel, m1complete, m2erbe, m4complete, missi
 
 | | |
 | --- | --- |
-| Runs | ran within another entry's routine (reached by a jump or by running on, its calls below), no runs of its own counted |
+| Runs (c1 from the game's entry at frame 23974, the loader left out: the title, the mission tape, Blast Em Mission played) | 119 runs of its first instruction (entered by a jump or by running on, no routine of its own in the L1) |
+| Runs (the other recordings) | 9,651 runs of its first instruction, entered by a jump (`stage1/death` 2,510, `docs/bcC/rec/armour` 2,396, `stage2/rec/m4complete` 2,237 and 6 more) |
 | Calls | `PlotRadarPixel` |
 
 ### `ClearRadar` (`$C094`)
@@ -5970,7 +6014,7 @@ Witness: L1 9770 (armour, c1, death, fuel, m1complete, m2erbe, m4complete, missi
 | | |
 | --- | --- |
 | Runs (c1 from the game's entry at frame 23974, the loader left out: the title, the mission tape, Blast Em Mission played) | 119 calls, 742,358 t-states own (0.11 %) |
-| Runs (the other recordings) | 3,483 calls (`stage1/death` 2,510, `stage1/play2` 413, `stage1/missions` 273 and 2 more) |
+| Runs (the other recordings) | 9,651 calls (`stage1/death` 2,510, `docs/bcC/rec/armour` 2,396, `stage2/rec/m4complete` 2,237 and 6 more) |
 | Called from | `DrawRadar` |
 | Writes | `$5036`-`$509A` (screen); `$5136`-`$519A` (screen); `$5236`-`$529A` (screen); `$5336`-`$539A` (screen); `$5416`-`$547A` (screen); `$5516`-`$557A` (screen); 3 more ranges |
 
@@ -5985,7 +6029,7 @@ Witness: L1 88141 (armour, c1, death, fuel, m1complete, m2erbe, m4complete, miss
 | | |
 | --- | --- |
 | Runs (c1 from the game's entry at frame 23974, the loader left out: the title, the mission tape, Blast Em Mission played) | 1,378 calls, 952,507 t-states own (0.14 %) |
-| Runs (the other recordings) | 27,405 calls (`stage1/death` 14,737, `stage1/play2` 5,403, `stage1/play` 3,936 and 2 more) |
+| Runs (the other recordings) | 86,763 calls (`stage2/rec/m4complete` 24,388, `stage2/rec/m1complete` 21,446, `stage1/death` 14,737 and 6 more) |
 | Called from | `TransformObjects` |
 | Calls | `ApiVector07` |
 | Reads | `$7BFB`-`$7BFC` (`FailReason+2`); `$BA27` (`l_BA1F+8`) |
@@ -6001,7 +6045,8 @@ Witness: L1 88141 (armour, c1, death, fuel, m1complete, m2erbe, m4complete, miss
 
 | | |
 | --- | --- |
-| Runs | ran within another entry's routine (reached by a jump or by running on, its calls below), no runs of its own counted |
+| Runs (c1 from the game's entry at frame 23974, the loader left out: the title, the mission tape, Blast Em Mission played) | 1,378 runs of its first instruction (entered by a jump or by running on, no routine of its own in the L1) |
+| Runs (the other recordings) | 86,763 runs of its first instruction, entered by a jump (`stage2/rec/m4complete` 24,388, `stage2/rec/m1complete` 21,446, `stage1/death` 14,737 and 6 more) |
 | Calls | `RadarRange` |
 
 ### `RadarStoreBlip` (`$C0F7`)
@@ -6014,7 +6059,8 @@ Witness: L1 45950 (armour, c1, death, fuel, m1complete, m2erbe, m4complete, miss
 
 | | |
 | --- | --- |
-| Runs | not reached in the recordings |
+| Runs (c1 from the game's entry at frame 23974, the loader left out: the title, the mission tape, Blast Em Mission played) | 1,045 runs of its first instruction (entered by a jump or by running on, no routine of its own in the L1) |
+| Runs (the other recordings) | 44,905 runs of its first instruction, entered by a jump (`stage2/rec/m4complete` 13,463, `stage2/rec/m1complete` 10,292, `stage1/death` 7,338 and 6 more) |
 
 ### `RadarRange` (`$C104`)
 
@@ -6027,7 +6073,7 @@ Witness: L1 158626 (armour, c1, death, fuel, m1complete, m2erbe, m4complete, mis
 | | |
 | --- | --- |
 | Runs (c1 from the game's entry at frame 23974, the loader left out: the title, the mission tape, Blast Em Mission played) | 2,474 calls, 140,602 t-states own (0.02 %) |
-| Runs (the other recordings) | 48,723 calls (`stage1/death` 25,964, `stage1/play2` 9,762, `stage1/play` 7,064 and 2 more) |
+| Runs (the other recordings) | 156,152 calls (`stage2/rec/m4complete` 45,154, `stage2/rec/m1complete` 39,102, `stage1/death` 25,964 and 6 more) |
 | Called from | `RadarScale` |
 
 ### `TurnToward` (`$C485`)
@@ -6041,8 +6087,8 @@ Witness: L1 2841 (armour, c1, death, fuel, m1complete, m4complete, missions, pla
 | | |
 | --- | --- |
 | Runs (c1 from the game's entry at frame 23974, the loader left out: the title, the mission tape, Blast Em Mission played) | 13 calls, 1,368 t-states own (0.00 %) |
-| Runs (the other recordings) | 545 calls (`stage1/death` 249, `stage1/play` 132, `stage1/play2` 99 and 1 more) |
-| Called from | `HelicarrierWait`, `MissionHeader` (tail) |
+| Runs (the other recordings) | 2,828 calls (`stage2/rec/m1complete` 1,121, `stage2/rec/m4complete` 861, `docs/bcC/rec/armour` 284 and 5 more) |
+| Called from | `HelicarrierWait`, `MissionHeader` |
 | Calls | `ApiVector01`, `ApiVector08` |
 | Reads | `$764E` (`PlayerY+56`); `$768A` (`PlayerY+116`); `$786A` (`PlayerY+596`); `$78E2` (`PlayerY+716`); `$791E` (`PlayerY+776`); `$795A` (`PlayerY+836`); 7 more ranges |
 | Writes | `$764E` (`PlayerY+56`); `$768A` (`PlayerY+116`); `$786A` (`PlayerY+596`); `$78E2` (`PlayerY+716`); `$791E` (`PlayerY+776`); `$795A` (`PlayerY+836`); 6 more ranges |
@@ -6080,7 +6126,7 @@ Witness: L1 9793 (armour, c1, death, fuel, m1complete, m2erbe, m4complete, missi
 | | |
 | --- | --- |
 | Runs (c1 from the game's entry at frame 23974, the loader left out: the title, the mission tape, Blast Em Mission played) | 118 calls, 5,310 t-states own (0.00 %) |
-| Runs (the other recordings) | 3,507 calls (`stage1/death` 2,510, `stage1/play2` 413, `stage1/missions` 273 and 2 more) |
+| Runs (the other recordings) | 9,675 calls (`stage1/death` 2,510, `docs/bcC/rec/armour` 2,396, `stage2/rec/m4complete` 2,237 and 6 more) |
 | Called from | `PlayLoop`, `DragonflyViewLoop` |
 | Reads | `$9000`-`$9101` (`BackBuffer+1295`); `$9120`-`$9121` (`BackBuffer+1583`); `$9140`-`$9141` (`BackBuffer+1615`); `$9160`-`$9161` (`BackBuffer+1647`); `$9180`-`$9181` (`BackBuffer+1679`); `$91A0`-`$91A1` (`BackBuffer+1711`); 4 more ranges |
 | Writes | `$9000`-`$9101` (`BackBuffer+1295`); `$9120`-`$9121` (`BackBuffer+1583`); `$9140`-`$9141` (`BackBuffer+1615`); `$9160`-`$9161` (`BackBuffer+1647`); `$9180`-`$9181` (`BackBuffer+1679`); `$91A0`-`$91A1` (`BackBuffer+1711`); 2 more ranges |
@@ -6110,9 +6156,9 @@ Witness: L1 9836 (armour, c1, death, fuel, m1complete, m2erbe, m4complete, missi
 | | |
 | --- | --- |
 | Runs (c1 from the game's entry at frame 23974, the loader left out: the title, the mission tape, Blast Em Mission played) | 118 calls, 1,717,826 t-states own (0.26 %) |
-| Runs (the other recordings) | 3,550 calls (`stage1/death` 2,510, `stage1/play2` 413, `stage1/missions` 307 and 2 more) |
+| Runs (the other recordings) | 9,718 calls (`stage1/death` 2,510, `docs/bcC/rec/armour` 2,396, `stage2/rec/m4complete` 2,237 and 6 more) |
 | Called from | `PlayLoop`, `DragonflyViewLoop`, `StatusLoop`, `DamageLoop` |
-| Calls | `ApiVector10`, `NegHL`, `KillTree`, `Explode`, `RecordByIndex`, `PlayerHit`, `MissionHeader` |
+| Calls | `ApiVector10`, `NegHL`, `KillTree`, `Explode`, `RecordByIndex`, `PlayerHit`, `HelicarrierHit`, `MissionHeader` |
 | Reads | `$75F5`-`$7A4F` (`PlayerHeight`, `PlayerSpeed`, `PlayerHandler`, `PlayerHeading` and 2 more); `$7A69`-`$7A8B` (`PlayerY+1107`); `$7AA5`-`$7AC7` (`PlayerY+1167`); `$7AE7`-`$7B03` (`HelicarrierRecord+11`); `$C649`-`$C743` (`CollisionTables+1`); `$C775`-`$C7BD` (`CollisionTables+301`, `CollisionPass`) |
 | Writes | `$C649`-`$C743` (`CollisionTables+1`); `$C7BD` (`CollisionPass+1`); `$C7FC`-`$C813` (`l_C7FB+1`); `$C8BE`-`$C8BF` (`l_C8AF+15`); `$C8D5`-`$C8D6` (`l_C8AF+38`); `$C918`-`$C929` (`l_C900+24`); 1 more ranges |
 
@@ -6127,7 +6173,7 @@ Witness: L1 54430 (armour, c1, death, fuel, m1complete, m2erbe, m4complete, miss
 | | |
 | --- | --- |
 | Runs (c1 from the game's entry at frame 23974, the loader left out: the title, the mission tape, Blast Em Mission played) | 1,292 calls, 254,279 t-states own (0.04 %) |
-| Runs (the other recordings) | 15,176 calls (`stage1/play2` 5,062, `stage1/death` 4,648, `stage1/play` 3,086 and 2 more) |
+| Runs (the other recordings) | 53,138 calls (`stage2/rec/m4complete` 21,980, `stage2/rec/m1complete` 11,026, `stage1/play2` 5,062 and 6 more) |
 | Called from | `CollisionPass` |
 | Reads | `$75F2`-`$793A` (`ObjectTable+2`, `PlayerHeight`, `PlayerSpeed`, `PlayerHandler` and 3 more); `$7976` (`PlayerY+864`); `$79B2` (`PlayerY+924`); `$79EE` (`PlayerY+984`); `$7A2A` (`PlayerY+1044`); `$7A66` (`PlayerY+1104`); 2 more ranges |
 
@@ -6142,7 +6188,7 @@ Witness: L1 1235 (armour, c1, death, fuel, m1complete, m2erbe, m4complete, missi
 | | |
 | --- | --- |
 | Runs (c1 from the game's entry at frame 23974, the loader left out: the title, the mission tape, Blast Em Mission played) | 28 calls, 131,565 t-states own (0.02 %) |
-| Runs (the other recordings) | 431 calls (`stage1/missions` 125, `stage1/death` 119, `stage1/play2` 103 and 2 more) |
+| Runs (the other recordings) | 1,207 calls (`stage2/rec/m4complete` 289, `stage2/rec/m1complete` 289, `docs/bcC/rec/armour` 180 and 6 more) |
 | Called from | `ApiVector04` (tail) |
 | Reads | `$75F2`-`$79EF` (`ObjectTable+2`, `PlayerHeight`, `PlayerSpeed`, `PlayerHandler` and 3 more); `$7A2A`-`$7A2B` (`PlayerY+1044`); `$7A66`-`$7A67` (`PlayerY+1104`); `$7AA2`-`$7AA3` (`PlayerY+1164`); `$7ADE`-`$7ADF` (`HelicarrierRecord+2`); `$7B1A` (`HelicarrierRecord+62`); 5 more ranges |
 | Writes | `$C649`-`$C789` (`CollisionTables+1`); `$C9BA` (`l_C9B4+6`); `$C9D9`-`$C9E0` (`l_C9D1+8`); `$CA14` (`l_CA0B+9`) |
@@ -6157,7 +6203,8 @@ Witness: L1 12800 (armour, c1, death, fuel, m1complete, m2erbe, m4complete, miss
 
 | | |
 | --- | --- |
-| Runs | not reached in the recordings |
+| Runs (c1 from the game's entry at frame 23974, the loader left out: the title, the mission tape, Blast Em Mission played) | 259 runs of its first instruction (entered by a jump or by running on, no routine of its own in the L1) |
+| Runs (the other recordings) | 12,541 runs of its first instruction, entered by a jump (`stage2/rec/m4complete` 3,599, `stage2/rec/m1complete` 3,406, `stage1/play2` 1,346 and 6 more) |
 
 ### `UnregisterCollision` (`$CA3B`)
 
@@ -6170,7 +6217,7 @@ Witness: L1 951 (armour, c1, death, fuel, m1complete, m2erbe, m4complete, missio
 | | |
 | --- | --- |
 | Runs (c1 from the game's entry at frame 23974, the loader left out: the title, the mission tape, Blast Em Mission played) | 13 calls, 18,294 t-states own (0.00 %) |
-| Runs (the other recordings) | 230 calls (`stage1/death` 114, `stage1/play2` 51, `stage1/play` 48 and 2 more) |
+| Runs (the other recordings) | 938 calls (`stage2/rec/m1complete` 271, `stage2/rec/m4complete` 271, `docs/bcC/rec/armour` 164 and 6 more) |
 | Called from | `ApiVector05` (tail) |
 | Reads | `$7667`-`$7793` (`PlayerY+81`); `$77CF`-`$78FB` (`PlayerY+441`); `$7937`-`$7A63` (`PlayerY+801`); `$7A9F` (`PlayerY+1161`); `$7ADB` (`PlayerY+1221`); `$7B17` (`HelicarrierRecord+59`); 1 more ranges |
 | Writes | `$C649`-`$C789` (`CollisionTables+1`) |
@@ -6200,7 +6247,7 @@ Witness: L1 9837 (armour, c1, death, fuel, m1complete, m2erbe, m4complete, missi
 | | |
 | --- | --- |
 | Runs (c1 from the game's entry at frame 23974, the loader left out: the title, the mission tape, Blast Em Mission played) | 119 calls, 452,065 t-states own (0.07 %) |
-| Runs (the other recordings) | 3,550 calls (`stage1/death` 2,510, `stage1/play2` 413, `stage1/missions` 307 and 2 more) |
+| Runs (the other recordings) | 9,718 calls (`stage1/death` 2,510, `docs/bcC/rec/armour` 2,396, `stage2/rec/m4complete` 2,237 and 6 more) |
 | Called from | `PlayLoop`, `DragonflyViewLoop`, `StatusLoop`, `DamageLoop` |
 | Calls | `ResetSegmentWalk` (tail), `TestVertexNear`, `TestVertexNearB` |
 | Reads | `$67A8`-`$67AC` (`WorldVars+5`); `$7BFD`-`$7C06` (`FailReason+4`); `$ADF7` (`l_ADEA+13`); `$AE5A`-`$AE5B` (`SegmentWalkCount`); `$DBDC`-`$DBDE` (`MissionHeader+23`); `$DC80`-`$DD12` (`MissionHeader+187`) |
@@ -6217,7 +6264,7 @@ Witness: L1 9868 (armour, c1, death, fuel, m1complete, m2erbe, m4complete, missi
 | | |
 | --- | --- |
 | Runs (c1 from the game's entry at frame 23974, the loader left out: the title, the mission tape, Blast Em Mission played) | 120 calls, 13,080 t-states own (0.00 %) |
-| Runs (the other recordings) | 3,576 calls (`stage1/death` 2,511, `stage1/play2` 416, `stage1/missions` 323 and 2 more) |
+| Runs (the other recordings) | 9,748 calls (`stage1/death` 2,511, `docs/bcC/rec/armour` 2,397, `stage2/rec/m4complete` 2,238 and 6 more) |
 | Called from | `StartMission`, `SegmentVisibility` (tail) |
 | Reads | `$DBDC` (`MissionHeader+23`) |
 | Writes | `$AD48`-`$AD4D` (`SegmentVisibility+3`); `$AE5A`-`$AE5B` (`SegmentWalkCount`) |
@@ -6233,7 +6280,7 @@ Witness: L1 92716 (armour, c1, death, fuel, m1complete, m2erbe, m4complete, miss
 | | |
 | --- | --- |
 | Runs (c1 from the game's entry at frame 23974, the loader left out: the title, the mission tape, Blast Em Mission played) | 952 calls, 19,992 t-states own (0.00 %) |
-| Runs (the other recordings) | 33,063 calls (`stage1/death` 20,603, `stage1/missions` 5,978, `stage1/play2` 3,304 and 2 more) |
+| Runs (the other recordings) | 91,764 calls (`stage2/rec/m4complete` 26,476, `stage1/death` 20,603, `docs/bcC/rec/armour` 17,616 and 6 more) |
 | Called from | `SegmentVisibility`, `DrawSegmentLoop` |
 | Calls | `TestVertexNearX` (falls into) |
 | Reads | `$BC12` (`l_BBFB+23`) |
@@ -6249,7 +6296,7 @@ Witness: L1 170288 (armour, c1, death, fuel, m1complete, m2erbe, m4complete, mis
 | | |
 | --- | --- |
 | Runs (c1 from the game's entry at frame 23974, the loader left out: the title, the mission tape, Blast Em Mission played) | 1,904 calls, 203,766 t-states own (0.03 %) |
-| Runs (the other recordings) | 58,209 calls (`stage1/death` 35,965, `stage1/missions` 9,100, `stage1/play2` 6,608 and 2 more) |
+| Runs (the other recordings) | 168,384 calls (`stage2/rec/m4complete` 44,743, `docs/bcC/rec/armour` 38,852, `stage1/death` 35,965 and 6 more) |
 | Called from | `TestVertexNear` (falls into), `TestVertexNearY` (tail) |
 | Calls | `ApiVector08` |
 | Reads | `$DC00`-`$DC19` (`MissionHeader+59`); `$DC40`-`$DC5B` (`MissionHeader+123`); `$DC80` (`MissionHeader+187`); `$DCC0` (`MissionHeader+251`) |
@@ -6265,7 +6312,7 @@ Witness: L1 75268 (armour, c1, death, fuel, m1complete, m2erbe, m4complete, miss
 | | |
 | --- | --- |
 | Runs (c1 from the game's entry at frame 23974, the loader left out: the title, the mission tape, Blast Em Mission played) | 952 calls, 36,176 t-states own (0.01 %) |
-| Runs (the other recordings) | 24,774 calls (`stage1/death` 15,362, `stage1/play2` 3,304, `stage1/missions` 2,832 and 2 more) |
+| Runs (the other recordings) | 74,316 calls (`docs/bcC/rec/armour` 21,236, `stage2/rec/m4complete` 16,335, `stage1/death` 15,362 and 6 more) |
 | Called from | `SegmentVisibility`, `DrawSegmentLoop` |
 | Calls | `TestVertexNearY` (falls into) |
 | Reads | `$BC1D` (`l_BBFB+34`) |
@@ -6280,7 +6327,8 @@ Witness: L1 77572 (armour, c1, death, fuel, m1complete, m2erbe, m4complete, miss
 
 | | |
 | --- | --- |
-| Runs | not reached in `stage1/c1g`; in the other recordings 4,280 calls (`stage1/missions` 3,122, `stage1/m2erbe` 1,158) |
+| Runs (c1 from the game's entry at frame 23974, the loader left out: the title, the mission tape, Blast Em Mission played) | 952 runs of its first instruction (entered by a jump or by running on, no routine of its own in the L1) |
+| Runs (the other recordings) | 22,547 calls (`stage2/rec/m4complete` 18,267, `stage1/missions` 3,122, `stage1/m2erbe` 1,158) |
 | Called from | `TestVertexNearB` (falls into), `DrawSegmentLoop` |
 | Calls | `TestVertexNearX` (tail) |
 | Reads | `$BC1D` (`l_BBFB+34`) |
@@ -6296,7 +6344,7 @@ Witness: L1 9794 (armour, c1, death, fuel, m1complete, m2erbe, m4complete, missi
 | | |
 | --- | --- |
 | Runs (c1 from the game's entry at frame 23974, the loader left out: the title, the mission tape, Blast Em Mission played) | 119 calls, 26,656 t-states own (0.00 %) |
-| Runs (the other recordings) | 3,507 calls (`stage1/death` 2,510, `stage1/play2` 413, `stage1/missions` 273 and 2 more) |
+| Runs (the other recordings) | 9,675 calls (`stage1/death` 2,510, `docs/bcC/rec/armour` 2,396, `stage2/rec/m4complete` 2,237 and 6 more) |
 | Called from | `PlayLoop`, `DragonflyViewLoop` |
 | Calls | `DrawSegments` (falls into) |
 | Reads | `$BC12`-`$BC1D` (`l_BBFB+23`); `$DBDC` (`MissionHeader+23`) |
@@ -6313,7 +6361,7 @@ Witness: L1 94909 (armour, c1, death, fuel, m1complete, m2erbe, m4complete, miss
 | | |
 | --- | --- |
 | Runs (c1 from the game's entry at frame 23974, the loader left out: the title, the mission tape, Blast Em Mission played) | 1,190 calls, 127,130 t-states own (0.02 %) |
-| Runs (the other recordings) | 36,513 calls (`stage1/death` 25,100, `stage1/play2` 4,130, `stage1/missions` 3,927 and 2 more) |
+| Runs (the other recordings) | 93,719 calls (`stage1/death` 25,100, `docs/bcC/rec/armour` 23,960, `stage2/rec/m4complete` 17,896 and 6 more) |
 | Called from | `SetupClipWindow` (falls into), `DrawSegmentLoop` (tail) |
 | Calls | `DrawSegmentLoop` (falls into) |
 | Reads | `$8305`-`$831C` (`WorldWork`); `$AE92`-`$AE9F` (`SegmentScratch+16`); `$DC80`-`$DCDF` (`MissionHeader+187`) |
@@ -6330,7 +6378,7 @@ Witness: L1 94909 (armour, c1, death, fuel, m1complete, m2erbe, m4complete, miss
 | | |
 | --- | --- |
 | Runs (c1 from the game's entry at frame 23974, the loader left out: the title, the mission tape, Blast Em Mission played) | 1,190 calls, 32,744 t-states own (0.00 %) |
-| Runs (the other recordings) | 36,513 calls (`stage1/death` 25,100, `stage1/play2` 4,130, `stage1/missions` 3,927 and 2 more) |
+| Runs (the other recordings) | 93,719 calls (`stage1/death` 25,100, `docs/bcC/rec/armour` 23,960, `stage2/rec/m4complete` 17,896 and 6 more) |
 | Called from | `DrawSegments` (falls into), `DrawSegmentTail` (tail) |
 | Calls | `TestVertexNear`, `TestVertexNearB`, `TestVertexNearY`, `DrawSegments` (tail), `ClipSegmentAxisX`, `ClipSegmentAxisY`, `TransformSegmentEnds` (tail), `DrawSegmentStyle` (tail), `ClipTestX`, `ClipTestY` |
 
@@ -6344,7 +6392,7 @@ Witness: L1 4566 (m2erbe, m4complete, missions).
 
 | | |
 | --- | --- |
-| Runs | not reached in `stage1/c1g`; in the other recordings 702 calls (`stage1/missions` 538, `stage1/m2erbe` 164) |
+| Runs | not reached in `stage1/c1g`; in the other recordings 4,566 calls (`stage2/rec/m4complete` 3,864, `stage1/missions` 538, `stage1/m2erbe` 164) |
 | Called from | `DrawSegmentLoop` |
 | Calls | `StoreVertex` (tail), `RotateToView` |
 | Reads | `$67A7`-`$67AB` (`WorldVars+4`) |
@@ -6360,7 +6408,7 @@ Witness: L1 4608 (m2erbe, m4complete, missions).
 
 | | |
 | --- | --- |
-| Runs | not reached in `stage1/c1g`; in the other recordings 744 calls (`stage1/missions` 580, `stage1/m2erbe` 164) |
+| Runs | not reached in `stage1/c1g`; in the other recordings 4,608 calls (`stage2/rec/m4complete` 3,864, `stage1/missions` 580, `stage1/m2erbe` 164) |
 | Called from | `DrawSegmentLoop` |
 | Calls | `ClipSegmentDiagonal`, `VertexByteToWorld` |
 | Writes | `$AE86`-`$AE8B` (`SegmentScratch+4`) |
@@ -6375,9 +6423,9 @@ Witness: L1 4608 (m2erbe, m4complete, missions).
 
 | | |
 | --- | --- |
-| Runs | not reached in `stage1/c1g`; in the other recordings 744 calls (`stage1/missions` 580, `stage1/m2erbe` 164) |
+| Runs | not reached in `stage1/c1g`; in the other recordings 4,608 calls (`stage2/rec/m4complete` 3,864, `stage1/missions` 580, `stage1/m2erbe` 164) |
 | Called from | `ClipSegmentAxisY` |
-| Calls | `ClipDiagonalSide` (tail), `ClipDiagonalEnd`, `Negate24` |
+| Calls | `ClipDiagonalSide` (tail), `ClipDiagonalEnd` (tail), `Negate24` |
 | Reads | `$67A7`-`$67AD` (`WorldVars+4`); `$AE85`-`$AE92` (`SegmentScratch+3`) |
 | Writes | `$AE8C`-`$AE97` (`SegmentScratch+10`) |
 
@@ -6407,8 +6455,8 @@ Witness: L1 18411 (m2erbe, m4complete, missions).
 
 | | |
 | --- | --- |
-| Runs | not reached in `stage1/c1g`; in the other recordings 2,955 calls (`stage1/missions` 2,299, `stage1/m2erbe` 656) |
-| Called from | `ClipSegmentDiagonal`, `ClipDiagonalSide` (tail) |
+| Runs | not reached in `stage1/c1g`; in the other recordings 18,411 calls (`stage2/rec/m4complete` 15,456, `stage1/missions` 2,299, `stage1/m2erbe` 656) |
+| Called from | `ClipSegmentDiagonal` (tail), `ClipDiagonalSide` (tail) |
 
 ### `DrawSegmentTail` (`$B18A`)
 
@@ -6420,7 +6468,8 @@ Witness: L1 19364 (armour, c1, death, fuel, m1complete, m2erbe, m4complete, miss
 
 | | |
 | --- | --- |
-| Runs | not reached in `stage1/c1g`; in the other recordings 1,033 calls (`stage1/missions` 869, `stage1/m2erbe` 164) |
+| Runs (c1 from the game's entry at frame 23974, the loader left out: the title, the mission tape, Blast Em Mission played) | 238 runs of its first instruction (entered by a jump or by running on, no routine of its own in the L1) |
+| Runs (the other recordings) | 7,551 calls (`stage2/rec/m4complete` 6,518, `stage1/missions` 869, `stage1/m2erbe` 164) |
 | Called from | `DrawSegmentStyle` (tail) |
 | Calls | `DrawSegmentLoop` (tail) |
 | Reads | `$AE9E`-`$AE9F` (`SegmentScratch+28`) |
@@ -6436,7 +6485,7 @@ Witness: L1 17081 (armour, c1, death, fuel, m1complete, m2erbe, m4complete, miss
 | | |
 | --- | --- |
 | Runs (c1 from the game's entry at frame 23974, the loader left out: the title, the mission tape, Blast Em Mission played) | 238 calls, 69,515 t-states own (0.01 %) |
-| Runs (the other recordings) | 6,277 calls (`stage1/death` 3,878, `stage1/play` 891, `stage1/play2` 826 and 2 more) |
+| Runs (the other recordings) | 16,843 calls (`stage2/rec/m4complete` 4,586, `stage2/rec/m1complete` 4,201, `stage1/death` 3,878 and 6 more) |
 | Called from | `DrawSegmentLoop` (tail) |
 | Calls | `TransformVertex` |
 | Reads | `$AE9E`-`$AE9F` (`SegmentScratch+28`); `$AFC4` (`l_AF83+65`) |
@@ -6452,7 +6501,8 @@ Witness: L1 19364 (armour, c1, death, fuel, m1complete, m2erbe, m4complete, miss
 
 | | |
 | --- | --- |
-| Runs | not reached in `stage1/c1g`; in the other recordings 351 calls (`stage1/missions` 269, `stage1/m2erbe` 82) |
+| Runs (c1 from the game's entry at frame 23974, the loader left out: the title, the mission tape, Blast Em Mission played) | 238 runs of its first instruction (entered by a jump or by running on, no routine of its own in the L1) |
+| Runs (the other recordings) | 2,283 calls (`stage2/rec/m4complete` 1,932, `stage1/missions` 269, `stage1/m2erbe` 82) |
 | Called from | `DrawSegmentLoop` (tail) |
 | Calls | `RunScript`, `DrawSegmentTail` (tail), `ResetViewOrigin` |
 | Reads | `$67AD`-`$67AE` (`WorldVars+10`) |
@@ -6468,7 +6518,7 @@ Witness: L1 34162 (armour, c1, death, fuel, m1complete, m2erbe, m4complete, miss
 | | |
 | --- | --- |
 | Runs (c1 from the game's entry at frame 23974, the loader left out: the title, the mission tape, Blast Em Mission played) | 476 calls, 86,666 t-states own (0.01 %) |
-| Runs (the other recordings) | 12,554 calls (`stage1/death` 7,756, `stage1/play` 1,782, `stage1/play2` 1,652 and 2 more) |
+| Runs (the other recordings) | 33,686 calls (`stage2/rec/m4complete` 9,172, `stage2/rec/m1complete` 8,402, `stage1/death` 7,756 and 6 more) |
 | Called from | `TransformSegmentEnds` |
 | Calls | `VertexRelative`, `StoreVertex` (tail), `RotateToView` |
 | Reads | `$67A7`-`$67AB` (`WorldVars+4`) |
@@ -6485,7 +6535,7 @@ Witness: L1 68324 (armour, c1, death, fuel, m1complete, m2erbe, m4complete, miss
 | | |
 | --- | --- |
 | Runs (c1 from the game's entry at frame 23974, the loader left out: the title, the mission tape, Blast Em Mission played) | 952 calls, 49,523 t-states own (0.01 %) |
-| Runs (the other recordings) | 25,108 calls (`stage1/death` 15,512, `stage1/play` 3,564, `stage1/play2` 3,304 and 2 more) |
+| Runs (the other recordings) | 67,372 calls (`stage2/rec/m4complete` 18,344, `stage2/rec/m1complete` 16,804, `stage1/death` 15,512 and 6 more) |
 | Called from | `TransformVertex` |
 
 ### `Negate24` (`$B26F`)
@@ -6498,7 +6548,7 @@ Witness: L1 960 (m4complete, missions).
 
 | | |
 | --- | --- |
-| Runs | not reached in `stage1/c1g`; in the other recordings 167 calls (`stage1/missions` 167) |
+| Runs | not reached in `stage1/c1g`; in the other recordings 960 calls (`stage2/rec/m4complete` 793, `stage1/missions` 167) |
 | Called from | `ClipSegmentDiagonal` |
 | Writes | `$B27C` (`Negate24+13`) |
 
@@ -6512,7 +6562,7 @@ Witness: L1 9216 (m2erbe, m4complete, missions).
 
 | | |
 | --- | --- |
-| Runs | not reached in `stage1/c1g`; in the other recordings 1,488 calls (`stage1/missions` 1,160, `stage1/m2erbe` 328) |
+| Runs | not reached in `stage1/c1g`; in the other recordings 9,216 calls (`stage2/rec/m4complete` 7,728, `stage1/missions` 1,160, `stage1/m2erbe` 328) |
 | Called from | `ClipSegmentAxisY` |
 | Calls | `ByteToWorld` (falls into) |
 | Reads | `$DC00`-`$DC0C` (`MissionHeader+59`); `$DC40`-`$DC4C` (`MissionHeader+123`) |
@@ -6528,7 +6578,7 @@ Witness: L1 145759 (armour, c1, death, fuel, m1complete, m2erbe, m4complete, mis
 | | |
 | --- | --- |
 | Runs (c1 from the game's entry at frame 23974, the loader left out: the title, the mission tape, Blast Em Mission played) | 1,932 calls, 142,457 t-states own (0.02 %) |
-| Runs (the other recordings) | 35,297 calls (`stage1/death` 13,488, `stage1/play` 7,416, `stage1/missions` 6,801 and 2 more) |
+| Runs (the other recordings) | 143,827 calls (`stage2/rec/m1complete` 52,125, `stage2/rec/m4complete` 46,865, `stage1/death` 13,488 and 6 more) |
 | Called from | `ApiVector12` (tail), `VertexByteToWorld` (falls into) |
 
 ### `ClipTestX` (`$B294`)
@@ -6542,7 +6592,7 @@ Witness: L1 27209 (armour, c1, death, fuel, m1complete, m2erbe, m4complete, miss
 | | |
 | --- | --- |
 | Runs (c1 from the game's entry at frame 23974, the loader left out: the title, the mission tape, Blast Em Mission played) | 357 calls, 35,105 t-states own (0.01 %) |
-| Runs (the other recordings) | 9,467 calls (`stage1/death` 5,817, `stage1/play` 1,332, `stage1/play2` 1,239 and 2 more) |
+| Runs (the other recordings) | 26,852 calls (`stage2/rec/m4complete` 8,529, `stage2/rec/m1complete` 6,212, `stage1/death` 5,817 and 6 more) |
 | Called from | `DrawSegmentLoop` |
 | Reads | `$BC12` (`l_BBFB+23`); `$DC00`-`$DC17` (`MissionHeader+59`) |
 
@@ -6557,7 +6607,7 @@ Witness: L1 24034 (armour, c1, death, fuel, m1complete, m2erbe, m4complete, miss
 | | |
 | --- | --- |
 | Runs (c1 from the game's entry at frame 23974, the loader left out: the title, the mission tape, Blast Em Mission played) | 357 calls, 37,623 t-states own (0.01 %) |
-| Runs (the other recordings) | 9,364 calls (`stage1/death` 5,817, `stage1/play` 1,341, `stage1/play2` 1,239 and 2 more) |
+| Runs (the other recordings) | 23,677 calls (`stage2/rec/m1complete` 6,391, `stage1/death` 5,817, `stage2/rec/m4complete` 5,229 and 6 more) |
 | Called from | `DrawSegmentLoop` |
 | Reads | `$BC1D` (`l_BBFB+34`); `$DC40`-`$DC56` (`MissionHeader+123`) |
 
@@ -6572,7 +6622,7 @@ Witness: L1 38728 (armour, c1, death, fuel, m1complete, m2erbe, m4complete, miss
 | | |
 | --- | --- |
 | Runs (c1 from the game's entry at frame 23974, the loader left out: the title, the mission tape, Blast Em Mission played) | 476 calls, 55,020 t-states own (0.01 %) |
-| Runs (the other recordings) | 13,256 calls (`stage1/death` 7,756, `stage1/play` 1,782, `stage1/missions` 1,738 and 2 more) |
+| Runs (the other recordings) | 38,252 calls (`stage2/rec/m4complete` 13,036, `stage2/rec/m1complete` 8,402, `stage1/death` 7,756 and 6 more) |
 | Called from | `ClipSegmentAxisX` (tail), `TransformVertex` (tail) |
 | Calls | `RotateVertex` (falls into) |
 | Reads | `$67A6`-`$67A7` (`WorldVars+3`); `$AE84` (`SegmentScratch+2`) |
@@ -6589,7 +6639,7 @@ Witness: L1 77456 (armour, c1, death, fuel, m1complete, m2erbe, m4complete, miss
 | | |
 | --- | --- |
 | Runs (c1 from the game's entry at frame 23974, the loader left out: the title, the mission tape, Blast Em Mission played) | 952 calls, 35,262 t-states own (0.01 %) |
-| Runs (the other recordings) | 26,512 calls (`stage1/death` 15,512, `stage1/play` 3,564, `stage1/missions` 3,476 and 2 more) |
+| Runs (the other recordings) | 76,504 calls (`stage2/rec/m4complete` 26,072, `stage2/rec/m1complete` 16,804, `stage1/death` 15,512 and 6 more) |
 | Called from | `StoreVertex` (falls into) |
 | Calls | `ApiVector14`, `SignExtendA`, `RotateAndStore` (tail), `RotateMulAdd` (tail) |
 | Reads | `$9A6C`-`$9A6D` (`l_9A5E+14`); `$9A8E`-`$9A8F` (`l_9A85+9`); `$B1BA` (`DrawSegmentStyle+4`) |
@@ -6604,7 +6654,7 @@ Witness: L1 40720 (m4complete, missions).
 
 | | |
 | --- | --- |
-| Runs | not reached in `stage1/c1g`; in the other recordings 3,624 calls (`stage1/missions` 3,624) |
+| Runs | not reached in `stage1/c1g`; in the other recordings 40,720 calls (`stage2/rec/m4complete` 37,096, `stage1/missions` 3,624) |
 | Called from | `RotateVertex` |
 
 ### `RotateAndStore` (`$B38E`)
@@ -6618,7 +6668,7 @@ Witness: L1 57096 (armour, c1, death, fuel, m1complete, m2erbe, m4complete, miss
 | | |
 | --- | --- |
 | Runs (c1 from the game's entry at frame 23974, the loader left out: the title, the mission tape, Blast Em Mission played) | 952 calls, 112,374 t-states own (0.02 %) |
-| Runs (the other recordings) | 24,700 calls (`stage1/death` 15,512, `stage1/play` 3,564, `stage1/play2` 3,304 and 2 more) |
+| Runs (the other recordings) | 56,144 calls (`stage2/rec/m1complete` 16,804, `stage1/death` 15,512, `stage2/rec/m4complete` 7,524 and 6 more) |
 | Called from | `RotateVertex` (tail) |
 | Calls | `ApiVector14`, `RotateMul` (falls into) |
 | Reads | `$9A6C`-`$9A6D` (`l_9A5E+14`); `$9A8E`-`$9A8F` (`l_9A85+9`) |
@@ -6635,7 +6685,7 @@ Witness: L1 114192 (armour, c1, death, fuel, m1complete, m2erbe, m4complete, mis
 | | |
 | --- | --- |
 | Runs (c1 from the game's entry at frame 23974, the loader left out: the title, the mission tape, Blast Em Mission played) | 1,904 calls, 148,588 t-states own (0.02 %) |
-| Runs (the other recordings) | 49,400 calls (`stage1/death` 31,024, `stage1/play` 7,128, `stage1/play2` 6,608 and 2 more) |
+| Runs (the other recordings) | 112,288 calls (`stage2/rec/m1complete` 33,608, `stage1/death` 31,024, `stage2/rec/m4complete` 15,048 and 6 more) |
 | Called from | `RotateAndStore` (falls into) |
 | Calls | `RotateMulAdd` (falls into) |
 | Writes | `$FD00`-`$FD07` (`MissionHeader+8507`); `$FF00`-`$FF07` (`data_FEBB+69`) |
@@ -6650,7 +6700,8 @@ Witness: L1 154912 (armour, c1, death, fuel, m1complete, m2erbe, m4complete, mis
 
 | | |
 | --- | --- |
-| Runs | not reached in `stage1/c1g`; in the other recordings 6,952 calls (`stage1/missions` 6,952) |
+| Runs (c1 from the game's entry at frame 23974, the loader left out: the title, the mission tape, Blast Em Mission played) | 1,904 runs of its first instruction (entered by a jump or by running on, no routine of its own in the L1) |
+| Runs (the other recordings) | 59,096 calls (`stage2/rec/m4complete` 52,144, `stage1/missions` 6,952) |
 | Called from | `RotateVertex` (tail), `RotateMul` (falls into) |
 
 ### `ResetViewOrigin` (`$B3B6`)
@@ -6664,7 +6715,7 @@ Witness: L1 19364 (armour, c1, death, fuel, m1complete, m2erbe, m4complete, miss
 | | |
 | --- | --- |
 | Runs (c1 from the game's entry at frame 23974, the loader left out: the title, the mission tape, Blast Em Mission played) | 238 calls, 24,731 t-states own (0.00 %) |
-| Runs (the other recordings) | 6,628 calls (`stage1/death` 3,878, `stage1/play` 891, `stage1/missions` 869 and 2 more) |
+| Runs (the other recordings) | 19,126 calls (`stage2/rec/m4complete` 6,518, `stage2/rec/m1complete` 4,201, `stage1/death` 3,878 and 6 more) |
 | Called from | `DrawSegmentStyle` |
 | Calls | `ApiVector07` |
 | Reads | `$67AD`-`$67AE` (`WorldVars+10`) |
@@ -6681,7 +6732,7 @@ Witness: L1 9837 (armour, c1, death, fuel, m1complete, m2erbe, m4complete, missi
 | | |
 | --- | --- |
 | Runs (c1 from the game's entry at frame 23974, the loader left out: the title, the mission tape, Blast Em Mission played) | 119 calls, 41,463 t-states own (0.01 %) |
-| Runs (the other recordings) | 3,550 calls (`stage1/death` 2,510, `stage1/play2` 413, `stage1/missions` 307 and 2 more) |
+| Runs (the other recordings) | 9,718 calls (`stage1/death` 2,510, `docs/bcC/rec/armour` 2,396, `stage2/rec/m4complete` 2,237 and 6 more) |
 | Called from | `PlayLoop`, `DragonflyViewLoop`, `StatusLoop`, `DamageLoop` |
 | Calls | `CameraSinCos` (tail) |
 | Reads | `$67A5`-`$67A6` (`WorldVars+2`); `$75F5`-`$75F6` (`PlayerHeight`); `$7611`-`$7618` (`PlayerHandler+9`, `PlayerHeading`, `PlayerX`, `PlayerY`); `$7AA5`-`$7AA6` (`PlayerY+1167`); `$7AC1`-`$7AC8` (`PlayerY+1195`); `$B8FF`-`$B900` (`IrViewHeight+3`); 1 more ranges |
@@ -6698,7 +6749,7 @@ Witness: L1 19674 (armour, c1, death, fuel, m1complete, m2erbe, m4complete, miss
 | | |
 | --- | --- |
 | Runs (c1 from the game's entry at frame 23974, the loader left out: the title, the mission tape, Blast Em Mission played) | 238 calls, 17,612 t-states own (0.00 %) |
-| Runs (the other recordings) | 7,100 calls (`stage1/death` 5,020, `stage1/play2` 826, `stage1/missions` 614 and 2 more) |
+| Runs (the other recordings) | 19,436 calls (`stage1/death` 5,020, `docs/bcC/rec/armour` 4,792, `stage2/rec/m4complete` 4,474 and 6 more) |
 | Called from | `SetCamera` (tail), `CameraSinCosAgain` (tail) |
 | Calls | `ApiVector07`, `SinCosHalf` |
 | Writes | `$BBBD`-`$BBC8` (`RotateToView+1`) |
@@ -6714,7 +6765,7 @@ Witness: L1 9837 (armour, c1, death, fuel, m1complete, m2erbe, m4complete, missi
 | | |
 | --- | --- |
 | Runs (c1 from the game's entry at frame 23974, the loader left out: the title, the mission tape, Blast Em Mission played) | 119 calls, 3,399 t-states own (0.00 %) |
-| Runs (the other recordings) | 3,550 calls (`stage1/death` 2,510, `stage1/play2` 413, `stage1/missions` 307 and 2 more) |
+| Runs (the other recordings) | 9,718 calls (`stage1/death` 2,510, `docs/bcC/rec/armour` 2,396, `stage2/rec/m4complete` 2,237 and 6 more) |
 | Called from | `PlayLoop`, `DragonflyViewLoop`, `StatusLoop`, `DamageLoop` |
 | Calls | `CameraSinCos` (tail) |
 | Reads | `$67A5`-`$67A6` (`WorldVars+2`) |
@@ -6745,7 +6796,7 @@ Witness: L1 36 (armour, c1, death, fuel, m1complete, m2erbe, m4complete, mission
 | | |
 | --- | --- |
 | Runs (c1 from the game's entry at frame 23974, the loader left out: the title, the mission tape, Blast Em Mission played) | 1 call, 69 t-states own (0.00 %) |
-| Runs (the other recordings) | 31 calls (`stage1/missions` 16, `stage1/play` 9, `stage1/play2` 3 and 2 more) |
+| Runs (the other recordings) | 35 calls (`stage1/missions` 16, `stage1/play` 9, `stage1/play2` 3 and 6 more) |
 | Called from | `StartMission`, `RearViewOff` (falls into) |
 | Calls | `PrintString` (tail) |
 | Reads | `$CEA8` (`ToggleBinoculars+1`) |
@@ -6762,7 +6813,7 @@ Witness: L1 9794 (armour, c1, death, fuel, m1complete, m2erbe, m4complete, missi
 | | |
 | --- | --- |
 | Runs (c1 from the game's entry at frame 23974, the loader left out: the title, the mission tape, Blast Em Mission played) | 119 calls, 1,324,405 t-states own (0.20 %) |
-| Runs (the other recordings) | 3,507 calls (`stage1/death` 2,510, `stage1/play2` 413, `stage1/missions` 273 and 2 more) |
+| Runs (the other recordings) | 9,675 calls (`stage1/death` 2,510, `docs/bcC/rec/armour` 2,396, `stage2/rec/m4complete` 2,237 and 6 more) |
 | Called from | `PlayLoop`, `DragonflyViewLoop` |
 | Calls | `NegHL`, `GridVectors`, `PlotGroundDot`, `GridStep`, `RotateToView` |
 | Reads | `$67A7`-`$67AE` (`WorldVars+4`); `$BB0B`-`$BB0F` (`l_BB0A+1`) |
@@ -6779,7 +6830,7 @@ Witness: L1 39176 (armour, c1, death, fuel, m1complete, m2erbe, m4complete, miss
 | | |
 | --- | --- |
 | Runs (c1 from the game's entry at frame 23974, the loader left out: the title, the mission tape, Blast Em Mission played) | 476 calls, 77,668 t-states own (0.01 %) |
-| Runs (the other recordings) | 14,028 calls (`stage1/death` 10,040, `stage1/play2` 1,652, `stage1/missions` 1,092 and 2 more) |
+| Runs (the other recordings) | 38,700 calls (`stage1/death` 10,040, `docs/bcC/rec/armour` 9,584, `stage2/rec/m4complete` 8,948 and 6 more) |
 | Called from | `GroundDots` |
 | Calls | `ApiVector14` |
 | Reads | `$67A6` (`WorldVars+3`) |
@@ -6795,7 +6846,7 @@ Witness: L1 324616 (armour, c1, death, fuel, m1complete, m2erbe, m4complete, mis
 | | |
 | --- | --- |
 | Runs (c1 from the game's entry at frame 23974, the loader left out: the title, the mission tape, Blast Em Mission played) | 4,638 calls, 567,501 t-states own (0.09 %) |
-| Runs (the other recordings) | 117,517 calls (`stage1/death` 80,729, `stage1/play2` 16,501, `stage1/play` 10,267 and 2 more) |
+| Runs (the other recordings) | 319,978 calls (`stage1/death` 80,729, `docs/bcC/rec/armour` 76,473, `stage2/rec/m4complete` 71,219 and 6 more) |
 | Called from | `GroundDots` |
 | Calls | `Divide`, `DivideByLog`, `NegHL`, `PlotBackBuffer` (tail) |
 | Reads | `$9AA3`-`$9AA4` (`l_9A9E+5`); `$9ABB`-`$9ABC` (`l_9A9E+29`) |
@@ -6812,7 +6863,7 @@ Witness: L1 19588 (armour, c1, death, fuel, m1complete, m2erbe, m4complete, miss
 | | |
 | --- | --- |
 | Runs (c1 from the game's entry at frame 23974, the loader left out: the title, the mission tape, Blast Em Mission played) | 238 calls, 39,508 t-states own (0.01 %) |
-| Runs (the other recordings) | 7,014 calls (`stage1/death` 5,020, `stage1/play2` 826, `stage1/missions` 546 and 2 more) |
+| Runs (the other recordings) | 19,350 calls (`stage1/death` 5,020, `docs/bcC/rec/armour` 4,792, `stage2/rec/m4complete` 4,474 and 6 more) |
 | Called from | `GroundDots` |
 | Reads | `$BB0B`-`$BB0F` (`l_BB0A+1`) |
 | Writes | `$BB0B`-`$BB0F` (`l_BB0A+1`) |
@@ -6828,7 +6879,7 @@ Witness: L1 154474 (armour, c1, death, fuel, m1complete, m2erbe, m4complete, mis
 | | |
 | --- | --- |
 | Runs (c1 from the game's entry at frame 23974, the loader left out: the title, the mission tape, Blast Em Mission played) | 2,272 calls, 675,050 t-states own (0.10 %) |
-| Runs (the other recordings) | 50,296 calls (`stage1/death` 29,081, `stage1/play2` 8,569, `stage1/play` 6,541 and 2 more) |
+| Runs (the other recordings) | 152,202 calls (`stage2/rec/m4complete` 44,806, `stage2/rec/m1complete` 35,532, `stage1/death` 29,081 and 6 more) |
 | Called from | `ClipSegmentAxisX`, `TransformVertex`, `GroundDots`, `TransformObjects` |
 | Calls | `ApiVector09`, `NegHL` |
 | Reads | `$9A6C`-`$9A6D` (`l_9A5E+14`); `$9A8E`-`$9A8F` (`l_9A85+9`); `$BBBD`-`$BBC8` (`RotateToView+1`) |
@@ -6845,7 +6896,7 @@ Witness: L1 20647 (armour, c1, death, fuel, m1complete, m2erbe, m4complete, miss
 | | |
 | --- | --- |
 | Runs (c1 from the game's entry at frame 23974, the loader left out: the title, the mission tape, Blast Em Mission played) | 381 calls, 850,642 t-states own (0.13 %) |
-| Runs (the other recordings) | 5,854 calls (`stage1/death` 2,846, `stage1/play2` 1,264, `stage1/play` 842 and 2 more) |
+| Runs (the other recordings) | 20,266 calls (`stage2/rec/m4complete` 5,656, `stage2/rec/m1complete` 5,637, `docs/bcC/rec/armour` 2,975 and 6 more) |
 | Called from | `ApiVector17` (tail) |
 | Calls | `TerrainScan` (falls into) |
 | Reads | `$75F7`-`$7600` (`PlayerSpeed`); `$7613`-`$7618` (`PlayerX`, `PlayerY`); `$76AB` (`PlayerY+149`); `$775F`-`$77A4` (`PlayerY+329`); `$77B7`-`$77BC` (`PlayerY+417`); `$77D7`-`$77E0` (`PlayerY+449`); 16 more ranges |
@@ -6861,7 +6912,8 @@ Witness: L1 208483 (armour, c1, death, fuel, m1complete, m2erbe, m4complete, mis
 
 | | |
 | --- | --- |
-| Runs | not reached in `stage1/c1g`; in the other recordings 12,396 calls (`stage1/missions` 9,920, `stage1/m2erbe` 2,476) |
+| Runs (c1 from the game's entry at frame 23974, the loader left out: the title, the mission tape, Blast Em Mission played) | 3,110 runs of its first instruction (entered by a jump or by running on, no routine of its own in the L1) |
+| Runs (the other recordings) | 60,744 calls (`stage2/rec/m4complete` 48,348, `stage1/missions` 9,920, `stage1/m2erbe` 2,476) |
 | Called from | `TerrainCollision` (falls into), `TerrainScanLoop` (tail) |
 | Calls | `TerrainScanLoop` (falls into) |
 | Reads | `$75FB`-`$7600` (`PlayerSpeed+4`); `$7613`-`$7618` (`PlayerX`, `PlayerY`); `$76AF`-`$76B0` (`PlayerY+153`); `$76C7`-`$76C9` (`PlayerY+177`); `$7763`-`$77F8` (`PlayerY+333`); `$7817`-`$781C` (`PlayerY+513`); 13 more ranges |
@@ -6877,7 +6929,8 @@ Witness: L1 207509 (armour, c1, death, fuel, m1complete, m2erbe, m4complete, mis
 
 | | |
 | --- | --- |
-| Runs | not reached in `stage1/c1g`; in the other recordings 12,310 calls (`stage1/missions` 9,844, `stage1/m2erbe` 2,466) |
+| Runs (c1 from the game's entry at frame 23974, the loader left out: the title, the mission tape, Blast Em Mission played) | 3,038 runs of its first instruction (entered by a jump or by running on, no routine of its own in the L1) |
+| Runs (the other recordings) | 60,322 calls (`stage2/rec/m4complete` 48,012, `stage1/missions` 9,844, `stage1/m2erbe` 2,466) |
 | Called from | `TerrainScan` (falls into), `TerrainNext` (tail) |
 | Calls | `ApiVector12`, `TerrainScan` (tail), `TerrainNext` (tail), `TerrainNegate24`, `TerrainDiagonal` (tail) |
 
@@ -6891,7 +6944,8 @@ Witness: L1 48694 (armour, c1, death, fuel, m1complete, m2erbe, m4complete, miss
 
 | | |
 | --- | --- |
-| Runs | not reached in `stage1/c1g`; in the other recordings 2,837 calls (`stage1/missions` 2,127, `stage1/m2erbe` 710) |
+| Runs (c1 from the game's entry at frame 23974, the loader left out: the title, the mission tape, Blast Em Mission played) | 572 runs of its first instruction (entered by a jump or by running on, no routine of its own in the L1) |
+| Runs (the other recordings) | 18,989 calls (`stage2/rec/m4complete` 16,152, `stage1/missions` 2,127, `stage1/m2erbe` 710) |
 | Called from | `TerrainScanLoop` (tail), `TerrainDiagonal` (tail) |
 | Calls | `TerrainScanLoop` (tail) |
 
@@ -6906,7 +6960,7 @@ Witness: L1 62388 (armour, c1, death, fuel, m1complete, m2erbe, m4complete, miss
 | | |
 | --- | --- |
 | Runs (c1 from the game's entry at frame 23974, the loader left out: the title, the mission tape, Blast Em Mission played) | 749 calls, 55,426 t-states own (0.01 %) |
-| Runs (the other recordings) | 14,955 calls (`stage1/death` 6,721, `stage1/play` 3,256, `stage1/play2` 2,765 and 2 more) |
+| Runs (the other recordings) | 61,639 calls (`stage2/rec/m4complete` 23,199, `stage2/rec/m1complete` 18,867, `stage1/death` 6,721 and 6 more) |
 | Called from | `TerrainScanLoop`, `TerrainDiagonal` |
 
 ### `TerrainDiagonal` (`$CDB6`)
@@ -6919,7 +6973,7 @@ Witness: L1 5964 (m2erbe, m4complete, missions).
 
 | | |
 | --- | --- |
-| Runs | not reached in `stage1/c1g`; in the other recordings 908 calls (`stage1/missions` 474, `stage1/m2erbe` 434) |
+| Runs | not reached in `stage1/c1g`; in the other recordings 5,964 calls (`stage2/rec/m4complete` 5,056, `stage1/missions` 474, `stage1/m2erbe` 434) |
 | Called from | `TerrainScanLoop` (tail) |
 | Calls | `ApiVector08`, `ApiVector12`, `TerrainNext` (tail), `TerrainNegate24` |
 | Reads | `$7613`-`$7618` (`PlayerX`, `PlayerY`); `$76C7`-`$76CC` (`PlayerY+177`); `$77B7`-`$77F8` (`PlayerY+417`); `$782F`-`$7834` (`PlayerY+537`); `$786B`-`$7870` (`PlayerY+597`); `$78A7`-`$78AC` (`PlayerY+657`); 4 more ranges |
@@ -6962,7 +7016,7 @@ Witness: L1 39 (armour, c1, death, fuel, m1complete, m2erbe, m4complete, mission
 | | |
 | --- | --- |
 | Runs (c1 from the game's entry at frame 23974, the loader left out: the title, the mission tape, Blast Em Mission played) | 1 call, 119 t-states own (0.00 %) |
-| Runs (the other recordings) | 34 calls (`stage1/missions` 16, `stage1/play` 12, `stage1/play2` 3 and 2 more) |
+| Runs (the other recordings) | 38 calls (`stage1/missions` 16, `stage1/play` 12, `stage1/play2` 3 and 6 more) |
 | Called from | `StartMission`, `ToggleBinoculars` (falls into) |
 | Calls | `PrintString` (tail) |
 | Reads | `$BA27` (`l_BA1F+8`) |
@@ -7008,7 +7062,7 @@ Witness: L1 2 (armour, death).
 
 | | |
 | --- | --- |
-| Runs | not reached in `stage1/c1g`; in the other recordings 1 call (`stage1/death` 1) |
+| Runs | not reached in `stage1/c1g`; in the other recordings 2 calls (`docs/bcC/rec/armour` 1, `stage1/death` 1) |
 | Called from | `CollisionPass` |
 | Calls | `ApiVector05`, `ApiVector11`, `HitPoints` |
 | Writes | `$793A` (`PlayerY+804`) |
@@ -7045,7 +7099,7 @@ Witness: L1 1132 (armour, death, m1complete, m4complete, missions, play2).
 
 | | |
 | --- | --- |
-| Runs | not reached in `stage1/c1g`; in the other recordings 153 calls (`stage1/missions` 146, `stage1/death` 6, `stage1/play2` 1) |
+| Runs | not reached in `stage1/c1g`; in the other recordings 1,132 calls (`stage2/rec/m4complete` 976, `stage1/missions` 146, `stage1/death` 6 and 3 more) |
 | Called from | `ApiVector10` (tail) |
 | Calls | `ApiVector05`, `ApiVector11`, `KillMissionObject` (tail), `AddKillScore` (tail), `HitPoints` |
 | Reads | `$766B` (`PlayerY+85`); `$76A4`-`$76A7` (`PlayerY+142`); `$76E3` (`PlayerY+205`); `$771C` (`PlayerY+262`); `$7797` (`PlayerY+385`); `$77D0` (`PlayerY+442`); 3 more ranges |
@@ -7092,7 +7146,7 @@ Witness: L1 23 (armour, death, m1complete, m4complete).
 
 | | |
 | --- | --- |
-| Runs | not reached in `stage1/c1g`; in the other recordings 7 calls (`stage1/death` 7) |
+| Runs | not reached in `stage1/c1g`; in the other recordings 23 calls (`stage2/rec/m4complete` 12, `stage1/death` 7, `stage2/rec/m1complete` 2 and 1 more) |
 | Called from | `KillTree`, `HitTest` |
 | Reads | `$767C` (`PlayerY+102`); `$76B7`-`$76B8` (`PlayerY+161`); `$76F4` (`PlayerY+222`); `$772F` (`PlayerY+281`); `$77A8` (`PlayerY+402`); `$77E3` (`PlayerY+461`); 4 more ranges |
 | Writes | `$76B7` (`PlayerY+161`); `$772F` (`PlayerY+281`); `$77E3` (`PlayerY+461`); `$78D3` (`PlayerY+701`); `$794B` (`PlayerY+821`) |
@@ -7107,7 +7161,7 @@ Witness: L1 9 (death, m1complete, m4complete).
 
 | | |
 | --- | --- |
-| Runs | not reached in `stage1/c1g`; in the other recordings 4 calls (`stage1/death` 4) |
+| Runs | not reached in `stage1/c1g`; in the other recordings 9 calls (`stage1/death` 4, `stage2/rec/m4complete` 3, `stage2/rec/m1complete` 2) |
 | Called from | `ApiVector13` (tail) |
 | Reads | `$76A4` (`PlayerY+142`); `$771C` (`PlayerY+262`); `$77D0` (`PlayerY+442`); `$78C0` (`PlayerY+682`); `$DBDA`-`$DBDB` (`MissionHeader+21`); `$DD8C`-`$DDA4` (`MissionHeader+455`) |
 | Writes | `$DD8C`-`$DDA4` (`MissionHeader+455`) |
@@ -7122,7 +7176,7 @@ Witness: L1 36 (armour, death, m1complete, m4complete, play2).
 
 | | |
 | --- | --- |
-| Runs | not reached in `stage1/c1g`; in the other recordings 13 calls (`stage1/death` 12, `stage1/play2` 1) |
+| Runs | not reached in `stage1/c1g`; in the other recordings 36 calls (`stage2/rec/m4complete` 16, `stage1/death` 12, `stage2/rec/m1complete` 4 and 2 more) |
 | Called from | `ApiVector11` (tail) |
 | Calls | `ApiVector06`, `PageBank3`, `SaveBank`, `RestoreBank` (tail), `DebrisVelocity`, `DebrisVelocityB` |
 | Reads | `$766A`-`$76E2` (`PlayerY+84`); `$771E`-`$7726` (`PlayerY+264`); `$7796` (`PlayerY+384`); `$77D2` (`PlayerY+444`); `$7886`-`$788E` (`PlayerY+624`); `$78A7`-`$78AC` (`PlayerY+657`); 5 more ranges |
@@ -7137,7 +7191,7 @@ Witness: L1 196 (armour, death, m1complete, m4complete, play2).
 
 | | |
 | --- | --- |
-| Runs | not reached in `stage1/c1g`; in the other recordings 64 calls (`stage1/death` 48, `stage1/play2` 16) |
+| Runs | not reached in `stage1/c1g`; in the other recordings 196 calls (`stage2/rec/m4complete` 84, `stage1/death` 48, `stage2/rec/m1complete` 32 and 2 more) |
 | Called from | `Debris` |
 | Calls | `ApiVector06` |
 
@@ -7151,7 +7205,7 @@ Witness: L1 196 (armour, death, m1complete, m4complete, play2).
 
 | | |
 | --- | --- |
-| Runs | not reached in `stage1/c1g`; in the other recordings 64 calls (`stage1/death` 48, `stage1/play2` 16) |
+| Runs | not reached in `stage1/c1g`; in the other recordings 196 calls (`stage2/rec/m4complete` 84, `stage1/death` 48, `stage2/rec/m1complete` 32 and 2 more) |
 | Called from | `Debris` |
 | Calls | `ApiVector06` |
 
@@ -7172,7 +7226,7 @@ Witness: L1 121656 (armour, c1, controls, death, fuel, m10, m1complete, m2erbe, 
 | | |
 | --- | --- |
 | Runs (c1 from the game's entry at frame 23974, the loader left out: the title, the mission tape, Blast Em Mission played) | 4,124 calls, 1,553,494 t-states own (0.23 %) |
-| Runs (the other recordings) | 65,529 calls (`stage1/play2` 12,957, `stage1/missions` 12,811, `stage1/death` 12,655 and 6 more) |
+| Runs (the other recordings) | 117,532 calls (`stage2/rec/m4complete` 17,834, `stage2/rec/m1complete` 16,026, `stage1/play2` 12,957 and 11 more) |
 | Called from | `SoundTick` |
 | Calls | `SetNoise`, `EngineTone` |
 | Reads | `$D674`-`$D691` (`AYRegs`, `SelectCount`, `ExplosionCount`, `KillCount` and 11 more) |
@@ -7192,7 +7246,7 @@ Witness: L1 3337 (armour, c1, death, m1complete, m4complete, play2).
 | | |
 | --- | --- |
 | Runs (c1 from the game's entry at frame 23974, the loader left out: the title, the mission tape, Blast Em Mission played) | 107 calls, 9,739 t-states own (0.00 %) |
-| Runs (the other recordings) | 1,449 calls (`stage1/death` 896, `stage1/play2` 553) |
+| Runs (the other recordings) | 3,230 calls (`stage2/rec/m4complete` 1,149, `stage1/death` 896, `stage1/play2` 553 and 2 more) |
 | Called from | `SoundFrame` |
 | Reads | `$D67B`-`$D688` (`AYRegs+7`, `SelectCount`, `ExplosionCount`, `KillCount` and 4 more) |
 | Writes | `$D67A`-`$D67E` (`AYRegs+6`) |
@@ -7210,7 +7264,7 @@ Witness: L1 39 (armour, c1, controls, fuel, m1complete, m2erbe, m4complete, menu
 | | |
 | --- | --- |
 | Runs (c1 from the game's entry at frame 23974, the loader left out: the title, the mission tape, Blast Em Mission played) | 2 calls, 3,962 t-states own (0.00 %) |
-| Runs (the other recordings) | 30 calls (`stage1/missions` 16, `stage1/play2` 6, `stage1/menu` 4 and 2 more) |
+| Runs (the other recordings) | 37 calls (`stage1/missions` 16, `stage1/play2` 6, `stage1/menu` 4 and 7 more) |
 | Called from | `Bank0SoundOff`, `QuitKey` |
 | Writes | `$D674`-`$D689` (`AYRegs`, `SelectCount`, `ExplosionCount`, `KillCount` and 5 more); `$D7F0` (`l_D7E2+14`) |
 | Ports out | `$BFFD`, `$FFFD` |
@@ -7262,7 +7316,7 @@ Witness: L1 61 (c1, m1complete, m4complete, play2).
 | | |
 | --- | --- |
 | Runs (c1 from the game's entry at frame 23974, the loader left out: the title, the mission tape, Blast Em Mission played) | 15 calls, 765 t-states own (0.00 %) |
-| Runs (the other recordings) | 21 calls (`stage1/play2` 21) |
+| Runs (the other recordings) | 46 calls (`stage2/rec/m1complete` 24, `stage1/play2` 21, `stage2/rec/m4complete` 1) |
 | Called from | `MessageOnce` |
 | Writes | `$D68B` (`MessageSoundCount`) |
 
@@ -7300,7 +7354,7 @@ Witness: L1 17 (armour, death, m1complete, m4complete, play, play2).
 
 | | |
 | --- | --- |
-| Runs | not reached in `stage1/c1g`; in the other recordings 14 calls (`stage1/play2` 9, `stage1/play` 4, `stage1/death` 1) |
+| Runs | not reached in `stage1/c1g`; in the other recordings 17 calls (`stage1/play2` 9, `stage1/play` 4, `docs/bcC/rec/armour` 1 and 3 more) |
 | Called from | `SelectWeapon` |
 | Writes | `$D682` (`SelectCount`) |
 
@@ -7317,7 +7371,7 @@ Witness: L1 63 (armour, c1, death, m1complete, m4complete, play2).
 | | |
 | --- | --- |
 | Runs (c1 from the game's entry at frame 23974, the loader left out: the title, the mission tape, Blast Em Mission played) | 5 calls, 255 t-states own (0.00 %) |
-| Runs (the other recordings) | 27 calls (`stage1/play2` 19, `stage1/death` 8) |
+| Runs (the other recordings) | 58 calls (`stage2/rec/m4complete` 21, `stage1/play2` 19, `stage1/death` 8 and 2 more) |
 | Called from | `MessageOnce`, `Explode` |
 | Writes | `$D683` (`ExplosionCount`) |
 
@@ -7333,7 +7387,7 @@ Witness: L1 12 (armour, death, m1complete, m4complete).
 
 | | |
 | --- | --- |
-| Runs | not reached in `stage1/c1g`; in the other recordings 5 calls (`stage1/death` 5) |
+| Runs | not reached in `stage1/c1g`; in the other recordings 12 calls (`stage1/death` 5, `stage2/rec/m4complete` 4, `stage2/rec/m1complete` 2 and 1 more) |
 | Called from | `AddKillScore` |
 | Writes | `$D684` (`KillCount`) |
 
@@ -7393,7 +7447,7 @@ Witness: L1 147 (armour, death, m1complete, m4complete, play, play2).
 
 | | |
 | --- | --- |
-| Runs | not reached in `stage1/c1g`; in the other recordings 70 calls (`stage1/death` 60, `stage1/play2` 6, `stage1/play` 4) |
+| Runs | not reached in `stage1/c1g`; in the other recordings 147 calls (`stage1/death` 60, `docs/bcC/rec/armour` 53, `stage2/rec/m4complete` 19 and 3 more) |
 | Called from | `ConsumeAmmo` |
 | Writes | `$D686` (`FireSoundCount`) |
 
@@ -7410,7 +7464,7 @@ Witness: L1 56368 (armour, c1, death, fuel, m1complete, m2erbe, m4complete, miss
 | | |
 | --- | --- |
 | Runs (c1 from the game's entry at frame 23974, the loader left out: the title, the mission tape, Blast Em Mission played) | 982 calls, 227,299 t-states own (0.03 %) |
-| Runs (the other recordings) | 17,682 calls (`stage1/death` 10,012, `stage1/play2` 3,190, `stage1/missions` 2,195 and 2 more) |
+| Runs (the other recordings) | 55,386 calls (`stage2/rec/m4complete` 16,173, `stage2/rec/m1complete` 12,711, `stage1/death` 10,012 and 6 more) |
 | Called from | `SoundFrame` |
 | Calls | `ApiVector08` |
 | Reads | `$75F7` (`PlayerSpeed`); `$D67B`-`$D67F` (`AYRegs+7`) |
@@ -7535,7 +7589,8 @@ Witness: L1 11998 (c1, death, m2erbe, missions, play, play2).
 
 | | |
 | --- | --- |
-| Runs | not reached in `stage1/c1g`; in the other recordings 94 calls (`stage1/m2erbe` 94) |
+| Runs (c1 from the game's entry at frame 23974, the loader left out: the title, the mission tape, Blast Em Mission played) | 1,637 runs of its first instruction (entered by a jump or by running on, no routine of its own in the L1) |
+| Runs (the other recordings) | 94 calls (`stage1/m2erbe` 94) |
 | Called from | `ClipPolyX` (falls into), `ClipXInside` (tail) |
 | Calls | `ClipXInside` (tail), `IntersectColRight`, `IntersectCol0` |
 | Reads | `$66A8`-`$66B3` (`PolyYClipped`) |
@@ -7549,7 +7604,8 @@ Witness: L1 13550 (c1, death, m2erbe, menu, missions, play, play2).
 
 | | |
 | --- | --- |
-| Runs | not reached in `stage1/c1g`; in the other recordings 41 calls (`stage1/m2erbe` 41) |
+| Runs (c1 from the game's entry at frame 23974, the loader left out: the title, the mission tape, Blast Em Mission played) | 1,315 runs of its first instruction (entered by a jump or by running on, no routine of its own in the L1) |
+| Runs (the other recordings) | 41 calls (`stage1/m2erbe` 41) |
 | Called from | `ClipPolyX` (tail) |
 | Calls | `ClipXInside` (tail), `IntersectColRight`, `IntersectCol0` |
 | Reads | `$66A8`-`$66B3` (`PolyYClipped`) |
@@ -7563,7 +7619,8 @@ Witness: L1 121481 (c1, death, m10, m2erbe, m2ocean, menu, missions, play, play2
 
 | | |
 | --- | --- |
-| Runs | not reached in `stage1/c1g`; in the other recordings 4,117 calls (`stage1/menu` 2,787, `stage1/m2erbe` 874, `stage1/m10` 152 and 2 more) |
+| Runs (c1 from the game's entry at frame 23974, the loader left out: the title, the mission tape, Blast Em Mission played) | 8,211 runs of its first instruction (entered by a jump or by running on, no routine of its own in the L1) |
+| Runs (the other recordings) | 4,117 calls (`stage1/menu` 2,787, `stage1/m2erbe` 874, `stage1/m10` 152 and 2 more) |
 | Called from | `ClipPolyX` (tail), `ClipXRight` (tail), `ClipXLeft` (tail) |
 | Calls | `ClipXRight` (tail), `IntersectColRight`, `IntersectCol0` |
 | Reads | `$66A8`-`$66B9` (`PolyYClipped`) |
@@ -7848,7 +7905,8 @@ Input: HL = the distance from `$BBBC`, IX the record (+`$0B` the side offset). O
 
 | | |
 | --- | --- |
-| Runs | not reached in `stage1/c1g`; in the other recordings 3,584 calls (`stage1/death` 3,010, `stage1/play2` 574) |
+| Runs (c1 from the game's entry at frame 23974, the loader left out: the title, the mission tape, Blast Em Mission played) | 119 runs of its first instruction (entered by a jump or by running on, no routine of its own in the L1) |
+| Runs (the other recordings) | 3,584 calls (`stage1/death` 3,010, `stage1/play2` 574) |
 | Called from | `DrawDebrisNext`, `DrawDebrisSkip` (falls into) |
 | Reads | `$CFF7`-`$D020` (`DebrisRecords+11`); `$D033`-`$D034` (`DebrisRecords+71`); `$D047`-`$D048` (`DebrisRecords+91`); `$D05B`-`$D05C` (`DebrisRecords+111`); `$D06F`-`$D070` (`DebrisRecords+131`); `$D083`-`$D084` (`DebrisRecords+151`); 1 more ranges |
 
@@ -8007,8 +8065,8 @@ Witness: L1 19 (c1, death, m10, m2erbe, m2ocean, menu, missions, play, play2, se
 
 | | |
 | --- | --- |
-| Runs (c1 from the game's entry at frame 23974, the loader left out: the title, the mission tape, Blast Em Mission played) | run into, not called, 20 t-states own (0.00 %) |
-| Runs (the other recordings) | run into, not called (`stage1/menu`, `stage1/c1`, `stage1/play2` and 7 more) |
+| Runs (c1 from the game's entry at frame 23974, the loader left out: the title, the mission tape, Blast Em Mission played) | 2 runs of its first instruction (entered by a jump or by running on, no routine of its own in the L1), 20 t-states own (0.00 %) |
+| Runs (the other recordings) | 19 runs of its first instruction, entered by a jump (`stage1/menu` 8, `stage1/c1` 2, `stage1/play2` 2 and 7 more) |
 | Called from | `Command` |
 | Calls | `NextPattern` (tail) |
 
@@ -8020,7 +8078,7 @@ The mixer template is the operand at `$C446`. Witness: L1 2 (menu).
 
 | | |
 | --- | --- |
-| Runs | not reached in `stage1/c1g`; in the other recordings run into, not called (`stage1/menu`) |
+| Runs | not reached in `stage1/c1g`; in the other recordings 2 runs of its first instruction, entered by a jump (`stage1/menu` 2) |
 | Called from | `Command` |
 | Calls | `ReadStream` (tail) |
 | Reads | `$C0CE` (`ChannelC+38`); `$C446` (`MixerTemplateOp+1`) |
@@ -8034,8 +8092,8 @@ Witness: L1 66 (c1, death, m10, m2erbe, m2ocean, menu, missions, play, play2, se
 
 | | |
 | --- | --- |
-| Runs (c1 from the game's entry at frame 23974, the loader left out: the title, the mission tape, Blast Em Mission played) | run into, not called, 392 t-states own (0.00 %) |
-| Runs (the other recordings) | run into, not called (`stage1/missions`, `stage1/menu`, `stage1/play2` and 7 more) |
+| Runs (c1 from the game's entry at frame 23974, the loader left out: the title, the mission tape, Blast Em Mission played) | 4 runs of its first instruction (entered by a jump or by running on, no routine of its own in the L1), 392 t-states own (0.00 %) |
+| Runs (the other recordings) | 66 runs of its first instruction, entered by a jump (`stage1/missions` 19, `stage1/menu` 12, `stage1/play2` 9 and 7 more) |
 | Called from | `Command` |
 | Calls | `ReadStream` (tail) |
 | Reads | `$C080` (`ChannelRecords+38`); `$C0A7` (`ChannelB+38`); `$C0CE` (`ChannelC+38`); `$C446` (`MixerTemplateOp+1`) |
@@ -8049,8 +8107,8 @@ Witness: L1 41 (c1, death, m10, m2erbe, m2ocean, menu, missions, play, play2, se
 
 | | |
 | --- | --- |
-| Runs (c1 from the game's entry at frame 23974, the loader left out: the title, the mission tape, Blast Em Mission played) | run into, not called, 332 t-states own (0.00 %) |
-| Runs (the other recordings) | run into, not called (`stage1/missions`, `stage1/menu`, `stage1/play2` and 7 more) |
+| Runs (c1 from the game's entry at frame 23974, the loader left out: the title, the mission tape, Blast Em Mission played) | 4 runs of its first instruction (entered by a jump or by running on, no routine of its own in the L1), 332 t-states own (0.00 %) |
+| Runs (the other recordings) | 41 runs of its first instruction, entered by a jump (`stage1/missions` 10, `stage1/menu` 7, `stage1/play2` 6 and 7 more) |
 | Called from | `Command` |
 | Calls | `ReadStream` (tail) |
 | Reads | `$C0CE` (`ChannelC+38`); `$C446` (`MixerTemplateOp+1`) |
@@ -8084,8 +8142,8 @@ Witness: L1 38 (c1, m2erbe, menu, missions, play, play2).
 
 | | |
 | --- | --- |
-| Runs (c1 from the game's entry at frame 23974, the loader left out: the title, the mission tape, Blast Em Mission played) | run into, not called, 380 t-states own (0.00 %) |
-| Runs (the other recordings) | run into, not called (`stage1/missions`, `stage1/menu`, `stage1/play2` and 3 more) |
+| Runs (c1 from the game's entry at frame 23974, the loader left out: the title, the mission tape, Blast Em Mission played) | 4 runs of its first instruction (entered by a jump or by running on, no routine of its own in the L1), 380 t-states own (0.00 %) |
+| Runs (the other recordings) | 38 runs of its first instruction, entered by a jump (`stage1/missions` 16, `stage1/menu` 8, `stage1/play2` 6 and 3 more) |
 | Called from | `Command` |
 | Calls | `ReadStream` (tail) |
 | Reads | `$CB0A`-`$CB0B` (`Patterns+510`); `$CB1C`-`$CB1D` (`Patterns+528`) |
@@ -8109,8 +8167,8 @@ Witness: L1 28 (c1, m2erbe, menu, missions, play, play2).
 
 | | |
 | --- | --- |
-| Runs (c1 from the game's entry at frame 23974, the loader left out: the title, the mission tape, Blast Em Mission played) | run into, not called, 124 t-states own (0.00 %) |
-| Runs (the other recordings) | run into, not called (`stage1/menu`, `stage1/missions`, `stage1/c1` and 3 more) |
+| Runs (c1 from the game's entry at frame 23974, the loader left out: the title, the mission tape, Blast Em Mission played) | 4 runs of its first instruction (entered by a jump or by running on, no routine of its own in the L1), 124 t-states own (0.00 %) |
+| Runs (the other recordings) | 28 runs of its first instruction, entered by a jump (`stage1/menu` 10, `stage1/missions` 8, `stage1/c1` 4 and 3 more) |
 | Called from | `Command` |
 | Calls | `ReadStream` (tail) |
 | Writes | `$C077` (`ChannelRecords+29`); `$C09E` (`ChannelB+29`); `$C0C5` (`ChannelC+29`) |
@@ -8123,8 +8181,8 @@ Witness: L1 38 (c1, m2erbe, menu, missions, play, play2).
 
 | | |
 | --- | --- |
-| Runs (c1 from the game's entry at frame 23974, the loader left out: the title, the mission tape, Blast Em Mission played) | run into, not called, 124 t-states own (0.00 %) |
-| Runs (the other recordings) | run into, not called (`stage1/missions`, `stage1/menu`, `stage1/play2` and 3 more) |
+| Runs (c1 from the game's entry at frame 23974, the loader left out: the title, the mission tape, Blast Em Mission played) | 4 runs of its first instruction (entered by a jump or by running on, no routine of its own in the L1), 124 t-states own (0.00 %) |
+| Runs (the other recordings) | 38 runs of its first instruction, entered by a jump (`stage1/missions` 16, `stage1/menu` 8, `stage1/play2` 6 and 3 more) |
 | Called from | `Command` |
 | Calls | `ReadStream` (tail) |
 | Writes | `$C077` (`ChannelRecords+29`); `$C09E` (`ChannelB+29`) |
@@ -8157,7 +8215,7 @@ Witness: L1 1 (menu).
 
 | | |
 | --- | --- |
-| Runs | not reached in `stage1/c1g`; in the other recordings run into, not called (`stage1/menu`) |
+| Runs | not reached in `stage1/c1g`; in the other recordings 1 run of its first instruction, entered by a jump (`stage1/menu` 1) |
 | Called from | `Command` |
 | Calls | `SetDuration` (tail) |
 | Reads | `$C081` (`ChannelB`) |
@@ -8171,8 +8229,8 @@ Witness: L1 12 (c1, menu, play2).
 
 | | |
 | --- | --- |
-| Runs (c1 from the game's entry at frame 23974, the loader left out: the title, the mission tape, Blast Em Mission played) | run into, not called, 140 t-states own (0.00 %) |
-| Runs (the other recordings) | run into, not called (`stage1/menu`, `stage1/c1`, `stage1/play2`) |
+| Runs (c1 from the game's entry at frame 23974, the loader left out: the title, the mission tape, Blast Em Mission played) | 4 runs of its first instruction (entered by a jump or by running on, no routine of its own in the L1), 140 t-states own (0.00 %) |
+| Runs (the other recordings) | 12 runs of its first instruction, entered by a jump (`stage1/menu` 6, `stage1/c1` 4, `stage1/play2` 2) |
 | Called from | `Command` |
 | Calls | `SetDuration` (tail) |
 | Reads | `$C05A` (`ChannelRecords`); `$C081` (`ChannelB`) |
@@ -8196,8 +8254,8 @@ Witness: L1 64 (c1, m2erbe, menu, missions, play, play2).
 
 | | |
 | --- | --- |
-| Runs (c1 from the game's entry at frame 23974, the loader left out: the title, the mission tape, Blast Em Mission played) | run into, not called, 248 t-states own (0.00 %) |
-| Runs (the other recordings) | run into, not called (`stage1/missions`, `stage1/menu`, `stage1/play2` and 3 more) |
+| Runs (c1 from the game's entry at frame 23974, the loader left out: the title, the mission tape, Blast Em Mission played) | 8 runs of its first instruction (entered by a jump or by running on, no routine of its own in the L1), 248 t-states own (0.00 %) |
+| Runs (the other recordings) | 64 runs of its first instruction, entered by a jump (`stage1/missions` 24, `stage1/menu` 16, `stage1/play2` 10 and 3 more) |
 | Called from | `Command` |
 | Calls | `ReadStream` (tail) |
 | Writes | `$C079` (`ChannelRecords+31`); `$C0A0` (`ChannelB+31`); `$C0C7` (`ChannelC+31`) |
@@ -8210,8 +8268,8 @@ Witness: L1 66 (c1, m2erbe, menu, missions, play, play2).
 
 | | |
 | --- | --- |
-| Runs (c1 from the game's entry at frame 23974, the loader left out: the title, the mission tape, Blast Em Mission played) | run into, not called, 304 t-states own (0.00 %) |
-| Runs (the other recordings) | run into, not called (`stage1/missions`, `stage1/menu`, `stage1/play2` and 3 more) |
+| Runs (c1 from the game's entry at frame 23974, the loader left out: the title, the mission tape, Blast Em Mission played) | 8 runs of its first instruction (entered by a jump or by running on, no routine of its own in the L1), 304 t-states own (0.00 %) |
+| Runs (the other recordings) | 66 runs of its first instruction, entered by a jump (`stage1/missions` 24, `stage1/menu` 18, `stage1/play2` 10 and 3 more) |
 | Called from | `Command` |
 | Calls | `ReadStream` (tail) |
 | Writes | `$C07E` (`ChannelRecords+36`); `$C0A5` (`ChannelB+36`); `$C0CC` (`ChannelC+36`) |
@@ -8224,7 +8282,7 @@ Witness: L1 2 (menu).
 
 | | |
 | --- | --- |
-| Runs | not reached in `stage1/c1g`; in the other recordings run into, not called (`stage1/menu`) |
+| Runs | not reached in `stage1/c1g`; in the other recordings 2 runs of its first instruction, entered by a jump (`stage1/menu` 2) |
 | Called from | `Command` |
 | Calls | `ReadStream` (tail) |
 | Reads | `$C910` (`Patterns+4`); `$C93C` (`Patterns+48`) |
@@ -8377,7 +8435,7 @@ tape, Blast Em Mission played), and `work/stage1/menu`, `work/stage1/missions`, 
 | [`statusview`](#bank-6-statusview) | `$C079`-`$C113` | 5 of 8 |
 | [`stores`](#bank-6-stores) | `$C114`-`$C125`, `$C165`-`$C408`, `$CA8B`-`$CC53`, `$D0A0`-`$D0C9`, `$D6DA`-`$D77E`, `$D7BB`-`$D9B1` | 20 of 32 |
 | [`numbers`](#bank-6-numbers) | `$C126`-`$C164`, `$D353`-`$D3C8` | 4 of 4 |
-| [`title`](#bank-6-title) | `$C409`-`$C4FB` | 2 of 4 |
+| [`title`](#bank-6-title) | `$C409`-`$C4FB` | 1 of 3 |
 | [`password`](#bank-6-password) | `$C4FC`-`$C75E`, `$CE2E`-`$CFA8` | 14 of 28 |
 | [`briefing`](#bank-6-briefing) | `$C98A`-`$CA8A` | 3 of 5 |
 | [`results`](#bank-6-results) | `$CC54`-`$CE2D` | 9 of 15 |
@@ -8877,7 +8935,8 @@ Around every change the interrupt's pointer job is off (`$83BF` = 0) and the poi
 
 | | |
 | --- | --- |
-| Runs | not reached in `stage1/c1g`; in the other recordings 13 calls (`stage1/play2` 9, `stage1/play` 4) |
+| Runs (c1 from the game's entry at frame 23974, the loader left out: the title, the mission tape, Blast Em Mission played) | 1 run of its first instruction (entered by a jump or by running on, no routine of its own in the L1) |
+| Runs (the other recordings) | 13 calls (`stage1/play2` 9, `stage1/play` 4) |
 | Called from | `SlotZoneB` (tail), `SlotZoneA` (tail), `SlotZoneC` (tail), `SlotZoneD` (falls into) |
 | Calls | `PrintPayloadWeight`, `DrawSlotIcon`, `SavePointerBackground`, `RestorePointerBackground` |
 | Reads | `$8368`-`$837E` (`WeaponSlots`); `$C11B`-`$C11C` (`PayloadWeightOp+1`); `$C19C` (`SlotTypeOp+1`); `$C23A` (`PayloadExceeded`); `$C371`-`$C3FE` (`CurrentWeapon`, `WeaponRecords`) |
@@ -9017,7 +9076,7 @@ Called when a screen is left. Witness: L1 97 (c1, death, m10, m2erbe, m2ocean, m
 | --- | --- |
 | Runs (c1 from the game's entry at frame 23974, the loader left out: the title, the mission tape, Blast Em Mission played) | 5 calls, 265 t-states own (0.00 %) |
 | Runs (the other recordings) | 97 calls (`stage1/missions` 34, `stage1/menu` 28, `stage1/play2` 12 and 7 more) |
-| Called from | `TitleLoop`, `MissionCatalogueScreen`, `BriefingScreen`, `StoresScreen`, `MissionStatusScreen` |
+| Called from | `TitleMenu`, `MissionCatalogueScreen`, `BriefingScreen`, `StoresScreen`, `MissionStatusScreen` |
 | Calls | `DrawPointer` (tail) |
 | Writes | `$83BF` (`PointerShown+1`); `$D283`-`$D284` (`ShiftPointer+1`) |
 
@@ -9134,20 +9193,9 @@ TitleLoop: StartViewPass `$9882`, the model through Bank3Render `$72BE` (IX = `$
 | --- | --- |
 | Runs (c1 from the game's entry at frame 23974, the loader left out: the title, the mission tape, Blast Em Mission played) | 2 calls, 30,434 t-states own (0.00 %) |
 | Runs (the other recordings) | 19 calls (`stage1/missions` 8, `stage1/menu` 4, `stage1/play2` 3 and 3 more) |
-| Calls | `SavePointerBackground`, `SetTitleWindow`, `CataloguePointerLimits`, `SetPointerLimits` |
+| Calls | `ShowWaitPointer`, `SavePointerBackground`, `SetTitleWindow`, `CataloguePointerLimits`, `SetPointerLimits` |
 | Reads | `$68E7` (`MissionScore+5`); `$6A6D` (`ViewChangeFlag+1`) |
 | Writes | `$5920`-`$5A1F` (screen); `$68E7` (`MissionScore+5`); `$7256` (`FirstFrameHook`); `$757A` (`AwolState+2`); `$7DC0`-`$7DC1` (`PointerPos`); `$83BF` (`PointerShown+1`); 5 more ranges |
-
-#### `TitleLoop` (`$C4AD`)
-
-**TitleLoop**
-
-| | |
-| --- | --- |
-| Runs | not reached in `stage1/c1g`; in the other recordings run into, not called (`stage1/death`, `stage1/m10`, `stage1/m2ocean` and 1 more) |
-| Calls | `ShowWaitPointer` |
-| Reads | `$68E7` (`MissionScore+5`); `$6A6D` (`ViewChangeFlag+1`) |
-| Writes | `$68E7` (`MissionScore+5`) |
 
 ### Bank 6: password
 
@@ -9985,7 +10033,7 @@ Shifts the 30 bytes up to its own LDDR down by one (the code already run is garb
 
 | | |
 | --- | --- |
-| Runs | not reached in the recordings |
+| Runs (c1 from power-on to the game's entry at frame 23974: the load) | 1 run of its first instruction (entered by a jump or by running on, no routine of its own in the L1) |
 
 #### `Layer002` (`$AC6E`)
 
@@ -9995,7 +10043,7 @@ Shifts the 30 bytes up to its own LDDR down by one (the code already run is garb
 
 | | |
 | --- | --- |
-| Runs | not reached in the recordings |
+| Runs (c1 from power-on to the game's entry at frame 23974: the load) | 1 run of its first instruction (entered by a jump or by running on, no routine of its own in the L1) |
 
 #### `Layer003` (`$AC91`)
 
@@ -10005,7 +10053,7 @@ Shifts the 30 bytes up to its own LDDR down by one (the code already run is garb
 
 | | |
 | --- | --- |
-| Runs | not reached in the recordings |
+| Runs (c1 from power-on to the game's entry at frame 23974: the load) | 1 run of its first instruction (entered by a jump or by running on, no routine of its own in the L1) |
 
 #### `Layer004` (`$ACB0`)
 
@@ -10015,7 +10063,7 @@ Shifts the 30 bytes up to its own LDDR down by one (the code already run is garb
 
 | | |
 | --- | --- |
-| Runs | not reached in the recordings |
+| Runs (c1 from power-on to the game's entry at frame 23974: the load) | 1 run of its first instruction (entered by a jump or by running on, no routine of its own in the L1) |
 
 #### `Layer005` (`$ACD3`)
 
@@ -10025,7 +10073,7 @@ Shifts the 30 bytes up to its own LDDR down by one (the code already run is garb
 
 | | |
 | --- | --- |
-| Runs | not reached in the recordings |
+| Runs (c1 from power-on to the game's entry at frame 23974: the load) | 1 run of its first instruction (entered by a jump or by running on, no routine of its own in the L1) |
 
 #### `Layer006` (`$ACE4`)
 
@@ -10035,7 +10083,7 @@ Shifts the 30 bytes up to its own LDDR down by one (the code already run is garb
 
 | | |
 | --- | --- |
-| Runs | not reached in the recordings |
+| Runs (c1 from power-on to the game's entry at frame 23974: the load) | 1 run of its first instruction (entered by a jump or by running on, no routine of its own in the L1) |
 
 #### `sub_ACFB` (`$ACFB`)
 
@@ -10043,7 +10091,7 @@ Shifts the 30 bytes up to its own LDDR down by one (the code already run is garb
 
 | | |
 | --- | --- |
-| Runs | not reached in the recordings |
+| Runs (c1 from power-on to the game's entry at frame 23974: the load) | 1 run of its first instruction (entered by a jump or by running on, no routine of its own in the L1) |
 
 #### `Layer007` (`$AD11`)
 
@@ -10053,7 +10101,7 @@ Shifts the 30 bytes up to its own LDDR down by one (the code already run is garb
 
 | | |
 | --- | --- |
-| Runs | not reached in the recordings |
+| Runs (c1 from power-on to the game's entry at frame 23974: the load) | 1 run of its first instruction (entered by a jump or by running on, no routine of its own in the L1) |
 
 #### `Layer008` (`$AD36`)
 
@@ -10063,7 +10111,7 @@ Shifts the 30 bytes up to its own LDDR down by one (the code already run is garb
 
 | | |
 | --- | --- |
-| Runs | not reached in the recordings |
+| Runs (c1 from power-on to the game's entry at frame 23974: the load) | 1 run of its first instruction (entered by a jump or by running on, no routine of its own in the L1) |
 
 #### `Layer009` (`$AD55`)
 
@@ -10073,7 +10121,7 @@ Shifts the 30 bytes up to its own LDDR down by one (the code already run is garb
 
 | | |
 | --- | --- |
-| Runs | not reached in the recordings |
+| Runs (c1 from power-on to the game's entry at frame 23974: the load) | 1 run of its first instruction (entered by a jump or by running on, no routine of its own in the L1) |
 
 #### `Layer010` (`$AD78`)
 
@@ -10083,7 +10131,7 @@ Shifts the 30 bytes up to its own LDDR down by one (the code already run is garb
 
 | | |
 | --- | --- |
-| Runs | not reached in the recordings |
+| Runs (c1 from power-on to the game's entry at frame 23974: the load) | 1 run of its first instruction (entered by a jump or by running on, no routine of its own in the L1) |
 
 #### `Layer011` (`$AD89`)
 
@@ -10093,7 +10141,7 @@ Shifts the 30 bytes up to its own LDDR down by one (the code already run is garb
 
 | | |
 | --- | --- |
-| Runs | not reached in the recordings |
+| Runs (c1 from power-on to the game's entry at frame 23974: the load) | 1 run of its first instruction (entered by a jump or by running on, no routine of its own in the L1) |
 
 #### `Layer012` (`$ADAC`)
 
@@ -10103,7 +10151,7 @@ Shifts the 30 bytes up to its own LDDR down by one (the code already run is garb
 
 | | |
 | --- | --- |
-| Runs | not reached in the recordings |
+| Runs (c1 from power-on to the game's entry at frame 23974: the load) | 1 run of its first instruction (entered by a jump or by running on, no routine of its own in the L1) |
 
 #### `Layer013` (`$ADCB`)
 
@@ -10113,7 +10161,7 @@ Shifts the 30 bytes up to its own LDDR down by one (the code already run is garb
 
 | | |
 | --- | --- |
-| Runs | not reached in the recordings |
+| Runs (c1 from power-on to the game's entry at frame 23974: the load) | 1 run of its first instruction (entered by a jump or by running on, no routine of its own in the L1) |
 
 #### `Layer014` (`$ADEE`)
 
@@ -10123,7 +10171,7 @@ Shifts the 30 bytes up to its own LDDR down by one (the code already run is garb
 
 | | |
 | --- | --- |
-| Runs | not reached in the recordings |
+| Runs (c1 from power-on to the game's entry at frame 23974: the load) | 1 run of its first instruction (entered by a jump or by running on, no routine of its own in the L1) |
 
 #### `Layer015` (`$ADFF`)
 
@@ -10133,7 +10181,7 @@ Shifts the 30 bytes up to its own LDDR down by one (the code already run is garb
 
 | | |
 | --- | --- |
-| Runs | not reached in the recordings |
+| Runs (c1 from power-on to the game's entry at frame 23974: the load) | 1 run of its first instruction (entered by a jump or by running on, no routine of its own in the L1) |
 
 #### `sub_AE16` (`$AE16`)
 
@@ -10141,7 +10189,7 @@ Shifts the 30 bytes up to its own LDDR down by one (the code already run is garb
 
 | | |
 | --- | --- |
-| Runs | not reached in the recordings |
+| Runs (c1 from power-on to the game's entry at frame 23974: the load) | 1 run of its first instruction (entered by a jump or by running on, no routine of its own in the L1) |
 
 #### `Layer016` (`$AE2C`)
 
@@ -10151,7 +10199,7 @@ Shifts the 30 bytes up to its own LDDR down by one (the code already run is garb
 
 | | |
 | --- | --- |
-| Runs | not reached in the recordings |
+| Runs (c1 from power-on to the game's entry at frame 23974: the load) | 1 run of its first instruction (entered by a jump or by running on, no routine of its own in the L1) |
 
 #### `Layer017` (`$AE51`)
 
@@ -10161,7 +10209,7 @@ Shifts the 30 bytes up to its own LDDR down by one (the code already run is garb
 
 | | |
 | --- | --- |
-| Runs | not reached in the recordings |
+| Runs (c1 from power-on to the game's entry at frame 23974: the load) | 1 run of its first instruction (entered by a jump or by running on, no routine of its own in the L1) |
 
 #### `Layer018` (`$AE70`)
 
@@ -10171,7 +10219,7 @@ Shifts the 30 bytes up to its own LDDR down by one (the code already run is garb
 
 | | |
 | --- | --- |
-| Runs | not reached in the recordings |
+| Runs (c1 from power-on to the game's entry at frame 23974: the load) | 1 run of its first instruction (entered by a jump or by running on, no routine of its own in the L1) |
 
 #### `Layer019` (`$AE93`)
 
@@ -10181,7 +10229,7 @@ Shifts the 30 bytes up to its own LDDR down by one (the code already run is garb
 
 | | |
 | --- | --- |
-| Runs | not reached in the recordings |
+| Runs (c1 from power-on to the game's entry at frame 23974: the load) | 1 run of its first instruction (entered by a jump or by running on, no routine of its own in the L1) |
 
 #### `Layer020` (`$AEA4`)
 
@@ -10191,7 +10239,7 @@ Shifts the 30 bytes up to its own LDDR down by one (the code already run is garb
 
 | | |
 | --- | --- |
-| Runs | not reached in the recordings |
+| Runs (c1 from power-on to the game's entry at frame 23974: the load) | 1 run of its first instruction (entered by a jump or by running on, no routine of its own in the L1) |
 
 #### `Layer021` (`$AEC7`)
 
@@ -10201,7 +10249,7 @@ Shifts the 30 bytes up to its own LDDR down by one (the code already run is garb
 
 | | |
 | --- | --- |
-| Runs | not reached in the recordings |
+| Runs (c1 from power-on to the game's entry at frame 23974: the load) | 1 run of its first instruction (entered by a jump or by running on, no routine of its own in the L1) |
 
 #### `Layer022` (`$AEE6`)
 
@@ -10211,7 +10259,7 @@ Shifts the 30 bytes up to its own LDDR down by one (the code already run is garb
 
 | | |
 | --- | --- |
-| Runs | not reached in the recordings |
+| Runs (c1 from power-on to the game's entry at frame 23974: the load) | 1 run of its first instruction (entered by a jump or by running on, no routine of its own in the L1) |
 
 #### `Layer023` (`$AF09`)
 
@@ -10221,7 +10269,7 @@ Shifts the 30 bytes up to its own LDDR down by one (the code already run is garb
 
 | | |
 | --- | --- |
-| Runs | not reached in the recordings |
+| Runs (c1 from power-on to the game's entry at frame 23974: the load) | 1 run of its first instruction (entered by a jump or by running on, no routine of its own in the L1) |
 
 #### `Layer024` (`$AF1A`)
 
@@ -10231,7 +10279,7 @@ Shifts the 30 bytes up to its own LDDR down by one (the code already run is garb
 
 | | |
 | --- | --- |
-| Runs | not reached in the recordings |
+| Runs (c1 from power-on to the game's entry at frame 23974: the load) | 1 run of its first instruction (entered by a jump or by running on, no routine of its own in the L1) |
 
 #### `sub_AF31` (`$AF31`)
 
@@ -10239,7 +10287,7 @@ Shifts the 30 bytes up to its own LDDR down by one (the code already run is garb
 
 | | |
 | --- | --- |
-| Runs | not reached in the recordings |
+| Runs (c1 from power-on to the game's entry at frame 23974: the load) | 1 run of its first instruction (entered by a jump or by running on, no routine of its own in the L1) |
 
 #### `Layer025` (`$AF47`)
 
@@ -10249,7 +10297,7 @@ Shifts the 30 bytes up to its own LDDR down by one (the code already run is garb
 
 | | |
 | --- | --- |
-| Runs | not reached in the recordings |
+| Runs (c1 from power-on to the game's entry at frame 23974: the load) | 1 run of its first instruction (entered by a jump or by running on, no routine of its own in the L1) |
 
 #### `Layer026` (`$AF6C`)
 
@@ -10259,7 +10307,7 @@ Shifts the 30 bytes up to its own LDDR down by one (the code already run is garb
 
 | | |
 | --- | --- |
-| Runs | not reached in the recordings |
+| Runs (c1 from power-on to the game's entry at frame 23974: the load) | 1 run of its first instruction (entered by a jump or by running on, no routine of its own in the L1) |
 
 #### `Layer027` (`$AF8B`)
 
@@ -10269,7 +10317,7 @@ Shifts the 30 bytes up to its own LDDR down by one (the code already run is garb
 
 | | |
 | --- | --- |
-| Runs | not reached in the recordings |
+| Runs (c1 from power-on to the game's entry at frame 23974: the load) | 1 run of its first instruction (entered by a jump or by running on, no routine of its own in the L1) |
 
 #### `Layer028` (`$AFAE`)
 
@@ -10279,7 +10327,7 @@ Shifts the 30 bytes up to its own LDDR down by one (the code already run is garb
 
 | | |
 | --- | --- |
-| Runs | not reached in the recordings |
+| Runs (c1 from power-on to the game's entry at frame 23974: the load) | 1 run of its first instruction (entered by a jump or by running on, no routine of its own in the L1) |
 
 #### `Layer029` (`$AFBF`)
 
@@ -10289,7 +10337,7 @@ Shifts the 30 bytes up to its own LDDR down by one (the code already run is garb
 
 | | |
 | --- | --- |
-| Runs | not reached in the recordings |
+| Runs (c1 from power-on to the game's entry at frame 23974: the load) | 1 run of its first instruction (entered by a jump or by running on, no routine of its own in the L1) |
 
 #### `Layer030` (`$AFE2`)
 
@@ -10299,7 +10347,7 @@ Shifts the 30 bytes up to its own LDDR down by one (the code already run is garb
 
 | | |
 | --- | --- |
-| Runs | not reached in the recordings |
+| Runs (c1 from power-on to the game's entry at frame 23974: the load) | 1 run of its first instruction (entered by a jump or by running on, no routine of its own in the L1) |
 
 #### `Layer031` (`$B001`)
 
@@ -10309,7 +10357,7 @@ Shifts the 30 bytes up to its own LDDR down by one (the code already run is garb
 
 | | |
 | --- | --- |
-| Runs | not reached in the recordings |
+| Runs (c1 from power-on to the game's entry at frame 23974: the load) | 1 run of its first instruction (entered by a jump or by running on, no routine of its own in the L1) |
 
 #### `Layer032` (`$B024`)
 
@@ -10319,7 +10367,7 @@ Shifts the 30 bytes up to its own LDDR down by one (the code already run is garb
 
 | | |
 | --- | --- |
-| Runs | not reached in the recordings |
+| Runs (c1 from power-on to the game's entry at frame 23974: the load) | 1 run of its first instruction (entered by a jump or by running on, no routine of its own in the L1) |
 
 #### `Layer033` (`$B035`)
 
@@ -10329,7 +10377,7 @@ Shifts the 30 bytes up to its own LDDR down by one (the code already run is garb
 
 | | |
 | --- | --- |
-| Runs | not reached in the recordings |
+| Runs (c1 from power-on to the game's entry at frame 23974: the load) | 1 run of its first instruction (entered by a jump or by running on, no routine of its own in the L1) |
 
 #### `sub_B04C` (`$B04C`)
 
@@ -10337,7 +10385,7 @@ Shifts the 30 bytes up to its own LDDR down by one (the code already run is garb
 
 | | |
 | --- | --- |
-| Runs | not reached in the recordings |
+| Runs (c1 from power-on to the game's entry at frame 23974: the load) | 1 run of its first instruction (entered by a jump or by running on, no routine of its own in the L1) |
 
 #### `Layer034` (`$B062`)
 
@@ -10347,7 +10395,7 @@ Shifts the 30 bytes up to its own LDDR down by one (the code already run is garb
 
 | | |
 | --- | --- |
-| Runs | not reached in the recordings |
+| Runs (c1 from power-on to the game's entry at frame 23974: the load) | 1 run of its first instruction (entered by a jump or by running on, no routine of its own in the L1) |
 
 #### `Layer035` (`$B087`)
 
@@ -10357,7 +10405,7 @@ Shifts the 30 bytes up to its own LDDR down by one (the code already run is garb
 
 | | |
 | --- | --- |
-| Runs | not reached in the recordings |
+| Runs (c1 from power-on to the game's entry at frame 23974: the load) | 1 run of its first instruction (entered by a jump or by running on, no routine of its own in the L1) |
 
 #### `Layer036` (`$B0A6`)
 
@@ -10367,7 +10415,7 @@ Shifts the 30 bytes up to its own LDDR down by one (the code already run is garb
 
 | | |
 | --- | --- |
-| Runs | not reached in the recordings |
+| Runs (c1 from power-on to the game's entry at frame 23974: the load) | 1 run of its first instruction (entered by a jump or by running on, no routine of its own in the L1) |
 
 #### `Layer037` (`$B0C9`)
 
@@ -10377,7 +10425,7 @@ Shifts the 30 bytes up to its own LDDR down by one (the code already run is garb
 
 | | |
 | --- | --- |
-| Runs | not reached in the recordings |
+| Runs (c1 from power-on to the game's entry at frame 23974: the load) | 1 run of its first instruction (entered by a jump or by running on, no routine of its own in the L1) |
 
 #### `Layer038` (`$B0DA`)
 
@@ -10387,7 +10435,7 @@ Shifts the 30 bytes up to its own LDDR down by one (the code already run is garb
 
 | | |
 | --- | --- |
-| Runs | not reached in the recordings |
+| Runs (c1 from power-on to the game's entry at frame 23974: the load) | 1 run of its first instruction (entered by a jump or by running on, no routine of its own in the L1) |
 
 #### `Layer039` (`$B0FD`)
 
@@ -10397,7 +10445,7 @@ Shifts the 30 bytes up to its own LDDR down by one (the code already run is garb
 
 | | |
 | --- | --- |
-| Runs | not reached in the recordings |
+| Runs (c1 from power-on to the game's entry at frame 23974: the load) | 1 run of its first instruction (entered by a jump or by running on, no routine of its own in the L1) |
 
 #### `Layer040` (`$B11C`)
 
@@ -10407,7 +10455,7 @@ Shifts the 30 bytes up to its own LDDR down by one (the code already run is garb
 
 | | |
 | --- | --- |
-| Runs | not reached in the recordings |
+| Runs (c1 from power-on to the game's entry at frame 23974: the load) | 1 run of its first instruction (entered by a jump or by running on, no routine of its own in the L1) |
 
 #### `Layer041` (`$B13F`)
 
@@ -10417,7 +10465,7 @@ Shifts the 30 bytes up to its own LDDR down by one (the code already run is garb
 
 | | |
 | --- | --- |
-| Runs | not reached in the recordings |
+| Runs (c1 from power-on to the game's entry at frame 23974: the load) | 1 run of its first instruction (entered by a jump or by running on, no routine of its own in the L1) |
 
 #### `Layer042` (`$B150`)
 
@@ -10427,7 +10475,7 @@ Shifts the 30 bytes up to its own LDDR down by one (the code already run is garb
 
 | | |
 | --- | --- |
-| Runs | not reached in the recordings |
+| Runs (c1 from power-on to the game's entry at frame 23974: the load) | 1 run of its first instruction (entered by a jump or by running on, no routine of its own in the L1) |
 
 #### `sub_B167` (`$B167`)
 
@@ -10435,7 +10483,7 @@ Shifts the 30 bytes up to its own LDDR down by one (the code already run is garb
 
 | | |
 | --- | --- |
-| Runs | not reached in the recordings |
+| Runs (c1 from power-on to the game's entry at frame 23974: the load) | 1 run of its first instruction (entered by a jump or by running on, no routine of its own in the L1) |
 
 #### `Layer043` (`$B17D`)
 
@@ -10445,7 +10493,7 @@ Shifts the 30 bytes up to its own LDDR down by one (the code already run is garb
 
 | | |
 | --- | --- |
-| Runs | not reached in the recordings |
+| Runs (c1 from power-on to the game's entry at frame 23974: the load) | 1 run of its first instruction (entered by a jump or by running on, no routine of its own in the L1) |
 
 #### `Layer044` (`$B1A2`)
 
@@ -10455,7 +10503,7 @@ Shifts the 30 bytes up to its own LDDR down by one (the code already run is garb
 
 | | |
 | --- | --- |
-| Runs | not reached in the recordings |
+| Runs (c1 from power-on to the game's entry at frame 23974: the load) | 1 run of its first instruction (entered by a jump or by running on, no routine of its own in the L1) |
 
 #### `Layer045` (`$B1C1`)
 
@@ -10465,7 +10513,7 @@ Shifts the 30 bytes up to its own LDDR down by one (the code already run is garb
 
 | | |
 | --- | --- |
-| Runs | not reached in the recordings |
+| Runs (c1 from power-on to the game's entry at frame 23974: the load) | 1 run of its first instruction (entered by a jump or by running on, no routine of its own in the L1) |
 
 #### `Layer046` (`$B1E4`)
 
@@ -10475,7 +10523,7 @@ Shifts the 30 bytes up to its own LDDR down by one (the code already run is garb
 
 | | |
 | --- | --- |
-| Runs | not reached in the recordings |
+| Runs (c1 from power-on to the game's entry at frame 23974: the load) | 1 run of its first instruction (entered by a jump or by running on, no routine of its own in the L1) |
 
 #### `Layer047` (`$B1F5`)
 
@@ -10485,7 +10533,7 @@ Shifts the 30 bytes up to its own LDDR down by one (the code already run is garb
 
 | | |
 | --- | --- |
-| Runs | not reached in the recordings |
+| Runs (c1 from power-on to the game's entry at frame 23974: the load) | 1 run of its first instruction (entered by a jump or by running on, no routine of its own in the L1) |
 
 #### `Layer048` (`$B218`)
 
@@ -10495,7 +10543,7 @@ Shifts the 30 bytes up to its own LDDR down by one (the code already run is garb
 
 | | |
 | --- | --- |
-| Runs | not reached in the recordings |
+| Runs (c1 from power-on to the game's entry at frame 23974: the load) | 1 run of its first instruction (entered by a jump or by running on, no routine of its own in the L1) |
 
 #### `Layer049` (`$B237`)
 
@@ -10505,7 +10553,7 @@ Shifts the 30 bytes up to its own LDDR down by one (the code already run is garb
 
 | | |
 | --- | --- |
-| Runs | not reached in the recordings |
+| Runs (c1 from power-on to the game's entry at frame 23974: the load) | 1 run of its first instruction (entered by a jump or by running on, no routine of its own in the L1) |
 
 #### `Layer050` (`$B25A`)
 
@@ -10515,7 +10563,7 @@ Shifts the 30 bytes up to its own LDDR down by one (the code already run is garb
 
 | | |
 | --- | --- |
-| Runs | not reached in the recordings |
+| Runs (c1 from power-on to the game's entry at frame 23974: the load) | 1 run of its first instruction (entered by a jump or by running on, no routine of its own in the L1) |
 
 #### `Layer051` (`$B26B`)
 
@@ -10525,7 +10573,7 @@ Shifts the 30 bytes up to its own LDDR down by one (the code already run is garb
 
 | | |
 | --- | --- |
-| Runs | not reached in the recordings |
+| Runs (c1 from power-on to the game's entry at frame 23974: the load) | 1 run of its first instruction (entered by a jump or by running on, no routine of its own in the L1) |
 
 #### `sub_B282` (`$B282`)
 
@@ -10533,7 +10581,7 @@ Shifts the 30 bytes up to its own LDDR down by one (the code already run is garb
 
 | | |
 | --- | --- |
-| Runs | not reached in the recordings |
+| Runs (c1 from power-on to the game's entry at frame 23974: the load) | 1 run of its first instruction (entered by a jump or by running on, no routine of its own in the L1) |
 
 #### `Layer052` (`$B298`)
 
@@ -10543,7 +10591,7 @@ Shifts the 30 bytes up to its own LDDR down by one (the code already run is garb
 
 | | |
 | --- | --- |
-| Runs | not reached in the recordings |
+| Runs (c1 from power-on to the game's entry at frame 23974: the load) | 1 run of its first instruction (entered by a jump or by running on, no routine of its own in the L1) |
 
 #### `Layer053` (`$B2BD`)
 
@@ -10553,7 +10601,7 @@ Shifts the 30 bytes up to its own LDDR down by one (the code already run is garb
 
 | | |
 | --- | --- |
-| Runs | not reached in the recordings |
+| Runs (c1 from power-on to the game's entry at frame 23974: the load) | 1 run of its first instruction (entered by a jump or by running on, no routine of its own in the L1) |
 
 #### `Layer054` (`$B2DC`)
 
@@ -10563,7 +10611,7 @@ Shifts the 30 bytes up to its own LDDR down by one (the code already run is garb
 
 | | |
 | --- | --- |
-| Runs | not reached in the recordings |
+| Runs (c1 from power-on to the game's entry at frame 23974: the load) | 1 run of its first instruction (entered by a jump or by running on, no routine of its own in the L1) |
 
 #### `Layer055` (`$B2FF`)
 
@@ -10573,7 +10621,7 @@ Shifts the 30 bytes up to its own LDDR down by one (the code already run is garb
 
 | | |
 | --- | --- |
-| Runs | not reached in the recordings |
+| Runs (c1 from power-on to the game's entry at frame 23974: the load) | 1 run of its first instruction (entered by a jump or by running on, no routine of its own in the L1) |
 
 #### `Layer056` (`$B310`)
 
@@ -10583,7 +10631,7 @@ Shifts the 30 bytes up to its own LDDR down by one (the code already run is garb
 
 | | |
 | --- | --- |
-| Runs | not reached in the recordings |
+| Runs (c1 from power-on to the game's entry at frame 23974: the load) | 1 run of its first instruction (entered by a jump or by running on, no routine of its own in the L1) |
 
 #### `Layer057` (`$B333`)
 
@@ -10593,7 +10641,7 @@ Shifts the 30 bytes up to its own LDDR down by one (the code already run is garb
 
 | | |
 | --- | --- |
-| Runs | not reached in the recordings |
+| Runs (c1 from power-on to the game's entry at frame 23974: the load) | 1 run of its first instruction (entered by a jump or by running on, no routine of its own in the L1) |
 
 #### `Layer058` (`$B352`)
 
@@ -10603,7 +10651,7 @@ Shifts the 30 bytes up to its own LDDR down by one (the code already run is garb
 
 | | |
 | --- | --- |
-| Runs | not reached in the recordings |
+| Runs (c1 from power-on to the game's entry at frame 23974: the load) | 1 run of its first instruction (entered by a jump or by running on, no routine of its own in the L1) |
 
 #### `Layer059` (`$B375`)
 
@@ -10613,7 +10661,7 @@ Shifts the 30 bytes up to its own LDDR down by one (the code already run is garb
 
 | | |
 | --- | --- |
-| Runs | not reached in the recordings |
+| Runs (c1 from power-on to the game's entry at frame 23974: the load) | 1 run of its first instruction (entered by a jump or by running on, no routine of its own in the L1) |
 
 #### `Layer060` (`$B386`)
 
@@ -10623,7 +10671,7 @@ Shifts the 30 bytes up to its own LDDR down by one (the code already run is garb
 
 | | |
 | --- | --- |
-| Runs | not reached in the recordings |
+| Runs (c1 from power-on to the game's entry at frame 23974: the load) | 1 run of its first instruction (entered by a jump or by running on, no routine of its own in the L1) |
 
 #### `sub_B39D` (`$B39D`)
 
@@ -10631,7 +10679,7 @@ Shifts the 30 bytes up to its own LDDR down by one (the code already run is garb
 
 | | |
 | --- | --- |
-| Runs | not reached in the recordings |
+| Runs (c1 from power-on to the game's entry at frame 23974: the load) | 1 run of its first instruction (entered by a jump or by running on, no routine of its own in the L1) |
 
 #### `Layer061` (`$B3B3`)
 
@@ -10641,7 +10689,7 @@ Shifts the 30 bytes up to its own LDDR down by one (the code already run is garb
 
 | | |
 | --- | --- |
-| Runs | not reached in the recordings |
+| Runs (c1 from power-on to the game's entry at frame 23974: the load) | 1 run of its first instruction (entered by a jump or by running on, no routine of its own in the L1) |
 
 #### `Layer062` (`$B3D8`)
 
@@ -10651,7 +10699,7 @@ Shifts the 30 bytes up to its own LDDR down by one (the code already run is garb
 
 | | |
 | --- | --- |
-| Runs | not reached in the recordings |
+| Runs (c1 from power-on to the game's entry at frame 23974: the load) | 1 run of its first instruction (entered by a jump or by running on, no routine of its own in the L1) |
 
 #### `Layer063` (`$B3F7`)
 
@@ -10661,7 +10709,7 @@ Shifts the 30 bytes up to its own LDDR down by one (the code already run is garb
 
 | | |
 | --- | --- |
-| Runs | not reached in the recordings |
+| Runs (c1 from power-on to the game's entry at frame 23974: the load) | 1 run of its first instruction (entered by a jump or by running on, no routine of its own in the L1) |
 
 #### `Layer064` (`$B41A`)
 
@@ -10671,7 +10719,7 @@ Shifts the 30 bytes up to its own LDDR down by one (the code already run is garb
 
 | | |
 | --- | --- |
-| Runs | not reached in the recordings |
+| Runs (c1 from power-on to the game's entry at frame 23974: the load) | 1 run of its first instruction (entered by a jump or by running on, no routine of its own in the L1) |
 
 #### `Layer065` (`$B42B`)
 
@@ -10681,7 +10729,7 @@ Shifts the 30 bytes up to its own LDDR down by one (the code already run is garb
 
 | | |
 | --- | --- |
-| Runs | not reached in the recordings |
+| Runs (c1 from power-on to the game's entry at frame 23974: the load) | 1 run of its first instruction (entered by a jump or by running on, no routine of its own in the L1) |
 
 #### `Layer066` (`$B44E`)
 
@@ -10691,7 +10739,7 @@ Shifts the 30 bytes up to its own LDDR down by one (the code already run is garb
 
 | | |
 | --- | --- |
-| Runs | not reached in the recordings |
+| Runs (c1 from power-on to the game's entry at frame 23974: the load) | 1 run of its first instruction (entered by a jump or by running on, no routine of its own in the L1) |
 
 #### `Layer067` (`$B46D`)
 
@@ -10701,7 +10749,7 @@ Shifts the 30 bytes up to its own LDDR down by one (the code already run is garb
 
 | | |
 | --- | --- |
-| Runs | not reached in the recordings |
+| Runs (c1 from power-on to the game's entry at frame 23974: the load) | 1 run of its first instruction (entered by a jump or by running on, no routine of its own in the L1) |
 
 #### `Layer068` (`$B490`)
 
@@ -10711,7 +10759,7 @@ Shifts the 30 bytes up to its own LDDR down by one (the code already run is garb
 
 | | |
 | --- | --- |
-| Runs | not reached in the recordings |
+| Runs (c1 from power-on to the game's entry at frame 23974: the load) | 1 run of its first instruction (entered by a jump or by running on, no routine of its own in the L1) |
 
 #### `Layer069` (`$B4A1`)
 
@@ -10721,7 +10769,7 @@ Shifts the 30 bytes up to its own LDDR down by one (the code already run is garb
 
 | | |
 | --- | --- |
-| Runs | not reached in the recordings |
+| Runs (c1 from power-on to the game's entry at frame 23974: the load) | 1 run of its first instruction (entered by a jump or by running on, no routine of its own in the L1) |
 
 #### `sub_B4B8` (`$B4B8`)
 
@@ -10729,7 +10777,7 @@ Shifts the 30 bytes up to its own LDDR down by one (the code already run is garb
 
 | | |
 | --- | --- |
-| Runs | not reached in the recordings |
+| Runs (c1 from power-on to the game's entry at frame 23974: the load) | 1 run of its first instruction (entered by a jump or by running on, no routine of its own in the L1) |
 
 #### `Layer070` (`$B4CE`)
 
@@ -10739,7 +10787,7 @@ Shifts the 30 bytes up to its own LDDR down by one (the code already run is garb
 
 | | |
 | --- | --- |
-| Runs | not reached in the recordings |
+| Runs (c1 from power-on to the game's entry at frame 23974: the load) | 1 run of its first instruction (entered by a jump or by running on, no routine of its own in the L1) |
 
 #### `Layer071` (`$B4F3`)
 
@@ -10749,7 +10797,7 @@ Shifts the 30 bytes up to its own LDDR down by one (the code already run is garb
 
 | | |
 | --- | --- |
-| Runs | not reached in the recordings |
+| Runs (c1 from power-on to the game's entry at frame 23974: the load) | 1 run of its first instruction (entered by a jump or by running on, no routine of its own in the L1) |
 
 #### `Layer072` (`$B512`)
 
@@ -10759,7 +10807,7 @@ Shifts the 30 bytes up to its own LDDR down by one (the code already run is garb
 
 | | |
 | --- | --- |
-| Runs | not reached in the recordings |
+| Runs (c1 from power-on to the game's entry at frame 23974: the load) | 1 run of its first instruction (entered by a jump or by running on, no routine of its own in the L1) |
 
 #### `Layer073` (`$B535`)
 
@@ -10769,7 +10817,7 @@ Shifts the 30 bytes up to its own LDDR down by one (the code already run is garb
 
 | | |
 | --- | --- |
-| Runs | not reached in the recordings |
+| Runs (c1 from power-on to the game's entry at frame 23974: the load) | 1 run of its first instruction (entered by a jump or by running on, no routine of its own in the L1) |
 
 #### `Layer074` (`$B546`)
 
@@ -10779,7 +10827,7 @@ Shifts the 30 bytes up to its own LDDR down by one (the code already run is garb
 
 | | |
 | --- | --- |
-| Runs | not reached in the recordings |
+| Runs (c1 from power-on to the game's entry at frame 23974: the load) | 1 run of its first instruction (entered by a jump or by running on, no routine of its own in the L1) |
 
 #### `Layer075` (`$B569`)
 
@@ -10789,7 +10837,7 @@ Shifts the 30 bytes up to its own LDDR down by one (the code already run is garb
 
 | | |
 | --- | --- |
-| Runs | not reached in the recordings |
+| Runs (c1 from power-on to the game's entry at frame 23974: the load) | 1 run of its first instruction (entered by a jump or by running on, no routine of its own in the L1) |
 
 #### `Layer076` (`$B588`)
 
@@ -10799,7 +10847,7 @@ Shifts the 30 bytes up to its own LDDR down by one (the code already run is garb
 
 | | |
 | --- | --- |
-| Runs | not reached in the recordings |
+| Runs (c1 from power-on to the game's entry at frame 23974: the load) | 1 run of its first instruction (entered by a jump or by running on, no routine of its own in the L1) |
 
 #### `Layer077` (`$B5AB`)
 
@@ -10809,7 +10857,7 @@ Shifts the 30 bytes up to its own LDDR down by one (the code already run is garb
 
 | | |
 | --- | --- |
-| Runs | not reached in the recordings |
+| Runs (c1 from power-on to the game's entry at frame 23974: the load) | 1 run of its first instruction (entered by a jump or by running on, no routine of its own in the L1) |
 
 #### `Layer078` (`$B5BC`)
 
@@ -10819,7 +10867,7 @@ Shifts the 30 bytes up to its own LDDR down by one (the code already run is garb
 
 | | |
 | --- | --- |
-| Runs | not reached in the recordings |
+| Runs (c1 from power-on to the game's entry at frame 23974: the load) | 1 run of its first instruction (entered by a jump or by running on, no routine of its own in the L1) |
 
 #### `sub_B5D3` (`$B5D3`)
 
@@ -10827,7 +10875,7 @@ Shifts the 30 bytes up to its own LDDR down by one (the code already run is garb
 
 | | |
 | --- | --- |
-| Runs | not reached in the recordings |
+| Runs (c1 from power-on to the game's entry at frame 23974: the load) | 1 run of its first instruction (entered by a jump or by running on, no routine of its own in the L1) |
 
 #### `Layer079` (`$B5E9`)
 
@@ -10837,7 +10885,7 @@ Shifts the 30 bytes up to its own LDDR down by one (the code already run is garb
 
 | | |
 | --- | --- |
-| Runs | not reached in the recordings |
+| Runs (c1 from power-on to the game's entry at frame 23974: the load) | 1 run of its first instruction (entered by a jump or by running on, no routine of its own in the L1) |
 
 #### `Layer080` (`$B60E`)
 
@@ -10847,7 +10895,7 @@ Shifts the 30 bytes up to its own LDDR down by one (the code already run is garb
 
 | | |
 | --- | --- |
-| Runs | not reached in the recordings |
+| Runs (c1 from power-on to the game's entry at frame 23974: the load) | 1 run of its first instruction (entered by a jump or by running on, no routine of its own in the L1) |
 
 #### `Layer081` (`$B62D`)
 
@@ -10857,7 +10905,7 @@ Shifts the 30 bytes up to its own LDDR down by one (the code already run is garb
 
 | | |
 | --- | --- |
-| Runs | not reached in the recordings |
+| Runs (c1 from power-on to the game's entry at frame 23974: the load) | 1 run of its first instruction (entered by a jump or by running on, no routine of its own in the L1) |
 
 #### `Layer082` (`$B650`)
 
@@ -10867,7 +10915,7 @@ Shifts the 30 bytes up to its own LDDR down by one (the code already run is garb
 
 | | |
 | --- | --- |
-| Runs | not reached in the recordings |
+| Runs (c1 from power-on to the game's entry at frame 23974: the load) | 1 run of its first instruction (entered by a jump or by running on, no routine of its own in the L1) |
 
 #### `Layer083` (`$B661`)
 
@@ -10877,7 +10925,7 @@ Shifts the 30 bytes up to its own LDDR down by one (the code already run is garb
 
 | | |
 | --- | --- |
-| Runs | not reached in the recordings |
+| Runs (c1 from power-on to the game's entry at frame 23974: the load) | 1 run of its first instruction (entered by a jump or by running on, no routine of its own in the L1) |
 
 #### `Layer084` (`$B684`)
 
@@ -10887,7 +10935,7 @@ Shifts the 30 bytes up to its own LDDR down by one (the code already run is garb
 
 | | |
 | --- | --- |
-| Runs | not reached in the recordings |
+| Runs (c1 from power-on to the game's entry at frame 23974: the load) | 1 run of its first instruction (entered by a jump or by running on, no routine of its own in the L1) |
 
 #### `Layer085` (`$B6A3`)
 
@@ -10897,7 +10945,7 @@ Shifts the 30 bytes up to its own LDDR down by one (the code already run is garb
 
 | | |
 | --- | --- |
-| Runs | not reached in the recordings |
+| Runs (c1 from power-on to the game's entry at frame 23974: the load) | 1 run of its first instruction (entered by a jump or by running on, no routine of its own in the L1) |
 
 #### `Layer086` (`$B6C6`)
 
@@ -10907,7 +10955,7 @@ Shifts the 30 bytes up to its own LDDR down by one (the code already run is garb
 
 | | |
 | --- | --- |
-| Runs | not reached in the recordings |
+| Runs (c1 from power-on to the game's entry at frame 23974: the load) | 1 run of its first instruction (entered by a jump or by running on, no routine of its own in the L1) |
 
 #### `Layer087` (`$B6D7`)
 
@@ -10917,7 +10965,7 @@ Shifts the 30 bytes up to its own LDDR down by one (the code already run is garb
 
 | | |
 | --- | --- |
-| Runs | not reached in the recordings |
+| Runs (c1 from power-on to the game's entry at frame 23974: the load) | 1 run of its first instruction (entered by a jump or by running on, no routine of its own in the L1) |
 
 #### `sub_B6EE` (`$B6EE`)
 
@@ -10925,7 +10973,7 @@ Shifts the 30 bytes up to its own LDDR down by one (the code already run is garb
 
 | | |
 | --- | --- |
-| Runs | not reached in the recordings |
+| Runs (c1 from power-on to the game's entry at frame 23974: the load) | 1 run of its first instruction (entered by a jump or by running on, no routine of its own in the L1) |
 
 #### `Layer088` (`$B704`)
 
@@ -10935,7 +10983,7 @@ Shifts the 30 bytes up to its own LDDR down by one (the code already run is garb
 
 | | |
 | --- | --- |
-| Runs | not reached in the recordings |
+| Runs (c1 from power-on to the game's entry at frame 23974: the load) | 1 run of its first instruction (entered by a jump or by running on, no routine of its own in the L1) |
 
 #### `Layer089` (`$B729`)
 
@@ -10945,7 +10993,7 @@ Shifts the 30 bytes up to its own LDDR down by one (the code already run is garb
 
 | | |
 | --- | --- |
-| Runs | not reached in the recordings |
+| Runs (c1 from power-on to the game's entry at frame 23974: the load) | 1 run of its first instruction (entered by a jump or by running on, no routine of its own in the L1) |
 
 #### `Layer090` (`$B748`)
 
@@ -10955,7 +11003,7 @@ Shifts the 30 bytes up to its own LDDR down by one (the code already run is garb
 
 | | |
 | --- | --- |
-| Runs | not reached in the recordings |
+| Runs (c1 from power-on to the game's entry at frame 23974: the load) | 1 run of its first instruction (entered by a jump or by running on, no routine of its own in the L1) |
 
 #### `Layer091` (`$B76B`)
 
@@ -10965,7 +11013,7 @@ Shifts the 30 bytes up to its own LDDR down by one (the code already run is garb
 
 | | |
 | --- | --- |
-| Runs | not reached in the recordings |
+| Runs (c1 from power-on to the game's entry at frame 23974: the load) | 1 run of its first instruction (entered by a jump or by running on, no routine of its own in the L1) |
 
 #### `Layer092` (`$B77C`)
 
@@ -10975,7 +11023,7 @@ Shifts the 30 bytes up to its own LDDR down by one (the code already run is garb
 
 | | |
 | --- | --- |
-| Runs | not reached in the recordings |
+| Runs (c1 from power-on to the game's entry at frame 23974: the load) | 1 run of its first instruction (entered by a jump or by running on, no routine of its own in the L1) |
 
 #### `Layer093` (`$B79F`)
 
@@ -10985,7 +11033,7 @@ Shifts the 30 bytes up to its own LDDR down by one (the code already run is garb
 
 | | |
 | --- | --- |
-| Runs | not reached in the recordings |
+| Runs (c1 from power-on to the game's entry at frame 23974: the load) | 1 run of its first instruction (entered by a jump or by running on, no routine of its own in the L1) |
 
 #### `Layer094` (`$B7BE`)
 
@@ -10995,7 +11043,7 @@ Shifts the 30 bytes up to its own LDDR down by one (the code already run is garb
 
 | | |
 | --- | --- |
-| Runs | not reached in the recordings |
+| Runs (c1 from power-on to the game's entry at frame 23974: the load) | 1 run of its first instruction (entered by a jump or by running on, no routine of its own in the L1) |
 
 #### `Layer095` (`$B7E1`)
 
@@ -11005,7 +11053,7 @@ Shifts the 30 bytes up to its own LDDR down by one (the code already run is garb
 
 | | |
 | --- | --- |
-| Runs | not reached in the recordings |
+| Runs (c1 from power-on to the game's entry at frame 23974: the load) | 1 run of its first instruction (entered by a jump or by running on, no routine of its own in the L1) |
 
 #### `Layer096` (`$B7F2`)
 
@@ -11015,7 +11063,7 @@ Shifts the 30 bytes up to its own LDDR down by one (the code already run is garb
 
 | | |
 | --- | --- |
-| Runs | not reached in the recordings |
+| Runs (c1 from power-on to the game's entry at frame 23974: the load) | 1 run of its first instruction (entered by a jump or by running on, no routine of its own in the L1) |
 
 #### `sub_B809` (`$B809`)
 
@@ -11023,7 +11071,7 @@ Shifts the 30 bytes up to its own LDDR down by one (the code already run is garb
 
 | | |
 | --- | --- |
-| Runs | not reached in the recordings |
+| Runs (c1 from power-on to the game's entry at frame 23974: the load) | 1 run of its first instruction (entered by a jump or by running on, no routine of its own in the L1) |
 
 #### `Layer097` (`$B81F`)
 
@@ -11033,7 +11081,7 @@ Shifts the 30 bytes up to its own LDDR down by one (the code already run is garb
 
 | | |
 | --- | --- |
-| Runs | not reached in the recordings |
+| Runs (c1 from power-on to the game's entry at frame 23974: the load) | 1 run of its first instruction (entered by a jump or by running on, no routine of its own in the L1) |
 
 #### `Layer098` (`$B844`)
 
@@ -11043,7 +11091,7 @@ Shifts the 30 bytes up to its own LDDR down by one (the code already run is garb
 
 | | |
 | --- | --- |
-| Runs | not reached in the recordings |
+| Runs (c1 from power-on to the game's entry at frame 23974: the load) | 1 run of its first instruction (entered by a jump or by running on, no routine of its own in the L1) |
 
 #### `Layer099` (`$B863`)
 
@@ -11053,7 +11101,7 @@ Shifts the 30 bytes up to its own LDDR down by one (the code already run is garb
 
 | | |
 | --- | --- |
-| Runs | not reached in the recordings |
+| Runs (c1 from power-on to the game's entry at frame 23974: the load) | 1 run of its first instruction (entered by a jump or by running on, no routine of its own in the L1) |
 
 #### `Layer100` (`$B886`)
 
@@ -11063,7 +11111,7 @@ Shifts the 30 bytes up to its own LDDR down by one (the code already run is garb
 
 | | |
 | --- | --- |
-| Runs | not reached in the recordings |
+| Runs (c1 from power-on to the game's entry at frame 23974: the load) | 1 run of its first instruction (entered by a jump or by running on, no routine of its own in the L1) |
 
 #### `Layer101` (`$B8A5`)
 
@@ -11073,7 +11121,7 @@ Shifts the 30 bytes up to its own LDDR down by one (the code already run is garb
 
 | | |
 | --- | --- |
-| Runs | not reached in the recordings |
+| Runs (c1 from power-on to the game's entry at frame 23974: the load) | 1 run of its first instruction (entered by a jump or by running on, no routine of its own in the L1) |
 
 #### `Layer102` (`$B8D0`)
 
@@ -11083,7 +11131,7 @@ Shifts the 30 bytes up to its own LDDR down by one (the code already run is garb
 
 | | |
 | --- | --- |
-| Runs | not reached in the recordings |
+| Runs (c1 from power-on to the game's entry at frame 23974: the load) | 1 run of its first instruction (entered by a jump or by running on, no routine of its own in the L1) |
 
 #### `sub_B8DF` (`$B8DF`)
 
@@ -11091,7 +11139,7 @@ Shifts the 30 bytes up to its own LDDR down by one (the code already run is garb
 
 | | |
 | --- | --- |
-| Runs | not reached in the recordings |
+| Runs (c1 from power-on to the game's entry at frame 23974: the load) | 30 runs of its first instruction (entered by a jump or by running on, no routine of its own in the L1) |
 
 ### Decryption chain and loader: loader
 
@@ -11105,7 +11153,7 @@ Interrupts off, SP = `$BFFF`. IN A,(`$3F`) and IN A,(`$9F`) are the Multiface's 
 
 | | |
 | --- | --- |
-| Runs | ran within another entry's routine (reached by a jump or by running on, its calls below), no runs of its own counted |
+| Runs (c1 from power-on to the game's entry at frame 23974: the load) | 1 run of its first instruction (entered by a jump or by running on, no routine of its own in the L1) |
 | Calls | `PrintNotice`, `LoaderMain` (tail) |
 
 #### `PrintNotice` (`$B935`)
@@ -11182,7 +11230,7 @@ LoadBlocks calls it between two edges (CALL `$BBF4` at `$BDB6`); the task's own 
 | Runs (c1 from power-on to the game's entry at frame 23974: the load) | 56,865 calls, 13,209,148 t-states own (0.78 %) |
 | Called from | `StoreByte` |
 | Calls | `sub_BCF8` (tail) |
-| Reads | `$8000`-`$82FF` |
+| Reads | `$8000`-`$82FF` (`AttrBuffer`) |
 | Writes | `$5800`-`$5AFF` (screen); `$BD0C`-`$BD0E` (`l_BCFC+16`); `$BDB7`-`$BDB8` (`l_BDB2+5`) |
 
 #### `l_BC5E` (`$BC5E`)
@@ -11191,7 +11239,7 @@ LoadBlocks calls it between two edges (CALL `$BBF4` at `$BDB6`); the task's own 
 
 | | |
 | --- | --- |
-| Runs | ran within another entry's routine (reached by a jump or by running on, its calls below), no runs of its own counted |
+| Runs (c1 from power-on to the game's entry at frame 23974: the load) | 653,430 runs of its first instruction (entered by a jump or by running on, no routine of its own in the L1) |
 | Calls | `sub_BCF8` (tail) |
 
 #### `LdEdge2` (`$BCF2`)
@@ -11236,7 +11284,7 @@ LoadBlocks calls it between two edges (CALL `$BBF4` at `$BDB6`); the task's own 
 | Runs (c1 from power-on to the game's entry at frame 23974: the load) | 2 calls, 77,211,967 t-states own (4.54 %) |
 | Called from | `LoaderMain` |
 | Calls | `LdEdge2`, `sub_BCF6`, `sub_BCF8` |
-| Reads | `$BED1`-`$BEDE` (`EdgeLimits`); `$BF30`-`$BF7A` |
+| Reads | `$BED1`-`$BEDE` (`EdgeLimits`); `$BF30`-`$BF7A` (`BlockTable`) |
 | Writes | `$4000`-`$BFCF` (`Layer000`, `Layer001`, `Layer002`, `Layer003` and 137 more) |
 | Ports in | `$0AFE` |
 | Ports out | `$0AFE`, `$7FFD` |
@@ -11299,7 +11347,7 @@ Both paths of a poll take 72 T (the NOP / NOP / JP of the no-change path pads it
 | | |
 | --- | --- |
 | Runs (c1 from power-on to the game's entry at frame 23974: the load) | 1 call, 7,047 t-states own (0.00 %) |
-| Reads | `$9032`-`$9063`; `$90CD`-`$90FE` |
+| Reads | `$9032`-`$9063` (`TimeBuffer+50`); `$90CD`-`$90FE` (`TimeBuffer+205`) |
 
 #### `LoadEnd` (`$BEDF`)
 
@@ -11346,7 +11394,7 @@ AttrFlag := 0; IX = Screen, DE = `$17FF` (6144 bytes); LastStoreJump := StoreLas
 
 | | |
 | --- | --- |
-| Runs | not reached in the recordings |
+| Runs (c1 from power-on to the game's entry at frame 23974: the load) | 1 run of its first instruction (entered by a jump or by running on, no routine of its own in the L1) |
 
 
 ## Loader block 37 (`src/loader/final-be5d.json`)
@@ -11373,8 +11421,8 @@ The tape's block 23 holds the game's `$5B00-$7FFF` XORed with `$AD` on top of th
 | | |
 | --- | --- |
 | Runs (c1 from power-on to the game's entry at frame 23974: the load) | 2 calls, 530,437 t-states own (0.03 %) |
-| Reads | `$5B00`-`$7FFF` |
-| Writes | `$5B00`-`$7FFF`; `$9000`-`$90FE` |
+| Reads | `$5B00`-`$7FFF` (`Bank5Code`) |
+| Writes | `$5B00`-`$7FFF` (`Bank5Code`); `$9000`-`$90FE` |
 
 
 ## Loader block 39 (`src/loader/final-bf21.json`)
@@ -11400,4 +11448,4 @@ c1: L1 1, TimeFailed zero, so JP Unxor5B00.
 
 | | |
 | --- | --- |
-| Runs | not reached in the recordings |
+| Runs (c1 from power-on to the game's entry at frame 23974: the load) | 1 run of its first instruction (entered by a jump or by running on, no routine of its own in the L1) |

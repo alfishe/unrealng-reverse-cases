@@ -6,7 +6,9 @@ Runs count the calls of the entry itself; the time is its own t-states (callees 
 of the recording. Memory ranges name the label at or below their first byte (inner labels too, `Label+offset`)
 and the entries they cover. The interrupt's acceptance (the vector read, the return address pushed) is
 the handler's, not the interrupted routine's. An entry no recording reached says so; one the case's other
-recordings ran gives their calls.
+recordings ran gives their calls. An entry no routine of a recording starts at (entered by a jump, a table jump or
+by running on: L1 books its time to the routine it runs in) gives the runs of its first instruction, as its witness
+line counts them.
 Written by `kit/refdocs.py`; edit `src/stage1/stage1.ann`, then run `kit/mkgame.py --case . --install`
 (see [3. Build and load](03-build-and-load.md)) and `kit/refdocs.py --case .`.
 The parts of the medium (`case.json` `ref_parts`: The resident (TZX blocks 25, 17, 27 at `$F000-$FFFF`), The front
@@ -21,7 +23,7 @@ with its modules, its source, its annotations and its recordings.
 | [`entry`](#entry) | `$7800`-`$7838`, `$97AC`-`$984C`, `$985D`-`$988A` | 9 of 13 |
 | [`mainloop`](#mainloop) | `$7839`-`$7924`, `$795D`-`$79AA`, `$79B1`-`$79CB`, `$984D`-`$985C` | 11 of 13 |
 | [`render`](#render) | `$7925`-`$795C`, `$79CC`-`$79FB`, `$7F4D`-`$7FED`, `$8776`-`$892F`, `$8B03`-`$8B23`, `$8C3D`-`$8D1C`, `$9325`-`$9352`, `$99E9`-`$9B6E`, `$A057`-`$A064`, `$A5DF`-`$A7B7`, `$B17F`-`$B18A`, `$B332`-`$B35D`, `$B36C`-`$B496` | 58 of 65 |
-| [`util`](#util) | `$79AB`-`$79B0`, `$8A54`-`$8AB0`, `$8B24`-`$8B36`, `$8B76`-`$8BE2`, `$8C35`-`$8C3C`, `$B2DC`-`$B2E5` | 17 of 18 |
+| [`util`](#util) | `$79AB`-`$79B0`, `$8A54`-`$8AB0`, `$8B24`-`$8B36`, `$8B76`-`$8BE2`, `$8C35`-`$8C3C`, `$B2DC`-`$B2E5` | 15 of 16 |
 | [`hud`](#hud) | `$79FC`-`$7C26`, `$7DCD`-`$7E18`, `$7E9F`-`$7F04`, `$82FA`-`$83A8`, `$870C`-`$8719`, `$8AB1`-`$8B02`, `$8BE3`-`$8C34`, `$A3C5`-`$A423` | 23 of 27 |
 | [`hero`](#hero) | `$7C27`-`$7DCC`, `$7E19`-`$7E9E`, `$7F05`-`$7F4C`, `$7FEE`-`$8005`, `$819A`-`$8232`, `$86DD`-`$86EA`, `$871A`-`$876B`, `$89A1`-`$89BA`, `$9259`-`$92C8`, `$92D1`-`$9324`, `$AA3E`-`$AAD9`, `$AC3D`-`$B111`, `$B22B`-`$B28C` | 59 of 79 |
 | [`missiles`](#missiles) | `$8006`-`$8199`, `$83A9`-`$86DC`, `$86EB`-`$870B`, `$876C`-`$8775` | 15 of 23 |
@@ -80,8 +82,8 @@ Witness: L1 3 (rzx-r1, s1-idle, s1-right).
 
 | | |
 | --- | --- |
-| Runs (rzx-r1: the RZX run's stage 1 replayed pass by pass) | run into, not called, 17 t-states own (0.00 %) |
-| Runs (the other recordings) | run into, not called (`stage1/rec/s1-idle`, `stage1/rec/s1-right`) |
+| Runs (rzx-r1: the RZX run's stage 1 replayed pass by pass) | 1 run of its first instruction (entered by a jump or by running on, no routine of its own in the L1), 17 t-states own (0.00 %) |
+| Runs (the other recordings) | 2 runs of its first instruction, entered by a jump (`stage1/rec/s1-idle` 1, `stage1/rec/s1-right` 1) |
 | Called from | `FillShadowAttributes` |
 | Calls | `FillShadowAttributes` |
 
@@ -91,8 +93,8 @@ Witness: L1 3 (rzx-r1, s1-idle, s1-right).
 
 | | |
 | --- | --- |
-| Runs (rzx-r1: the RZX run's stage 1 replayed pass by pass) | run into, not called, 17 t-states own (0.00 %) |
-| Runs (the other recordings) | run into, not called (`stage1/rec/s1-idle`, `stage1/rec/s1-right`) |
+| Runs (rzx-r1: the RZX run's stage 1 replayed pass by pass) | 1 run of its first instruction (entered by a jump or by running on, no routine of its own in the L1), 17 t-states own (0.00 %) |
+| Runs (the other recordings) | 2 runs of its first instruction, entered by a jump (`stage1/rec/s1-idle` 1, `stage1/rec/s1-right` 1) |
 | Called from | `FillShadowAttributes` |
 | Calls | `FillShadowAttributes` |
 
@@ -102,8 +104,8 @@ Witness: L1 3 (rzx-r1, s1-idle, s1-right).
 
 | | |
 | --- | --- |
-| Runs (rzx-r1: the RZX run's stage 1 replayed pass by pass) | run into, not called, 17 t-states own (0.00 %) |
-| Runs (the other recordings) | run into, not called (`stage1/rec/s1-idle`, `stage1/rec/s1-right`) |
+| Runs (rzx-r1: the RZX run's stage 1 replayed pass by pass) | 1 run of its first instruction (entered by a jump or by running on, no routine of its own in the L1), 17 t-states own (0.00 %) |
+| Runs (the other recordings) | 2 runs of its first instruction, entered by a jump (`stage1/rec/s1-idle` 1, `stage1/rec/s1-right` 1) |
 | Called from | `FillShadowAttributes` |
 | Calls | `FillShadowAttributes` |
 
@@ -113,8 +115,8 @@ Witness: L1 3 (rzx-r1, s1-idle, s1-right).
 
 | | |
 | --- | --- |
-| Runs (rzx-r1: the RZX run's stage 1 replayed pass by pass) | run into, not called, 254 t-states own (0.00 %) |
-| Runs (the other recordings) | run into, not called (`stage1/rec/s1-idle`, `stage1/rec/s1-right`) |
+| Runs (rzx-r1: the RZX run's stage 1 replayed pass by pass) | 1 run of its first instruction (entered by a jump or by running on, no routine of its own in the L1), 254 t-states own (0.00 %) |
+| Runs (the other recordings) | 2 runs of its first instruction, entered by a jump (`stage1/rec/s1-idle` 1, `stage1/rec/s1-right` 1) |
 | Called from | `FillShadowAttributes` |
 | Calls | `RenderScore`, `FlashSelectedBox`, `ScrollItemsLeft`, `DrawItemStrip`, `StartLivesFlash` (tail), `ShowShadowAttributes`, `RevealScore`, `SaveAttributes` |
 | Writes | `$7CED` (`CycleWindowFrame`); `$FE17` (`work space $FE17+`) |
@@ -184,8 +186,9 @@ Witness: L1 19500 (c1o, deaths, rzx-r1, s1-idle, s1-right).
 
 | | |
 | --- | --- |
-| Runs (c1's stage 1 play window (frames 15476-16658)) | run into, not called, 195,372 t-states own (0.24 %) |
-| Runs (the other recordings) | run into, not called (`stage1/rec/deaths`) |
+| Runs (c1's stage 1 play window (frames 15476-16658)) | 378 runs of its first instruction (entered by a jump or by running on, no routine of its own in the L1), 195,372 t-states own (0.24 %) |
+| Runs (rzx-r1: the RZX run's stage 1 replayed pass by pass) | 9,313 runs of its first instruction (entered by a jump or by running on, no routine of its own in the L1) |
+| Runs (the other recordings) | 9,809 runs of its first instruction, entered by a jump (`stage1/rec/s1-idle` 7,430, `stage1/rec/s1-right` 1,439, `stage1/rec/deaths` 940) |
 | Calls | `PacePass`, `CheckPause`, `CheckStageExit`, `ShowScore`, `ItemWindow`, `RedrawItemsIfChanged`, `ShowPieceTaken`, `FlashPieces`, `DrawRoomPicture`, `DrawArenaPicture`, `ZoneDamage`, `TestSpaceKey`, `UpdateAttributes`, `SpawnTimer`, `PassTick`, `ClearBuffer`, `UpdateBurst`, `RunActorHandlers`, `DrawActors`, `UpdateMissiles` |
 | Reads | `$74EA` (`HeroState`); `$FE61` (`work space $FE61+`) |
 | Ports in | `$FEFE` |
@@ -200,7 +203,7 @@ Witness: L1 1 (s1-right).
 
 | | |
 | --- | --- |
-| Runs | not reached in the recordings |
+| Runs | not reached in `stage1/c1o`, `stage2/rec/rzx-r1`; in the other recordings 1 run of its first instruction, entered by a jump (`stage1/rec/s1-right` 1) |
 
 ### `QuitStage` (`$789C`)
 
@@ -225,6 +228,7 @@ Witness: L1 2 (rzx-r1, s1-right).
 | | |
 | --- | --- |
 | Runs (rzx-r1: the RZX run's stage 1 replayed pass by pass) | 1 call, 45 t-states own (0.00 %) |
+| Runs (the other recordings) | 1 run of its first instruction, entered by a jump (`stage1/rec/s1-right` 1) |
 | Called from | `StageExit` (tail) |
 | Calls | `FillAttributes`, `ClearBuffer` |
 
@@ -238,8 +242,8 @@ Witness: L1 2 (rzx-r1, s1-right).
 
 | | |
 | --- | --- |
-| Runs (rzx-r1: the RZX run's stage 1 replayed pass by pass) | run into, not called, 34 t-states own (0.00 %) |
-| Runs (the other recordings) | run into, not called (`stage1/rec/s1-right`) |
+| Runs (rzx-r1: the RZX run's stage 1 replayed pass by pass) | 1 run of its first instruction (entered by a jump or by running on, no routine of its own in the L1), 34 t-states own (0.00 %) |
+| Runs (the other recordings) | 1 run of its first instruction, entered by a jump (`stage1/rec/s1-right` 1) |
 | Called from | `FillAttributes` |
 | Calls | `FillAttributes` |
 
@@ -253,8 +257,8 @@ Witness: L1 2 (rzx-r1, s1-right).
 
 | | |
 | --- | --- |
-| Runs (rzx-r1: the RZX run's stage 1 replayed pass by pass) | run into, not called, 6,746 t-states own (0.00 %) |
-| Runs (the other recordings) | run into, not called (`stage1/rec/s1-right`) |
+| Runs (rzx-r1: the RZX run's stage 1 replayed pass by pass) | 1 run of its first instruction (entered by a jump or by running on, no routine of its own in the L1), 6,746 t-states own (0.00 %) |
+| Runs (the other recordings) | 1 run of its first instruction, entered by a jump (`stage1/rec/s1-right` 1) |
 | Called from | `FillAttributes` |
 | Calls | `FlashFadeScreen`, `CopyToScreen`, `CopyScreenToBlock`, `ClearScreen`, `WaitFrames` |
 | Reads | `$5800`-`$58BF` (screen); `$FE61` (`work space $FE61+`) |
@@ -300,7 +304,7 @@ Witness: L1 731 (rzx-r1).
 
 | | |
 | --- | --- |
-| Runs | not reached in the recordings |
+| Runs (rzx-r1: the RZX run's stage 1 replayed pass by pass) | 731 runs of its first instruction (entered by a jump or by running on, no routine of its own in the L1) |
 
 ### `CheckPause` (`$79B1`)
 
@@ -1054,7 +1058,9 @@ Witness: L1 7977 (c1o, deaths, rzx-r1, s1-right).
 
 | | |
 | --- | --- |
+| Runs (c1's stage 1 play window (frames 15476-16658)) | 704 runs of its first instruction (entered by a jump or by running on, no routine of its own in the L1) |
 | Runs (rzx-r1: the RZX run's stage 1 replayed pass by pass) | 11,504 calls, 1,182,905 t-states own (0.05 %) |
+| Runs (the other recordings) | 4,813 runs of its first instruction, entered by a jump (`stage1/rec/s1-right` 4,325, `stage1/rec/deaths` 488) |
 | Called from | `UpdateBurst`, `AttrShadowAddress` (falls into) |
 | Reads | `$7040`-`$71FC` (`RoomAttributes`, `RoomAttributesCell`); `$75E0`-`$763A` (`Missiles`, `HudColours`, `MissilesHigh`) |
 
@@ -1260,30 +1266,10 @@ Witness: L1 12491743 (c1o, deaths, rzx-r1, s1-idle, s1-right).
 
 | | |
 | --- | --- |
-| Runs (c1's stage 1 play window (frames 15476-16658)) | 39,529 calls, 238,206 t-states own (0.29 %) |
+| Runs (c1's stage 1 play window (frames 15476-16658)) | 39,529 calls, 1,274,856 t-states own (1.54 %) |
+| Runs (rzx-r1: the RZX run's stage 1 replayed pass by pass) | 2,613,900 runs of its first instruction (entered by a jump or by running on, no routine of its own in the L1) |
 | Runs (the other recordings) | 95,614 calls (`stage1/rec/deaths` 95,614) |
-| Called from | `PacePass` (tail), `DelayBCLoop` (tail) |
-| Calls | `DelayBCTest` (falls into) |
-
-### `DelayBCTest` (`$79AC`)
-
-**DelayBCTest**
-
-| | |
-| --- | --- |
-| Runs (c1's stage 1 play window (frames 15476-16658)) | 39,529 calls, 1,036,650 t-states own (1.25 %) |
-| Called from | `DelayBC` (falls into) |
-| Calls | `DelayBCLoop` (falls into) |
-
-### `DelayBCLoop` (`$79AE`)
-
-**DelayBCLoop**
-
-| | |
-| --- | --- |
-| Runs | not reached in `stage1/c1o`, `stage2/rec/rzx-r1`; in the other recordings 95,614 calls (`stage1/rec/deaths` 95,614) |
-| Called from | `DelayBCTest` (falls into) |
-| Calls | `DelayBC` (tail) |
+| Called from | `PacePass` (tail) |
 
 ### `TestSpaceKey` (`$8A54`)
 
@@ -1525,7 +1511,7 @@ Witness: L1 1 (rzx-r1).
 
 | | |
 | --- | --- |
-| Runs | ran within another entry's routine (reached by a jump or by running on, its calls below), no runs of its own counted |
+| Runs (rzx-r1: the RZX run's stage 1 replayed pass by pass) | 1 run of its first instruction (entered by a jump or by running on, no routine of its own in the L1) |
 | Calls | `EndStage` (tail), `MoveStar`, `StartStageExit`, `TestSpaceKey` |
 
 ### `MoveStar` (`$7A4A`)
@@ -1615,7 +1601,9 @@ Witness: L1 19498 (c1o, deaths, rzx-r1, s1-idle, s1-right).
 
 | | |
 | --- | --- |
-| Runs | not reached in the recordings |
+| Runs (c1's stage 1 play window (frames 15476-16658)) | 378 runs of its first instruction (entered by a jump or by running on, no routine of its own in the L1) |
+| Runs (rzx-r1: the RZX run's stage 1 replayed pass by pass) | 9,312 runs of its first instruction (entered by a jump or by running on, no routine of its own in the L1) |
+| Runs (the other recordings) | 9,808 runs of its first instruction, entered by a jump (`stage1/rec/s1-idle` 7,429, `stage1/rec/s1-right` 1,439, `stage1/rec/deaths` 940) |
 
 ### `ShowScore` (`$7BC3`)
 
@@ -1714,7 +1702,8 @@ Witness: L1 7 (c1o, deaths, s1-right).
 
 | | |
 | --- | --- |
-| Runs | not reached in `stage1/c1o`, `stage2/rec/rzx-r1`; in the other recordings 5 calls (`stage1/rec/s1-right` 5) |
+| Runs (c1's stage 1 play window (frames 15476-16658)) | 1 run of its first instruction (entered by a jump or by running on, no routine of its own in the L1) |
+| Runs (the other recordings) | 5 calls (`stage1/rec/s1-right` 5) |
 | Called from | `HeroUpdate` |
 | Calls | `StartLivesFlash`, `HeroDeath` (tail) |
 | Reads | `$FE61` (`work space $FE61+`) |
@@ -1781,7 +1770,7 @@ Witness: L1 168 (s1-right).
 
 | | |
 | --- | --- |
-| Runs | not reached in `stage1/c1o`, `stage2/rec/rzx-r1`; in the other recordings run into, not called (`stage1/rec/s1-right`) |
+| Runs | not reached in `stage1/c1o`, `stage2/rec/rzx-r1`; in the other recordings 168 runs of its first instruction, entered by a jump (`stage1/rec/s1-right` 168) |
 | Called from | `FillAttributes` |
 
 ### `DamageHero` (`$870C`)
@@ -1937,8 +1926,8 @@ Witness: L1 135 (rzx-r1, s1-idle, s1-right).
 
 | | |
 | --- | --- |
-| Runs (rzx-r1: the RZX run's stage 1 replayed pass by pass) | run into, not called, 3,500 t-states own (0.00 %) |
-| Runs (the other recordings) | run into, not called (`stage1/rec/s1-idle`, `stage1/rec/s1-right`) |
+| Runs (rzx-r1: the RZX run's stage 1 replayed pass by pass) | 125 runs of its first instruction (entered by a jump or by running on, no routine of its own in the L1), 3,500 t-states own (0.00 %) |
+| Runs (the other recordings) | 10 runs of its first instruction, entered by a jump (`stage1/rec/s1-idle` 5, `stage1/rec/s1-right` 5) |
 | Called from | `FillAttributes` |
 | Calls | `FlashSelectedBoxFrame` (tail) |
 
@@ -3184,7 +3173,7 @@ Witness: L1 155 (rzx-r1).
 
 | | |
 | --- | --- |
-| Runs | not reached in the recordings |
+| Runs (rzx-r1: the RZX run's stage 1 replayed pass by pass) | 155 runs of its first instruction (entered by a jump or by running on, no routine of its own in the L1) |
 
 ### `PieceWaitsPickup` (`$82CC`)
 
@@ -3196,7 +3185,7 @@ Witness: L1 28 (rzx-r1).
 
 | | |
 | --- | --- |
-| Runs | ran within another entry's routine (reached by a jump or by running on, its calls below), no runs of its own counted |
+| Runs (rzx-r1: the RZX run's stage 1 replayed pass by pass) | 28 runs of its first instruction (entered by a jump or by running on, no routine of its own in the L1) |
 | Calls | `AddScore`, `HeroWithinY`, `RemoveActor` (tail) |
 
 ### `DrawRoomPicture` (`$8930`)
@@ -3640,7 +3629,9 @@ Witness: L1 1232 (c1o, deaths, rzx-r1, s1-right).
 
 | | |
 | --- | --- |
-| Runs | ran within another entry's routine (reached by a jump or by running on, its calls below), no runs of its own counted |
+| Runs (c1's stage 1 play window (frames 15476-16658)) | 72 runs of its first instruction (entered by a jump or by running on, no routine of its own in the L1) |
+| Runs (rzx-r1: the RZX run's stage 1 replayed pass by pass) | 911 runs of its first instruction (entered by a jump or by running on, no routine of its own in the L1) |
+| Runs (the other recordings) | 249 runs of its first instruction, entered by a jump (`stage1/rec/s1-right` 140, `stage1/rec/deaths` 109) |
 | Calls | `FollowLeader`, `WarriorSetFrame` (tail) |
 
 ### `WarriorHeadFly` (`$9447`)
@@ -3653,7 +3644,7 @@ Witness: L1 663 (rzx-r1).
 
 | | |
 | --- | --- |
-| Runs | ran within another entry's routine (reached by a jump or by running on, its calls below), no runs of its own counted |
+| Runs (rzx-r1: the RZX run's stage 1 replayed pass by pass) | 663 runs of its first instruction (entered by a jump or by running on, no routine of its own in the L1) |
 | Calls | `StepFineBack`, `FollowLeader`, `WarriorSetFrame` (tail) |
 
 ### `WarriorHeadLand` (`$949C`)
@@ -3666,7 +3657,7 @@ Witness: L1 17 (rzx-r1).
 
 | | |
 | --- | --- |
-| Runs | ran within another entry's routine (reached by a jump or by running on, its calls below), no runs of its own counted |
+| Runs (rzx-r1: the RZX run's stage 1 replayed pass by pass) | 17 runs of its first instruction (entered by a jump or by running on, no routine of its own in the L1) |
 | Calls | `SpawnItem` (tail), `InitFragment` (tail), `RemoveActor` |
 
 ### `WarriorActor` (`$94D0`)
@@ -3985,7 +3976,7 @@ Witness: L1 5 (rzx-r1).
 
 | | |
 | --- | --- |
-| Runs | ran within another entry's routine (reached by a jump or by running on, its calls below), no runs of its own counted |
+| Runs (rzx-r1: the RZX run's stage 1 replayed pass by pass) | 5 runs of its first instruction (entered by a jump or by running on, no routine of its own in the L1) |
 | Calls | `SpawnFragments`, `RemoveActor` (tail) |
 
 ### `InStrikeReach` (`$A816`)
@@ -4598,7 +4589,7 @@ Witness: L1 26 (rzx-r1).
 
 | | |
 | --- | --- |
-| Runs | not reached in the recordings |
+| Runs (rzx-r1: the RZX run's stage 1 replayed pass by pass) | 26 runs of its first instruction (entered by a jump or by running on, no routine of its own in the L1) |
 
 ### `PlaceHeroAtStart` (`$A47D`)
 
@@ -4624,6 +4615,7 @@ Witness: L1 7 (rzx-r1, s1-idle, s1-right).
 | | |
 | --- | --- |
 | Runs (rzx-r1: the RZX run's stage 1 replayed pass by pass) | 5 calls, 255 t-states own (0.00 %) |
+| Runs (the other recordings) | 2 runs of its first instruction, entered by a jump (`stage1/rec/s1-idle` 1, `stage1/rec/s1-right` 1) |
 | Called from | `PlaceHeroAtStart` (falls into), `EnterGrid1`, `LeaveGrid1`, `EnterGrid2`, `LeaveGrid2` |
 | Calls | `SpawnActor`, `HeroStandFrame` (tail) |
 
@@ -4831,6 +4823,7 @@ Witness: L1 279 (c1o, deaths, rzx-r1, s1-right).
 
 | | |
 | --- | --- |
+| Runs (c1's stage 1 play window (frames 15476-16658)) | 8 runs of its first instruction (entered by a jump or by running on, no routine of its own in the L1) |
 | Runs (rzx-r1: the RZX run's stage 1 replayed pass by pass) | 194 calls, 51,917 t-states own (0.00 %) |
 | Runs (the other recordings) | 69 calls (`stage1/rec/s1-right` 69) |
 | Called from | `AddMissile` (tail), `AddMissileHigh` (falls into) |
@@ -5158,7 +5151,7 @@ Witness: L1 3 (rzx-r1).
 
 | | |
 | --- | --- |
-| Runs | ran within another entry's routine (reached by a jump or by running on, its calls below), no runs of its own counted |
+| Runs (rzx-r1: the RZX run's stage 1 replayed pass by pass) | 3 runs of its first instruction (entered by a jump or by running on, no routine of its own in the L1) |
 | Calls | `SpawnItem` (tail) |
 
 ### `SpawnBonus` (`$A023`)
@@ -5171,7 +5164,8 @@ Witness: L1 6 (rzx-r1, s1-right).
 
 | | |
 | --- | --- |
-| Runs | ran within another entry's routine (reached by a jump or by running on, its calls below), no runs of its own counted |
+| Runs (rzx-r1: the RZX run's stage 1 replayed pass by pass) | 5 runs of its first instruction (entered by a jump or by running on, no routine of its own in the L1) |
+| Runs (the other recordings) | 1 run of its first instruction, entered by a jump (`stage1/rec/s1-right` 1) |
 | Calls | `FindFreeActorPair`, `SpawnActor` |
 
 ### `Unrle` (`$A424`)
@@ -5270,7 +5264,7 @@ Witness: L1 1 (rzx-r1).
 
 | | |
 | --- | --- |
-| Runs | ran within another entry's routine (reached by a jump or by running on, its calls below), no runs of its own counted |
+| Runs (rzx-r1: the RZX run's stage 1 replayed pass by pass) | 1 run of its first instruction (entered by a jump or by running on, no routine of its own in the L1) |
 | Calls | `PlaceHero`, `RebuildRoom` |
 
 ### `LeaveGrid1` (`$ABA7`)
@@ -5285,7 +5279,7 @@ Witness: L1 1 (rzx-r1).
 
 | | |
 | --- | --- |
-| Runs | ran within another entry's routine (reached by a jump or by running on, its calls below), no runs of its own counted |
+| Runs (rzx-r1: the RZX run's stage 1 replayed pass by pass) | 1 run of its first instruction (entered by a jump or by running on, no routine of its own in the L1) |
 | Calls | `PlaceHero`, `RebuildRoom` |
 
 ### `EnterGrid2` (`$ABDD`)
@@ -5298,7 +5292,7 @@ Witness: L1 1 (rzx-r1).
 
 | | |
 | --- | --- |
-| Runs | ran within another entry's routine (reached by a jump or by running on, its calls below), no runs of its own counted |
+| Runs (rzx-r1: the RZX run's stage 1 replayed pass by pass) | 1 run of its first instruction (entered by a jump or by running on, no routine of its own in the L1) |
 | Calls | `PlaceHero`, `RebuildRoom` |
 
 ### `LeaveGrid2` (`$AC01`)
@@ -5311,7 +5305,7 @@ Witness: L1 1 (rzx-r1).
 
 | | |
 | --- | --- |
-| Runs | ran within another entry's routine (reached by a jump or by running on, its calls below), no runs of its own counted |
+| Runs (rzx-r1: the RZX run's stage 1 replayed pass by pass) | 1 run of its first instruction (entered by a jump or by running on, no routine of its own in the L1) |
 | Calls | `PlaceHero`, `RebuildRoom` |
 
 ### `RebuildRoom` (`$AC37`)
@@ -5402,7 +5396,7 @@ Run once, from ResidentEntry (c1: the front loads after it; the stage blocks ove
 
 | | |
 | --- | --- |
-| Runs | ran within another entry's routine (reached by a jump or by running on, its calls below), no runs of its own counted |
+| Runs (c1 from frame 5166 (tools/c1_windows.sh): the resident from its entry on, the front, the stage 1 load, stage 1) | 1 run of its first instruction (entered by a jump or by running on, no routine of its own in the L1) |
 | Calls | `SaveLoaderBytes`, `SetIm2`, `SilenceAy` |
 
 #### `ResidentEntry` (`$F040`)
@@ -5413,7 +5407,7 @@ Boot's JP (HL) lands here (c1). Witness: L1 1 (c1).
 
 | | |
 | --- | --- |
-| Runs (c1 from frame 5166 (tools/c1_windows.sh): the resident from its entry on, the front, the stage 1 load, stage 1) | run into, not called, 239 t-states own (0.00 %) |
+| Runs (c1 from frame 5166 (tools/c1_windows.sh): the resident from its entry on, the front, the stage 1 load, stage 1) | 1 run of its first instruction (entered by a jump or by running on, no routine of its own in the L1), 239 t-states own (0.00 %) |
 | Writes | `$F9AE` (`StageLoaded`) |
 | Ports out | `$00FE` |
 
@@ -5425,7 +5419,7 @@ Witness: L1 1 (c1).
 
 | | |
 | --- | --- |
-| Runs | ran within another entry's routine (reached by a jump or by running on, its calls below), no runs of its own counted |
+| Runs (c1 from frame 5166 (tools/c1_windows.sh): the resident from its entry on, the front, the stage 1 load, stage 1) | 1 run of its first instruction (entered by a jump or by running on, no routine of its own in the L1) |
 | Calls | `ClearScreen` |
 
 #### `RestartFromStageOne` (`$F048`)
@@ -5462,7 +5456,7 @@ LoadStage with C = 0: StageLoaded := 0, so LoadBlock does not check the block. T
 
 | | |
 | --- | --- |
-| Runs | ran within another entry's routine (reached by a jump or by running on, its calls below), no runs of its own counted |
+| Runs (c1 from frame 5166 (tools/c1_windows.sh): the resident from its entry on, the front, the stage 1 load, stage 1) | 1 run of its first instruction (entered by a jump or by running on, no routine of its own in the L1) |
 | Calls | `LoadStage` |
 
 ### The resident (TZX blocks 25, 17, 27 at `$F000-$FFFF`): game
@@ -5477,8 +5471,8 @@ Reached from the front's StartGame by RET (front notes). Witness: L1 4 (c1, joys
 
 | | |
 | --- | --- |
-| Runs (c1 from frame 5166 (tools/c1_windows.sh): the resident from its entry on, the front, the stage 1 load, stage 1) | run into, not called, 114 t-states own (0.00 %) |
-| Runs (the other recordings) | run into, not called (`stage1/rec/menu`, `stage1/rec/s1-right`, `stage1/rec/s2-right` and 2 more) |
+| Runs (c1 from frame 5166 (tools/c1_windows.sh): the resident from its entry on, the front, the stage 1 load, stage 1) | 1 run of its first instruction (entered by a jump or by running on, no routine of its own in the L1), 114 t-states own (0.00 %) |
+| Runs (the other recordings) | 1 run of its first instruction, entered by a jump (`stage1/rec/menu` 1) |
 | Calls | `PlayStage`, `GameOver` |
 | Writes | `$F9AD`-`$F9AF` (`Credits`, `StageLoaded`, `Lives`); `$F9FB`-`$F9FD` (`Score`, `ScoreHigh`) |
 
@@ -5502,8 +5496,8 @@ Input: IY a StageTable record. ClearScreen; if StageLoaded is not the record's s
 
 | | |
 | --- | --- |
-| Runs (c1 from frame 5166 (tools/c1_windows.sh): the resident from its entry on, the front, the stage 1 load, stage 1) | run into, not called, 34 t-states own (0.00 %) |
-| Runs (the other recordings) | run into, not called (`stage1/rec/menu`) |
+| Runs (c1 from frame 5166 (tools/c1_windows.sh): the resident from its entry on, the front, the stage 1 load, stage 1) | 1 run of its first instruction (entered by a jump or by running on, no routine of its own in the L1), 34 t-states own (0.00 %) |
+| Runs (the other recordings) | 1 run of its first instruction, entered by a jump (`stage1/rec/menu` 1) |
 | Called from | `RevealText` |
 | Calls | `Print`, `WaitFrames` |
 
@@ -5513,8 +5507,8 @@ Input: IY a StageTable record. ClearScreen; if StageLoaded is not the record's s
 
 | | |
 | --- | --- |
-| Runs (c1 from frame 5166 (tools/c1_windows.sh): the resident from its entry on, the front, the stage 1 load, stage 1) | run into, not called, 313 t-states own (0.00 %) |
-| Runs (the other recordings) | run into, not called (`stage1/rec/menu`, `stage1/rec/s1-right`, `stage1/rec/s2-right` and 4 more) |
+| Runs (c1 from frame 5166 (tools/c1_windows.sh): the resident from its entry on, the front, the stage 1 load, stage 1) | 1 run of its first instruction (entered by a jump or by running on, no routine of its own in the L1), 313 t-states own (0.00 %) |
+| Runs (the other recordings) | 1 run of its first instruction, entered by a jump (`stage1/rec/menu` 1) |
 | Called from | `RevealText` |
 | Calls | `PrintRecord`, `ClearScreen`, `LoadStage`, `SilenceAy` |
 | Reads | `$F0EA`-`$F0EF` (`StageTable`); `$F9AF` (`Lives`) |
@@ -5537,7 +5531,7 @@ Input: BC the address of the stage's six score digits (copied into the menu's SC
 
 | | |
 | --- | --- |
-| Runs | not reached in `stage1/c1/run`; in the other recordings run into, not called (`stage1/rec/s1-right`, `stage1/rec/s2-right`, `stage1/rec/s3-right` and 1 more) |
+| Runs | not reached in `stage1/c1/run`; in the other recordings 4 runs of its first instruction, entered by a jump (`stage1/rec/s1-right` 1, `stage1/rec/s2-right` 1, `stage1/rec/s3-right` 1 and 1 more) |
 | Called from | `RevealText` |
 | Calls | `Print` |
 
@@ -5547,7 +5541,7 @@ Input: BC the address of the stage's six score digits (copied into the menu's SC
 
 | | |
 | --- | --- |
-| Runs | not reached in `stage1/c1/run`; in the other recordings run into, not called (`stage1/rec/s4-right`, `stage1/rec/s1-right`, `stage1/rec/s3-right` and 1 more) |
+| Runs | not reached in `stage1/c1/run`; in the other recordings 4 runs of its first instruction, entered by a jump (`stage1/rec/s1-right` 1, `stage1/rec/s2-right` 1, `stage1/rec/s3-right` 1 and 1 more) |
 | Called from | `GameOver4` (tail), `RevealText` |
 | Calls | `GameOver4` (tail), `PrintGameOverMenu`, `CycleColours`, `AttrBox`, `SetMenuBands` |
 
@@ -5580,7 +5574,7 @@ Witness: L1 4 (s1-right, s2-right, s3-right, s4-right).
 
 | | |
 | --- | --- |
-| Runs | not reached in `stage1/c1/run`; in the other recordings run into, not called (`stage1/rec/s1-right`, `stage1/rec/s2-right`, `stage1/rec/s3-right` and 1 more) |
+| Runs | not reached in `stage1/c1/run`; in the other recordings 4 runs of its first instruction, entered by a jump (`stage1/rec/s1-right` 1, `stage1/rec/s2-right` 1, `stage1/rec/s3-right` 1 and 1 more) |
 | Called from | `RevealText` |
 | Calls | `Print` |
 
@@ -5590,7 +5584,7 @@ Witness: L1 4 (s1-right, s2-right, s3-right, s4-right).
 
 | | |
 | --- | --- |
-| Runs | not reached in `stage1/c1/run`; in the other recordings run into, not called (`stage1/rec/s1-right`, `stage1/rec/s2-right`, `stage1/rec/s3-right` and 1 more) |
+| Runs | not reached in `stage1/c1/run`; in the other recordings 4 runs of its first instruction, entered by a jump (`stage1/rec/s1-right` 1, `stage1/rec/s2-right` 1, `stage1/rec/s3-right` 1 and 1 more) |
 | Called from | `RevealText` |
 | Calls | `Print` |
 
@@ -5600,7 +5594,7 @@ Witness: L1 4 (s1-right, s2-right, s3-right, s4-right).
 
 | | |
 | --- | --- |
-| Runs | not reached in `stage1/c1/run`; in the other recordings run into, not called (`stage1/rec/s1-right`, `stage1/rec/s2-right`, `stage1/rec/s3-right` and 1 more) |
+| Runs | not reached in `stage1/c1/run`; in the other recordings 4 runs of its first instruction, entered by a jump (`stage1/rec/s1-right` 1, `stage1/rec/s2-right` 1, `stage1/rec/s3-right` 1 and 1 more) |
 | Called from | `RevealText` |
 
 #### `DelayB` (`$F5D9`)
@@ -6038,7 +6032,7 @@ Inputs: C the stage (0 the front), B, H, L the length parameters (to LoadLength)
 
 | | |
 | --- | --- |
-| Runs (c1 from frame 5166 (tools/c1_windows.sh): the resident from its entry on, the front, the stage 1 load, stage 1) | run into, not called, 34 t-states own (0.00 %) |
+| Runs (c1 from frame 5166 (tools/c1_windows.sh): the resident from its entry on, the front, the stage 1 load, stage 1) | 2 runs of its first instruction (entered by a jump or by running on, no routine of its own in the L1), 34 t-states own (0.00 %) |
 | Called from | `RevealText` |
 | Calls | `Print` |
 
@@ -6048,8 +6042,8 @@ Inputs: C the stage (0 the front), B, H, L the length parameters (to LoadLength)
 
 | | |
 | --- | --- |
-| Runs (c1 from frame 5166 (tools/c1_windows.sh): the resident from its entry on, the front, the stage 1 load, stage 1) | run into, not called, 82 t-states own (0.00 %) |
-| Runs (the other recordings) | run into, not called (`stage1/rec/s5-right`, `stage1/rec/s1-idle`, `stage1/rec/s1-right` and 3 more) |
+| Runs (c1 from frame 5166 (tools/c1_windows.sh): the resident from its entry on, the front, the stage 1 load, stage 1) | 2 runs of its first instruction (entered by a jump or by running on, no routine of its own in the L1), 82 t-states own (0.00 %) |
+| Runs (the other recordings) | 1 run of its first instruction, entered by a jump (`stage1/rec/s5-right` 1) |
 | Called from | `RevealText` |
 | Calls | `WaitFrames` |
 
@@ -6588,7 +6582,7 @@ Witness: L1 2 (c1, rzx-r0).
 
 | | |
 | --- | --- |
-| Runs (c1: a 48K from power-on, the whole load at signal speed, the menu, stage 1) | run into, not called, 17 t-states own (0.00 %) |
+| Runs (c1: a 48K from power-on, the whole load at signal speed, the menu, stage 1) | 1 run of its first instruction (entered by a jump or by running on, no routine of its own in the L1), 17 t-states own (0.00 %) |
 | Calls | `PrintText` |
 
 #### `CreditsPage2` (`$9538`)
@@ -6601,7 +6595,7 @@ Witness: L1 2 (c1, rzx-r0).
 
 | | |
 | --- | --- |
-| Runs (c1: a 48K from power-on, the whole load at signal speed, the menu, stage 1) | run into, not called, 27 t-states own (0.00 %) |
+| Runs (c1: a 48K from power-on, the whole load at signal speed, the menu, stage 1) | 1 run of its first instruction (entered by a jump or by running on, no routine of its own in the L1), 27 t-states own (0.00 %) |
 | Calls | `WaitOrSpace` |
 
 #### `CreditsPage2Name` (`$9561`)
@@ -6806,7 +6800,7 @@ Witness: L1 2 (menu, rzx-r0).
 
 | | |
 | --- | --- |
-| Runs | not reached in `stage1/c1`; in the other recordings run into, not called (`stage1/rec/menu`) |
+| Runs | not reached in `stage1/c1`; in the other recordings 1 run of its first instruction, entered by a jump (`stage1/rec/menu` 1) |
 | Called from | `AdvanceColumn` |
 | Calls | `PrintKeyName`, `SelectJoystick` (tail), `ScanKeyboard`, `WaitOrSpace`, `ClearTextLine` |
 
@@ -6834,7 +6828,7 @@ Witness: L1 20 (menu, rzx-r0).
 
 | | |
 | --- | --- |
-| Runs | not reached in `stage1/c1`; in the other recordings run into, not called (`stage1/rec/menu`) |
+| Runs | not reached in `stage1/c1`; in the other recordings 10 runs of its first instruction, entered by a jump (`stage1/rec/menu` 10) |
 | Called from | `AdvanceColumn` |
 
 #### `ScanKeyboard` (`$9916`)
@@ -7116,8 +7110,8 @@ Witness: L1 8 (c1, joystick, menu, rzx-r0).
 
 | | |
 | --- | --- |
-| Runs (c1: a 48K from power-on, the whole load at signal speed, the menu, stage 1) | run into, not called, 10 t-states own (0.00 %) |
-| Runs (the other recordings) | run into, not called (`stage1/rec/menu`) |
+| Runs (c1: a 48K from power-on, the whole load at signal speed, the menu, stage 1) | 1 run of its first instruction (entered by a jump or by running on, no routine of its own in the L1), 10 t-states own (0.00 %) |
+| Runs (the other recordings) | 1 run of its first instruction, entered by a jump (`stage1/rec/menu` 1) |
 | Called from | `AdvanceColumn` |
 
 #### `MenuLines` (`$A184`)
@@ -7145,8 +7139,8 @@ Witness: L1 8 (c1, joystick, menu, rzx-r0).
 
 | | |
 | --- | --- |
-| Runs (c1: a 48K from power-on, the whole load at signal speed, the menu, stage 1) | run into, not called, 17 t-states own (0.00 %) |
-| Runs (the other recordings) | run into, not called (`stage1/rec/menu`) |
+| Runs (c1: a 48K from power-on, the whole load at signal speed, the menu, stage 1) | 1 run of its first instruction (entered by a jump or by running on, no routine of its own in the L1), 17 t-states own (0.00 %) |
+| Runs (the other recordings) | 1 run of its first instruction, entered by a jump (`stage1/rec/menu` 1) |
 | Called from | `AdvanceColumn` |
 | Calls | `PrintText` |
 
@@ -7160,8 +7154,8 @@ Witness: L1 8 (c1, joystick, menu, rzx-r0).
 
 | | |
 | --- | --- |
-| Runs (c1: a 48K from power-on, the whole load at signal speed, the menu, stage 1) | run into, not called, 17 t-states own (0.00 %) |
-| Runs (the other recordings) | run into, not called (`stage1/rec/menu`) |
+| Runs (c1: a 48K from power-on, the whole load at signal speed, the menu, stage 1) | 1 run of its first instruction (entered by a jump or by running on, no routine of its own in the L1), 17 t-states own (0.00 %) |
+| Runs (the other recordings) | 1 run of its first instruction, entered by a jump (`stage1/rec/menu` 1) |
 | Called from | `AdvanceColumn` |
 | Calls | `PrintText` |
 
@@ -7175,8 +7169,8 @@ Witness: L1 8 (c1, joystick, menu, rzx-r0).
 
 | | |
 | --- | --- |
-| Runs (c1: a 48K from power-on, the whole load at signal speed, the menu, stage 1) | run into, not called, 10 t-states own (0.00 %) |
-| Runs (the other recordings) | run into, not called (`stage1/rec/menu`) |
+| Runs (c1: a 48K from power-on, the whole load at signal speed, the menu, stage 1) | 1 run of its first instruction (entered by a jump or by running on, no routine of its own in the L1), 10 t-states own (0.00 %) |
+| Runs (the other recordings) | 1 run of its first instruction, entered by a jump (`stage1/rec/menu` 1) |
 | Called from | `AdvanceColumn` |
 
 ### The front (TZX block 37): print
@@ -7276,8 +7270,8 @@ Witness: L1 72 (c1, joystick, menu, rzx-r0).
 
 | | |
 | --- | --- |
-| Runs (c1: a 48K from power-on, the whole load at signal speed, the menu, stage 1) | run into, not called, 80 t-states own (0.00 %) |
-| Runs (the other recordings) | run into, not called (`stage1/rec/menu`) |
+| Runs (c1: a 48K from power-on, the whole load at signal speed, the menu, stage 1) | 8 runs of its first instruction (entered by a jump or by running on, no routine of its own in the L1), 80 t-states own (0.00 %) |
+| Runs (the other recordings) | 12 runs of its first instruction, entered by a jump (`stage1/rec/menu` 12) |
 | Called from | `AdvanceColumn` |
 
 #### `PrintText` (`$9D72`)
@@ -7372,7 +7366,7 @@ run's stage 2 replayed pass by pass), `work/stage2/rec/stageload` (stageload: st
 | [`render`](#stage-2-tzx-block-43-render) | `$792E`-`$7965`, `$7982`-`$79B1`, `$7F10`-`$7FB4`, `$88BF`-`$8A78`, `$8B2A`-`$8B4A`, `$8C63`-`$8D44`, `$9149`-`$9176`, `$93B5`-`$953D`, `$99D3`-`$99E0`, `$A545`-`$A6EB`, `$A8EB`-`$A91A`, `$B2F9`-`$B304` | 42 of 45 |
 | [`hud`](#stage-2-tzx-block-43-hud) | `$79B2`-`$7BF1`, `$7D98`-`$7DE4`, `$7E62`-`$7EC9`, `$84F3`-`$85A1`, `$8774`-`$8781`, `$8AD6`-`$8B29`, `$8C0A`-`$8C5B`, `$9DC2`-`$9E20` | 23 of 26 |
 | [`hero`](#stage-2-tzx-block-43-hero) | `$7BF2`-`$7D97`, `$7DE5`-`$7E61`, `$7ECA`-`$7F0F`, `$87C2`-`$8813`, `$8F22`-`$8F83`, `$90F5`-`$9148`, `$AC8E`-`$AD29`, `$ADC0`-`$B255`, `$B340`-`$B3A3` | 49 of 67 |
-| [`enemies`](#stage-2-tzx-block-43-enemies) | `$7FB5`-`$826E`, `$842E`-`$84F2`, `$8782`-`$87C1`, `$88B6`-`$88BE`, `$8DA4`-`$8EE0`, `$8F8C`-`$90F4`, `$9E21`-`$A33C`, `$A6EC`-`$A8EA`, `$A91B`-`$AC51`, `$B305`-`$B33F`, `$B3A4`-`$B3BC` | 68 of 97 |
+| [`enemies`](#stage-2-tzx-block-43-enemies) | `$7FB5`-`$826E`, `$842E`-`$84F2`, `$8782`-`$87C1`, `$88B6`-`$88BE`, `$8DA4`-`$8EE0`, `$8F8C`-`$90F4`, `$9E21`-`$A33C`, `$A6EC`-`$A8EA`, `$A91B`-`$AC51`, `$B305`-`$B33F`, `$B3A4`-`$B3BC` | 67 of 96 |
 | [`missiles`](#stage-2-tzx-block-43-missiles) | `$826F`-`$8328`, `$85A2`-`$8773`, `$B3C5`-`$B7D4` | 37 of 47 |
 | [`rooms`](#stage-2-tzx-block-43-rooms) | `$8329`-`$842D`, `$8814`-`$88B5`, `$8EF9`-`$8F13`, `$9257`-`$93B4`, `$953E`-`$9606`, `$9810`-`$99D2`, `$A33D`-`$A395`, `$AD2A`-`$ADBF`, `$B282`-`$B2F8`, `$B7D5`-`$C3D4` | 32 of 34 |
 | [`util`](#stage-2-tzx-block-43-util) | `$8A79`-`$8AD5`, `$8B4B`-`$8B5D`, `$8B9D`-`$8C09`, `$8C5C`-`$8C62` | 12 of 13 |
@@ -7505,7 +7499,9 @@ Witness: L1 8032 (rzx-r2, s2-right, stageload).
 
 | | |
 | --- | --- |
-| Runs | ran within another entry's routine (reached by a jump or by running on, its calls below), no runs of its own counted |
+| Runs (s2-right: stage 2 from the RZX run's snapshot, a walk to the right) | 1,951 runs of its first instruction (entered by a jump or by running on, no routine of its own in the L1) |
+| Runs (rzx-r2: the RZX run's stage 2 replayed pass by pass) | 5,806 runs of its first instruction (entered by a jump or by running on, no routine of its own in the L1) |
+| Runs (stageload: stage 2 loaded from the tape (block 36) by the resident loader, then played) | 275 runs of its first instruction (entered by a jump or by running on, no routine of its own in the L1) |
 | Calls | `PacePassEmpty`, `CheckPause`, `CheckStageExit`, `ShowScore`, `ItemWindow`, `RedrawItemsIfChanged`, `FlashPieces`, `ShowPieceTaken`, `TestSpaceKey`, `UpdateAttributes`, `SpawnTimer`, `PassTick`, `ClearBuffer`, `HydraDefeated`, `UpdateBurst`, `DrawHydraBody`, `ColourHydra`, `UpdateHydraNecks`, `RunActorHandlers`, `DrawActors`, `UpdateMissiles` |
 
 #### `GameOverExit` (`$7897`)
@@ -7518,7 +7514,7 @@ Witness: L1 1 (s2-right).
 
 | | |
 | --- | --- |
-| Runs | not reached in the recordings |
+| Runs (s2-right: stage 2 from the RZX run's snapshot, a walk to the right) | 1 run of its first instruction (entered by a jump or by running on, no routine of its own in the L1) |
 
 #### `QuitStage` (`$789B`)
 
@@ -7540,6 +7536,7 @@ Witness: L1 2 (rzx-r2, s2-right).
 
 | | |
 | --- | --- |
+| Runs (s2-right: stage 2 from the RZX run's snapshot, a walk to the right) | 1 run of its first instruction (entered by a jump or by running on, no routine of its own in the L1) |
 | Runs (rzx-r2: the RZX run's stage 2 replayed pass by pass) | 1 call, 7,479 t-states own (0.00 %) |
 | Called from | `StageExit` (tail) |
 | Calls | `ClearBuffer` |
@@ -7558,7 +7555,8 @@ Witness: L1 2 (rzx-r2, s2-right).
 
 | | |
 | --- | --- |
-| Runs | ran within another entry's routine (reached by a jump or by running on, its calls below), no runs of its own counted |
+| Runs (s2-right: stage 2 from the RZX run's snapshot, a walk to the right) | 1 run of its first instruction (entered by a jump or by running on, no routine of its own in the L1) |
+| Runs (rzx-r2: the RZX run's stage 2 replayed pass by pass) | 1 run of its first instruction (entered by a jump or by running on, no routine of its own in the L1) |
 | Calls | `FlashFadeScreen`, `CopyToScreen`, `CopyScreenToBlock`, `ClearScreen`, `WaitFrames` |
 
 #### `PacePassEmpty` (`$7966`)
@@ -8427,7 +8425,7 @@ Witness: L1 1 (rzx-r2).
 
 | | |
 | --- | --- |
-| Runs | ran within another entry's routine (reached by a jump or by running on, its calls below), no runs of its own counted |
+| Runs (rzx-r2: the RZX run's stage 2 replayed pass by pass) | 1 run of its first instruction (entered by a jump or by running on, no routine of its own in the L1) |
 | Calls | `EndStage` (tail), `MoveStar`, `StartStageExit`, `TestSpaceKey` |
 
 #### `MoveStar` (`$7A00`)
@@ -8529,7 +8527,9 @@ Witness: L1 8030 (rzx-r2, s2-right, stageload).
 
 | | |
 | --- | --- |
-| Runs | not reached in the recordings |
+| Runs (s2-right: stage 2 from the RZX run's snapshot, a walk to the right) | 1,951 runs of its first instruction (entered by a jump or by running on, no routine of its own in the L1) |
+| Runs (rzx-r2: the RZX run's stage 2 replayed pass by pass) | 5,805 runs of its first instruction (entered by a jump or by running on, no routine of its own in the L1) |
+| Runs (stageload: stage 2 loaded from the tape (block 36) by the resident loader, then played) | 274 runs of its first instruction (entered by a jump or by running on, no routine of its own in the L1) |
 
 #### `ShowScore` (`$7B8F`)
 
@@ -8565,7 +8565,9 @@ Witness: L1 8639 (rzx-r2, s2-right, stageload).
 
 | | |
 | --- | --- |
+| Runs (s2-right: stage 2 from the RZX run's snapshot, a walk to the right) | 1,952 runs of its first instruction (entered by a jump or by running on, no routine of its own in the L1) |
 | Runs (rzx-r2: the RZX run's stage 2 replayed pass by pass) | 6,412 calls, 17,872,387 t-states own (1.31 %) |
+| Runs (stageload: stage 2 loaded from the tape (block 36) by the resident loader, then played) | 275 runs of its first instruction (entered by a jump or by running on, no routine of its own in the L1) |
 | Called from | `RenderScore` (tail), `FormatItemCount` (tail) |
 | Reads | `$7BEB`-`$7BF1` (`ScoreDigitsHigh`, `ScoreDigitsLow`, `ScoreDigitsEnd`); `$7D95`-`$7D97` (`ItemCountText+2`); `$F959`-`$F9A7` (`DigitGlyphs`) |
 | Writes | `$7640`-`$766F` (`DigitBuffer`); `$7BC5` (`RenderDigitsChar+28`) |
@@ -8638,6 +8640,7 @@ Witness: L1 6 (rzx-r2, s2-right).
 | | |
 | --- | --- |
 | Runs (s2-right: stage 2 from the RZX run's snapshot, a walk to the right) | 5 calls, 1,219 t-states own (0.00 %) |
+| Runs (rzx-r2: the RZX run's stage 2 replayed pass by pass) | 1 run of its first instruction (entered by a jump or by running on, no routine of its own in the L1) |
 | Called from | `ApplyEnergyChange` (tail), `HeroFall` |
 | Calls | `StartLivesFlash`, `HeroDeath` (tail) |
 | Reads | `$74EA` (`HeroState`); `$FE6F` (`Lives`) |
@@ -8714,7 +8717,7 @@ Witness: L1 168 (s2-right).
 
 | | |
 | --- | --- |
-| Runs (s2-right: stage 2 from the RZX run's snapshot, a walk to the right) | run into, not called, 1,680 t-states own (0.00 %) |
+| Runs (s2-right: stage 2 from the RZX run's snapshot, a walk to the right) | 168 runs of its first instruction (entered by a jump or by running on, no routine of its own in the L1), 1,680 t-states own (0.00 %) |
 | Called from | `FillAttributes` |
 
 #### `DamageHero` (`$8774`)
@@ -8731,6 +8734,7 @@ Witness: L1 72 (rzx-r2, s2-right, stageload).
 | --- | --- |
 | Runs (s2-right: stage 2 from the RZX run's snapshot, a walk to the right) | 36 calls, 2,369 t-states own (0.00 %) |
 | Runs (rzx-r2: the RZX run's stage 2 replayed pass by pass) | 29 calls, 1,911 t-states own (0.00 %) |
+| Runs (stageload: stage 2 loaded from the tape (block 36) by the resident loader, then played) | 7 runs of its first instruction (entered by a jump or by running on, no routine of its own in the L1) |
 | Called from | `MedusaHeadDraw`, `ShotHitsHero` (falls into), `HarpyActor`, `HarpyRiseActor`, `UpdateFloorShot` |
 | Reads | `$74EA` (`HeroState`); `$FE59` (`EnergyChange`) |
 | Writes | `$FE59` (`EnergyChange`) |
@@ -8882,9 +8886,9 @@ Witness: L1 105 (rzx-r2, s2-right, stageload).
 
 | | |
 | --- | --- |
-| Runs (s2-right: stage 2 from the RZX run's snapshot, a walk to the right) | run into, not called, 140 t-states own (0.00 %) |
-| Runs (rzx-r2: the RZX run's stage 2 replayed pass by pass) | run into, not called, 2,660 t-states own (0.00 %) |
-| Runs (stageload: stage 2 loaded from the tape (block 36) by the resident loader, then played) | run into, not called, 140 t-states own (0.00 %) |
+| Runs (s2-right: stage 2 from the RZX run's snapshot, a walk to the right) | 5 runs of its first instruction (entered by a jump or by running on, no routine of its own in the L1), 140 t-states own (0.00 %) |
+| Runs (rzx-r2: the RZX run's stage 2 replayed pass by pass) | 95 runs of its first instruction (entered by a jump or by running on, no routine of its own in the L1), 2,660 t-states own (0.00 %) |
+| Runs (stageload: stage 2 loaded from the tape (block 36) by the resident loader, then played) | 5 runs of its first instruction (entered by a jump or by running on, no routine of its own in the L1), 140 t-states own (0.00 %) |
 | Called from | `FillAttributes` |
 | Calls | `FlashSelectedBoxFrame` (tail) |
 
@@ -9330,7 +9334,9 @@ Witness: L1 398 (rzx-r2, s2-right, stageload).
 
 | | |
 | --- | --- |
-| Runs | ran within another entry's routine (reached by a jump or by running on, its calls below), no runs of its own counted |
+| Runs (s2-right: stage 2 from the RZX run's snapshot, a walk to the right) | 204 runs of its first instruction (entered by a jump or by running on, no routine of its own in the L1) |
+| Runs (rzx-r2: the RZX run's stage 2 replayed pass by pass) | 184 runs of its first instruction (entered by a jump or by running on, no routine of its own in the L1) |
+| Runs (stageload: stage 2 loaded from the tape (block 36) by the resident loader, then played) | 10 runs of its first instruction (entered by a jump or by running on, no routine of its own in the L1) |
 | Calls | `GetSelectedItem`, `HeroStrikeLow` (tail), `HeroStrikeMid` (tail), `HeroStrikeHigh` (tail), `MoveBaseX` |
 
 #### `StartJump` (`$AF2F`)
@@ -9885,7 +9891,7 @@ Witness: L1 1 (rzx-r2).
 
 | | |
 | --- | --- |
-| Runs | ran within another entry's routine (reached by a jump or by running on, its calls below), no runs of its own counted |
+| Runs (rzx-r2: the RZX run's stage 2 replayed pass by pass) | 1 run of its first instruction (entered by a jump or by running on, no routine of its own in the L1) |
 | Calls | `StartBurst` (tail) |
 
 #### `MedusaActor` (`$814E`)
@@ -9960,7 +9966,7 @@ Witness: L1 27 (rzx-r2).
 
 | | |
 | --- | --- |
-| Runs | ran within another entry's routine (reached by a jump or by running on, its calls below), no runs of its own counted |
+| Runs (rzx-r2: the RZX run's stage 2 replayed pass by pass) | 27 runs of its first instruction (entered by a jump or by running on, no routine of its own in the L1) |
 | Calls | `MedusaHeadDraw` (tail), `StepFineLeft` |
 
 #### `MedusaHeadLies` (`$8215`)
@@ -10027,7 +10033,7 @@ Witness: L1 155 (rzx-r2).
 
 | | |
 | --- | --- |
-| Runs | not reached in the recordings |
+| Runs (rzx-r2: the RZX run's stage 2 replayed pass by pass) | 155 runs of its first instruction (entered by a jump or by running on, no routine of its own in the L1) |
 
 #### `PieceWaitsPickup` (`$84C5`)
 
@@ -10041,7 +10047,7 @@ Witness: L1 46 (rzx-r2).
 
 | | |
 | --- | --- |
-| Runs | ran within another entry's routine (reached by a jump or by running on, its calls below), no runs of its own counted |
+| Runs (rzx-r2: the RZX run's stage 2 replayed pass by pass) | 46 runs of its first instruction (entered by a jump or by running on, no routine of its own in the L1) |
 | Calls | `AddScore`, `HeroWithinY`, `RemoveActor` (tail) |
 
 #### `WaterActor` (`$8782`)
@@ -10133,7 +10139,8 @@ Witness: L1 717 (rzx-r2, s2-right).
 
 | | |
 | --- | --- |
-| Runs | ran within another entry's routine (reached by a jump or by running on, its calls below), no runs of its own counted |
+| Runs (s2-right: stage 2 from the RZX run's snapshot, a walk to the right) | 351 runs of its first instruction (entered by a jump or by running on, no routine of its own in the L1) |
+| Runs (rzx-r2: the RZX run's stage 2 replayed pass by pass) | 366 runs of its first instruction (entered by a jump or by running on, no routine of its own in the L1) |
 | Calls | `NegateIfFacingLeft` |
 
 #### `SpawnRandomEnemy` (`$8F8C`)
@@ -10200,7 +10207,9 @@ Witness: L1 403 (rzx-r2, s2-right, stageload).
 
 | | |
 | --- | --- |
-| Runs | ran within another entry's routine (reached by a jump or by running on, its calls below), no runs of its own counted |
+| Runs (s2-right: stage 2 from the RZX run's snapshot, a walk to the right) | 190 runs of its first instruction (entered by a jump or by running on, no routine of its own in the L1) |
+| Runs (rzx-r2: the RZX run's stage 2 replayed pass by pass) | 99 runs of its first instruction (entered by a jump or by running on, no routine of its own in the L1) |
+| Runs (stageload: stage 2 loaded from the tape (block 36) by the resident loader, then played) | 114 runs of its first instruction (entered by a jump or by running on, no routine of its own in the L1) |
 | Calls | `Random`, `SpiritFires` |
 
 #### `SpiritShrinks` (`$90B5`)
@@ -10213,7 +10222,9 @@ Witness: L1 54 (rzx-r2, s2-right, stageload).
 
 | | |
 | --- | --- |
-| Runs | ran within another entry's routine (reached by a jump or by running on, its calls below), no runs of its own counted |
+| Runs (s2-right: stage 2 from the RZX run's snapshot, a walk to the right) | 47 runs of its first instruction (entered by a jump or by running on, no routine of its own in the L1) |
+| Runs (rzx-r2: the RZX run's stage 2 replayed pass by pass) | 6 runs of its first instruction (entered by a jump or by running on, no routine of its own in the L1) |
+| Runs (stageload: stage 2 loaded from the tape (block 36) by the resident loader, then played) | 1 run of its first instruction (entered by a jump or by running on, no routine of its own in the L1) |
 | Calls | `RemoveActor` (tail) |
 
 #### `SpiritFires` (`$90C1`)
@@ -10415,21 +10426,11 @@ Witness: L1 1528 (rzx-r2).
 
 | | |
 | --- | --- |
-| Runs (rzx-r2: the RZX run's stage 2 replayed pass by pass) | 1,528 calls, 266,719 t-states own (0.02 %) |
+| Runs (rzx-r2: the RZX run's stage 2 replayed pass by pass) | 1,528 calls, 1,248,114 t-states own (0.09 %) |
 | Called from | `HydraNeck1Step` (tail), `HydraNeck2Step` (tail) |
-| Calls | `Multiply`, `DrawNeckHighLoop` (falls into) |
-| Writes | `$9FF4` (`NeckLineUp+1`) |
-
-#### `DrawNeckHighLoop` (`$9FDF`)
-
-**DrawNeckHighLoop**
-
-| | |
-| --- | --- |
-| Runs (rzx-r2: the RZX run's stage 2 replayed pass by pass) | 350 calls, 981,395 t-states own (0.07 %) |
-| Called from | `DrawNeckHigh` (falls into) |
-| Calls | `OrNeckSegment` |
+| Calls | `Multiply`, `OrNeckSegment` |
 | Reads | `$A128`-`$A1B3` (`HydraNeck1Points`) |
+| Writes | `$9FF4` (`NeckLineUp+1`) |
 
 #### `OrNeckSegment` (`$A066`)
 
@@ -10444,7 +10445,7 @@ Witness: L1 6560 (rzx-r2).
 | | |
 | --- | --- |
 | Runs (rzx-r2: the RZX run's stage 2 replayed pass by pass) | 6,560 calls, 3,494,625 t-states own (0.26 %) |
-| Called from | `DrawNeckHighLoop`, `DrawNeckLow` |
+| Called from | `DrawNeckHigh`, `DrawNeckLow` |
 | Reads | `$5C6F`-`$6DD1` (`PlayBufferTail`, `ShadowAttributes`); `$C600`-`$C603` (`ShotSlanted+8`); `$C684`-`$C6FF` (`NeckSegments`) |
 | Writes | `$5C6F`-`$6DD1` (`PlayBufferTail`, `ShadowAttributes`) |
 
@@ -10642,7 +10643,8 @@ Witness: L1 62 (rzx-r2, s2-right).
 
 | | |
 | --- | --- |
-| Runs | ran within another entry's routine (reached by a jump or by running on, its calls below), no runs of its own counted |
+| Runs (s2-right: stage 2 from the RZX run's snapshot, a walk to the right) | 27 runs of its first instruction (entered by a jump or by running on, no routine of its own in the L1) |
+| Runs (rzx-r2: the RZX run's stage 2 replayed pass by pass) | 35 runs of its first instruction (entered by a jump or by running on, no routine of its own in the L1) |
 | Calls | `HarpyLampFrame` (tail), `HeroNearGlow` |
 
 #### `AbsDiffAtMost` (`$A91B`)
@@ -10692,7 +10694,8 @@ Witness: L1 620 (rzx-r2, s2-right).
 
 | | |
 | --- | --- |
-| Runs | not reached in the recordings |
+| Runs (s2-right: stage 2 from the RZX run's snapshot, a walk to the right) | 226 runs of its first instruction (entered by a jump or by running on, no routine of its own in the L1) |
+| Runs (rzx-r2: the RZX run's stage 2 replayed pass by pass) | 394 runs of its first instruction (entered by a jump or by running on, no routine of its own in the L1) |
 
 #### `DropActorTouch` (`$A999`)
 
@@ -10746,7 +10749,7 @@ Witness: L1 5 (rzx-r2).
 
 | | |
 | --- | --- |
-| Runs | ran within another entry's routine (reached by a jump or by running on, its calls below), no runs of its own counted |
+| Runs (rzx-r2: the RZX run's stage 2 replayed pass by pass) | 5 runs of its first instruction (entered by a jump or by running on, no routine of its own in the L1) |
 | Calls | `SpawnFragments`, `RemoveActor` (tail) |
 
 #### `InStrikeReach` (`$AA06`)
@@ -10955,7 +10958,9 @@ Witness: L1 2614 (rzx-r2, s2-right, stageload).
 
 | | |
 | --- | --- |
+| Runs (s2-right: stage 2 from the RZX run's snapshot, a walk to the right) | 1,118 runs of its first instruction (entered by a jump or by running on, no routine of its own in the L1) |
 | Runs (rzx-r2: the RZX run's stage 2 replayed pass by pass) | 1,049 calls, 134,078 t-states own (0.01 %) |
+| Runs (stageload: stage 2 loaded from the tape (block 36) by the resident loader, then played) | 574 runs of its first instruction (entered by a jump or by running on, no routine of its own in the L1) |
 | Called from | `UpdateAimedShot` (falls into), `UpdateHeroShot` (tail) |
 | Calls | `ColourRedYellow`, `ColourSprite` (tail), `DrawSprite`, `DrawSpriteMirrored`, `ColourSpriteMirrored` (tail) |
 | Reads | `$82CD`-`$82DE` (`ShotFrames`) |
@@ -11082,6 +11087,7 @@ Witness: L1 661 (rzx-r2, s2-right, stageload).
 | --- | --- |
 | Runs (s2-right: stage 2 from the RZX run's snapshot, a walk to the right) | 228 calls, 82,618 t-states own (0.01 %) |
 | Runs (rzx-r2: the RZX run's stage 2 replayed pass by pass) | 349 calls, 121,565 t-states own (0.01 %) |
+| Runs (stageload: stage 2 loaded from the tape (block 36) by the resident loader, then played) | 84 runs of its first instruction (entered by a jump or by running on, no routine of its own in the L1) |
 | Called from | `AddMissile` (tail), `AddMissileHigh` (falls into) |
 | Calls | `Random`, `ReturnZ` (falls into) |
 | Reads | `$75E0`-`$763A` (`Missiles`, `HudColours`, `MissilesHigh`); `$FE27` (`MissileCursor`) |
@@ -11101,6 +11107,7 @@ Witness: L1 1428 (rzx-r2, s2-right, stageload).
 | --- | --- |
 | Runs (s2-right: stage 2 from the RZX run's snapshot, a walk to the right) | 23 calls, 552 t-states own (0.00 %) |
 | Runs (rzx-r2: the RZX run's stage 2 replayed pass by pass) | 1,392 calls, 33,446 t-states own (0.00 %) |
+| Runs (stageload: stage 2 loaded from the tape (block 36) by the resident loader, then played) | 13 runs of its first instruction (entered by a jump or by running on, no routine of its own in the L1) |
 | Called from | `ShotHitsActor` (tail), `ThrownHitsActor` (tail), `InStrikeReach` (tail), `AddMissileFrom` (falls into) |
 
 #### `ReturnNZ` (`$B410`)
@@ -11183,7 +11190,9 @@ Witness: L1 10960 (rzx-r2, s2-right, stageload).
 
 | | |
 | --- | --- |
+| Runs (s2-right: stage 2 from the RZX run's snapshot, a walk to the right) | 5,081 runs of its first instruction (entered by a jump or by running on, no routine of its own in the L1) |
 | Runs (rzx-r2: the RZX run's stage 2 replayed pass by pass) | 11,160 calls, 1,145,535 t-states own (0.08 %) |
+| Runs (stageload: stage 2 loaded from the tape (block 36) by the resident loader, then played) | 574 runs of its first instruction (entered by a jump or by running on, no routine of its own in the L1) |
 | Called from | `UpdateBurst`, `AttrShadowAddress` (falls into) |
 | Reads | `$7040`-`$7144` (`RoomAttributes`, `RoomAttributesCell`); `$75E0`-`$763A` (`Missiles`, `HudColours`, `MissilesHigh`) |
 
@@ -11423,7 +11432,7 @@ Witness: L1 1309 (rzx-r2).
 
 | | |
 | --- | --- |
-| Runs | ran within another entry's routine (reached by a jump or by running on, its calls below), no runs of its own counted |
+| Runs (rzx-r2: the RZX run's stage 2 replayed pass by pass) | 1,309 runs of its first instruction (entered by a jump or by running on, no routine of its own in the L1) |
 | Calls | `Multiply`, `ColourGreenCyan`, `ColourSprite` (tail), `DrawSpriteMirrored` |
 
 #### `ShotMeetsHydraBody` (`$B60C`)
@@ -11474,7 +11483,8 @@ Witness: L1 2621 (rzx-r2, s2-right).
 
 | | |
 | --- | --- |
-| Runs | ran within another entry's routine (reached by a jump or by running on, its calls below), no runs of its own counted |
+| Runs (s2-right: stage 2 from the RZX run's snapshot, a walk to the right) | 583 runs of its first instruction (entered by a jump or by running on, no routine of its own in the L1) |
+| Runs (rzx-r2: the RZX run's stage 2 replayed pass by pass) | 2,038 runs of its first instruction (entered by a jump or by running on, no routine of its own in the L1) |
 | Calls | `DriftShotColour`, `DrawSpriteMirrored`, `ColourSpriteMirrored` |
 
 #### `DriftShotLands` (`$B741`)
@@ -11487,7 +11497,8 @@ Witness: L1 134 (rzx-r2, s2-right).
 
 | | |
 | --- | --- |
-| Runs | not reached in the recordings |
+| Runs (s2-right: stage 2 from the RZX run's snapshot, a walk to the right) | 30 runs of its first instruction (entered by a jump or by running on, no routine of its own in the L1) |
+| Runs (rzx-r2: the RZX run's stage 2 replayed pass by pass) | 104 runs of its first instruction (entered by a jump or by running on, no routine of its own in the L1) |
 
 #### `ColourSprite` (`$B748`)
 
@@ -11656,7 +11667,9 @@ Witness: L1 12 (rzx-r2, s2-right, stageload).
 
 | | |
 | --- | --- |
+| Runs (s2-right: stage 2 from the RZX run's snapshot, a walk to the right) | 3 runs of its first instruction (entered by a jump or by running on, no routine of its own in the L1) |
 | Runs (rzx-r2: the RZX run's stage 2 replayed pass by pass) | 8 calls, 1,534 t-states own (0.00 %) |
+| Runs (stageload: stage 2 loaded from the tape (block 36) by the resident loader, then played) | 1 run of its first instruction (entered by a jump or by running on, no routine of its own in the L1) |
 | Called from | `RoomEvents` (tail), `HydraDefeated` (tail) |
 | Calls | `FindFreeActorPair`, `SpawnActor` |
 | Reads | `$FE6B` (`PiecesMask`) |
@@ -12178,6 +12191,7 @@ Witness: L1 3847 (rzx-r2, s2-right, stageload).
 | --- | --- |
 | Runs (s2-right: stage 2 from the RZX run's snapshot, a walk to the right) | 996 calls, 152,782 t-states own (0.03 %) |
 | Runs (rzx-r2: the RZX run's stage 2 replayed pass by pass) | 2,762 calls, 422,729 t-states own (0.03 %) |
+| Runs (stageload: stage 2 loaded from the tape (block 36) by the resident loader, then played) | 89 runs of its first instruction (entered by a jump or by running on, no routine of its own in the L1) |
 | Called from | `CellAt` (falls into), `UpdateDriftLeft` |
 | Reads | `$72B4` (`CellsPlay+50`); `$72D4` (`CellsPlay+82`); `$72E9`-`$74A9` (`CellsPlay+103`) |
 
@@ -12903,7 +12917,7 @@ Witness: L1 16 (rzx-r2).
 
 | | |
 | --- | --- |
-| Runs | not reached in the recordings |
+| Runs (rzx-r2: the RZX run's stage 2 replayed pass by pass) | 16 runs of its first instruction (entered by a jump or by running on, no routine of its own in the L1) |
 
 #### `PlaceHeroAtStart` (`$A396`)
 
@@ -13259,7 +13273,8 @@ Witness: L1 6279 (rzx-r3, s3-right).
 
 | | |
 | --- | --- |
-| Runs | ran within another entry's routine (reached by a jump or by running on, its calls below), no runs of its own counted |
+| Runs (s3-right: stage 3 from the RZX run's snapshot, a walk to the right) | 1,377 runs of its first instruction (entered by a jump or by running on, no routine of its own in the L1) |
+| Runs (rzx-r3: the RZX run's stage 3 replayed pass by pass) | 4,902 runs of its first instruction (entered by a jump or by running on, no routine of its own in the L1) |
 | Calls | `PacePass`, `CheckPause`, `CheckStageExit`, `ShowScore`, `ItemWindow`, `RedrawItemsIfChanged`, `ShowPieceTaken`, `FlashPieces`, `DrawDragon`, `TestSpaceKey`, `UpdateAttributes`, `SpawnTimer`, `ThroneBossStep`, `PassTick`, `ClearBuffer`, `UpdateBurst`, `RainChance`, `UpdateRain`, `LightningStep`, `RunActorHandlers`, `DrawActors`, `UpdateMissiles` |
 
 #### `StageSetUp` (`$970D`)
@@ -13380,7 +13395,7 @@ Witness: L1 1 (s3-right).
 
 | | |
 | --- | --- |
-| Runs | not reached in the recordings |
+| Runs (s3-right: stage 3 from the RZX run's snapshot, a walk to the right) | 1 run of its first instruction (entered by a jump or by running on, no routine of its own in the L1) |
 
 #### `QuitStage` (`$78B4`)
 
@@ -13406,6 +13421,7 @@ Witness: L1 2 (rzx-r3, s3-right).
 
 | | |
 | --- | --- |
+| Runs (s3-right: stage 3 from the RZX run's snapshot, a walk to the right) | 1 run of its first instruction (entered by a jump or by running on, no routine of its own in the L1) |
 | Runs (rzx-r3: the RZX run's stage 3 replayed pass by pass) | 1 call, 45 t-states own (0.00 %) |
 | Called from | `StageExit` (tail) |
 | Calls | `FillAttributes`, `ClearBuffer` |
@@ -13422,8 +13438,8 @@ Witness: L1 2 (rzx-r3, s3-right).
 
 | | |
 | --- | --- |
-| Runs (s3-right: stage 3 from the RZX run's snapshot, a walk to the right) | run into, not called, 32 t-states own (0.00 %) |
-| Runs (rzx-r3: the RZX run's stage 3 replayed pass by pass) | run into, not called, 34 t-states own (0.00 %) |
+| Runs (s3-right: stage 3 from the RZX run's snapshot, a walk to the right) | 1 run of its first instruction (entered by a jump or by running on, no routine of its own in the L1), 32 t-states own (0.00 %) |
+| Runs (rzx-r3: the RZX run's stage 3 replayed pass by pass) | 1 run of its first instruction (entered by a jump or by running on, no routine of its own in the L1), 34 t-states own (0.00 %) |
 | Called from | `FillAttributes` |
 | Calls | `FillAttributes` |
 
@@ -13439,8 +13455,8 @@ Witness: L1 2 (rzx-r3, s3-right).
 
 | | |
 | --- | --- |
-| Runs (s3-right: stage 3 from the RZX run's snapshot, a walk to the right) | run into, not called, 5,807 t-states own (0.00 %) |
-| Runs (rzx-r3: the RZX run's stage 3 replayed pass by pass) | run into, not called, 6,746 t-states own (0.00 %) |
+| Runs (s3-right: stage 3 from the RZX run's snapshot, a walk to the right) | 1 run of its first instruction (entered by a jump or by running on, no routine of its own in the L1), 5,807 t-states own (0.00 %) |
+| Runs (rzx-r3: the RZX run's stage 3 replayed pass by pass) | 1 run of its first instruction (entered by a jump or by running on, no routine of its own in the L1), 6,746 t-states own (0.00 %) |
 | Called from | `FillAttributes` |
 | Calls | `FlashFadeScreen`, `CopyToScreen`, `CopyScreenToBlock`, `ClearScreen`, `WaitFrames` |
 | Reads | `$5800`-`$58BF` (screen); `$FE6B` (`Lives`) |
@@ -14273,6 +14289,7 @@ Witness: L1 3773 (rzx-r3, s3-right).
 
 | | |
 | --- | --- |
+| Runs (s3-right: stage 3 from the RZX run's snapshot, a walk to the right) | 2,567 runs of its first instruction (entered by a jump or by running on, no routine of its own in the L1) |
 | Runs (rzx-r3: the RZX run's stage 3 replayed pass by pass) | 7,930 calls, 814,490 t-states own (0.07 %) |
 | Called from | `UpdateBurst`, `AttrShadowAddress` (falls into) |
 | Reads | `$7040`-`$7194` (`RoomAttributes`, `RoomAttributesCell`); `$75E0`-`$763A` (`Missiles`, `MissilesY`, `HudColours`, `MissilesHigh` and 1 more) |
@@ -14526,7 +14543,7 @@ Witness: L1 132000 (rzx-r3).
 
 | | |
 | --- | --- |
-| Runs | not reached in the recordings |
+| Runs (rzx-r3: the RZX run's stage 3 replayed pass by pass) | 132,000 runs of its first instruction (entered by a jump or by running on, no routine of its own in the L1) |
 
 #### `TestSpaceKey` (`$88F5`)
 
@@ -14789,7 +14806,7 @@ Witness: L1 1 (rzx-r3).
 
 | | |
 | --- | --- |
-| Runs | ran within another entry's routine (reached by a jump or by running on, its calls below), no runs of its own counted |
+| Runs (rzx-r3: the RZX run's stage 3 replayed pass by pass) | 1 run of its first instruction (entered by a jump or by running on, no routine of its own in the L1) |
 | Calls | `EndStage` (tail), `MoveStar`, `StartStageExit`, `TestSpaceKey` |
 
 #### `MoveStar` (`$7A38`)
@@ -14890,7 +14907,8 @@ Witness: L1 6278 (rzx-r3, s3-right).
 
 | | |
 | --- | --- |
-| Runs | not reached in the recordings |
+| Runs (s3-right: stage 3 from the RZX run's snapshot, a walk to the right) | 1,377 runs of its first instruction (entered by a jump or by running on, no routine of its own in the L1) |
+| Runs (rzx-r3: the RZX run's stage 3 replayed pass by pass) | 4,901 runs of its first instruction (entered by a jump or by running on, no routine of its own in the L1) |
 
 #### `ShowScore` (`$7BB1`)
 
@@ -15068,7 +15086,7 @@ Witness: L1 167 (s3-right).
 
 | | |
 | --- | --- |
-| Runs (s3-right: stage 3 from the RZX run's snapshot, a walk to the right) | run into, not called, 1,670 t-states own (0.00 %) |
+| Runs (s3-right: stage 3 from the RZX run's snapshot, a walk to the right) | 167 runs of its first instruction (entered by a jump or by running on, no routine of its own in the L1), 1,670 t-states own (0.00 %) |
 | Called from | `FillAttributes` |
 
 #### `DamageHero` (`$85C9`)
@@ -15236,8 +15254,8 @@ Witness: L1 90 (rzx-r3, s3-right).
 
 | | |
 | --- | --- |
-| Runs (s3-right: stage 3 from the RZX run's snapshot, a walk to the right) | run into, not called, 140 t-states own (0.00 %) |
-| Runs (rzx-r3: the RZX run's stage 3 replayed pass by pass) | run into, not called, 2,380 t-states own (0.00 %) |
+| Runs (s3-right: stage 3 from the RZX run's snapshot, a walk to the right) | 5 runs of its first instruction (entered by a jump or by running on, no routine of its own in the L1), 140 t-states own (0.00 %) |
+| Runs (rzx-r3: the RZX run's stage 3 replayed pass by pass) | 85 runs of its first instruction (entered by a jump or by running on, no routine of its own in the L1), 2,380 t-states own (0.00 %) |
 | Called from | `FillAttributes` |
 | Calls | `FlashSelectedBoxFrame` (tail) |
 
@@ -16175,7 +16193,7 @@ Witness: L1 273 (rzx-r3).
 
 | | |
 | --- | --- |
-| Runs | ran within another entry's routine (reached by a jump or by running on, its calls below), no runs of its own counted |
+| Runs (rzx-r3: the RZX run's stage 3 replayed pass by pass) | 273 runs of its first instruction (entered by a jump or by running on, no routine of its own in the L1) |
 | Calls | `ColourRedYellow`, `ColourSprite` (tail), `DrawSprite`, `DrawSpriteMirrored`, `ColourSpriteMirrored` (tail) |
 
 #### `UpdateHeroShot` (`$80B8`)
@@ -16547,7 +16565,8 @@ Witness: L1 37 (rzx-r3, s3-right).
 
 | | |
 | --- | --- |
-| Runs | not reached in the recordings |
+| Runs (s3-right: stage 3 from the RZX run's snapshot, a walk to the right) | 2 runs of its first instruction (entered by a jump or by running on, no routine of its own in the L1) |
+| Runs (rzx-r3: the RZX run's stage 3 replayed pass by pass) | 35 runs of its first instruction (entered by a jump or by running on, no routine of its own in the L1) |
 
 #### `RoomEvents` (`$9F31`)
 
@@ -16575,7 +16594,7 @@ Witness: L1 22 (rzx-r3).
 
 | | |
 | --- | --- |
-| Runs | ran within another entry's routine (reached by a jump or by running on, its calls below), no runs of its own counted |
+| Runs (rzx-r3: the RZX run's stage 3 replayed pass by pass) | 22 runs of its first instruction (entered by a jump or by running on, no routine of its own in the L1) |
 | Calls | `SpawnItem` (tail) |
 
 #### `SpawnBonus` (`$9F93`)
@@ -16629,6 +16648,7 @@ Witness: L1 14 (rzx-r3, s3-right).
 
 | | |
 | --- | --- |
+| Runs (s3-right: stage 3 from the RZX run's snapshot, a walk to the right) | 7 runs of its first instruction (entered by a jump or by running on, no routine of its own in the L1) |
 | Runs (rzx-r3: the RZX run's stage 3 replayed pass by pass) | 7 calls, 101,843 t-states own (0.01 %) |
 | Called from | `RainChance` (tail), `UpdateRain` (tail) |
 | Calls | `RainRandomByte` |
@@ -16853,7 +16873,7 @@ Witness: L1 1 (rzx-r3).
 
 | | |
 | --- | --- |
-| Runs | ran within another entry's routine (reached by a jump or by running on, its calls below), no runs of its own counted |
+| Runs (rzx-r3: the RZX run's stage 3 replayed pass by pass) | 1 run of its first instruction (entered by a jump or by running on, no routine of its own in the L1) |
 | Calls | `PlaceHero`, `RebuildRoom` |
 
 #### `EnterGrid2` (`$AD83`)
@@ -16866,7 +16886,7 @@ Witness: L1 1 (rzx-r3).
 
 | | |
 | --- | --- |
-| Runs | ran within another entry's routine (reached by a jump or by running on, its calls below), no runs of its own counted |
+| Runs (rzx-r3: the RZX run's stage 3 replayed pass by pass) | 1 run of its first instruction (entered by a jump or by running on, no routine of its own in the L1) |
 | Calls | `PlaceHero`, `RebuildRoom` |
 
 #### `LeaveGrid2` (`$ADA6`)
@@ -16879,7 +16899,7 @@ Witness: L1 1 (rzx-r3).
 
 | | |
 | --- | --- |
-| Runs | ran within another entry's routine (reached by a jump or by running on, its calls below), no runs of its own counted |
+| Runs (rzx-r3: the RZX run's stage 3 replayed pass by pass) | 1 run of its first instruction (entered by a jump or by running on, no routine of its own in the L1) |
 | Calls | `PlaceHero`, `RebuildRoom` |
 
 #### `RebuildRoom` (`$ADDA`)
@@ -16945,6 +16965,7 @@ Witness: L1 1847 (rzx-r3, s3-right).
 
 | | |
 | --- | --- |
+| Runs (s3-right: stage 3 from the RZX run's snapshot, a walk to the right) | 155 runs of its first instruction (entered by a jump or by running on, no routine of its own in the L1) |
 | Runs (rzx-r3: the RZX run's stage 3 replayed pass by pass) | 1,692 calls, 258,955 t-states own (0.02 %) |
 | Called from | `IsBottomCellSolid`, `CellAt` (falls into) |
 | Reads | `$734B`-`$7351` (`CellsPlay+201`); `$7385`-`$7388` (`CellsPlay+259`); `$73C4`-`$73DA` (`CellsPlay+322`); `$740C`-`$7412` (`CellsDrawbridge+30`); `$7425`-`$747E` (`CellsDrawbridge+55`); `$74A6`-`$74B6` (`CellsDrawbridge+184`) |
@@ -16998,7 +17019,7 @@ Witness: L1 155 (rzx-r3).
 
 | | |
 | --- | --- |
-| Runs | not reached in the recordings |
+| Runs (rzx-r3: the RZX run's stage 3 replayed pass by pass) | 155 runs of its first instruction (entered by a jump or by running on, no routine of its own in the L1) |
 
 #### `PieceWaitsPickup` (`$8351`)
 
@@ -17012,7 +17033,7 @@ Witness: L1 35 (rzx-r3).
 
 | | |
 | --- | --- |
-| Runs | ran within another entry's routine (reached by a jump or by running on, its calls below), no runs of its own counted |
+| Runs (rzx-r3: the RZX run's stage 3 replayed pass by pass) | 35 runs of its first instruction (entered by a jump or by running on, no routine of its own in the L1) |
 | Calls | `AddScore`, `HeroWithinY`, `RemoveActor` (tail) |
 
 #### `PyreFireDamage` (`$87ED`)
@@ -17109,7 +17130,8 @@ Witness: L1 457 (rzx-r3, s3-right).
 
 | | |
 | --- | --- |
-| Runs | ran within another entry's routine (reached by a jump or by running on, its calls below), no runs of its own counted |
+| Runs (s3-right: stage 3 from the RZX run's snapshot, a walk to the right) | 93 runs of its first instruction (entered by a jump or by running on, no routine of its own in the L1) |
+| Runs (rzx-r3: the RZX run's stage 3 replayed pass by pass) | 364 runs of its first instruction (entered by a jump or by running on, no routine of its own in the L1) |
 | Calls | `VikingFrame` (tail), `IsBodyAhead`, `IsBodyBehind`, `IsHeroBeyondAhead`, `IsHeroBeyondBehind`, `RemoveActor` (tail) |
 
 #### `VikingStand` (`$8D0F`)
@@ -17122,7 +17144,8 @@ Witness: L1 131 (rzx-r3, s3-right).
 
 | | |
 | --- | --- |
-| Runs | ran within another entry's routine (reached by a jump or by running on, its calls below), no runs of its own counted |
+| Runs (s3-right: stage 3 from the RZX run's snapshot, a walk to the right) | 73 runs of its first instruction (entered by a jump or by running on, no routine of its own in the L1) |
+| Runs (rzx-r3: the RZX run's stage 3 replayed pass by pass) | 58 runs of its first instruction (entered by a jump or by running on, no routine of its own in the L1) |
 | Calls | `IsHeroHitFrame6`, `DamageHero`, `Random`, `VikingFrame` (tail), `VikingFaceHero`, `IsHeroBeyondAhead`, `IsHeroBeyondBehind` |
 
 #### `VikingBlock` (`$8DA2`)
@@ -17147,7 +17170,8 @@ Witness: L1 64 (rzx-r3, s3-right).
 
 | | |
 | --- | --- |
-| Runs | ran within another entry's routine (reached by a jump or by running on, its calls below), no runs of its own counted |
+| Runs (s3-right: stage 3 from the RZX run's snapshot, a walk to the right) | 32 runs of its first instruction (entered by a jump or by running on, no routine of its own in the L1) |
+| Runs (rzx-r3: the RZX run's stage 3 replayed pass by pass) | 32 runs of its first instruction (entered by a jump or by running on, no routine of its own in the L1) |
 | Calls | `VikingFrame` (tail) |
 
 #### `VikingHit` (`$8E0A`)
@@ -17160,7 +17184,7 @@ Witness: L1 18 (rzx-r3).
 
 | | |
 | --- | --- |
-| Runs | not reached in the recordings |
+| Runs (rzx-r3: the RZX run's stage 3 replayed pass by pass) | 18 runs of its first instruction (entered by a jump or by running on, no routine of its own in the L1) |
 
 #### `VikingDie` (`$8E56`)
 
@@ -17172,7 +17196,7 @@ Witness: L1 10 (rzx-r3).
 
 | | |
 | --- | --- |
-| Runs | ran within another entry's routine (reached by a jump or by running on, its calls below), no runs of its own counted |
+| Runs (rzx-r3: the RZX run's stage 3 replayed pass by pass) | 10 runs of its first instruction (entered by a jump or by running on, no routine of its own in the L1) |
 | Calls | `Random`, `SpawnItem` (tail), `RemoveActor` |
 
 #### `VikingFrame` (`$8E9A`)
@@ -17184,6 +17208,7 @@ Witness: L1 669 (rzx-r3, s3-right).
 | | |
 | --- | --- |
 | Runs (s3-right: stage 3 from the RZX run's snapshot, a walk to the right) | 182 calls, 6,686 t-states own (0.00 %) |
+| Runs (rzx-r3: the RZX run's stage 3 replayed pass by pass) | 487 runs of its first instruction (entered by a jump or by running on, no routine of its own in the L1) |
 | Called from | `VikingWalk` (tail), `VikingStand` (tail), `VikingStrike` (tail) |
 | Calls | `SetActorFrame` |
 | Reads | `$74FA` (`ActorsY+7`); `$750C` (`ActorsY+25`) |
@@ -17309,7 +17334,7 @@ Witness: L1 13 (rzx-r3).
 
 | | |
 | --- | --- |
-| Runs | ran within another entry's routine (reached by a jump or by running on, its calls below), no runs of its own counted |
+| Runs (rzx-r3: the RZX run's stage 3 replayed pass by pass) | 13 runs of its first instruction (entered by a jump or by running on, no routine of its own in the L1) |
 | Calls | `FindFreeActorPair`, `TrollFacingTaken`, `SpawnActor`, `CellAt` |
 
 #### `TrollFacingTaken` (`$8FDF`)
@@ -17788,7 +17813,7 @@ Witness: L1 2 (rzx-r3).
 
 | | |
 | --- | --- |
-| Runs | ran within another entry's routine (reached by a jump or by running on, its calls below), no runs of its own counted |
+| Runs (rzx-r3: the RZX run's stage 3 replayed pass by pass) | 2 runs of its first instruction (entered by a jump or by running on, no routine of its own in the L1) |
 | Calls | `SpawnFragments`, `RemoveActor` (tail) |
 
 #### `InStrikeReach` (`$AA19`)
@@ -18237,7 +18262,7 @@ Witness: L1 3 (rzx-r3).
 
 | | |
 | --- | --- |
-| Runs | ran within another entry's routine (reached by a jump or by running on, its calls below), no runs of its own counted |
+| Runs (rzx-r3: the RZX run's stage 3 replayed pass by pass) | 3 runs of its first instruction (entered by a jump or by running on, no routine of its own in the L1) |
 | Calls | `SpawnItem` (tail), `RemoveActor` |
 
 #### `DropItemKind7Or1` (`$A0DA`)
@@ -18351,7 +18376,7 @@ Witness: L1 14 (rzx-r3).
 
 | | |
 | --- | --- |
-| Runs | not reached in the recordings |
+| Runs (rzx-r3: the RZX run's stage 3 replayed pass by pass) | 14 runs of its first instruction (entered by a jump or by running on, no routine of its own in the L1) |
 
 #### `PlaceHeroAtStart` (`$A672`)
 
@@ -18603,6 +18628,7 @@ Witness: L1 163 (rzx-r3, s3-right).
 
 | | |
 | --- | --- |
+| Runs (s3-right: stage 3 from the RZX run's snapshot, a walk to the right) | 32 runs of its first instruction (entered by a jump or by running on, no routine of its own in the L1) |
 | Runs (rzx-r3: the RZX run's stage 3 replayed pass by pass) | 131 calls, 34,848 t-states own (0.00 %) |
 | Called from | `AddMissile` (tail), `AddMissileHigh` (falls into) |
 | Reads | `$75E0`-`$763A` (`Missiles`, `MissilesY`, `HudColours`, `MissilesHigh` and 1 more); `$FE27` (`MissileCursor`) |
@@ -18787,7 +18813,8 @@ Witness: L1 8620 (rzx-r4, s4-right).
 
 | | |
 | --- | --- |
-| Runs | ran within another entry's routine (reached by a jump or by running on, its calls below), no runs of its own counted |
+| Runs (s4-right: stage 4 from the RZX run's snapshot, a walk to the right) | 945 runs of its first instruction (entered by a jump or by running on, no routine of its own in the L1) |
+| Runs (rzx-r4: the RZX run's stage 4 replayed pass by pass) | 7,675 runs of its first instruction (entered by a jump or by running on, no routine of its own in the L1) |
 | Calls | `PacePass`, `CheckPause`, `CheckStageExit`, `ShowScore`, `ItemWindow`, `RedrawItemsIfChanged`, `TrapChainStep`, `LinkTrapSlots`, `FlashPieces`, `ShowPieceTaken`, `DrawBossPicture`, `TestSpaceKey`, `UpdateAttributes`, `SpawnTimer`, `PassTick`, `ClearBuffer`, `UpdateBurst`, `RunActorHandlers`, `DrawActors`, `HeadShots`, `UpdateMissiles` |
 
 #### `GameOverExit` (`$7892`)
@@ -18800,7 +18827,7 @@ Witness: L1 1 (s4-right).
 
 | | |
 | --- | --- |
-| Runs | not reached in the recordings |
+| Runs (s4-right: stage 4 from the RZX run's snapshot, a walk to the right) | 1 run of its first instruction (entered by a jump or by running on, no routine of its own in the L1) |
 
 #### `QuitStage` (`$7896`)
 
@@ -18824,6 +18851,7 @@ Witness: L1 2 (rzx-r4, s4-right).
 
 | | |
 | --- | --- |
+| Runs (s4-right: stage 4 from the RZX run's snapshot, a walk to the right) | 1 run of its first instruction (entered by a jump or by running on, no routine of its own in the L1) |
 | Runs (rzx-r4: the RZX run's stage 4 replayed pass by pass) | 1 call, 7,176 t-states own (0.00 %) |
 | Called from | `StageExit` (tail) |
 | Calls | `ClearBuffer` |
@@ -18840,7 +18868,8 @@ Witness: L1 2 (rzx-r4, s4-right).
 
 | | |
 | --- | --- |
-| Runs | ran within another entry's routine (reached by a jump or by running on, its calls below), no runs of its own counted |
+| Runs (s4-right: stage 4 from the RZX run's snapshot, a walk to the right) | 1 run of its first instruction (entered by a jump or by running on, no routine of its own in the L1) |
+| Runs (rzx-r4: the RZX run's stage 4 replayed pass by pass) | 1 run of its first instruction (entered by a jump or by running on, no routine of its own in the L1) |
 | Calls | `FlashFadeScreen`, `CopyToScreen`, `CopyScreenToBlock`, `ClearScreen`, `WaitFrames` |
 
 #### `PacePass` (`$7961`)
@@ -19537,6 +19566,7 @@ Witness: L1 5575 (rzx-r4, s4-right).
 
 | | |
 | --- | --- |
+| Runs (s4-right: stage 4 from the RZX run's snapshot, a walk to the right) | 2,691 runs of its first instruction (entered by a jump or by running on, no routine of its own in the L1) |
 | Runs (rzx-r4: the RZX run's stage 4 replayed pass by pass) | 7,908 calls, 810,535 t-states own (0.05 %) |
 | Called from | `UpdateBurst`, `AttrShadowAddress` (falls into) |
 | Reads | `$7040`-`$716C` (`RoomAttributes`, `RoomAttributesCell`); `$75E0`-`$763A` (`Missiles`, `HudColours`, `MissilesHigh`) |
@@ -19648,7 +19678,7 @@ Witness: L1 1 (rzx-r4).
 
 | | |
 | --- | --- |
-| Runs | ran within another entry's routine (reached by a jump or by running on, its calls below), no runs of its own counted |
+| Runs (rzx-r4: the RZX run's stage 4 replayed pass by pass) | 1 run of its first instruction (entered by a jump or by running on, no routine of its own in the L1) |
 | Calls | `EndStage` (tail), `MoveStar`, `StartStageExit`, `TestSpaceKey` |
 
 #### `MoveStar` (`$7A75`)
@@ -19692,7 +19722,7 @@ Witness: L1 1 (rzx-r4).
 
 | | |
 | --- | --- |
-| Runs (rzx-r4: the RZX run's stage 4 replayed pass by pass) | run into, not called, 26,808 t-states own (0.00 %) |
+| Runs (rzx-r4: the RZX run's stage 4 replayed pass by pass) | 1 run of its first instruction (entered by a jump or by running on, no routine of its own in the L1), 26,808 t-states own (0.00 %) |
 | Called from | `FillAttributes` |
 | Calls | `RandomPlayAttrs`, `Random` |
 | Writes | `$5B00`-`$5C3F` (`PlayBuffer`) |
@@ -19754,7 +19784,8 @@ Witness: L1 8619 (rzx-r4, s4-right).
 
 | | |
 | --- | --- |
-| Runs | not reached in the recordings |
+| Runs (s4-right: stage 4 from the RZX run's snapshot, a walk to the right) | 945 runs of its first instruction (entered by a jump or by running on, no routine of its own in the L1) |
+| Runs (rzx-r4: the RZX run's stage 4 replayed pass by pass) | 7,674 runs of its first instruction (entered by a jump or by running on, no routine of its own in the L1) |
 
 #### `ShowScore` (`$7C04`)
 
@@ -19785,6 +19816,7 @@ Witness: L1 9379 (rzx-r4, s4-right).
 
 | | |
 | --- | --- |
+| Runs (s4-right: stage 4 from the RZX run's snapshot, a walk to the right) | 946 runs of its first instruction (entered by a jump or by running on, no routine of its own in the L1) |
 | Runs (rzx-r4: the RZX run's stage 4 replayed pass by pass) | 8,433 calls, 23,477,914 t-states own (1.36 %) |
 | Called from | `RenderScore` (tail), `FormatItemCount` (tail) |
 | Reads | `$7C60`-`$7C66` (`ScoreDigitsHigh`, `ScoreDigitsLow`, `ScoreDigitsEnd`); `$7E0A`-`$7E0C` (`ItemCountText+2`); `$F959`-`$F9A7` (`DigitGlyphs`) |
@@ -19919,7 +19951,7 @@ Witness: L1 169 (s4-right).
 
 | | |
 | --- | --- |
-| Runs (s4-right: stage 4 from the RZX run's snapshot, a walk to the right) | run into, not called, 1,690 t-states own (0.00 %) |
+| Runs (s4-right: stage 4 from the RZX run's snapshot, a walk to the right) | 169 runs of its first instruction (entered by a jump or by running on, no routine of its own in the L1), 1,690 t-states own (0.00 %) |
 | Called from | `FillAttributes` |
 
 #### `DamageHero` (`$861B`)
@@ -20060,8 +20092,8 @@ Witness: L1 110 (rzx-r4, s4-right).
 
 | | |
 | --- | --- |
-| Runs (s4-right: stage 4 from the RZX run's snapshot, a walk to the right) | run into, not called, 140 t-states own (0.00 %) |
-| Runs (rzx-r4: the RZX run's stage 4 replayed pass by pass) | run into, not called, 2,940 t-states own (0.00 %) |
+| Runs (s4-right: stage 4 from the RZX run's snapshot, a walk to the right) | 5 runs of its first instruction (entered by a jump or by running on, no routine of its own in the L1), 140 t-states own (0.00 %) |
+| Runs (rzx-r4: the RZX run's stage 4 replayed pass by pass) | 105 runs of its first instruction (entered by a jump or by running on, no routine of its own in the L1), 2,940 t-states own (0.00 %) |
 | Called from | `FillAttributes` |
 | Calls | `FlashSelectedBoxFrame` (tail) |
 
@@ -20489,6 +20521,7 @@ Witness: L1 3421 (rzx-r4, s4-right).
 
 | | |
 | --- | --- |
+| Runs (s4-right: stage 4 from the RZX run's snapshot, a walk to the right) | 175 runs of its first instruction (entered by a jump or by running on, no routine of its own in the L1) |
 | Runs (rzx-r4: the RZX run's stage 4 replayed pass by pass) | 3,246 calls, 442,807 t-states own (0.03 %) |
 | Called from | `HeroUpdate` (tail) |
 | Calls | `HeroStandFrame` (falls into), `StartJump` (tail), `StartLeap` (tail), `WalkRight` (tail), `WalkLeft` (tail), `MoveBaseX` |
@@ -20521,7 +20554,8 @@ Witness: L1 285 (rzx-r4, s4-right).
 
 | | |
 | --- | --- |
-| Runs | ran within another entry's routine (reached by a jump or by running on, its calls below), no runs of its own counted |
+| Runs (s4-right: stage 4 from the RZX run's snapshot, a walk to the right) | 51 runs of its first instruction (entered by a jump or by running on, no routine of its own in the L1) |
+| Runs (rzx-r4: the RZX run's stage 4 replayed pass by pass) | 234 runs of its first instruction (entered by a jump or by running on, no routine of its own in the L1) |
 | Calls | `GetSelectedItem`, `HeroStrikeLow` (tail), `HeroStrikeMid` (tail), `HeroStrikeHigh` (tail), `MoveBaseX` |
 
 #### `StartThrow` (`$AF5F`)
@@ -20534,7 +20568,7 @@ Witness: L1 10 (rzx-r4).
 
 | | |
 | --- | --- |
-| Runs | ran within another entry's routine (reached by a jump or by running on, its calls below), no runs of its own counted |
+| Runs (rzx-r4: the RZX run's stage 4 replayed pass by pass) | 10 runs of its first instruction (entered by a jump or by running on, no routine of its own in the L1) |
 | Calls | `HeroThrow` (tail), `MoveBaseX` |
 
 #### `StartJump` (`$AF6F`)
@@ -20640,7 +20674,7 @@ Witness: L1 10 (rzx-r4).
 
 | | |
 | --- | --- |
-| Runs | ran within another entry's routine (reached by a jump or by running on, its calls below), no runs of its own counted |
+| Runs (rzx-r4: the RZX run's stage 4 replayed pass by pass) | 10 runs of its first instruction (entered by a jump or by running on, no routine of its own in the L1) |
 | Calls | `HeroStandFrame` (tail), `MoveBaseX` |
 
 #### `StartFall` (`$B0AE`)
@@ -20733,6 +20767,7 @@ Witness: L1 2090 (rzx-r4, s4-right).
 | | |
 | --- | --- |
 | Runs (s4-right: stage 4 from the RZX run's snapshot, a walk to the right) | 110 calls, 4,324 t-states own (0.00 %) |
+| Runs (rzx-r4: the RZX run's stage 4 replayed pass by pass) | 1,973 runs of its first instruction (entered by a jump or by running on, no routine of its own in the L1) |
 | Called from | `HeroRecoil` (tail), `HeroWalk` (tail) |
 | Calls | `SetActorFrame` |
 | Reads | `$74E8` (`HeroFrame`) |
@@ -21158,7 +21193,7 @@ Witness: L1 9 (rzx-r4).
 
 | | |
 | --- | --- |
-| Runs | ran within another entry's routine (reached by a jump or by running on, its calls below), no runs of its own counted |
+| Runs (rzx-r4: the RZX run's stage 4 replayed pass by pass) | 9 runs of its first instruction (entered by a jump or by running on, no routine of its own in the L1) |
 | Calls | `FindFreeActorPair`, `SpawnActor` |
 
 #### `EnterGrid1` (`$8B8C`)
@@ -21533,7 +21568,8 @@ Witness: L1 55 (rzx-r4, s4-right).
 
 | | |
 | --- | --- |
-| Runs | not reached in the recordings |
+| Runs (s4-right: stage 4 from the RZX run's snapshot, a walk to the right) | 1 run of its first instruction (entered by a jump or by running on, no routine of its own in the L1) |
+| Runs (rzx-r4: the RZX run's stage 4 replayed pass by pass) | 54 runs of its first instruction (entered by a jump or by running on, no routine of its own in the L1) |
 
 #### `Unrle` (`$A5AC`)
 
@@ -21708,7 +21744,7 @@ Witness: L1 155 (rzx-r4).
 
 | | |
 | --- | --- |
-| Runs | ran within another entry's routine (reached by a jump or by running on, its calls below), no runs of its own counted |
+| Runs (rzx-r4: the RZX run's stage 4 replayed pass by pass) | 155 runs of its first instruction (entered by a jump or by running on, no routine of its own in the L1) |
 | Calls | `PieceActorDraw` (tail), `StartTrapChain` |
 
 #### `StartTrapChain` (`$82FA`)
@@ -21854,7 +21890,7 @@ Witness: L1 1339 (rzx-r4).
 
 | | |
 | --- | --- |
-| Runs | not reached in the recordings |
+| Runs (rzx-r4: the RZX run's stage 4 replayed pass by pass) | 1,339 runs of its first instruction (entered by a jump or by running on, no routine of its own in the L1) |
 
 #### `MarkSlabSolid` (`$8749`)
 
@@ -22245,7 +22281,7 @@ Witness: L1 28 (rzx-r4).
 
 | | |
 | --- | --- |
-| Runs | ran within another entry's routine (reached by a jump or by running on, its calls below), no runs of its own counted |
+| Runs (rzx-r4: the RZX run's stage 4 replayed pass by pass) | 28 runs of its first instruction (entered by a jump or by running on, no routine of its own in the L1) |
 | Calls | `FindFreeActor`, `SpawnActor` |
 
 #### `SpawnScorpionLeft` (`$9306`)
@@ -23157,7 +23193,7 @@ Witness: L1 15 (rzx-r4).
 
 | | |
 | --- | --- |
-| Runs | not reached in the recordings |
+| Runs (rzx-r4: the RZX run's stage 4 replayed pass by pass) | 15 runs of its first instruction (entered by a jump or by running on, no routine of its own in the L1) |
 
 #### `PlaceHeroAtStart` (`$A605`)
 
@@ -23354,6 +23390,7 @@ Witness: L1 217 (rzx-r4, s4-right).
 
 | | |
 | --- | --- |
+| Runs (s4-right: stage 4 from the RZX run's snapshot, a walk to the right) | 32 runs of its first instruction (entered by a jump or by running on, no routine of its own in the L1) |
 | Runs (rzx-r4: the RZX run's stage 4 replayed pass by pass) | 185 calls, 50,593 t-states own (0.00 %) |
 | Called from | `AddMissile` (tail), `AddMissileHigh` (falls into) |
 | Reads | `$75E0`-`$763A` (`Missiles`, `HudColours`, `MissilesHigh`); `$FE28` (`MissileCursor`) |
@@ -23536,6 +23573,7 @@ Witness: L1 7517 (rzx-r4, s4-right).
 
 | | |
 | --- | --- |
+| Runs (s4-right: stage 4 from the RZX run's snapshot, a walk to the right) | 170 runs of its first instruction (entered by a jump or by running on, no routine of its own in the L1) |
 | Runs (rzx-r4: the RZX run's stage 4 replayed pass by pass) | 7,347 calls, 360,098 t-states own (0.02 %) |
 | Called from | `AnkhShrine`, `CycleColour` (falls into) |
 | Reads | `$B5BD`-`$B5C4` (`CycleColours`) |
@@ -23613,9 +23651,9 @@ Witness: L1 3 (ending, rzx-r5, s5-right).
 
 | | |
 | --- | --- |
-| Runs (s5-right: stage 5 from the RZX run's snapshot, a walk to the right) | run into, not called, 17 t-states own (0.00 %) |
-| Runs (rzx-r5: the RZX run's stage 5 replayed pass by pass, the duel won) | run into, not called, 17 t-states own (0.00 %) |
-| Runs (ending: stage 5 from snap5 with POKEs of the hit counter, the ending texts) | run into, not called, 17 t-states own (0.00 %) |
+| Runs (s5-right: stage 5 from the RZX run's snapshot, a walk to the right) | 1 run of its first instruction (entered by a jump or by running on, no routine of its own in the L1), 17 t-states own (0.00 %) |
+| Runs (rzx-r5: the RZX run's stage 5 replayed pass by pass, the duel won) | 1 run of its first instruction (entered by a jump or by running on, no routine of its own in the L1), 17 t-states own (0.00 %) |
+| Runs (ending: stage 5 from snap5 with POKEs of the hit counter, the ending texts) | 1 run of its first instruction (entered by a jump or by running on, no routine of its own in the L1), 17 t-states own (0.00 %) |
 | Called from | `FillShadowAttributes` |
 | Calls | `FillShadowAttributes` |
 
@@ -23625,9 +23663,9 @@ Witness: L1 3 (ending, rzx-r5, s5-right).
 
 | | |
 | --- | --- |
-| Runs (s5-right: stage 5 from the RZX run's snapshot, a walk to the right) | run into, not called, 17 t-states own (0.00 %) |
-| Runs (rzx-r5: the RZX run's stage 5 replayed pass by pass, the duel won) | run into, not called, 17 t-states own (0.00 %) |
-| Runs (ending: stage 5 from snap5 with POKEs of the hit counter, the ending texts) | run into, not called, 17 t-states own (0.00 %) |
+| Runs (s5-right: stage 5 from the RZX run's snapshot, a walk to the right) | 1 run of its first instruction (entered by a jump or by running on, no routine of its own in the L1), 17 t-states own (0.00 %) |
+| Runs (rzx-r5: the RZX run's stage 5 replayed pass by pass, the duel won) | 1 run of its first instruction (entered by a jump or by running on, no routine of its own in the L1), 17 t-states own (0.00 %) |
+| Runs (ending: stage 5 from snap5 with POKEs of the hit counter, the ending texts) | 1 run of its first instruction (entered by a jump or by running on, no routine of its own in the L1), 17 t-states own (0.00 %) |
 | Called from | `FillShadowAttributes` |
 | Calls | `FillShadowAttributes` |
 
@@ -23637,9 +23675,9 @@ Witness: L1 3 (ending, rzx-r5, s5-right).
 
 | | |
 | --- | --- |
-| Runs (s5-right: stage 5 from the RZX run's snapshot, a walk to the right) | run into, not called, 17 t-states own (0.00 %) |
-| Runs (rzx-r5: the RZX run's stage 5 replayed pass by pass, the duel won) | run into, not called, 17 t-states own (0.00 %) |
-| Runs (ending: stage 5 from snap5 with POKEs of the hit counter, the ending texts) | run into, not called, 17 t-states own (0.00 %) |
+| Runs (s5-right: stage 5 from the RZX run's snapshot, a walk to the right) | 1 run of its first instruction (entered by a jump or by running on, no routine of its own in the L1), 17 t-states own (0.00 %) |
+| Runs (rzx-r5: the RZX run's stage 5 replayed pass by pass, the duel won) | 1 run of its first instruction (entered by a jump or by running on, no routine of its own in the L1), 17 t-states own (0.00 %) |
+| Runs (ending: stage 5 from snap5 with POKEs of the hit counter, the ending texts) | 1 run of its first instruction (entered by a jump or by running on, no routine of its own in the L1), 17 t-states own (0.00 %) |
 | Called from | `FillShadowAttributes` |
 | Calls | `FillShadowAttributes` |
 
@@ -23649,9 +23687,9 @@ Witness: L1 3 (ending, rzx-r5, s5-right).
 
 | | |
 | --- | --- |
-| Runs (s5-right: stage 5 from the RZX run's snapshot, a walk to the right) | run into, not called, 257 t-states own (0.00 %) |
-| Runs (rzx-r5: the RZX run's stage 5 replayed pass by pass, the duel won) | run into, not called, 257 t-states own (0.00 %) |
-| Runs (ending: stage 5 from snap5 with POKEs of the hit counter, the ending texts) | run into, not called, 257 t-states own (0.00 %) |
+| Runs (s5-right: stage 5 from the RZX run's snapshot, a walk to the right) | 1 run of its first instruction (entered by a jump or by running on, no routine of its own in the L1), 257 t-states own (0.00 %) |
+| Runs (rzx-r5: the RZX run's stage 5 replayed pass by pass, the duel won) | 1 run of its first instruction (entered by a jump or by running on, no routine of its own in the L1), 257 t-states own (0.00 %) |
+| Runs (ending: stage 5 from snap5 with POKEs of the hit counter, the ending texts) | 1 run of its first instruction (entered by a jump or by running on, no routine of its own in the L1), 257 t-states own (0.00 %) |
 | Called from | `FillShadowAttributes` |
 | Calls | `RenderScore`, `FlashSelectedBox`, `ScrollItemsLeft`, `DrawItemStrip`, `StartLivesFlash` (tail), `ShowShadowAttributes`, `RevealScore`, `SaveAttributes` |
 | Writes | `$7C99` (`CycleWindowFrame`); `$FE35` (`ItemSelected`) |
@@ -23743,7 +23781,9 @@ Witness: L1 11697 (ending, rzx-r5, s5-right).
 
 | | |
 | --- | --- |
-| Runs | ran within another entry's routine (reached by a jump or by running on, its calls below), no runs of its own counted |
+| Runs (s5-right: stage 5 from the RZX run's snapshot, a walk to the right) | 3,730 runs of its first instruction (entered by a jump or by running on, no routine of its own in the L1) |
+| Runs (rzx-r5: the RZX run's stage 5 replayed pass by pass, the duel won) | 2,811 runs of its first instruction (entered by a jump or by running on, no routine of its own in the L1) |
+| Runs (ending: stage 5 from snap5 with POKEs of the hit counter, the ending texts) | 5,156 runs of its first instruction (entered by a jump or by running on, no routine of its own in the L1) |
 | Calls | `ColourPlayArea`, `TextPassDelay`, `LivesFlashStep`, `ApplyEnergyChange`, `HeroControl`, `HeroFire`, `UpdateDameronMissiles`, `MoveShots`, `DrawShots`, `DrawHero`, `MoveStars`, `DrawStars`, `DuelStep`, `DameronFire`, `UpdateBurst`, `DrawEnergyBar` |
 
 #### `GameOverExit` (`$78AE`)
@@ -24198,6 +24238,8 @@ Witness: L1 4440 (ending, rzx-r5, s5-right).
 | | |
 | --- | --- |
 | Runs (s5-right: stage 5 from the RZX run's snapshot, a walk to the right) | 255 calls, 50,745 t-states own (0.01 %) |
+| Runs (rzx-r5: the RZX run's stage 5 replayed pass by pass, the duel won) | 871 runs of its first instruction (entered by a jump or by running on, no routine of its own in the L1) |
+| Runs (ending: stage 5 from snap5 with POKEs of the hit counter, the ending texts) | 3,314 runs of its first instruction (entered by a jump or by running on, no routine of its own in the L1) |
 | Called from | `DuelHit` (tail) |
 | Calls | `FlashTextRow` |
 
@@ -24347,7 +24389,8 @@ Witness: L1 2 (ending, rzx-r5).
 
 | | |
 | --- | --- |
-| Runs | not reached in the recordings |
+| Runs (rzx-r5: the RZX run's stage 5 replayed pass by pass, the duel won) | 1 run of its first instruction (entered by a jump or by running on, no routine of its own in the L1) |
+| Runs (ending: stage 5 from snap5 with POKEs of the hit counter, the ending texts) | 1 run of its first instruction (entered by a jump or by running on, no routine of its own in the L1) |
 
 #### `StartBurst` (`$91B9`)
 
@@ -24413,7 +24456,8 @@ Witness: L1 2 (ending, rzx-r5).
 
 | | |
 | --- | --- |
-| Runs | ran within another entry's routine (reached by a jump or by running on, its calls below), no runs of its own counted |
+| Runs (rzx-r5: the RZX run's stage 5 replayed pass by pass, the duel won) | 1 run of its first instruction (entered by a jump or by running on, no routine of its own in the L1) |
+| Runs (ending: stage 5 from snap5 with POKEs of the hit counter, the ending texts) | 1 run of its first instruction (entered by a jump or by running on, no routine of its own in the L1) |
 | Calls | `FindFreeMissile` |
 
 #### `SpawnFormExplosions2` (`$A1B2`)
@@ -24426,7 +24470,8 @@ Witness: L1 2 (ending, rzx-r5).
 
 | | |
 | --- | --- |
-| Runs | ran within another entry's routine (reached by a jump or by running on, its calls below), no runs of its own counted |
+| Runs (rzx-r5: the RZX run's stage 5 replayed pass by pass, the duel won) | 1 run of its first instruction (entered by a jump or by running on, no routine of its own in the L1) |
+| Runs (ending: stage 5 from snap5 with POKEs of the hit counter, the ending texts) | 1 run of its first instruction (entered by a jump or by running on, no routine of its own in the L1) |
 | Calls | `FindFreeMissile` |
 
 #### `SpawnFormExplosions3` (`$A27A`)
@@ -24439,7 +24484,8 @@ Witness: L1 2 (ending, rzx-r5).
 
 | | |
 | --- | --- |
-| Runs | not reached in the recordings |
+| Runs (rzx-r5: the RZX run's stage 5 replayed pass by pass, the duel won) | 1 run of its first instruction (entered by a jump or by running on, no routine of its own in the L1) |
+| Runs (ending: stage 5 from snap5 with POKEs of the hit counter, the ending texts) | 1 run of its first instruction (entered by a jump or by running on, no routine of its own in the L1) |
 
 ### Stage 5 (TZX block 52): hud
 
@@ -24583,7 +24629,7 @@ Witness: L1 5 (ending).
 
 | | |
 | --- | --- |
-| Runs | ran within another entry's routine (reached by a jump or by running on, its calls below), no runs of its own counted |
+| Runs (ending: stage 5 from snap5 with POKEs of the hit counter, the ending texts) | 5 runs of its first instruction (entered by a jump or by running on, no routine of its own in the L1) |
 | Calls | `StartLivesFlash` |
 
 #### `GameOverStep` (`$7E9D`)
@@ -24758,9 +24804,9 @@ Witness: L1 15 (ending, rzx-r5, s5-right).
 
 | | |
 | --- | --- |
-| Runs (s5-right: stage 5 from the RZX run's snapshot, a walk to the right) | run into, not called, 140 t-states own (0.00 %) |
-| Runs (rzx-r5: the RZX run's stage 5 replayed pass by pass, the duel won) | run into, not called, 140 t-states own (0.00 %) |
-| Runs (ending: stage 5 from snap5 with POKEs of the hit counter, the ending texts) | run into, not called, 140 t-states own (0.00 %) |
+| Runs (s5-right: stage 5 from the RZX run's snapshot, a walk to the right) | 5 runs of its first instruction (entered by a jump or by running on, no routine of its own in the L1), 140 t-states own (0.00 %) |
+| Runs (rzx-r5: the RZX run's stage 5 replayed pass by pass, the duel won) | 5 runs of its first instruction (entered by a jump or by running on, no routine of its own in the L1), 140 t-states own (0.00 %) |
+| Runs (ending: stage 5 from snap5 with POKEs of the hit counter, the ending texts) | 5 runs of its first instruction (entered by a jump or by running on, no routine of its own in the L1), 140 t-states own (0.00 %) |
 | Called from | `FillAttributes` |
 | Calls | `FlashSelectedBoxFrame` (tail) |
 
@@ -25204,7 +25250,9 @@ Witness: L1 8132 (ending, rzx-r5, s5-right).
 
 | | |
 | --- | --- |
-| Runs | ran within another entry's routine (reached by a jump or by running on, its calls below), no runs of its own counted |
+| Runs (s5-right: stage 5 from the RZX run's snapshot, a walk to the right) | 6,524 runs of its first instruction (entered by a jump or by running on, no routine of its own in the L1) |
+| Runs (rzx-r5: the RZX run's stage 5 replayed pass by pass, the duel won) | 804 runs of its first instruction (entered by a jump or by running on, no routine of its own in the L1) |
+| Runs (ending: stage 5 from snap5 with POKEs of the hit counter, the ending texts) | 804 runs of its first instruction (entered by a jump or by running on, no routine of its own in the L1) |
 | Calls | `SpriteFrameAddress`, `FreeShot` (tail) |
 
 #### `BurstMissile` (`$819D`)
@@ -25217,7 +25265,8 @@ Witness: L1 1187 (ending, rzx-r5).
 
 | | |
 | --- | --- |
-| Runs | ran within another entry's routine (reached by a jump or by running on, its calls below), no runs of its own counted |
+| Runs (rzx-r5: the RZX run's stage 5 replayed pass by pass, the duel won) | 610 runs of its first instruction (entered by a jump or by running on, no routine of its own in the L1) |
+| Runs (ending: stage 5 from snap5 with POKEs of the hit counter, the ending texts) | 577 runs of its first instruction (entered by a jump or by running on, no routine of its own in the L1) |
 | Calls | `SpriteFrameAddress`, `FreeShot` (tail) |
 
 #### `BoltMissile` (`$834E`)
@@ -25230,7 +25279,8 @@ Witness: L1 3438 (ending, rzx-r5).
 
 | | |
 | --- | --- |
-| Runs | ran within another entry's routine (reached by a jump or by running on, its calls below), no runs of its own counted |
+| Runs (rzx-r5: the RZX run's stage 5 replayed pass by pass, the duel won) | 2,126 runs of its first instruction (entered by a jump or by running on, no routine of its own in the L1) |
+| Runs (ending: stage 5 from snap5 with POKEs of the hit counter, the ending texts) | 1,312 runs of its first instruction (entered by a jump or by running on, no routine of its own in the L1) |
 | Calls | `SpriteFrameAddress`, `FreeShot` (tail) |
 
 #### `FindFreeMissile` (`$8C6C`)
@@ -25775,6 +25825,8 @@ Witness: L1 5535 (ending, rzx-r5, s5-right).
 | | |
 | --- | --- |
 | Runs (s5-right: stage 5 from the RZX run's snapshot, a walk to the right) | 1 call, 289 t-states own (0.00 %) |
+| Runs (rzx-r5: the RZX run's stage 5 replayed pass by pass, the duel won) | 1 run of its first instruction (entered by a jump or by running on, no routine of its own in the L1) |
+| Runs (ending: stage 5 from snap5 with POKEs of the hit counter, the ending texts) | 1 run of its first instruction (entered by a jump or by running on, no routine of its own in the L1) |
 | Called from | `ShowTexts` (tail) |
 | Calls | `CopyTextLine` |
 | Writes | `$FE47` (`TextShown`) |
@@ -25958,7 +26010,7 @@ No LDDR shift. Then rewrites each byte c of `$EE2C-$FF25` into p = (R XOR c) XOR
 
 | | |
 | --- | --- |
-| Runs | not reached in the recordings |
+| Runs (c1: a 48K from power-on, the whole load at signal speed, the menu, stage 1) | 1 run of its first instruction (entered by a jump or by running on, no routine of its own in the L1) |
 
 #### `Layer002` (`$EE2F`)
 
@@ -25968,7 +26020,7 @@ Shifts the 30 bytes up to its own LDDR down by one (the code already run is garb
 
 | | |
 | --- | --- |
-| Runs | not reached in the recordings |
+| Runs (c1: a 48K from power-on, the whole load at signal speed, the menu, stage 1) | 1 run of its first instruction (entered by a jump or by running on, no routine of its own in the L1) |
 
 #### `Layer003` (`$EE4B`)
 
@@ -25978,7 +26030,7 @@ Shifts the 30 bytes up to its own LDDR down by one (the code already run is garb
 
 | | |
 | --- | --- |
-| Runs | not reached in the recordings |
+| Runs (c1: a 48K from power-on, the whole load at signal speed, the menu, stage 1) | 1 run of its first instruction (entered by a jump or by running on, no routine of its own in the L1) |
 
 #### `Layer003PopIx` (`$EE62`)
 
@@ -25986,7 +26038,7 @@ Shifts the 30 bytes up to its own LDDR down by one (the code already run is garb
 
 | | |
 | --- | --- |
-| Runs | not reached in the recordings |
+| Runs (c1: a 48K from power-on, the whole load at signal speed, the menu, stage 1) | 1 run of its first instruction (entered by a jump or by running on, no routine of its own in the L1) |
 
 #### `Layer004` (`$EE78`)
 
@@ -25996,7 +26048,7 @@ Shifts the 30 bytes up to its own LDDR down by one (the code already run is garb
 
 | | |
 | --- | --- |
-| Runs | not reached in the recordings |
+| Runs (c1: a 48K from power-on, the whole load at signal speed, the menu, stage 1) | 1 run of its first instruction (entered by a jump or by running on, no routine of its own in the L1) |
 
 #### `Layer005` (`$EE9A`)
 
@@ -26006,7 +26058,7 @@ Shifts the 30 bytes up to its own LDDR down by one (the code already run is garb
 
 | | |
 | --- | --- |
-| Runs | not reached in the recordings |
+| Runs (c1: a 48K from power-on, the whole load at signal speed, the menu, stage 1) | 1 run of its first instruction (entered by a jump or by running on, no routine of its own in the L1) |
 
 #### `Layer006` (`$EEBC`)
 
@@ -26016,7 +26068,7 @@ Shifts the 30 bytes up to its own LDDR down by one (the code already run is garb
 
 | | |
 | --- | --- |
-| Runs | not reached in the recordings |
+| Runs (c1: a 48K from power-on, the whole load at signal speed, the menu, stage 1) | 1 run of its first instruction (entered by a jump or by running on, no routine of its own in the L1) |
 
 #### `Layer007` (`$EEDB`)
 
@@ -26026,7 +26078,7 @@ Shifts the 30 bytes up to its own LDDR down by one (the code already run is garb
 
 | | |
 | --- | --- |
-| Runs | not reached in the recordings |
+| Runs (c1: a 48K from power-on, the whole load at signal speed, the menu, stage 1) | 1 run of its first instruction (entered by a jump or by running on, no routine of its own in the L1) |
 
 #### `Layer008` (`$EEFE`)
 
@@ -26036,7 +26088,7 @@ Shifts the 30 bytes up to its own LDDR down by one (the code already run is garb
 
 | | |
 | --- | --- |
-| Runs | not reached in the recordings |
+| Runs (c1: a 48K from power-on, the whole load at signal speed, the menu, stage 1) | 1 run of its first instruction (entered by a jump or by running on, no routine of its own in the L1) |
 
 #### `Layer009` (`$EF1D`)
 
@@ -26046,7 +26098,7 @@ Shifts the 30 bytes up to its own LDDR down by one (the code already run is garb
 
 | | |
 | --- | --- |
-| Runs | not reached in the recordings |
+| Runs (c1: a 48K from power-on, the whole load at signal speed, the menu, stage 1) | 1 run of its first instruction (entered by a jump or by running on, no routine of its own in the L1) |
 
 #### `Layer010` (`$EF48`)
 
@@ -26056,7 +26108,7 @@ No LDDR shift. Then rewrites each byte c of `$EF63-$FF25` into p = (R XOR c) XOR
 
 | | |
 | --- | --- |
-| Runs | not reached in the recordings |
+| Runs (c1: a 48K from power-on, the whole load at signal speed, the menu, stage 1) | 1 run of its first instruction (entered by a jump or by running on, no routine of its own in the L1) |
 
 #### `Layer011` (`$EF66`)
 
@@ -26066,7 +26118,7 @@ Shifts the 30 bytes up to its own LDDR down by one (the code already run is garb
 
 | | |
 | --- | --- |
-| Runs | not reached in the recordings |
+| Runs (c1: a 48K from power-on, the whole load at signal speed, the menu, stage 1) | 1 run of its first instruction (entered by a jump or by running on, no routine of its own in the L1) |
 
 #### `Layer012` (`$EF82`)
 
@@ -26076,7 +26128,7 @@ Shifts the 30 bytes up to its own LDDR down by one (the code already run is garb
 
 | | |
 | --- | --- |
-| Runs | not reached in the recordings |
+| Runs (c1: a 48K from power-on, the whole load at signal speed, the menu, stage 1) | 1 run of its first instruction (entered by a jump or by running on, no routine of its own in the L1) |
 
 #### `Layer012PopIx` (`$EF99`)
 
@@ -26084,7 +26136,7 @@ Shifts the 30 bytes up to its own LDDR down by one (the code already run is garb
 
 | | |
 | --- | --- |
-| Runs | not reached in the recordings |
+| Runs (c1: a 48K from power-on, the whole load at signal speed, the menu, stage 1) | 1 run of its first instruction (entered by a jump or by running on, no routine of its own in the L1) |
 
 #### `Layer013` (`$EFAF`)
 
@@ -26094,7 +26146,7 @@ Shifts the 30 bytes up to its own LDDR down by one (the code already run is garb
 
 | | |
 | --- | --- |
-| Runs | not reached in the recordings |
+| Runs (c1: a 48K from power-on, the whole load at signal speed, the menu, stage 1) | 1 run of its first instruction (entered by a jump or by running on, no routine of its own in the L1) |
 
 #### `Layer014` (`$EFD1`)
 
@@ -26104,7 +26156,7 @@ Shifts the 30 bytes up to its own LDDR down by one (the code already run is garb
 
 | | |
 | --- | --- |
-| Runs | not reached in the recordings |
+| Runs (c1: a 48K from power-on, the whole load at signal speed, the menu, stage 1) | 1 run of its first instruction (entered by a jump or by running on, no routine of its own in the L1) |
 
 #### `Layer015` (`$EFF3`)
 
@@ -26114,7 +26166,7 @@ Shifts the 30 bytes up to its own LDDR down by one (the code already run is garb
 
 | | |
 | --- | --- |
-| Runs | not reached in the recordings |
+| Runs (c1: a 48K from power-on, the whole load at signal speed, the menu, stage 1) | 1 run of its first instruction (entered by a jump or by running on, no routine of its own in the L1) |
 
 #### `Layer016` (`$F012`)
 
@@ -26134,7 +26186,7 @@ Shifts the 30 bytes up to its own LDDR down by one (the code already run is garb
 
 | | |
 | --- | --- |
-| Runs | not reached in the recordings |
+| Runs (c1: a 48K from power-on, the whole load at signal speed, the menu, stage 1) | 1 run of its first instruction (entered by a jump or by running on, no routine of its own in the L1) |
 
 #### `Layer018` (`$F054`)
 
@@ -26144,7 +26196,7 @@ Shifts the 30 bytes up to its own LDDR down by one (the code already run is garb
 
 | | |
 | --- | --- |
-| Runs | not reached in the recordings |
+| Runs (c1: a 48K from power-on, the whole load at signal speed, the menu, stage 1) | 1 run of its first instruction (entered by a jump or by running on, no routine of its own in the L1) |
 
 #### `Layer019` (`$F07F`)
 
@@ -26154,7 +26206,7 @@ No LDDR shift. Then rewrites each byte c of `$F09A-$FF25` into p = (R XOR c) XOR
 
 | | |
 | --- | --- |
-| Runs | not reached in the recordings |
+| Runs (c1: a 48K from power-on, the whole load at signal speed, the menu, stage 1) | 1 run of its first instruction (entered by a jump or by running on, no routine of its own in the L1) |
 
 #### `Layer020` (`$F09D`)
 
@@ -26164,7 +26216,7 @@ Shifts the 30 bytes up to its own LDDR down by one (the code already run is garb
 
 | | |
 | --- | --- |
-| Runs | not reached in the recordings |
+| Runs (c1: a 48K from power-on, the whole load at signal speed, the menu, stage 1) | 1 run of its first instruction (entered by a jump or by running on, no routine of its own in the L1) |
 
 #### `Layer021` (`$F0B9`)
 
@@ -26174,7 +26226,7 @@ Shifts the 30 bytes up to its own LDDR down by one (the code already run is garb
 
 | | |
 | --- | --- |
-| Runs | not reached in the recordings |
+| Runs (c1: a 48K from power-on, the whole load at signal speed, the menu, stage 1) | 1 run of its first instruction (entered by a jump or by running on, no routine of its own in the L1) |
 
 #### `Layer021PopIx` (`$F0D0`)
 
@@ -26182,7 +26234,7 @@ Shifts the 30 bytes up to its own LDDR down by one (the code already run is garb
 
 | | |
 | --- | --- |
-| Runs | not reached in the recordings |
+| Runs (c1: a 48K from power-on, the whole load at signal speed, the menu, stage 1) | 1 run of its first instruction (entered by a jump or by running on, no routine of its own in the L1) |
 
 #### `Layer022` (`$F0E6`)
 
@@ -26192,7 +26244,7 @@ Shifts the 30 bytes up to its own LDDR down by one (the code already run is garb
 
 | | |
 | --- | --- |
-| Runs | not reached in the recordings |
+| Runs (c1: a 48K from power-on, the whole load at signal speed, the menu, stage 1) | 1 run of its first instruction (entered by a jump or by running on, no routine of its own in the L1) |
 
 #### `Layer023` (`$F108`)
 
@@ -26202,7 +26254,7 @@ Shifts the 30 bytes up to its own LDDR down by one (the code already run is garb
 
 | | |
 | --- | --- |
-| Runs | not reached in the recordings |
+| Runs (c1: a 48K from power-on, the whole load at signal speed, the menu, stage 1) | 1 run of its first instruction (entered by a jump or by running on, no routine of its own in the L1) |
 
 #### `Layer024` (`$F12A`)
 
@@ -26212,7 +26264,7 @@ Shifts the 30 bytes up to its own LDDR down by one (the code already run is garb
 
 | | |
 | --- | --- |
-| Runs | not reached in the recordings |
+| Runs (c1: a 48K from power-on, the whole load at signal speed, the menu, stage 1) | 1 run of its first instruction (entered by a jump or by running on, no routine of its own in the L1) |
 
 #### `Layer025` (`$F149`)
 
@@ -26222,7 +26274,7 @@ Shifts the 30 bytes up to its own LDDR down by one (the code already run is garb
 
 | | |
 | --- | --- |
-| Runs | not reached in the recordings |
+| Runs (c1: a 48K from power-on, the whole load at signal speed, the menu, stage 1) | 1 run of its first instruction (entered by a jump or by running on, no routine of its own in the L1) |
 
 #### `Layer026` (`$F16C`)
 
@@ -26232,7 +26284,7 @@ Shifts the 30 bytes up to its own LDDR down by one (the code already run is garb
 
 | | |
 | --- | --- |
-| Runs | not reached in the recordings |
+| Runs (c1: a 48K from power-on, the whole load at signal speed, the menu, stage 1) | 1 run of its first instruction (entered by a jump or by running on, no routine of its own in the L1) |
 
 #### `Layer027` (`$F18B`)
 
@@ -26242,7 +26294,7 @@ Shifts the 30 bytes up to its own LDDR down by one (the code already run is garb
 
 | | |
 | --- | --- |
-| Runs | not reached in the recordings |
+| Runs (c1: a 48K from power-on, the whole load at signal speed, the menu, stage 1) | 1 run of its first instruction (entered by a jump or by running on, no routine of its own in the L1) |
 
 #### `Layer028` (`$F1B6`)
 
@@ -26252,7 +26304,7 @@ No LDDR shift. Then rewrites each byte c of `$F1D1-$FF25` into p = (R XOR c) XOR
 
 | | |
 | --- | --- |
-| Runs (c1: a 48K from power-on, the whole load at signal speed, the menu, stage 1) | run into, not called, 160,411 t-states own (0.01 %) |
+| Runs (c1: a 48K from power-on, the whole load at signal speed, the menu, stage 1) | 1 run of its first instruction (entered by a jump or by running on, no routine of its own in the L1), 160,411 t-states own (0.01 %) |
 | Reads | `$F1D1`-`$FF25` (`Layer028Loop+16`, `Layer028Gap`, `Layer029`, `Layer030` and 108 more) |
 | Writes | `$F1D1`-`$FF25` (`Layer028Loop+16`, `Layer028Gap`, `Layer029`, `Layer030` and 108 more) |
 
@@ -26274,7 +26326,7 @@ Shifts the 30 bytes up to its own LDDR down by one (the code already run is garb
 
 | | |
 | --- | --- |
-| Runs | not reached in the recordings |
+| Runs (c1: a 48K from power-on, the whole load at signal speed, the menu, stage 1) | 1 run of its first instruction (entered by a jump or by running on, no routine of its own in the L1) |
 
 #### `Layer030PopIx` (`$F207`)
 
@@ -26302,7 +26354,7 @@ Shifts the 30 bytes up to its own LDDR down by one (the code already run is garb
 
 | | |
 | --- | --- |
-| Runs | not reached in the recordings |
+| Runs (c1: a 48K from power-on, the whole load at signal speed, the menu, stage 1) | 1 run of its first instruction (entered by a jump or by running on, no routine of its own in the L1) |
 
 #### `Layer033` (`$F261`)
 
@@ -26312,7 +26364,7 @@ Shifts the 30 bytes up to its own LDDR down by one (the code already run is garb
 
 | | |
 | --- | --- |
-| Runs | not reached in the recordings |
+| Runs (c1: a 48K from power-on, the whole load at signal speed, the menu, stage 1) | 1 run of its first instruction (entered by a jump or by running on, no routine of its own in the L1) |
 
 #### `Layer034` (`$F280`)
 
@@ -26322,7 +26374,7 @@ Shifts the 30 bytes up to its own LDDR down by one (the code already run is garb
 
 | | |
 | --- | --- |
-| Runs | not reached in the recordings |
+| Runs (c1: a 48K from power-on, the whole load at signal speed, the menu, stage 1) | 1 run of its first instruction (entered by a jump or by running on, no routine of its own in the L1) |
 
 #### `Layer035` (`$F2A3`)
 
@@ -26332,7 +26384,7 @@ Shifts the 30 bytes up to its own LDDR down by one (the code already run is garb
 
 | | |
 | --- | --- |
-| Runs | not reached in the recordings |
+| Runs (c1: a 48K from power-on, the whole load at signal speed, the menu, stage 1) | 1 run of its first instruction (entered by a jump or by running on, no routine of its own in the L1) |
 
 #### `Layer036` (`$F2C2`)
 
@@ -26342,7 +26394,7 @@ Shifts the 30 bytes up to its own LDDR down by one (the code already run is garb
 
 | | |
 | --- | --- |
-| Runs | not reached in the recordings |
+| Runs (c1: a 48K from power-on, the whole load at signal speed, the menu, stage 1) | 1 run of its first instruction (entered by a jump or by running on, no routine of its own in the L1) |
 
 #### `Layer037` (`$F2ED`)
 
@@ -26352,7 +26404,7 @@ No LDDR shift. Then rewrites each byte c of `$F308-$FF25` into p = (R XOR c) XOR
 
 | | |
 | --- | --- |
-| Runs | not reached in the recordings |
+| Runs (c1: a 48K from power-on, the whole load at signal speed, the menu, stage 1) | 1 run of its first instruction (entered by a jump or by running on, no routine of its own in the L1) |
 
 #### `Layer038` (`$F30B`)
 
@@ -26362,7 +26414,7 @@ Shifts the 30 bytes up to its own LDDR down by one (the code already run is garb
 
 | | |
 | --- | --- |
-| Runs | not reached in the recordings |
+| Runs (c1: a 48K from power-on, the whole load at signal speed, the menu, stage 1) | 1 run of its first instruction (entered by a jump or by running on, no routine of its own in the L1) |
 
 #### `Layer039` (`$F327`)
 
@@ -26372,7 +26424,7 @@ Shifts the 30 bytes up to its own LDDR down by one (the code already run is garb
 
 | | |
 | --- | --- |
-| Runs | not reached in the recordings |
+| Runs (c1: a 48K from power-on, the whole load at signal speed, the menu, stage 1) | 1 run of its first instruction (entered by a jump or by running on, no routine of its own in the L1) |
 
 #### `Layer039PopIx` (`$F33E`)
 
@@ -26380,7 +26432,7 @@ Shifts the 30 bytes up to its own LDDR down by one (the code already run is garb
 
 | | |
 | --- | --- |
-| Runs (c1: a 48K from power-on, the whole load at signal speed, the menu, stage 1) | run into, not called, 208,390 t-states own (0.02 %) |
+| Runs (c1: a 48K from power-on, the whole load at signal speed, the menu, stage 1) | 1 run of its first instruction (entered by a jump or by running on, no routine of its own in the L1), 208,390 t-states own (0.02 %) |
 | Reads | `$F35A`-`$FF25` (`Layer040Shift`, `Layer041`, `Layer042`, `Layer043` and 92 more) |
 | Writes | `$F35A`-`$FF25` (`Layer040Shift`, `Layer041`, `Layer042`, `Layer043` and 92 more) |
 
@@ -26392,7 +26444,7 @@ Shifts the 30 bytes up to its own LDDR down by one (the code already run is garb
 
 | | |
 | --- | --- |
-| Runs | not reached in the recordings |
+| Runs (c1: a 48K from power-on, the whole load at signal speed, the menu, stage 1) | 1 run of its first instruction (entered by a jump or by running on, no routine of its own in the L1) |
 
 #### `Layer041` (`$F376`)
 
@@ -26402,7 +26454,7 @@ Shifts the 30 bytes up to its own LDDR down by one (the code already run is garb
 
 | | |
 | --- | --- |
-| Runs | not reached in the recordings |
+| Runs (c1: a 48K from power-on, the whole load at signal speed, the menu, stage 1) | 1 run of its first instruction (entered by a jump or by running on, no routine of its own in the L1) |
 
 #### `Layer042` (`$F398`)
 
@@ -26412,7 +26464,7 @@ Shifts the 30 bytes up to its own LDDR down by one (the code already run is garb
 
 | | |
 | --- | --- |
-| Runs (c1: a 48K from power-on, the whole load at signal speed, the menu, stage 1) | run into, not called, 46,848 t-states own (0.00 %) |
+| Runs (c1: a 48K from power-on, the whole load at signal speed, the menu, stage 1) | 1 run of its first instruction (entered by a jump or by running on, no routine of its own in the L1), 46,848 t-states own (0.00 %) |
 | Reads | `$F3B6`-`$FF25` (`Layer042Loop+10`, `Layer043`, `Layer044`, `Layer045` and 90 more) |
 
 #### `Layer043` (`$F3B7`)
@@ -26433,7 +26485,7 @@ Shifts the 30 bytes up to its own LDDR down by one (the code already run is garb
 
 | | |
 | --- | --- |
-| Runs | not reached in the recordings |
+| Runs (c1: a 48K from power-on, the whole load at signal speed, the menu, stage 1) | 1 run of its first instruction (entered by a jump or by running on, no routine of its own in the L1) |
 
 #### `Layer045` (`$F3F9`)
 
@@ -26443,7 +26495,7 @@ Shifts the 30 bytes up to its own LDDR down by one (the code already run is garb
 
 | | |
 | --- | --- |
-| Runs | not reached in the recordings |
+| Runs (c1: a 48K from power-on, the whole load at signal speed, the menu, stage 1) | 1 run of its first instruction (entered by a jump or by running on, no routine of its own in the L1) |
 
 #### `Layer046` (`$F424`)
 
@@ -26453,7 +26505,7 @@ No LDDR shift. Then rewrites each byte c of `$F43F-$FF25` into p = (R XOR c) XOR
 
 | | |
 | --- | --- |
-| Runs | not reached in the recordings |
+| Runs (c1: a 48K from power-on, the whole load at signal speed, the menu, stage 1) | 1 run of its first instruction (entered by a jump or by running on, no routine of its own in the L1) |
 
 #### `Layer047` (`$F442`)
 
@@ -26473,7 +26525,7 @@ Shifts the 30 bytes up to its own LDDR down by one (the code already run is garb
 
 | | |
 | --- | --- |
-| Runs | not reached in the recordings |
+| Runs (c1: a 48K from power-on, the whole load at signal speed, the menu, stage 1) | 1 run of its first instruction (entered by a jump or by running on, no routine of its own in the L1) |
 
 #### `Layer048PopIx` (`$F475`)
 
@@ -26481,7 +26533,7 @@ Shifts the 30 bytes up to its own LDDR down by one (the code already run is garb
 
 | | |
 | --- | --- |
-| Runs | not reached in the recordings |
+| Runs (c1: a 48K from power-on, the whole load at signal speed, the menu, stage 1) | 1 run of its first instruction (entered by a jump or by running on, no routine of its own in the L1) |
 
 #### `Layer049` (`$F48B`)
 
@@ -26521,7 +26573,7 @@ Shifts the 30 bytes up to its own LDDR down by one (the code already run is garb
 
 | | |
 | --- | --- |
-| Runs (c1: a 48K from power-on, the whole load at signal speed, the menu, stage 1) | run into, not called, 61,968 t-states own (0.01 %) |
+| Runs (c1: a 48K from power-on, the whole load at signal speed, the menu, stage 1) | 1 run of its first instruction (entered by a jump or by running on, no routine of its own in the L1), 61,968 t-states own (0.01 %) |
 | Reads | `$F510`-`$FF25` (`Layer052Loop+12`, `Layer053`, `Layer054`, `Layer055` and 78 more) |
 
 #### `Layer053` (`$F511`)
@@ -26544,7 +26596,7 @@ Shifts the 30 bytes up to its own LDDR down by one (the code already run is garb
 
 | | |
 | --- | --- |
-| Runs | not reached in the recordings |
+| Runs (c1: a 48K from power-on, the whole load at signal speed, the menu, stage 1) | 1 run of its first instruction (entered by a jump or by running on, no routine of its own in the L1) |
 
 #### `Layer055` (`$F55B`)
 
@@ -26554,7 +26606,7 @@ No LDDR shift. Then rewrites each byte c of `$F576-$FF25` into p = (R XOR c) XOR
 
 | | |
 | --- | --- |
-| Runs | not reached in the recordings |
+| Runs (c1: a 48K from power-on, the whole load at signal speed, the menu, stage 1) | 1 run of its first instruction (entered by a jump or by running on, no routine of its own in the L1) |
 
 #### `Layer056` (`$F579`)
 
@@ -26564,7 +26616,7 @@ Shifts the 30 bytes up to its own LDDR down by one (the code already run is garb
 
 | | |
 | --- | --- |
-| Runs | not reached in the recordings |
+| Runs (c1: a 48K from power-on, the whole load at signal speed, the menu, stage 1) | 1 run of its first instruction (entered by a jump or by running on, no routine of its own in the L1) |
 
 #### `Layer057` (`$F595`)
 
@@ -26574,7 +26626,7 @@ Shifts the 30 bytes up to its own LDDR down by one (the code already run is garb
 
 | | |
 | --- | --- |
-| Runs | not reached in the recordings |
+| Runs (c1: a 48K from power-on, the whole load at signal speed, the menu, stage 1) | 1 run of its first instruction (entered by a jump or by running on, no routine of its own in the L1) |
 
 #### `Layer057PopIx` (`$F5AC`)
 
@@ -26582,7 +26634,7 @@ Shifts the 30 bytes up to its own LDDR down by one (the code already run is garb
 
 | | |
 | --- | --- |
-| Runs | not reached in the recordings |
+| Runs (c1: a 48K from power-on, the whole load at signal speed, the menu, stage 1) | 1 run of its first instruction (entered by a jump or by running on, no routine of its own in the L1) |
 
 #### `Layer058` (`$F5C2`)
 
@@ -26592,7 +26644,7 @@ Shifts the 30 bytes up to its own LDDR down by one (the code already run is garb
 
 | | |
 | --- | --- |
-| Runs | not reached in the recordings |
+| Runs (c1: a 48K from power-on, the whole load at signal speed, the menu, stage 1) | 1 run of its first instruction (entered by a jump or by running on, no routine of its own in the L1) |
 
 #### `Layer059` (`$F5E4`)
 
@@ -26612,7 +26664,7 @@ Shifts the 30 bytes up to its own LDDR down by one (the code already run is garb
 
 | | |
 | --- | --- |
-| Runs (c1: a 48K from power-on, the whole load at signal speed, the menu, stage 1) | run into, not called, 53,038 t-states own (0.00 %) |
+| Runs (c1: a 48K from power-on, the whole load at signal speed, the menu, stage 1) | 1 run of its first instruction (entered by a jump or by running on, no routine of its own in the L1), 53,038 t-states own (0.00 %) |
 | Reads | `$F624`-`$FF25` (`Layer060Loop+10`, `Layer061`, `Layer062`, `Layer063` and 68 more) |
 | Writes | `$F624`-`$FF25` (`Layer060Loop+10`, `Layer061`, `Layer062`, `Layer063` and 68 more) |
 
@@ -26624,7 +26676,7 @@ Shifts the 30 bytes up to its own LDDR down by one (the code already run is garb
 
 | | |
 | --- | --- |
-| Runs | not reached in the recordings |
+| Runs (c1: a 48K from power-on, the whole load at signal speed, the menu, stage 1) | 1 run of its first instruction (entered by a jump or by running on, no routine of its own in the L1) |
 
 #### `Layer062` (`$F648`)
 
@@ -26634,7 +26686,7 @@ Shifts the 30 bytes up to its own LDDR down by one (the code already run is garb
 
 | | |
 | --- | --- |
-| Runs | not reached in the recordings |
+| Runs (c1: a 48K from power-on, the whole load at signal speed, the menu, stage 1) | 1 run of its first instruction (entered by a jump or by running on, no routine of its own in the L1) |
 
 #### `Layer063` (`$F667`)
 
@@ -26644,7 +26696,7 @@ Shifts the 30 bytes up to its own LDDR down by one (the code already run is garb
 
 | | |
 | --- | --- |
-| Runs | not reached in the recordings |
+| Runs (c1: a 48K from power-on, the whole load at signal speed, the menu, stage 1) | 1 run of its first instruction (entered by a jump or by running on, no routine of its own in the L1) |
 
 #### `Layer064` (`$F692`)
 
@@ -26654,7 +26706,7 @@ No LDDR shift. Then rewrites each byte c of `$F6AD-$FF25` into p = (R XOR c) XOR
 
 | | |
 | --- | --- |
-| Runs | not reached in the recordings |
+| Runs (c1: a 48K from power-on, the whole load at signal speed, the menu, stage 1) | 1 run of its first instruction (entered by a jump or by running on, no routine of its own in the L1) |
 
 #### `Layer065` (`$F6B0`)
 
@@ -26664,7 +26716,7 @@ Shifts the 30 bytes up to its own LDDR down by one (the code already run is garb
 
 | | |
 | --- | --- |
-| Runs | not reached in the recordings |
+| Runs (c1: a 48K from power-on, the whole load at signal speed, the menu, stage 1) | 1 run of its first instruction (entered by a jump or by running on, no routine of its own in the L1) |
 
 #### `Layer066` (`$F6CC`)
 
@@ -26674,7 +26726,7 @@ Shifts the 30 bytes up to its own LDDR down by one (the code already run is garb
 
 | | |
 | --- | --- |
-| Runs | not reached in the recordings |
+| Runs (c1: a 48K from power-on, the whole load at signal speed, the menu, stage 1) | 1 run of its first instruction (entered by a jump or by running on, no routine of its own in the L1) |
 
 #### `Layer066PopIx` (`$F6E3`)
 
@@ -26682,7 +26734,7 @@ Shifts the 30 bytes up to its own LDDR down by one (the code already run is garb
 
 | | |
 | --- | --- |
-| Runs | not reached in the recordings |
+| Runs (c1: a 48K from power-on, the whole load at signal speed, the menu, stage 1) | 1 run of its first instruction (entered by a jump or by running on, no routine of its own in the L1) |
 
 #### `Layer067` (`$F6F9`)
 
@@ -26702,7 +26754,7 @@ Shifts the 30 bytes up to its own LDDR down by one (the code already run is garb
 
 | | |
 | --- | --- |
-| Runs | not reached in the recordings |
+| Runs (c1: a 48K from power-on, the whole load at signal speed, the menu, stage 1) | 1 run of its first instruction (entered by a jump or by running on, no routine of its own in the L1) |
 
 #### `Layer069` (`$F73D`)
 
@@ -26712,7 +26764,7 @@ Shifts the 30 bytes up to its own LDDR down by one (the code already run is garb
 
 | | |
 | --- | --- |
-| Runs | not reached in the recordings |
+| Runs (c1: a 48K from power-on, the whole load at signal speed, the menu, stage 1) | 1 run of its first instruction (entered by a jump or by running on, no routine of its own in the L1) |
 
 #### `Layer070` (`$F75C`)
 
@@ -26722,7 +26774,7 @@ Shifts the 30 bytes up to its own LDDR down by one (the code already run is garb
 
 | | |
 | --- | --- |
-| Runs | not reached in the recordings |
+| Runs (c1: a 48K from power-on, the whole load at signal speed, the menu, stage 1) | 1 run of its first instruction (entered by a jump or by running on, no routine of its own in the L1) |
 
 #### `Layer071` (`$F77F`)
 
@@ -26732,7 +26784,7 @@ Shifts the 30 bytes up to its own LDDR down by one (the code already run is garb
 
 | | |
 | --- | --- |
-| Runs (c1: a 48K from power-on, the whole load at signal speed, the menu, stage 1) | run into, not called, 30,864 t-states own (0.00 %) |
+| Runs (c1: a 48K from power-on, the whole load at signal speed, the menu, stage 1) | 1 run of its first instruction (entered by a jump or by running on, no routine of its own in the L1), 30,864 t-states own (0.00 %) |
 | Reads | `$F79D`-`$FF25` (`Layer071Loop+10`, `Layer072`, `Layer073`, `Layer073Gap` and 55 more) |
 
 #### `Layer072` (`$F79E`)
@@ -26743,7 +26795,7 @@ Shifts the 30 bytes up to its own LDDR down by one (the code already run is garb
 
 | | |
 | --- | --- |
-| Runs | not reached in the recordings |
+| Runs (c1: a 48K from power-on, the whole load at signal speed, the menu, stage 1) | 1 run of its first instruction (entered by a jump or by running on, no routine of its own in the L1) |
 
 #### `Layer073` (`$F7C9`)
 
@@ -26753,7 +26805,7 @@ No LDDR shift. Then rewrites each byte c of `$F7E4-$FF25` into p = (R XOR c) XOR
 
 | | |
 | --- | --- |
-| Runs | not reached in the recordings |
+| Runs (c1: a 48K from power-on, the whole load at signal speed, the menu, stage 1) | 1 run of its first instruction (entered by a jump or by running on, no routine of its own in the L1) |
 
 #### `Layer074` (`$F7E7`)
 
@@ -26791,7 +26843,7 @@ Shifts the 30 bytes up to its own LDDR down by one (the code already run is garb
 
 | | |
 | --- | --- |
-| Runs (c1: a 48K from power-on, the whole load at signal speed, the menu, stage 1) | run into, not called, 15,741 t-states own (0.00 %) |
+| Runs (c1: a 48K from power-on, the whole load at signal speed, the menu, stage 1) | 1 run of its first instruction (entered by a jump or by running on, no routine of its own in the L1), 15,741 t-states own (0.00 %) |
 
 #### `Layer077` (`$F852`)
 
@@ -26811,7 +26863,7 @@ Shifts the 30 bytes up to its own LDDR down by one (the code already run is garb
 
 | | |
 | --- | --- |
-| Runs | not reached in the recordings |
+| Runs (c1: a 48K from power-on, the whole load at signal speed, the menu, stage 1) | 1 run of its first instruction (entered by a jump or by running on, no routine of its own in the L1) |
 
 #### `Layer079` (`$F893`)
 
@@ -26821,7 +26873,7 @@ Shifts the 30 bytes up to its own LDDR down by one (the code already run is garb
 
 | | |
 | --- | --- |
-| Runs | not reached in the recordings |
+| Runs (c1: a 48K from power-on, the whole load at signal speed, the menu, stage 1) | 1 run of its first instruction (entered by a jump or by running on, no routine of its own in the L1) |
 
 #### `Layer080` (`$F8B6`)
 
@@ -26831,7 +26883,7 @@ Shifts the 30 bytes up to its own LDDR down by one (the code already run is garb
 
 | | |
 | --- | --- |
-| Runs | not reached in the recordings |
+| Runs (c1: a 48K from power-on, the whole load at signal speed, the menu, stage 1) | 1 run of its first instruction (entered by a jump or by running on, no routine of its own in the L1) |
 
 #### `Layer081` (`$F8D5`)
 
@@ -26841,7 +26893,7 @@ Shifts the 30 bytes up to its own LDDR down by one (the code already run is garb
 
 | | |
 | --- | --- |
-| Runs | not reached in the recordings |
+| Runs (c1: a 48K from power-on, the whole load at signal speed, the menu, stage 1) | 1 run of its first instruction (entered by a jump or by running on, no routine of its own in the L1) |
 
 #### `Layer082` (`$F900`)
 
@@ -26851,7 +26903,7 @@ No LDDR shift. Then rewrites each byte c of `$F91B-$FF25` into p = (R XOR c) XOR
 
 | | |
 | --- | --- |
-| Runs | not reached in the recordings |
+| Runs (c1: a 48K from power-on, the whole load at signal speed, the menu, stage 1) | 1 run of its first instruction (entered by a jump or by running on, no routine of its own in the L1) |
 
 #### `Layer083` (`$F91E`)
 
@@ -26861,7 +26913,7 @@ Shifts the 30 bytes up to its own LDDR down by one (the code already run is garb
 
 | | |
 | --- | --- |
-| Runs | not reached in the recordings |
+| Runs (c1: a 48K from power-on, the whole load at signal speed, the menu, stage 1) | 1 run of its first instruction (entered by a jump or by running on, no routine of its own in the L1) |
 
 #### `Layer084` (`$F93A`)
 
@@ -26871,7 +26923,7 @@ Shifts the 30 bytes up to its own LDDR down by one (the code already run is garb
 
 | | |
 | --- | --- |
-| Runs | not reached in the recordings |
+| Runs (c1: a 48K from power-on, the whole load at signal speed, the menu, stage 1) | 1 run of its first instruction (entered by a jump or by running on, no routine of its own in the L1) |
 
 #### `Layer084PopIx` (`$F951`)
 
@@ -26879,7 +26931,7 @@ Shifts the 30 bytes up to its own LDDR down by one (the code already run is garb
 
 | | |
 | --- | --- |
-| Runs | not reached in the recordings |
+| Runs (c1: a 48K from power-on, the whole load at signal speed, the menu, stage 1) | 1 run of its first instruction (entered by a jump or by running on, no routine of its own in the L1) |
 
 #### `Layer085` (`$F967`)
 
@@ -26889,7 +26941,7 @@ Shifts the 30 bytes up to its own LDDR down by one (the code already run is garb
 
 | | |
 | --- | --- |
-| Runs | not reached in the recordings |
+| Runs (c1: a 48K from power-on, the whole load at signal speed, the menu, stage 1) | 1 run of its first instruction (entered by a jump or by running on, no routine of its own in the L1) |
 
 #### `Layer086` (`$F989`)
 
@@ -26899,7 +26951,7 @@ Shifts the 30 bytes up to its own LDDR down by one (the code already run is garb
 
 | | |
 | --- | --- |
-| Runs | not reached in the recordings |
+| Runs (c1: a 48K from power-on, the whole load at signal speed, the menu, stage 1) | 1 run of its first instruction (entered by a jump or by running on, no routine of its own in the L1) |
 
 #### `Layer087` (`$F9AB`)
 
@@ -26909,7 +26961,7 @@ Shifts the 30 bytes up to its own LDDR down by one (the code already run is garb
 
 | | |
 | --- | --- |
-| Runs | not reached in the recordings |
+| Runs (c1: a 48K from power-on, the whole load at signal speed, the menu, stage 1) | 1 run of its first instruction (entered by a jump or by running on, no routine of its own in the L1) |
 
 #### `Layer088` (`$F9CA`)
 
@@ -26919,7 +26971,7 @@ Shifts the 30 bytes up to its own LDDR down by one (the code already run is garb
 
 | | |
 | --- | --- |
-| Runs | not reached in the recordings |
+| Runs (c1: a 48K from power-on, the whole load at signal speed, the menu, stage 1) | 1 run of its first instruction (entered by a jump or by running on, no routine of its own in the L1) |
 
 #### `Layer089` (`$F9ED`)
 
@@ -26929,7 +26981,7 @@ Shifts the 30 bytes up to its own LDDR down by one (the code already run is garb
 
 | | |
 | --- | --- |
-| Runs | not reached in the recordings |
+| Runs (c1: a 48K from power-on, the whole load at signal speed, the menu, stage 1) | 1 run of its first instruction (entered by a jump or by running on, no routine of its own in the L1) |
 
 #### `Layer090` (`$FA0C`)
 
@@ -26939,7 +26991,7 @@ Shifts the 30 bytes up to its own LDDR down by one (the code already run is garb
 
 | | |
 | --- | --- |
-| Runs | not reached in the recordings |
+| Runs (c1: a 48K from power-on, the whole load at signal speed, the menu, stage 1) | 1 run of its first instruction (entered by a jump or by running on, no routine of its own in the L1) |
 
 #### `Layer091` (`$FA37`)
 
@@ -26949,7 +27001,7 @@ No LDDR shift. Then rewrites each byte c of `$FA52-$FF25` into p = (R XOR c) XOR
 
 | | |
 | --- | --- |
-| Runs | not reached in the recordings |
+| Runs (c1: a 48K from power-on, the whole load at signal speed, the menu, stage 1) | 1 run of its first instruction (entered by a jump or by running on, no routine of its own in the L1) |
 
 #### `Layer092` (`$FA55`)
 
@@ -26959,7 +27011,7 @@ Shifts the 30 bytes up to its own LDDR down by one (the code already run is garb
 
 | | |
 | --- | --- |
-| Runs | not reached in the recordings |
+| Runs (c1: a 48K from power-on, the whole load at signal speed, the menu, stage 1) | 1 run of its first instruction (entered by a jump or by running on, no routine of its own in the L1) |
 
 #### `Layer093` (`$FA71`)
 
@@ -26969,7 +27021,7 @@ Shifts the 30 bytes up to its own LDDR down by one (the code already run is garb
 
 | | |
 | --- | --- |
-| Runs | not reached in the recordings |
+| Runs (c1: a 48K from power-on, the whole load at signal speed, the menu, stage 1) | 1 run of its first instruction (entered by a jump or by running on, no routine of its own in the L1) |
 
 #### `Layer093PopIx` (`$FA88`)
 
@@ -26977,7 +27029,7 @@ Shifts the 30 bytes up to its own LDDR down by one (the code already run is garb
 
 | | |
 | --- | --- |
-| Runs | not reached in the recordings |
+| Runs (c1: a 48K from power-on, the whole load at signal speed, the menu, stage 1) | 1 run of its first instruction (entered by a jump or by running on, no routine of its own in the L1) |
 
 #### `Layer094` (`$FA9E`)
 
@@ -26987,7 +27039,7 @@ Shifts the 30 bytes up to its own LDDR down by one (the code already run is garb
 
 | | |
 | --- | --- |
-| Runs | not reached in the recordings |
+| Runs (c1: a 48K from power-on, the whole load at signal speed, the menu, stage 1) | 1 run of its first instruction (entered by a jump or by running on, no routine of its own in the L1) |
 
 #### `Layer095` (`$FAC3`)
 
@@ -26997,7 +27049,7 @@ Shifts the 30 bytes up to its own LDDR down by one (the code already run is garb
 
 | | |
 | --- | --- |
-| Runs | not reached in the recordings |
+| Runs (c1: a 48K from power-on, the whole load at signal speed, the menu, stage 1) | 1 run of its first instruction (entered by a jump or by running on, no routine of its own in the L1) |
 
 #### `Layer096` (`$FAE2`)
 
@@ -27007,7 +27059,7 @@ Shifts the 30 bytes up to its own LDDR down by one (the code already run is garb
 
 | | |
 | --- | --- |
-| Runs | not reached in the recordings |
+| Runs (c1: a 48K from power-on, the whole load at signal speed, the menu, stage 1) | 1 run of its first instruction (entered by a jump or by running on, no routine of its own in the L1) |
 
 #### `Layer097` (`$FB05`)
 
@@ -27017,7 +27069,7 @@ Shifts the 30 bytes up to its own LDDR down by one (the code already run is garb
 
 | | |
 | --- | --- |
-| Runs | not reached in the recordings |
+| Runs (c1: a 48K from power-on, the whole load at signal speed, the menu, stage 1) | 1 run of its first instruction (entered by a jump or by running on, no routine of its own in the L1) |
 
 #### `Layer098` (`$FB24`)
 
@@ -27027,7 +27079,7 @@ Shifts the 30 bytes up to its own LDDR down by one (the code already run is garb
 
 | | |
 | --- | --- |
-| Runs | not reached in the recordings |
+| Runs (c1: a 48K from power-on, the whole load at signal speed, the menu, stage 1) | 1 run of its first instruction (entered by a jump or by running on, no routine of its own in the L1) |
 
 #### `Layer098PopIx` (`$FB3B`)
 
@@ -27035,7 +27087,7 @@ Shifts the 30 bytes up to its own LDDR down by one (the code already run is garb
 
 | | |
 | --- | --- |
-| Runs | not reached in the recordings |
+| Runs (c1: a 48K from power-on, the whole load at signal speed, the menu, stage 1) | 1 run of its first instruction (entered by a jump or by running on, no routine of its own in the L1) |
 
 #### `Layer099` (`$FB51`)
 
@@ -27045,7 +27097,7 @@ No LDDR shift. Then rewrites each byte c of `$FB6F-$FF25` into p = (R XOR c) XOR
 
 | | |
 | --- | --- |
-| Runs | not reached in the recordings |
+| Runs (c1: a 48K from power-on, the whole load at signal speed, the menu, stage 1) | 1 run of its first instruction (entered by a jump or by running on, no routine of its own in the L1) |
 
 #### `Layer100` (`$FB72`)
 
@@ -27055,7 +27107,7 @@ No LDDR shift. Then rewrites each byte c of `$FB7F-$FF25` into p = c - 1 (R the 
 
 | | |
 | --- | --- |
-| Runs | not reached in the recordings |
+| Runs (c1: a 48K from power-on, the whole load at signal speed, the menu, stage 1) | 1 run of its first instruction (entered by a jump or by running on, no routine of its own in the L1) |
 
 #### `Layer101` (`$FB80`)
 
@@ -27065,7 +27117,7 @@ Shifts the 30 bytes up to its own LDDR down by one (the code already run is garb
 
 | | |
 | --- | --- |
-| Runs | not reached in the recordings |
+| Runs (c1: a 48K from power-on, the whole load at signal speed, the menu, stage 1) | 1 run of its first instruction (entered by a jump or by running on, no routine of its own in the L1) |
 
 #### `Layer102` (`$FBAB`)
 
@@ -27075,7 +27127,7 @@ Shifts the 30 bytes up to its own LDDR down by one (the code already run is garb
 
 | | |
 | --- | --- |
-| Runs | not reached in the recordings |
+| Runs (c1: a 48K from power-on, the whole load at signal speed, the menu, stage 1) | 1 run of its first instruction (entered by a jump or by running on, no routine of its own in the L1) |
 
 #### `Layer102PopIx` (`$FBBA`)
 
@@ -27083,7 +27135,7 @@ Shifts the 30 bytes up to its own LDDR down by one (the code already run is garb
 
 | | |
 | --- | --- |
-| Runs | not reached in the recordings |
+| Runs (c1: a 48K from power-on, the whole load at signal speed, the menu, stage 1) | 30 runs of its first instruction (entered by a jump or by running on, no routine of its own in the L1) |
 
 ### The decryption chain and the SpeedLock loader: loader
 
@@ -27099,7 +27151,7 @@ Witness: L1 1 (c1).
 
 | | |
 | --- | --- |
-| Runs | not reached in the recordings |
+| Runs (c1: a 48K from power-on, the whole load at signal speed, the menu, stage 1) | 1 run of its first instruction (entered by a jump or by running on, no routine of its own in the L1) |
 
 #### `LoaderMain` (`$FF03`)
 
@@ -27308,7 +27360,7 @@ Witness: L1 1 (c1).
 
 | | |
 | --- | --- |
-| Runs | not reached in the recordings |
+| Runs (c1: a 48K from power-on, the whole load at signal speed, the menu, stage 1) | 1 run of its first instruction (entered by a jump or by running on, no routine of its own in the L1) |
 
 #### `Sl1Tail` (`$FF3A`)
 

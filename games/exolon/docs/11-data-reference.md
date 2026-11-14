@@ -232,7 +232,7 @@ Written by `kit/refdocs.py`.
 
 | Address | Name | Bytes | What | Read by | Written by |
 | --- | --- | --- | --- | --- | --- |
-| `$9A99` | `BallList` | 97 | Up to 24 balls (X, Y, state, dx); `$FF` after the last. Filled by SpawnBalls (8 balls for each of up to 3 spawners) at the screen build; cleared by ClearBalls. | `BallsTouchPlayer`, `ClearBalls`, `Delay`, `MoveBallsLoop`, `ShotsHitBalls` | `ClearBalls`, `Delay` |
+| `$9A99` | `BallList` | 97 | Up to 24 balls (X, Y, state, dx); `$FF` after the last. Filled by SpawnBalls (8 balls for each of up to 3 spawners) at the screen build; cleared by ClearBalls. | `BallsTouchPlayer`, `ClearBalls`, `Delay`, `MoveBalls`, `ShotsHitBalls` | `ClearBalls`, `Delay` |
 | `$9B4B` | `BallSpawners` | 7 | Up to 3 ball spawners (column, row); `$FF` after the last (map value 9) | `Delay`, `SpawnBalls` | `Delay`, `IndexObjectCells` |
 
 ## death

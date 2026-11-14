@@ -91,8 +91,6 @@ TitleAttrLoop:
   CALL $72C6
   LD HL,TitleBox
   CALL $6CFB
-
-; TitleLoop
 TitleLoop:
   CALL $9882
   LD IX,StoresScreen

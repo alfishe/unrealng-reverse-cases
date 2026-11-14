@@ -53,7 +53,6 @@ MainLoop:
   LD HL,(PlayerCourse)    ; the restart point = where this life (or sector)
                           ; starts
   LD (PlayerRestart),HL
-; This entry point is used by the routine at MainLoopPass.
 MainLoopSegment:
   LD DE,(ObjectWrite)     ; the next segment: commands append objects at the
                           ; write pointer
@@ -61,8 +60,6 @@ MainLoopSegment:
   CALL CourseRun
   LD (ObjectWrite),DE
   LD (PlayerCourse),HL
-
-; MainLoopPass
 MainLoopPass:
   CALL MainLoopCalls      ; one pass of the call list; the death ends the life
   LD A,(DeathStep)

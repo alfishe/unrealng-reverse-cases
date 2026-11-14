@@ -911,14 +911,8 @@ RotateNormal:
 ; when the numerator is not smaller.
 DividePoint:
   LD B,$09
-
-; DividePointNormalise
-;
-; Used by the routine at DividePointShift.
 DividePointNormalise:
   DEC B
-
-; DividePointShift
 DividePointShift:
   JR Z,DividePointStart
   RLA

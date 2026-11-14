@@ -242,15 +242,11 @@ PlayLoopEnd:
 ; life's start (src/game/setup.asm).
 MainLoop:
   CALL InterruptSetup
-; This entry point is used by the routines at AbortGame, l_B207 and
-; MainLoopEnd.
+; This entry point is used by the routines at AbortGame and MainLoopEnd.
 MainLoopTitle:
   AND A                   ; NC: the title pages (AbortGame and the end of a
                           ; game come here)
   CALL NC,CreditsPage
-
-; l_B207
-l_B207:
   CALL NC,HiScorePage
   JR NC,MainLoopTitle
   CALL PlayersSetup       ; fire: a new game

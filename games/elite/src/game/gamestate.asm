@@ -45,7 +45,7 @@ ScreenMarket:
 
 ; ScreenTable 7: the commander's status (L), also after a dock
 ;
-; Used by the routines at TitleNext and FlightLoop.
+; Used by the routines at Title and FlightLoop.
 ScreenStatus:
   JP StatusScreen
 
@@ -89,13 +89,13 @@ NextGalaxyVector:
 
 ; NewGame $D298
 ;
-; Used by the routine at TitleNext.
+; Used by the routine at Title.
 NewGameVector:
   JP NewGame
 
 ; ClearScreen $D61D: the page cleared, its frame drawn
 ;
-; Used by the routines at TitleLoad and DashboardRestoreNow.
+; Used by the routines at Title and DashboardRestoreNow.
 ClearScreenVector:
   JP ClearScreen
 
@@ -160,7 +160,7 @@ PrintSpare:
 
 ; CommanderMenu $D90A: load or save a commander
 ;
-; Used by the routines at TitleLoad and FlightLoop.
+; Used by the routines at Title and FlightLoop.
 CommanderMenuVector:
   JP CommanderMenu
 

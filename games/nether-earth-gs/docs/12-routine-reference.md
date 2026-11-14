@@ -44,8 +44,8 @@ Written by `python3 tools/fig_refdocs.py` (through `kit/refdocs.py`); edit `src/
 | [`enemy`](#enemy) | `$B7F4`-`$BB08` | 4 of 4 |
 | [`bases`](#bases) | `$BB09`-`$BDA8` | 17 of 17 |
 | [`level`](11-data-reference.md#level) | `$BDA9`-`$C0FF` | 0 of 17 |
-| [`mainmenu`](#mainmenu) | `$C100`-`$C4A6` | 40 of 65 |
-| [`music`](#music) | `$C4A7`-`$C848` | 33 of 51 |
+| [`mainmenu`](#mainmenu) | `$C100`-`$C4A6` | 39 of 64 |
+| [`music`](#music) | `$C4A7`-`$C848` | 31 of 49 |
 | [`construction`](#construction) | `$C849`-`$CCBC` | 18 of 27 |
 | [`view`](#view) | `$CCBD`-`$D0B8` | 20 of 22 |
 | [`screen`](#screen) | `$D0B9`-`$D37B` | 19 of 27 |
@@ -117,9 +117,9 @@ Zeroes the robot records `$DA00-$DCFF` (48 x 16), the variables `$FD04-$FDFC` (e
 
 | | |
 | --- | --- |
-| Runs (Hood's tape on Pentagon 128 + GS 512 KB from 48 BASIC (`USR 0`): the bot's game of 40134 frames, 13 robots built, the fights from frame 17441 on) | run into, not called, 822,659 t-states own (0.03 %) |
-| Runs (the SCL on Pentagon 128 + GS 512 KB from the main menu: the bot plays 2324 frames) | run into, not called, 73,269 t-states own (0.04 %) |
-| Runs (the SCL on Pentagon 128 + GS 512 KB from the main menu: the bot builds 5 robots and gives their orders, 12073 frames) | run into, not called, 245,861 t-states own (0.03 %) |
+| Runs (Hood's tape on Pentagon 128 + GS 512 KB from 48 BASIC (`USR 0`): the bot's game of 40134 frames, 13 robots built, the fights from frame 17441 on) | 1 run of its first instruction (entered by a jump or by running on, no routine of its own in the L1), 822,659 t-states own (0.03 %) |
+| Runs (the SCL on Pentagon 128 + GS 512 KB from the main menu: the bot plays 2324 frames) | 1 run of its first instruction (entered by a jump or by running on, no routine of its own in the L1), 73,269 t-states own (0.04 %) |
+| Runs (the SCL on Pentagon 128 + GS 512 KB from the main menu: the bot builds 5 robots and gives their orders, 12073 frames) | 1 run of its first instruction (entered by a jump or by running on, no routine of its own in the L1), 245,861 t-states own (0.03 %) |
 | Calls | `BuildMap` |
 | Reads | `$D7D3`-`$D7FE` (`Shots`); `$DA00`-`$DCFE` (`Robots`, `EnemyRobots`); `$E714`-`$E719` (`Map+2580`); `$E914`-`$EB19` (`Map+3092`); `$ED12`-`$ED19` (`Map+4114`); `$EF12`-`$F119` (`Map+4626`); 6 more ranges |
 | Writes | `$D7D3`-`$D7FF` (`Shots`); `$DA00`-`$DCFF` (`Robots`, `EnemyRobots`); `$FD04`-`$FDFF` (`PrintAddr`, `ImJump`); `$FF01`-`$FFC9` (`Buildings`, `StackArea`) |
@@ -132,7 +132,9 @@ DrawViewBackground and DrawPlayScreen build the play screen (the view, its frame
 
 | | |
 | --- | --- |
-| Runs | ran within another entry's routine (reached by a jump or by running on, its calls below), no runs of its own counted |
+| Runs (Hood's tape on Pentagon 128 + GS 512 KB from 48 BASIC (`USR 0`): the bot's game of 40134 frames, 13 robots built, the fights from frame 17441 on) | 1 run of its first instruction (entered by a jump or by running on, no routine of its own in the L1) |
+| Runs (the SCL on Pentagon 128 + GS 512 KB from the main menu: the bot plays 2324 frames) | 1 run of its first instruction (entered by a jump or by running on, no routine of its own in the L1) |
+| Runs (the SCL on Pentagon 128 + GS 512 KB from the main menu: the bot builds 5 robots and gives their orders, 12073 frames) | 1 run of its first instruction (entered by a jump or by running on, no routine of its own in the L1) |
 | Calls | `DrawViewBackground`, `DrawPlayScreen` |
 
 ### `PlayLoop` (`$A69A`)
@@ -149,7 +151,9 @@ Last, the game keys: Input bit 6 (key I in the default KeyTable) abandons the ga
 
 | | |
 | --- | --- |
-| Runs | ran within another entry's routine (reached by a jump or by running on, its calls below), no runs of its own counted |
+| Runs (Hood's tape on Pentagon 128 + GS 512 KB from 48 BASIC (`USR 0`): the bot's game of 40134 frames, 13 robots built, the fights from frame 17441 on) | 3,705 runs of its first instruction (entered by a jump or by running on, no routine of its own in the L1) |
+| Runs (the SCL on Pentagon 128 + GS 512 KB from the main menu: the bot plays 2324 frames) | 185 runs of its first instruction (entered by a jump or by running on, no routine of its own in the L1) |
+| Runs (the SCL on Pentagon 128 + GS 512 KB from the main menu: the bot builds 5 robots and gives their orders, 12073 frames) | 1,083 runs of its first instruction (entered by a jump or by running on, no routine of its own in the L1) |
 | Calls | `RobotMenu`, `GameTurn`, `MoveShip`, `WorldTurn`, `CountRobots`, `ConstructionMenu`, `ShipCell`, `DrawView`, `FindRobot`, `FindBuilding`, `UpdateStatusPanel`, `WaitKey` |
 
 ## robotmenu
@@ -238,7 +242,9 @@ CloseRobotMenu (`$A812`) clears the panel, sets `$FD39` = 0 and redraws the stat
 
 | | |
 | --- | --- |
-| Runs | ran within another entry's routine (reached by a jump or by running on, its calls below), no runs of its own counted |
+| Runs (Hood's tape on Pentagon 128 + GS 512 KB from 48 BASIC (`USR 0`): the bot's game of 40134 frames, 13 robots built, the fights from frame 17441 on) | 24 runs of its first instruction (entered by a jump or by running on, no routine of its own in the L1) |
+| Runs (the SCL on Pentagon 128 + GS 512 KB from the main menu: the bot plays 2324 frames) | 4 runs of its first instruction (entered by a jump or by running on, no routine of its own in the L1) |
+| Runs (the SCL on Pentagon 128 + GS 512 KB from the main menu: the bot builds 5 robots and gives their orders, 12073 frames) | 10 runs of its first instruction (entered by a jump or by running on, no routine of its own in the L1) |
 | Calls | `ShowStrength`, `OrdersMenu` (tail), `ListMenu`, `Beep`, `ShowStatusPanel`, `ClearPanel` |
 
 ### `ShowStrength` (`$A81D`)
@@ -440,6 +446,7 @@ CombatMenu (`$AC00`) follows in the same block: the robot menu's item 3.
 | | |
 | --- | --- |
 | Runs (Hood's tape on Pentagon 128 + GS 512 KB from 48 BASIC (`USR 0`): the bot's game of 40134 frames, 13 robots built, the fights from frame 17441 on) | 12 calls, 2,952 t-states own (0.00 %) |
+| Runs (the SCL on Pentagon 128 + GS 512 KB from the main menu: the bot plays 2324 frames) | 2 runs of its first instruction (entered by a jump or by running on, no routine of its own in the L1) |
 | Runs (the SCL on Pentagon 128 + GS 512 KB from the main menu: the bot builds 5 robots and gives their orders, 12073 frames) | 5 calls, 1,202 t-states own (0.00 %) |
 | Called from | `DestroyMenuChoose` (tail), `CaptureMenuChoose` (falls into) |
 | Calls | `RobotMenuShow` (tail), `WaitRelease`, `FindTargetBuilding`, `Beep` |
@@ -885,6 +892,7 @@ Nether Earth's deep recording: 9652 steps; the shot records and strengths at fra
 
 | | |
 | --- | --- |
+| Runs (Hood's tape on Pentagon 128 + GS 512 KB from 48 BASIC (`USR 0`): the bot's game of 40134 frames, 13 robots built, the fights from frame 17441 on) | 70,617 runs of its first instruction (entered by a jump or by running on, no routine of its own in the L1) |
 | Runs (the SCL on Pentagon 128 + GS 512 KB from the main menu: the bot plays 2324 frames) | 616 calls, 103,041 t-states own (0.06 %) |
 | Runs (the SCL on Pentagon 128 + GS 512 KB from the main menu: the bot builds 5 robots and gives their orders, 12073 frames) | 8,949 calls, 1,560,043 t-states own (0.18 %) |
 | Called from | `UpdateRobot` (tail) |
@@ -926,7 +934,9 @@ Masks C with random bytes until exactly one bit is left (CountDirections); when 
 
 | | |
 | --- | --- |
-| Runs | ran within another entry's routine (reached by a jump or by running on, its calls below), no runs of its own counted |
+| Runs (Hood's tape on Pentagon 128 + GS 512 KB from 48 BASIC (`USR 0`): the bot's game of 40134 frames, 13 robots built, the fights from frame 17441 on) | 1,214 runs of its first instruction (entered by a jump or by running on, no routine of its own in the L1) |
+| Runs (the SCL on Pentagon 128 + GS 512 KB from the main menu: the bot plays 2324 frames) | 6 runs of its first instruction (entered by a jump or by running on, no routine of its own in the L1) |
+| Runs (the SCL on Pentagon 128 + GS 512 KB from the main menu: the bot builds 5 robots and gives their orders, 12073 frames) | 143 runs of its first instruction (entered by a jump or by running on, no routine of its own in the L1) |
 | Calls | `CountDirections`, `Random` |
 
 ### `FindTargetBuilding` (`$B34D`)
@@ -1339,7 +1349,7 @@ The recorded hits agree: a missile (2) into a 19 high robot takes 10 * 3 = 30, a
 
 | | |
 | --- | --- |
-| Runs | not reached in the recordings |
+| Runs (Hood's tape on Pentagon 128 + GS 512 KB from 48 BASIC (`USR 0`): the bot's game of 40134 frames, 13 robots built, the fights from frame 17441 on) | 482 runs of its first instruction (entered by a jump or by running on, no routine of its own in the L1) |
 
 ## enemy
 
@@ -1713,14 +1723,6 @@ Waits until no key is held (each frame cycling the title's colours, `$C820`), pl
 
 | | |
 | --- | --- |
-| Runs | not reached in the recordings |
-
-### `MenuWaitKey` (`$C1A1`)
-
-**MenuWaitKey**
-
-| | |
-| --- | --- |
 | Runs (Hood's tape on Pentagon 128 + GS 512 KB from 48 BASIC (`USR 0`): the bot's game of 40134 frames, 13 robots built, the fights from frame 17441 on) | run into, not called, 68,631 t-states own (0.00 %) |
 | Runs (the SCL on Pentagon 128 + GS 512 KB from the main menu: the bot plays 2324 frames) | run into, not called, 71,495 t-states own (0.04 %) |
 | Runs (the SCL on Pentagon 128 + GS 512 KB from the main menu: the bot builds 5 robots and gives their orders, 12073 frames) | run into, not called, 23,795 t-states own (0.00 %) |
@@ -2079,14 +2081,6 @@ The drum, the bass and lead note readers, the title colours; a number key ends M
 
 | | |
 | --- | --- |
-| Runs | not reached in the recordings |
-
-### `MenuIntVoices` (`$C502`)
-
-**MenuIntVoices**
-
-| | |
-| --- | --- |
 | Runs (Hood's tape on Pentagon 128 + GS 512 KB from 48 BASIC (`USR 0`): the bot's game of 40134 frames, 13 robots built, the fights from frame 17441 on) | run into, not called, 105 t-states own (0.00 %) |
 | Runs (the SCL on Pentagon 128 + GS 512 KB from the main menu: the bot plays 2324 frames) | run into, not called, 105 t-states own (0.00 %) |
 | Runs (the SCL on Pentagon 128 + GS 512 KB from the main menu: the bot builds 5 robots and gives their orders, 12073 frames) | run into, not called, 168 t-states own (0.00 %) |
@@ -2104,7 +2098,7 @@ HL' = the bass track position. A byte of 9 or more is a note: the byte is the pe
 | | |
 | --- | --- |
 | Runs (the SCL on Pentagon 128 + GS 512 KB from the main menu: the bot builds 5 robots and gives their orders, 12073 frames) | 3 calls, 199 t-states own (0.00 %) |
-| Called from | `MenuIntVoices`, `BassCall` (tail), `BassReturn` (tail) |
+| Called from | `MenuInterrupt`, `BassCall` (tail), `BassReturn` (tail) |
 | Reads | `$C68D` (`BassTrack+21`); `$C6CC`-`$C6DC` (`BassWalk`) |
 | Writes | `$C4ED`-`$C4F3` (`BassStep+5`) |
 
@@ -2117,7 +2111,7 @@ The lead twin of BassNextEvent: DE' = the position, the note goes into `$C4D0` /
 | | |
 | --- | --- |
 | Runs (the SCL on Pentagon 128 + GS 512 KB from the main menu: the bot builds 5 robots and gives their orders, 12073 frames) | 3 calls, 203 t-states own (0.00 %) |
-| Called from | `MenuIntVoices`, `LeadCall` (tail), `LeadReturn` (tail) |
+| Called from | `MenuInterrupt`, `LeadCall` (tail), `LeadReturn` (tail) |
 | Calls | `MusicDispatch` |
 | Reads | `$C714` (`LeadTrack+18`); `$C7AA`-`$C7AB` (`LeadPhrase`); `$C7C4` (`LeadPhrase+26`) |
 | Writes | `$C4D0`-`$C4D6` (`LeadStep+5`) |
@@ -2130,7 +2124,7 @@ A table entry of BassCommandTable: command 2 calls a pattern.
 
 | | |
 | --- | --- |
-| Runs (the SCL on Pentagon 128 + GS 512 KB from the main menu: the bot builds 5 robots and gives their orders, 12073 frames) | run into, not called, 10 t-states own (0.00 %) |
+| Runs (the SCL on Pentagon 128 + GS 512 KB from the main menu: the bot builds 5 robots and gives their orders, 12073 frames) | 1 run of its first instruction (entered by a jump or by running on, no routine of its own in the L1), 10 t-states own (0.00 %) |
 | Called from | `MusicDispatch` |
 | Calls | `BassCall` (tail) |
 
@@ -2172,7 +2166,7 @@ A table entry: command 6 ends a pattern.
 
 | | |
 | --- | --- |
-| Runs (the SCL on Pentagon 128 + GS 512 KB from the main menu: the bot builds 5 robots and gives their orders, 12073 frames) | run into, not called, 10 t-states own (0.00 %) |
+| Runs (the SCL on Pentagon 128 + GS 512 KB from the main menu: the bot builds 5 robots and gives their orders, 12073 frames) | 1 run of its first instruction (entered by a jump or by running on, no routine of its own in the L1), 10 t-states own (0.00 %) |
 | Called from | `MusicDispatch` |
 | Calls | `BassReturn` (tail) |
 
@@ -2184,7 +2178,7 @@ The lead twin of BassCommand. HL' (the bass position) is pushed so the handlers 
 
 | | |
 | --- | --- |
-| Runs | ran within another entry's routine (reached by a jump or by running on, its calls below), no runs of its own counted |
+| Runs (the SCL on Pentagon 128 + GS 512 KB from the main menu: the bot builds 5 robots and gives their orders, 12073 frames) | 2 runs of its first instruction (entered by a jump or by running on, no routine of its own in the L1) |
 | Calls | `MusicDispatch` |
 
 ### `LeadCmd2` (`$C578`)
@@ -2195,7 +2189,7 @@ A table entry of LeadCommandTable: command 2 calls a pattern.
 
 | | |
 | --- | --- |
-| Runs (the SCL on Pentagon 128 + GS 512 KB from the main menu: the bot builds 5 robots and gives their orders, 12073 frames) | run into, not called, 10 t-states own (0.00 %) |
+| Runs (the SCL on Pentagon 128 + GS 512 KB from the main menu: the bot builds 5 robots and gives their orders, 12073 frames) | 1 run of its first instruction (entered by a jump or by running on, no routine of its own in the L1), 10 t-states own (0.00 %) |
 | Called from | `MusicDispatch` |
 | Calls | `LeadCall` (tail) |
 
@@ -2227,7 +2221,7 @@ A table entry: command 6 ends a pattern.
 
 | | |
 | --- | --- |
-| Runs (the SCL on Pentagon 128 + GS 512 KB from the main menu: the bot builds 5 robots and gives their orders, 12073 frames) | run into, not called, 10 t-states own (0.00 %) |
+| Runs (the SCL on Pentagon 128 + GS 512 KB from the main menu: the bot builds 5 robots and gives their orders, 12073 frames) | 1 run of its first instruction (entered by a jump or by running on, no routine of its own in the L1), 10 t-states own (0.00 %) |
 | Called from | `MusicDispatch` |
 | Calls | `LeadReturn` (tail) |
 
@@ -2319,14 +2313,6 @@ The conversion made its four OUT (`$FE`),A NOP NOP (`$C5F3` the rasp, `$C610` th
 
 | | |
 | --- | --- |
-| Runs | not reached in the recordings |
-
-### `DrumSweepHigh` (`$C62E`)
-
-**DrumSweepHigh**
-
-| | |
-| --- | --- |
 | Runs (the SCL on Pentagon 128 + GS 512 KB from the main menu: the bot builds 5 robots and gives their orders, 12073 frames) | run into, not called, 46,712 t-states own (0.01 %) |
 
 ### `BassOn` (`$C635`)
@@ -2384,7 +2370,7 @@ Counts `$FD33` 0-15 each call; on even counts it paints the attributes of rows 1
 | Runs (Hood's tape on Pentagon 128 + GS 512 KB from 48 BASIC (`USR 0`): the bot's game of 40134 frames, 13 robots built, the fights from frame 17441 on) | 1 call, 2,702 t-states own (0.00 %) |
 | Runs (the SCL on Pentagon 128 + GS 512 KB from the main menu: the bot plays 2324 frames) | 1 call, 2,796 t-states own (0.00 %) |
 | Runs (the SCL on Pentagon 128 + GS 512 KB from the main menu: the bot builds 5 robots and gives their orders, 12073 frames) | 2 calls, 2,869 t-states own (0.00 %) |
-| Called from | `MenuWaitKey`, `MenuIntVoices` |
+| Called from | `MainMenuKeys`, `MenuInterrupt` |
 | Calls | `AddAToHL` |
 | Reads | `$FD33` (`TitleColourPhase`) |
 | Writes | `$582A`-`$5835` (screen); `$584A`-`$5855` (screen); `$586A`-`$5875` (screen); `$588A`-`$5895` (screen); `$58AA`-`$58B5` (screen); `$58CA`-`$58D5` (screen); 2 more ranges |
@@ -2828,7 +2814,9 @@ Robots and shots keep their real position in +`$02`/+`$03` (x) and +`$04` (y) an
 
 | | |
 | --- | --- |
-| Runs | ran within another entry's routine (reached by a jump or by running on, its calls below), no runs of its own counted |
+| Runs (Hood's tape on Pentagon 128 + GS 512 KB from 48 BASIC (`USR 0`): the bot's game of 40134 frames, 13 robots built, the fights from frame 17441 on) | 6,130 runs of its first instruction (entered by a jump or by running on, no routine of its own in the L1) |
+| Runs (the SCL on Pentagon 128 + GS 512 KB from the main menu: the bot plays 2324 frames) | 276 runs of its first instruction (entered by a jump or by running on, no routine of its own in the L1) |
+| Runs (the SCL on Pentagon 128 + GS 512 KB from the main menu: the bot builds 5 robots and gives their orders, 12073 frames) | 934 runs of its first instruction (entered by a jump or by running on, no routine of its own in the L1) |
 | Calls | `MapCell`, `FindLatestBlock`, `DrawMoverSprite` (tail) |
 
 ### `DrawMoverSprite` (`$CEC3`)
@@ -2840,6 +2828,7 @@ Records at `$D800` and up are robots: DrawRobot. A shot (records at `$D7D3`) is 
 | | |
 | --- | --- |
 | Runs (Hood's tape on Pentagon 128 + GS 512 KB from 48 BASIC (`USR 0`): the bot's game of 40134 frames, 13 robots built, the fights from frame 17441 on) | 5,829 calls, 268,229 t-states own (0.01 %) |
+| Runs (the SCL on Pentagon 128 + GS 512 KB from the main menu: the bot plays 2324 frames) | 276 runs of its first instruction (entered by a jump or by running on, no routine of its own in the L1) |
 | Runs (the SCL on Pentagon 128 + GS 512 KB from the main menu: the bot builds 5 robots and gives their orders, 12073 frames) | 912 calls, 41,952 t-states own (0.00 %) |
 | Called from | `DrawMover` (tail) |
 | Calls | `DrawRobot` (tail) |
@@ -2890,7 +2879,7 @@ The isometric projection: the half-byte column L = 2E + D - 24, the pixel row of
 | Called from | `DrawMapObjects`, `DrawCell`, `DrawCellObject`, `DrawRobotPart` |
 | Calls | `TableWord`, `AddAToHL` |
 | Reads | `$5B08`-`$6777` (`ViewBufferTail`); `$6980`-`$8089` (`SprTracksX`, `SprTracksXRows`, `SprTracksXOdd`, `SprTracksXOddRows` and 56 more); `$8224`-`$88E1` (`SprElectronicsXp`, `SprElectronicsXpRows`, `SprElectronicsXpOdd`, `SprElectronicsXpOddRows` and 24 more); `$8E3A`-`$92F9` (`SprShip`, `SprShipRows`, `SprShipOdd`, `SprShipOddRows` and 11 more); `$9914`-`$9D9B` (`SprBlockLow`, `SprBlockLowRows`, `SprBlockLowOdd`, `SprBlockLowOddRows` and 4 more); `$A050`-`$A24B` (`SprPost`, `SprPostRows`, `SprBlockDoor`, `SprBlockDoorRows` and 2 more) |
-| Writes | `$5B08`-`$5B2B` (system); `$5B3E`-`$5BD9` (system); `$5BEC`-`$5C2F` (system); `$5C42`-`$5DE5` (system); `$5DF8`-`$5E3F` (system); `$5E52`-`$5EFD` (system); 7 more ranges |
+| Writes | `$5B08`-`$5B2B` (`ViewBuffer+8`); `$5B3E`-`$5BD9` (`ViewBuffer+62`); `$5BEC`-`$5C2F` (`ViewBuffer+236`); `$5C42`-`$5DE5` (`ViewBuffer+322`); `$5DF8`-`$5E3F` (`ViewBuffer+760`); `$5E52`-`$5EFD` (`ViewBuffer+850`); 7 more ranges |
 
 ### `DrawViewBackground` (`$CFD7`)
 
@@ -2918,8 +2907,8 @@ Pushes HL = 0 with SP at `$6780` (198 x 16 bytes, SP kept in `$FD08`), then clea
 | Runs (the SCL on Pentagon 128 + GS 512 KB from the main menu: the bot plays 2324 frames) | 221 calls, 4,587,342 t-states own (2.75 %) |
 | Runs (the SCL on Pentagon 128 + GS 512 KB from the main menu: the bot builds 5 robots and gives their orders, 12073 frames) | 1,172 calls, 24,328,977 t-states own (2.81 %) |
 | Called from | `StartRobot`, `ShowRobotDesign`, `DrawViewBackground` |
-| Reads | `$5B00`-`$5B1E` (system); `$FD08`-`$FD09` (`SavedSP`) |
-| Writes | `$5B00`-`$5B1F` (system); `$5B40`-`$5B47` (system); `$5B86`-`$5B87` (system); `$5B9A`-`$5BA3` (system); `$5BB6`-`$5BD9` (system); `$5BEC`-`$5C1D` (system); 10 more ranges |
+| Reads | `$5B00`-`$5B1E` (`ViewBuffer`); `$FD08`-`$FD09` (`SavedSP`) |
+| Writes | `$5B00`-`$5B1F` (`ViewBuffer`); `$5B40`-`$5B47` (`ViewBuffer+64`); `$5B86`-`$5B87` (`ViewBuffer+134`); `$5B9A`-`$5BA3` (`ViewBuffer+154`); `$5BB6`-`$5BD9` (`ViewBuffer+182`); `$5BEC`-`$5C1D` (`ViewBuffer+236`); 10 more ranges |
 
 ### `FillViewCorner` (`$D026`)
 
@@ -2935,7 +2924,7 @@ Pushes HL = 0 with SP at `$6780` (198 x 16 bytes, SP kept in `$FD08`), then clea
 | Called from | `DrawViewBackground` |
 | Calls | `AddAToHL` |
 | Reads | `$D038`-`$D041` (`CornerRowLoop+2`, `CornerByteLoop`) |
-| Writes | `$5B00`-`$5B2B` (system); `$5B3E`-`$5BD9` (system); `$5BEC`-`$5C2F` (system); `$5C42`-`$5D95` (system); `$5DA8`-`$5DA9` (system); `$5DBC`-`$5DBD` (system); 5 more ranges |
+| Writes | `$5B00`-`$5B2B` (`ViewBuffer`); `$5B3E`-`$5BD9` (`ViewBuffer+62`); `$5BEC`-`$5C2F` (`ViewBuffer+236`); `$5C42`-`$5D95` (`ViewBuffer+322`); `$5DA8`-`$5DA9` (`ViewBuffer+680`); `$5DBC`-`$5DBD` (`ViewBuffer+700`); 5 more ranges |
 
 ### `DrawEdgeStrips` (`$D057`)
 
@@ -2950,7 +2939,7 @@ The diagonal edge of the map in the view. The patterns are at `$D6A8` (ink on th
 | Runs (the SCL on Pentagon 128 + GS 512 KB from the main menu: the bot builds 5 robots and gives their orders, 12073 frames) | 3,447 calls, 10,058,243 t-states own (1.16 %) |
 | Called from | `DrawViewBackground` (tail) |
 | Reads | `$D6A8`-`$D6C7` (`ViewEdgeA`, `ViewEdgeB`) |
-| Writes | `$5B0A`-`$5B2B` (system); `$5B3E`-`$5BD9` (system); `$5BEC`-`$5C2F` (system); `$5C42`-`$5DE5` (system); `$5DF8`-`$5E3F` (system); `$5E52`-`$5EAD` (system); 8 more ranges |
+| Writes | `$5B0A`-`$5B2B` (`ViewBuffer+10`); `$5B3E`-`$5BD9` (`ViewBuffer+62`); `$5BEC`-`$5C2F` (`ViewBuffer+236`); `$5C42`-`$5DE5` (`ViewBuffer+322`); `$5DF8`-`$5E3F` (`ViewBuffer+760`); `$5E52`-`$5EAD` (`ViewBuffer+850`); 8 more ranges |
 
 ### `CopyViewToScreen` (`$D071`)
 
@@ -3563,7 +3552,7 @@ Seen in recording r1 only for the menus; the shots were checked in stage 1 with 
 
 | | |
 | --- | --- |
-| Runs | ran within another entry's routine (reached by a jump or by running on, its calls below), no runs of its own counted |
+| Runs (Hood's tape on Pentagon 128 + GS 512 KB from 48 BASIC (`USR 0`): the bot's game of 40134 frames, 13 robots built, the fights from frame 17441 on) | 89 runs of its first instruction (entered by a jump or by running on, no routine of its own in the L1) |
 | Calls | `GsSound` |
 
 ### `BuildRadar` (`$D5F8`)

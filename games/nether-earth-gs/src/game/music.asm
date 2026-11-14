@@ -145,8 +145,6 @@ MenuInterrupt:
                           ; record (inside the interrupt, the tone loop waits)
   CALL Z,DrumStep         ; DrumStep: one drum record, with the tone loop
                           ; stopped
-
-; MenuIntVoices
 MenuIntVoices:
   EXX                     ; the voices' registers
   DEC C                   ; the bass note's frames run out: the next bass event
@@ -495,7 +493,6 @@ DrumSweep:
   LD L,A                  ; the low half
   RRCA                    ; the high half: p / 2
   LD H,A                  ; H = p / 2 (RRCA of p)
-; This entry point is used by the routine at DrumSweepHigh.
 DrumSweepLoop:
   XOR A                   ; the low half, one shorter each cycle
   NOP                     ; NOP NOP: was OUT ($FE),A, beeper low
@@ -511,8 +508,6 @@ DrumSweepLow:
   LD A,$04                ; the high half 4 turns longer each cycle
   ADD A,H                 ; + the last length
   LD H,A                  ; H = the new length
-
-; DrumSweepHigh
 DrumSweepHigh:
   DEC A                   ; hold the high half
   JR NZ,DrumSweepHigh     ; the high half

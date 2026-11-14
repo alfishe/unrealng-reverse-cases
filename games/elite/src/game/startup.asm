@@ -856,8 +856,6 @@ TitleShip:
   LD A,$79
   CALL ShipActionVector
   CALL WhiteAttrs
-
-; TitleLoad
 TitleLoad:
   CALL ClearView
   CALL TitleTextLoad
@@ -876,10 +874,7 @@ TitleIfNotZero:
   LD (ViewIndex),A
   CALL ClearScreenVector
   CALL DashboardRestore
-
-; TitleNext
-;
-; Used by the routines at TitleLoad and FlightLoop.
+; This entry point is used by the routine at FlightLoop.
 TitleNext:
   LD HL,ShipSlots+$001D
   SET 7,(HL)
@@ -955,7 +950,7 @@ TitleStart:
 ; The title text and "LOAD NEW COMMANDER (Y/N)?" (other token 6, row 14, column
 ; 1)
 ;
-; Used by the routine at TitleLoad.
+; Used by the routine at Title.
 TitleTextLoad:
   CALL TitleElite
   LD HL,$0E01
@@ -964,7 +959,7 @@ TitleTextLoad:
 
 ; The title text and "PRESS SPACE, COMMANDER" (other token 7, row 14, column 4)
 ;
-; Used by the routine at TitleNext.
+; Used by the routine at Title.
 TitleTextPress:
   CALL TitleElite
   LD HL,$0E04
@@ -1008,7 +1003,7 @@ PlainText:
 
 ; The attributes of the top two thirds: white INK on black
 ;
-; Used by the routines at Title and TitleNext.
+; Used by the routine at Title.
 WhiteAttrs:
   LD HL,$5800
   CALL FillAttrPage

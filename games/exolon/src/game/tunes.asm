@@ -416,8 +416,6 @@ Voice2Toggle:
   OUT ($FE),A             ; voice 2 wrapped: output the current level, then
                           ; flip the speaker bit
   XOR C
-
-; Voice2Reload
 Voice2Reload:
   LD D,L                  ; D = voice 2's reload value; next step of the inner
                           ; count
@@ -442,8 +440,6 @@ Voice2Reload:
 ; the menu).
 PlayTwoTones:
   LD H,A
-
-; PlayTwoTonesSetUp
 PlayTwoTonesSetUp:
   LD IXL,E                ; IXL = voice 1's reload, L = voice 2's reload, C =
                           ; the speaker bit, A = A' = 0, B = 0 (256 steps a
@@ -457,17 +453,15 @@ PlayTwoTonesSetUp:
 
 ; TwoTonesStep
 ;
-; Used by the routines at Voice2Reload and TwoTonesNext.
+; Used by the routines at Voice2Toggle and TwoTonesNext.
 TwoTonesStep:
   OR A                    ; timing pad
-
-; TwoTonesStepPad
 TwoTonesStepPad:
   AND A                   ; timing pad
 
 ; TwoTonesVoice1
 ;
-; Used by the routines at Voice2Reload and TwoTonesNext.
+; Used by the routines at Voice2Toggle and TwoTonesNext.
 TwoTonesVoice1:
   EX AF,AF'               ; voice 1's step: count E up, output its level; no
                           ; wrap: voice 2's half at $802B

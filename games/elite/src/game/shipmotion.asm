@@ -159,8 +159,7 @@ ECMActive:
 
 ; ShipAction: A = an action (low nibble) and its argument (high nibble)
 ;
-; Used by the routines at Title, TitleNext, TunnelStart, MissileKeys and
-; EscapePod.
+; Used by the routines at Title, TunnelStart, MissileKeys and EscapePod.
 ShipActionVector:
   JP ShipAction
 
@@ -202,7 +201,7 @@ NonStationPresent:
 
 ; The title's turning ship (TurnTitleShip $A28D)
 ;
-; Used by the routines at TitleLoad and TitleNext.
+; Used by the routine at Title.
 DrawTitleShipVector:
   JP TurnTitleShip
 

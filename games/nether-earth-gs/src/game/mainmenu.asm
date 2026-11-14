@@ -57,7 +57,7 @@ MainMenuTitle:
 
 ; The main menu's options (re-entered after keys 1-3)
 ;
-; Used by the routine at MenuWaitKey.
+; Used by the routine at MainMenuKeys.
 MainMenuOptions:
   CALL PrintInline        ; option 0, START GAME
 
@@ -121,8 +121,6 @@ MainMenuKeys:
   OR A                    ; sets S from bit 7
   JP P,MainMenuKeys       ; a key still held (from the last choice): wait
   CALL MenuMusic          ; the title music, until a key
-
-; MenuWaitKey
 MenuWaitKey:
   HALT                    ; back from MenuMusic: a number key is down; one
                           ; frame
@@ -186,7 +184,7 @@ TitleText:
 ; PrintTitle's return; then the load option
 PrintTitleEnd:
   RET                     ; back to the caller after the title text
-; This entry point is used by the routine at MenuWaitKey.
+; This entry point is used by the routine at MainMenuKeys.
 LoadGame:
   CALL PrintTitle         ; key 5: the title again, PRESS PLAY ON TAPE
   CALL PrintInline        ; the prompt, then on into the load

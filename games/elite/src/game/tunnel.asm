@@ -395,7 +395,7 @@ SceneLaunchFlight:
 ; The control accumulators $FF08-$FF0C zeroed, SpeedControl $0C00, then the
 ; keys
 ;
-; Used by the routines at Title, TitleNext, TunnelStart and SceneLaunch.
+; Used by the routines at Title, TunnelStart and SceneLaunch.
 ResetControls:
   LD B,$05
   LD HL,RollControl

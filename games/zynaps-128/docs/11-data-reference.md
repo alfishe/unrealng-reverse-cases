@@ -140,7 +140,7 @@ Written by `kit/refdocs.py`.
 | `$801E` | `ScriptColumn` | 1 | The column where the next group goes, +16 per group (ResumeScript `$8D45`) | `DrawGroup`, `ResumeScript` | `LevelStart`, `ResumeScript` |
 | `$801F` | `ScriptRoom` | 1 | The columns scrolled since the last group: +1 per scroll step, -16 per group | `ResumeScript`, `ScrollStep` | `LevelStart`, `ResumeScript`, `ScrollStep` |
 | `$8020` | `ScriptBusy` | 1 | `$FF` while a group is being placed, 0 after it | `ResumeScript`, `ScriptStep` | `ResumeScript`, `ScriptStep`, `StartScript` |
-| `$8021` | `ScriptVariant` | 1 | The variant mask (high nibble) the group objects are tested with; `$F0` in block 2 | `DrawGroup`, `ScriptStep` | `ScriptReturn`, `ScriptStep` |
+| `$8021` | `ScriptVariant` | 1 | The variant mask (high nibble) the group objects are tested with; `$F0` in block 2 | `DrawGroup`, `ScriptStep` | `ScriptStep` |
 | `$8022` | `ScrollMap` | 2 | The scenery map position: cell = ScrollMap + 128 Y + X (`$B730` at the level start; SceneryCell `$99FF`) | `SceneryCell`, `ScrollStep` | `LevelSetUp`, `ScrollStep` |
 | `$8024` | `DrawQueueRead` | 1 | The sprite build queue's read index 0-7 (`$ACAD`) | `SpriteBuildNext`, `l_ACB0` | `LevelSetUp`, `SpriteBuildNext`, `l_ACB0` |
 | `$8025` | `DrawQueueWrite` | 1 | Its write index (QueueSpriteLoad `$9441`) | `QueueSpriteLoad`, `SpriteBuildNext`, `l_ACB0` | `LevelSetUp`, `QueueSpriteLoad` |
@@ -302,7 +302,7 @@ Written by `kit/refdocs.py`.
 | Address | Name | Bytes | What | Read by | Written by |
 | --- | --- | --- | --- | --- | --- |
 | `$B4A9` | `TuneSpare` | 4 | AND A; RET and two zeros no code reaches | - | - |
-| `$B4AD` | `TuneDuration` | 2 | the note length in loop passes: the high byte set by the `$C0`+ commands, the low byte 0 | `TitleTune`, `TuneNote` (code) | `TitleTune`, `TuneRead` (code) |
+| `$B4AD` | `TuneDuration` | 2 | the note length in loop passes: the high byte set by the `$C0`+ commands, the low byte 0 | `TitleTune` | `TitleTune` |
 
 ## icons
 

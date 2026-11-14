@@ -15,13 +15,9 @@
 ; Witness: L1 12491743 (c1o, deaths, rzx-r1, s1-idle, s1-right).
 DelayBC:
   DEC BC
-
-; DelayBCTest
 DelayBCTest:
   LD A,B
   OR C
-
-; DelayBCLoop
 DelayBCLoop:
   JR NZ,DelayBC
   RET

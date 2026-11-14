@@ -17,10 +17,7 @@
 ; cancel in pairs (XOR).
 MoveBalls:
   LD HL,BallList
-
-; MoveBallsLoop
-;
-; Used by the routine at BallDraw.
+; This entry point is used by the routine at BallDraw.
 MoveBallsLoop:
   LD E,(HL)               ; $FF: the end
   BIT 7,E
@@ -108,7 +105,7 @@ BallDraw:
   LD (HL),D
   DEC HL
   JR BallAdvance
-; This entry point is used by the routine at MoveBallsLoop.
+; This entry point is used by the routine at MoveBalls.
 BallNext:
   POP HL                  ; the next record (4 bytes)
 BallAdvance:

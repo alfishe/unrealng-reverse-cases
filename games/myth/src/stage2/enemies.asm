@@ -1534,8 +1534,6 @@ DrawNeckHigh:
   CP $00
   RET Z
   LD B,E
-
-; DrawNeckHighLoop
 DrawNeckHighLoop:
   PUSH BC
   LD A,(IX+$00)

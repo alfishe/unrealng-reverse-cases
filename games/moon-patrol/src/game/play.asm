@@ -397,10 +397,6 @@ RoadRoll:
   LD IX,FeedRoad
   LD C,$20
   LD HL,ScreenLineTable+$0140
-
-; RoadLine
-;
-; Used by the routine at RoadByteBits.
 RoadLine:
   LD E,(HL)               ; four bits from the feed byte
   INC HL
@@ -420,10 +416,6 @@ RoadLine:
   RLC (IX+$00)
   RLA
   LD B,$20
-
-; RoadByte
-;
-; Used by the routine at RoadByteBits.
 RoadByte:
   RRCA
   RRCA
@@ -433,8 +425,6 @@ RoadByte:
   RL (HL)
   RLA
   RL (HL)
-
-; RoadByteBits
 RoadByteBits:
   RLA
   RL (HL)

@@ -33,16 +33,11 @@ TitleTune:
   DI
   LD HL,TuneOrder         ; TuneOrder: 7 pattern pointers
   LD B,$07
-; This entry point is used by the routine at TunePass.
 TunePattern:
   LD E,(HL)               ; DE = the pattern
   INC HL
   LD D,(HL)
   INC HL
-
-; TuneByte
-;
-; Used by the routine at TunePass.
 TuneByte:
   EXX                     ; fire ends the tune
   CALL TitleFireCheck
@@ -80,8 +75,6 @@ TuneNote:
   LD DE,(TuneDuration)    ; DE = the length in passes
   LD H,B                  ; H, L: the two counters
   XOR A
-
-; TunePass
 TunePass:
   DEC H                   ; counter H: at 0 it reloads and toggles
   JR NZ,TuneCounterL
@@ -106,10 +99,8 @@ TuneMix:
   POP DE
   POP HL
   JR TuneByte
-; This entry point is used by the routine at TuneByte.
 TuneNextPattern:
   DJNZ TunePattern
-; This entry point is used by the routine at TuneByte.
 TuneEnd:
   EI
   RET

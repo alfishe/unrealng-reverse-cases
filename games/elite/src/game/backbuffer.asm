@@ -39,14 +39,10 @@ CopyThird:
   LD B,$08
 
 ; CopyThirdRow
-;
-; Used by the routine at CopyThirdLine.
 CopyThirdRow:
   PUSH DE
   LD C,$FF
   LD A,$04
-
-; CopyThirdLine
 CopyThirdLine:
   PUSH DE
   LDI
@@ -335,7 +331,7 @@ SetViewSetViewIndex:
 
 ; Save the dashboard's pixels to DashSave $C000 and its attributes to $5B00
 ;
-; Used by the routines at TitleLoad, TitleNext and SceneLaunch.
+; Used by the routines at Title and SceneLaunch.
 DashboardSave:
   PUSH AF
   CALL ScannerRestore

@@ -285,9 +285,6 @@ CreditsPage:
   LD C,$30
   CALL PrintBcd
   CALL TitleTune          ; the tune: back at fire or a key 1-5
-
-; l_B0C2
-l_B0C2:
   CALL MenuKeys
   CALL TitleFireCheck
   RET
