@@ -232,7 +232,7 @@ they run. Recording `rzx-00000`, TTD frames 858:0-889:0, 31 pictures. Made by `p
 **The point**: Matt is a state machine of twelve states, one routine each, and only state 1 reads all the controls.
 In the air, standing or dissolving, he does not turn.
 
-Witness: MattStep L1 13 095 (`c1`, `door`, `play2`, `rzx-` x9); the states seen in the samples: 1-9 and 11-12 in the
+Witness: MattStep L1 15 289 (`c1`, `cheat`, `door`, `door3`, `kind6`, `masks`, `play2`, `rzx-` x9); the states seen in the samples: 1-9 and 11-12 in the
 `rzx-` segments, 10 in `door` (frames 845-980).
 
 ## 10.3 Walking, steps, the crouch and the screen edges
@@ -324,7 +324,7 @@ Recording `rzx-00000`, TTD frames 852-894. Made by `python3 ../../kit/screen_ani
 **The point**: Matt climbs stairs by himself: a wall one character high is a step, not a wall. Only a wall at his
 head, body or legs stops him.
 
-Witness: MattWalk in every pass of state 1 (`c1`, `door`, `play2`, `rzx-` x9); LeftEdge L1 38, RightEdge L1 63; the
+Witness: MattWalk in every pass of state 1 (`c1`, `door`, `play2`, `rzx-` x9); LeftEdge L1 38, RightEdge L1 64; the
 `rzx-00000` samples of frames 2529-2551; state 4 at `rzx-00000` 2321.
 
 ## 10.4 The jump and the fall
@@ -427,7 +427,7 @@ model has no recording. Made by `python3 tools/fig_objects.py jump docs/img/game
 **The point**: the jump is a fixed arc of nine rising passes, steered only by the facing at the take-off. The moon
 changes two counters and nothing else.
 
-Witness: MattJumpRise and MattFall in every jump (`c1`, `door`, `play2`, `rzx-` x9); JumpEdges L1 685; FloorCheck L1
+Witness: MattJumpRise and MattFall in every jump (`c1`, `door`, `play2`, `rzx-` x9); JumpEdges L1 719; FloorCheck L1
 9905; the samples above; `rzx-28000` frames 289-328 for the moon.
 
 ## 10.5 Pods, room exits and the materialisation
@@ -508,8 +508,7 @@ docs/img/play/pod.gif`.
 **The point**: a pod costs nothing and takes one pass. The slow dissolve the player sees at the start belongs to the
 new game alone (and to the door warp, 10.15).
 
-Witness: Teleport L1 4 (`rzx-00000`, `rzx-04000`, `rzx-12000`, `rzx-20000`); PodStart L1 16 (`c1`, `door`, `play2`,
-`rzx-` x8); the `rzx-04000` samples of frames 2085-2240 and the `rzx-00000` samples of frames 2296-2321.
+Witness: Teleport L1 4 (`rzx-00000`, `rzx-04000`, `rzx-12000`, `rzx-20000`); PodStart L1 21 (`c1`, `cheat`, `door`, `door3`, `kind6`, `masks`, `play2`, `rzx-` x8); the `rzx-04000` samples of frames 2085-2240 and the `rzx-00000` samples of frames 2296-2321.
 
 ## 10.6 Energy and every source of damage
 
@@ -610,15 +609,15 @@ and the energy went from 245 to 243.
 ![The chaser takes Matt's energy in room 14: state 9 and the wait](img/play/energy-out.gif)
 
 How to read it: the screen every second frame. The chaser sweeps in, its touch empties the bar, Matt stands for 50
-passes, MISSION TERMINATED follows. Recording `rzx-32000`, TTD frames 640-800. Made by `python3
+passes; MISSION TERMINATED follows after the GIF. Recording `rzx-32000`, TTD frames 640-800. Made by `python3
 ../../kit/screen_anim.py --work work/docs/mxC/rzx-32000 --from 640 --to 800 --step 2 --delay 60 --hold 800
 docs/img/play/energy-out.gif`.
 
 **The point**: energy is a single budget for every hurt, and the HEALER is its only refill. The deadly floors and the
 moon floor ignore it: they kill at any energy.
 
-Witness: Damage L1 74 (`door`, `rzx-` x9); LavaDrain L1 51 (`rzx-12000`, `rzx-16000`, `rzx-20000`); DeadlyFloor and
-TakeBlockItem L1 12 990 each (every pass); MoonFloor L1 162 (`rzx-28000`); the samples of the frames in the table.
+Witness: Damage L1 133 (`door`, `door3`, `kind6`, `rzx-` x9); LavaDrain L1 51 (`rzx-12000`, `rzx-16000`, `rzx-20000`); DeadlyFloor and
+TakeBlockItem L1 15 178 each (every pass); MoonFloor L1 522 (`door3`, `rzx-28000`); the samples of the frames in the table.
 TakeBlockItem never found an item: no loss of 25 in any recording.
 
 ## 10.7 The masks: slots, charges, pick-ups and keys
@@ -745,8 +744,8 @@ tools/fig_objects.py masks docs/img/objects/masks.png`.
 **The point**: a mask is a slot with a kind, a BCD stock of 99 and a level. Four kinds are held, six are fired; two of
 the held ones do nothing at all.
 
-Witness: CheckPickupsDown L1 1230, CheckPickups L1 2460, FindEmptySlot L1 5 (`rzx-00000`, `rzx-16000`), UseCharge L1
-593, MaskKeys and FireMask L1 12 988 (every pass), MoonMasks L1 79; the slot bytes of the `rzx-04000` samples of
+Witness: CheckPickupsDown L1 1254, CheckPickups L1 2508, FindEmptySlot L1 5 (`rzx-00000`, `rzx-16000`), UseCharge L1
+649, MaskKeys and FireMask L1 15 176 (every pass), MoonMasks L1 86; the slot bytes of the `rzx-04000` samples of
 frames 2080 and 2085.
 
 ## 10.8 PENETRATOR: through the walls
@@ -754,7 +753,7 @@ frames 2080 and 2085.
 The PENETRATOR is held. On the first pass with fire held, Penetrator `$BE0E` sets PenetratorOn `$B3EA` and plays
 effect 7. Every pass it sets DissolveCount to 2 (Matt is drawn half dissolved) and takes (PassBcd AND 1) +
 PenetratorCost charges: one every second pass. PenetratorCost `$BE0D` is 0, except while the chaser is in the room:
-KindChaser sets it to 16 for the next pass.
+KindChaser sets it to `$10` (10 in BCD: UseCharge subtracts with `DAA`) every pass it runs while PenetratorOn.
 
 While PenetratorOn is set:
 
@@ -819,13 +818,16 @@ PENETRATOR slot `61 01 98 00` has 98 charges. Matt walks left and up the stairs 
 `$6E` to `$3C` by frame 2604, then the next screen at x `$AE` (frame 2622). The charges fall one each second pass:
 98 at 2517, 97 at 2523, 96 at 2530, ..., 82 at 2622.
 
-![Penetrator: PENETRATOR held, Matt walks through the wall, a charge every second pass](img/routines/Penetrator.gif)
+![Penetrator: PENETRATOR held, the pass that takes a charge](img/routines/Penetrator.gif)
 
 How to read it: the screen, the memory `$AF00-$AFFF` (the slots), and the code of FireMask, HeldMasks, Penetrator and
-MattStep as it runs. Recording `rzx-00000`, TTD frames 2515:0-2565:0, 50 pictures. Made by `python3
-../../kit/routine_anim.py --work work/docs/mxC/rzx-00000 --window 2515:0-2565:0 --listing build/game.lst --pc
-BCE0-BE3A,B3EB-BA92 --view screen --range AF00-AFFF --pictures 50 --delay 160 --title '...' --out
-docs/img/routines/Penetrator.gif`.
+UseCharge (and the PlayEffect it calls) as it runs, over one pass of `rzx-00000`: from FireMask at frame 2516:20782 to the return of UseCharge. This
+pass has PassBcd odd, so UseCharge takes 1 (A = 1 at `$B210`, 2516:21511); the next pass (2519:34012) passes 0. 40
+pictures of 25 T. Made from the kept trace of frames 2515-2565: `python3 tools/trace_cut.py
+work/docs/mxC/rzx-00000/traces/2515_0-2565_0.uatr --from 2516:20700 --to 2516:21700 --out
+work/docs/fixB/penetrator-2516.uatr`, then `python3 ../../kit/routine_anim.py --trace
+work/docs/fixB/penetrator-2516.uatr --listing build/game.lst --pc BCE0-BE3A,B210-B237,93DC-94C7 --view screen
+--range AF00-AFFF --pictures 40 --delay 160 --title '...' --out docs/img/routines/Penetrator.gif`.
 
 ![The PENETRATOR walk as the player saw it](img/play/penetrator.gif)
 
@@ -836,7 +838,7 @@ work/docs/mxC/rzx-00000 --from 2505 --to 2615 --step 2 --delay 60 --hold 800 doc
 **The point**: the PENETRATOR is a ghost mode: no walls, no touches, no block items. Its price is the risk at the
 end: let go inside a wall and the mission ends.
 
-Witness: EndPenetrator L1 1021 (`c1`, `door`, `rzx-` x8; most calls return at once); Penetrator in `rzx-00000`
+Witness: EndPenetrator L1 1143 (`c1`, `door`, `rzx-` x8; most calls return at once); Penetrator in `rzx-00000`
 frames 2517-2622; Explosion runs only in `masks` (PENETRATOR given by a POKE, fire released inside the hill at frame
 1249: Explosion L1 1, then GameOver).
 
@@ -901,18 +903,23 @@ flowchart TD
 ```
 
 The long jump is a flight: Matt rises 4 a pass with up, sinks 2 without, and keeps moving in his facing. Each fifth
-pass costs a charge. On the moon the cost is `$15`, 15 in BCD: a full mask lasts 33 passes of flight there.
+pass costs a charge, the first pass too (JackrabbitJump starts the counter at 4, `$B8E2`). On the moon the cost is
+`$15`, 15 in BCD: a full mask pays at passes 1, 6, ..., 31 (99, 84, 69, 54, 39, 24, 09, and the seventh charge
+empties the slot), so the flight lasts 31 passes there and Matt drops to state 1 at pass 32.
 
 Worked example: `rzx-12000`, room 4, frames 1297-1425. The JACKRABBIT slot had 98 charges at 1297 and 88 at 1425: ten
 charges, fifty passes of flight. Matt's y went up and down between `$50` and `$40` as the player tapped up. At frame
 1387 a turret's touch and its shots hit him in the air.
 
-![MattLongJump: JACKRABBIT, up held, a charge every 5 passes](img/routines/MattLongJump.gif)
+![MattLongJump: JACKRABBIT, the pass that takes a charge (one in 5)](img/routines/MattLongJump.gif)
 
-How to read it: the screen, the memory `$AF00-$AFFF` (the slots), and the code of MattLongJump and UseCharge as it
-runs. Recording `rzx-12000`, TTD frames 1297:0-1330:0, 33 pictures. Made by `python3 ../../kit/routine_anim.py --work
-work/docs/mxC/rzx-12000 --window 1297:0-1330:0 --listing build/game.lst --pc B8DE-B992,B210-B237 --view screen
---range AF00-AFFF --pictures 33 --delay 200 --title '...' --out docs/img/routines/MattLongJump.gif`.
+How to read it: the screen, the memory `$AF00-$AFFF` (the slots), and the code of MattLongJump, IsSolid and UseCharge as
+it runs, over the part of one pass of `rzx-12000` that runs state 7: frame 1298 from `$B8E7` (1298:43553), the pass whose
+counter reaches 5 and calls UseCharge (1298:43741); the next charges fall at 1311 and 1324. 40 pictures of 27 T. Made
+from the kept trace of frames 1297-1330: `python3 tools/trace_cut.py work/docs/mxC/rzx-12000/traces/1297_0-1330_0.uatr
+--from 1298:43540 --to 1298:44600 --out work/docs/fixB/longjump-1298.uatr`, then `python3 ../../kit/routine_anim.py
+--trace work/docs/fixB/longjump-1298.uatr --listing build/game.lst --pc B8DE-B99A,B210-B237 --view screen --range
+AF00-AFFF --pictures 40 --delay 160 --title '...' --out docs/img/routines/MattLongJump.gif`.
 
 ![The long jump as the player saw it](img/play/jackrabbit.gif)
 
@@ -1000,12 +1007,17 @@ Worked example: `rzx-12000`, room 12, frames 2090-2225. The LIFTER slot fell 99,
 8 charges each. Five walkers were lifted, each + 100 to the score: 8590 to 9090. A walker takes 10 hits from a
 weapon, but one LIFTER hit lifts it.
 
-![A LIFTER shot lifts a walker: kind 7 to 10, rising, score + 100](img/routines/FireMask-lifter.gif)
+![A LIFTER shot lifts a walker: kind 7 to 10, score + 100](img/routines/FireMask-lifter.gif)
 
-How to read it: the screen, the memory `$A400-$A5FF` (the objects) and the code of FireMask, KindTen and ShotHits as
-it runs. Recording `rzx-12000`, TTD frames 2098:0-2120:0, 33 pictures. Made by `python3 ../../kit/routine_anim.py
---work work/docs/mxC/rzx-12000 --window 2098:0-2120:0 --listing build/game.lst --pc BCE0-BDD0,C6B8-C6F1,BC96-BCDF
---view screen --range A400-A5FF --pictures 33 --delay 200 --title '...' --out docs/img/routines/FireMask-lifter.gif`.
+How to read it: the screen, the memory `$A400-$A5FF` (the objects) and the code of RunObjects, ShotHits, KindWalker,
+ObjectShot, AddScore and FireMask as it runs, over the pass of `rzx-12000` in which the LIFTER shot (fired at frame
+2099, UseCharge at 2099:4852) reaches a walker: ShotHits sets its +`$22` at 2117:22865, KindWalker jumps to
+ObjectShot at 2117:23202 (kind 10, score + 100), then FireMask (2117:25829, fire not held). 40 pictures of 83 T. Made
+from the kept trace of frames 2098-2120: `python3 tools/trace_cut.py work/docs/mxC/rzx-12000/traces/2098_0-2120_0.uatr
+--from 2117:22600 --to 2117:25900 --out work/docs/fixB/lifter-2117.uatr`, then `python3 ../../kit/routine_anim.py
+--trace work/docs/fixB/lifter-2117.uatr --listing build/game.lst --pc
+C284-C374,BC96-BCDF,C5D9-C64D,C6B8-C6F1,BF2B-BFB0,BCE0-BDD0,AE45-AE5F --view screen --range A400-A5FF --pictures 40
+--delay 200 --title '...' --out docs/img/routines/FireMask-lifter.gif`.
 
 ![The LIFTER at work as the player saw it](img/play/lifter.gif)
 
@@ -1014,9 +1026,10 @@ How to read it: the screen every second frame. Matt fires; each walker hit float
 2084 --to 2222 --step 2 --delay 60 --hold 800 docs/img/play/lifter.gif`.
 
 **The point**: one shot on screen at a time, power from the slot's level. The LIFTER costs eight times more and
-removes anything in one hit.
+lifts in one hit every kind that tests +`$22` (faller, flyer, turret shot, wave, walker, riser, boss shot, kinds 11
+and 18); the guard only after ten hits; never the turret, the chaser or the boss.
 
-Witness: FireMask L1 12 988; ShotOff L1 79; MoveShot L1 12 990; the LIFTER slot and the score in the `rzx-12000`
+Witness: FireMask L1 15 176; ShotOff L1 86; MoveShot L1 15 178; the LIFTER slot and the score in the `rzx-12000`
 samples of frames 2090-2225; `work/docs/mxC/jrshot.py` counts the shots per mask kind in every recording.
 
 ## 10.11 HEALER, ULTRA FLASH and MIRAGE
@@ -1085,7 +1098,7 @@ for the HEALER, Matt's x for the PENETRATOR, his y for the JACKRABBIT, the score
 `work/docs/mxC/*/vars.jsonl`. Made by `python3 tools/fig_objects.py charges docs/img/gameplay/charges.png`.
 
 **The point**: the HEALER turns charges into energy at 2 a charge, and stops paying when the bar is full. ULTRA
-FLASH and MIRAGE are named, drawn and placed in the map, and do nothing.
+FLASH and MIRAGE are named and drawn, never placed in the map, and do nothing.
 
 Witness: HeldMasks in `rzx-16000` frames 271-418; the ULTRA FLASH and MIRAGE `RET`s at `$BE39` and `$BE3A`; MaskEffect
 `$B239` has no caller (known only from the code). No play holds an ULTRA FLASH or a MIRAGE (no PickupTable record
@@ -1213,8 +1226,7 @@ work/docs/mxB/r28 --from 330 --to 1060 --step 5 --keys tests/inputs/rzx-28000.tx
 **The point**: every end goes through GameOver, the only place the high score is kept. A new game restores the map
 (turrets and items return) and keeps the passwords.
 
-Witness: Death L1 6 (`rzx-04000`, `rzx-24000`, `rzx-28000`, `rzx-32000`); SlowPrint L1 14; NewGame L1 16 (`c1`,
-`door`, `play2`, `rzx-` x8); the `rzx-04000` samples of frames 1550-1611 and 2080-2090.
+Witness: Death L1 6 (`rzx-04000`, `rzx-24000`, `rzx-28000`, `rzx-32000`); SlowPrint L1 17; NewGame L1 21 (`c1`, `cheat`, `door`, `door3`, `kind6`, `masks`, `play2`, `rzx-` x8); the `rzx-04000` samples of frames 1550-1611 and 2080-2090.
 
 ## 10.13 Enemies and hazards, as rules
 
@@ -1226,7 +1238,7 @@ it hurts, how it dies and what it pays. The numbers are the templates' (EnemyTem
 | faller | 1 | touch | 10 | 1 | 33 | bursts on the touch too |
 | flyer | 2 | touch | 50 | 1 | 200 | homes on Matt's height |
 | turret | 4 | touch, its shot | 100 | 5 | 0 | the score is lost (10.18) |
-| turret shot | 5 | touch | 10 | 1 | 10 | harmless once its turret dies |
+| turret shot | 5 | touch | 10 | 1 | 10 | harmless once its turret dies, or when it was fired into the second slot |
 | wave flyer | 6 | touch | 50 | 1 | 150 | effect 6 at each swoop |
 | walker | 7 | touch, again and again | 3 | 10 | 100 | the fifth touch kills it |
 | chaser | 8 | touch | 255 | 30 | 5000 | sweeps the room for `$300` passes |
@@ -1280,7 +1292,8 @@ flowchart TD
     BURST -- "faller, flyer, wave, riser" --> KS
     BURST -- "chaser, boss" --> GONE["AwardScore, kind 17"]
     BURST -- "walker" --> WK["one touch of five"]
-    BURST -- "turret, shots" --> STAY["stays"]
+    BURST -- "turret" --> TX["Explode, 0 points"]
+    BURST -- "turret shot" --> VAN["its slot back to $40, gone"]
 ```
 
 Worked example: the turret's touch in `rzx-20000`. Matt walked right in room 3, screen 0 with 21 energy. At frame 1842 he
@@ -1296,14 +1309,14 @@ docs/img/objects/templates.png`.
 **The point**: two numbers rule each enemy for the player: its damage and its hits. The chaser and the boss kill on
 contact; every other enemy is a matter of the energy left.
 
-Witness: TouchesMatt L1 10 278 (`door`, `rzx-` x9); Damage L1 74; the deaths of 10.6; the `rzx-20000` samples of
+Witness: TouchesMatt L1 12 174 (`door`, `door3`, `kind6`, `rzx-` x9); Damage L1 133; the deaths of 10.6; the `rzx-20000` samples of
 frames 1840-1849.
 
 ## 10.14 Collisions and the score
 
 Two tests decide every collision; both are in RunObjects ([doc 7, 7.9](07-objects.md#79-runobjects-the-shot-test-and-the-touch-test)).
 ShotHits compares the shot's point with the object's box. TouchesMatt compares Matt's box with the object's box:
-the object's width x 4 and height x 8, with a margin of 4 on x and 28 on y on the other side. It answers "no touch"
+the object's width x 4 and height x 8, with a margin of 10 on x and 28 on y on the other side. It answers "no touch"
 whenever PenetratorOn is set.
 
 The score `$AE41` is eight BCD digits in four bytes. AddScore `$AE45` adds a two-byte BCD value (the template's +0
@@ -1367,7 +1380,7 @@ frames 978-1010. Made by `python3 ../../kit/screen_anim.py --work work/docs/mxC/
 **The point**: a kill and a touch pay the same points, so a strong touch is a trade: energy for score. Only the turret
 pays nothing either way.
 
-Witness: AwardScore L1 78 (`rzx-` x9); AddScore the same; ShotHits in every pass with a shot; the `rzx-00000`
+Witness: AwardScore L1 84 (`kind6`, `rzx-` x9); AddScore the same; ShotHits in every pass with a shot; the `rzx-00000`
 samples of frames 990-996; the score steps of `rzx-08000` 1240 and `rzx-32000` 657.
 
 ## 10.15 The passwords and the door warp
@@ -1467,12 +1480,16 @@ crouched at x `$5C`, `$60` and `$64`: no door there had the rim `$1C` under his 
 the warp: state 10 at frame 845, DissolveCount 1, then 2 at frame 852, 3 at 895 and 4 at 939. At frame 981 Matt stood
 (state 8) in room 3, screen 0, at x `$42`.
 
-![PasswordWarp: down on a lit door, state 10, the dissolve, room 3](img/routines/PasswordWarp.gif)
+![PasswordWarp: state 10, the pass that raises DissolveCount](img/routines/PasswordWarp.gif)
 
-How to read it: the screen, the memory `$9F60-$9F80` (the flags and the password buffer) and the code of StartWarp,
-PasswordWarp and its door-3 bonus. Recording `door`, TTD frames 843:0-900:0, 38 pictures. Made by `python3
-../../kit/routine_anim.py --work work/docs/mxC/door --window 843:0-900:0 --listing build/game.lst --pc B9C5-BA67
---view screen --range 9F60-9F80 --pictures 38 --delay 180 --title '...' --out docs/img/routines/PasswordWarp.gif`.
+How to read it: the screen, the memory `$A200-$A4FF` (DissolveCount `$A2CF`, Matt's record `$A43F` with the counter
+at `$A44F`) and the code of PasswordWarp as it runs, in the pass of the `door` recording whose counter's low four bits
+reach 0: frame 851 from `$B9D8` (851:58308), `INC (HL)` raises DissolveCount from 1 to 2 (drawn from frame 852). The
+other warp passes run the same first six instructions without the `INC`. 14 pictures of 10 T. Made from the kept
+trace of frames 843-900: `python3 tools/trace_cut.py work/docs/mxC/door/traces/843_0-900_0.uatr --from 851:58280 --to
+851:58420 --out work/docs/fixB/warp-851.uatr`, then `python3 ../../kit/routine_anim.py --trace
+work/docs/fixB/warp-851.uatr --listing build/game.lst --pc B9C5-BA67 --view screen --range A200-A4FF --pictures 14
+--delay 400 --title '...' --out docs/img/routines/PasswordWarp.gif`.
 
 ![The door warp as the player saw it](img/play/door-warp.gif)
 
@@ -1483,8 +1500,8 @@ Recording `door`, TTD frames 700-1000. Made by `python3 ../../kit/screen_anim.py
 **The point**: the passwords are shortcuts, not saves. Each one opens a door from the start room to a later room; the
 last one also hands Matt a LIFTER and a stronger BACKLASH.
 
-Witness: StartWarp L1 1 and PasswordWarp L1 50 (`door`); EnterPassword L1 4 (`play2`); PasswordPods L1 16; RoomMessage
-L1 79; the `door` samples of frames 845-981 (door 1, room 3). Door 3's bonus: WarpBonus `$BA21`, FindLifterSlot
+Witness: StartWarp L1 2 and PasswordWarp L1 100 (`door`, `door3`); EnterPassword L1 5 (`cheat`, `play2`); PasswordPods L1 21;
+RoomMessage L1 86; the `door` samples of frames 845-981 (door 1, room 3). Door 3's bonus: WarpBonus `$BA21`, FindLifterSlot
 `$BA3E` and ShowLifterName `$BA60` L1 1 each in `door3` (frame 969, the flags POKEd, x `$A0` up), then room 7 with a
 LIFTER in slot 0.
 
@@ -1653,7 +1670,7 @@ flowchart TD
     B2["the ending keeps no high score"] --> S2["Ending jumps to GameStart"]
     B3["NewGame makes new turrets"] --> S3["native $2B in rooms 5 and 6"]
     B4["a full hand loses the current mask"] --> S4["FindEmptySlot falls back to the current slot"]
-    B5["the dead turret's shot is harmless"] --> S5["KindTurretShot checks the slot before it"]
+    B5["a dead turret's shot, or one in slot+2, is harmless"] --> S5["KindTurretShot checks the slot before it"]
     B6["MaskEffect never called"] --> S6["ULTRA FLASH and MIRAGE do nothing"]
 ```
 
@@ -1666,8 +1683,9 @@ flowchart TD
   `rzx-16000` meets one in room 6, screen 2 at frame 3194.
 - **A full hand loses the current mask.** With four masks, CheckPickups writes the new one over the current slot.
   `rzx-16000` frame 49: a BLASTER became a HEALER.
-- **The dead turret's shot is harmless.** KindTurretShot does its Damage only when the slot before it is still a
-  turret.
+- **The dead turret's shot is harmless, and so is a shot in the second slot.** KindTurretShot does its Damage only
+  when the slot before it is still a turret (kind 4, `$C541`); for a shot fired into slot+2 the slot before it is the
+  first shot or its `$40`, so that shot never hurts Matt.
 - **Two masks do nothing.** ULTRA FLASH and MIRAGE are `RET`s, and MaskEffect `$B239`, which would give them an effect,
   has no caller.
 - **Four masks cannot be had.** ULTRA FLASH, MIRAGE, LAVA SHOT (the strongest shot, power 6) and STREAMER are in no
@@ -1678,9 +1696,9 @@ flowchart TD
 - **The block item test has no lower bound on y.** TakeBlockItem tests Matt's y + 20 against the item's y only one
   way, so an item could be taken from far below it. No recording took an item at all.
 - **The PENETRATOR's death is out of sight.** EndPenetrator inside a wall kills with Explosion and GameOver, with no
-  warning; it is the only death that bypasses Death.
-- **The chaser's PENETRATOR tax.** KindChaser sets PenetratorCost to 16 each pass while the PENETRATOR is on: with the
-  chaser in the room, a PENETRATOR pass costs 16 or 17 charges.
+  warning; it is the only death with no warning and no sinking.
+- **The chaser's PENETRATOR tax.** KindChaser sets PenetratorCost to `$10` each pass while the PENETRATOR is on: with
+  the chaser in the room, a PENETRATOR pass costs 10 or 11 charges (BCD).
 - **The fall out of the play area is unreachable in the run.** DeathFlag from y + `$30` at least `$A0` never fired;
   every DeathFlag death was a floor.
 
@@ -1710,7 +1728,8 @@ flowchart LR
 - **A ghost mode.** The PENETRATOR switches off walls, touches and block items at once, for a charge every second
   pass. Ending it inside a wall is the game's only instant, unwarned death.
 - **Paid flight.** The JACKRABBIT's long jump flies freely while charges last; it costs fifteen times more on the moon.
-- **One-hit lifting.** The LIFTER's shot removes any enemy it reaches, guards included, for eight charges.
+- **One-hit lifting.** The LIFTER's shot lifts in one hit the kinds that test +`$22` (faller, flyer, walker, riser,
+  wave, the shots), for eight charges; the guard after ten hits; never the turret, the chaser or the boss.
 - **Gravity per zone.** The moon slows both the rise and the fall by skipping steps of v; the same code serves both.
 - **Stairs without code.** A one-character wall at the feet is a step: Matt climbs it in two passes of state 2.
 - **Passwords as doors.** The four passwords open doors in the start room; the last one also hands out a LIFTER.

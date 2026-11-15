@@ -1049,7 +1049,8 @@ l_BA86:
   LD (DissolveCount),A
   RET
 
-; Zone 1: 2 energy a step
+; Zone 1: 2 energy when Matt's head hits a solid character in a jump
+; (MattJumpRise $B83E, JackrabbitJump $B91C / $B925)
 ;
 ; Witness: L1 51 (rzx-12000, rzx-16000, rzx-20000).
 LavaDrain:

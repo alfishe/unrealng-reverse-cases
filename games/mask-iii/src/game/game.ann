@@ -157,7 +157,7 @@ $96BE c CharGlyph ; HL = the 5-byte glyph of character A (letters, digits, '.', 
 > Witness: L1 40146 (c1, cheat, door, door3, kind6, masks, play2, rzx- x10).
 $970D b NotInPlay ; $FF in the menu and the death sequence: no scroller, no BREAK, the menu tune loops
 $970E MenuFlag ; non-zero: Interrupt runs MenuInterrupt instead of CheatCheck
-$9710 HudSaved ; non-zero once SaveHud has kept the play screen's panel
+$9710 HudSaved ; $FF as loaded: the first Menu skips SaveHud (PlayPanel $F600 still holds the loaded panel); Menu then sets 0, so every later Menu copies the screen's panel back to $F600 (BuildTables overwrote it)
 $9711 MenuColours ; 16 colours for the menu's lit icon and bars
 $9721 MenuColourCount ; the colour cycle's step
 @module menu ; The menu, the controls, DEFINE KEYS, the password
@@ -270,7 +270,7 @@ $A3E2 FrameByMode ; the frame offset: animation x the mode's frame size (self-mo
 $A3EE b FrameJumpSpare ; Four unused bytes of the mode jump table
 $A3F4 b FrameMode3Jump ; JR $A3FE (mode 3), never taken
 $A43F b Objects 38 ; The 8 objects of $26 bytes: Matt, Matt's shot $A465, the six others from $A48B
-> Fields: +0 kind (bit 7 placed, bit 6 dying), +2 direction (bit 7 left), +3 x (2 pixels a unit, column (x - $40) / 4), +4 y, +5 width and +6 height in characters, +9/+A buffer, +B first character, +C/+D frame, +E/+F save pointer, +10-+12 timers, +14/+15 the score it gives (BCD), +16/+17 the sprite base, +18 animation step, +19 mode (frame size), +1A animation mask, +1B dx, +1C dy, +1E damage to the energy, +1F once-a-room flag, +20 colour, +21 hits left, +22 hit by Matt's shot. Witness: read and written every pass (c1).
+> Fields: +0 kind (bit 7 placed; bit 6 only in the $40 reservation after a turret, which DrawObjects and ShotHits skip with AND $BF), +2 direction (bit 7 left), +3 x (2 pixels a unit, column (x - $40) / 4), +4 y, +5 width and +6 height in characters, +9/+A buffer, +B first character, +C/+D frame, +E/+F save pointer, +10-+12 timers, +14/+15 the score it gives (BCD), +16/+17 the sprite base, +18 animation step, +19 mode (frame size), +1A animation mask, +1B dx, +1C dy, +1E damage to the energy, +1F once-a-room flag, +20 colour, +21 hits left, +22 hit by Matt's shot. Witness: read and written every pass (c1).
 $A465 MattShot ; object 1: Matt's shot
 $A48B Enemies ; objects 2-7; as loaded and in room 0: state $80, x 1, y 0, w = h = 2, mode 0, frame $0000: drawn every pass off screen, about 12 300 T each
 $A56F c DrawObject ; Draw object IX as fresh characters from $E800: copy backgrounds, mask, mirror, shift, OR in
@@ -288,7 +288,7 @@ $A860 c BuildTables ; Build the dilate table $F700, the shift tables $F800-$FDFF
 @module rooms
 $A89A b MapPointer ; RoomMaps + 240 x room + RoomScreen: the screen's first block
 $A89D c DrawRoom ; Draw the screen RoomScreen of room RoomNumber and set up its objects, pick-ups and message
-> Room 15 at screen 5 is the end: Ending $ADF6. Clears objects 2-7, expands the 8 x 5 blocks into the character map, SwapZone, marks every cell dirty and flushes, sets EnemyKind $BFB0 from RoomTable byte 6 + screen, then MoonMasks $ADD2, AnimatedCharList $AB6B, FindLift $AA75, PlaceTurrets $AC42, FindFloorRow $AC80, FindSpawnPoints $ACA0, FindBlockItems $ACEA, PlacePickupsInScreen $A9BE and RoomMessage $AD28.
+> Room 15 at screen 5 is the end: Ending $ADF6. Clears objects 2-7 (3-7 while the chaser lives), expands the 8 x 5 blocks into the character map, SwapZone, marks every cell dirty and flushes, sets EnemyKind $BFB0 from RoomTable byte 6 + screen, then MoonMasks $ADD2, AnimatedCharList $AB6B, FindLift $AA75, PlaceTurrets $AC42, FindSpawnPoints $ACA0, FindBlockItems $ACEA, FindFloorRow $AC80, PlacePickupsInScreen $A9BE, EffectStops+1 = $FF and RoomMessage $AD28. Before the blocks: a new room (RoomNumber not MapPointer+2) clears ChaserState, ShotOff $BD7F ends Matt's shot, and with ChaserState set only objects 3-7 are cleared (the chaser survives a screen change).
 > Witness: L1 87 (c1, cheat, door, door3, kind6, masks, play2, rzx- x9).
 $A9BE c PlacePickupsInScreen ; Make the icons of this screen's untaken masks (PickupTable) as characters
 > Witness: L1 86 (c1, cheat, door, door3, kind6, masks, play2, rzx- x9).
@@ -307,7 +307,7 @@ $ABFD c FindBlock ; B, C = the place of the first block A in the screen's map
 > Witness: L1 258 (c1, cheat, door, door3, kind6, masks, play2, rzx- x9).
 $AC2F c FindNextBlock ; The next one
 > Witness: L1 19 (door, rzx- x7).
-$AC42 c PlaceTurrets ; Every block $12 of the screen becomes a turret object (kind 4)
+$AC42 c PlaceTurrets ; Every block $12 of the screen becomes a turret object (kind 4, template 2: animation 3, so it bobs at once), the next slot reserved ($40); the SUB $02 at $AC55 is dead (LD A,C follows), so y is the block's row
 > Witness: L1 86 (c1, cheat, door, door3, kind6, masks, play2, rzx- x9).
 $AC7F b FloorRow ; the first character row with a solid attribute
 $AC80 c FindFloorRow ; FloorRow from the attributes (bit 7)
@@ -362,7 +362,7 @@ $AF46 MaskColours ; the icon colour per kind
 $AF51 CurrentSlot ; the MaskSlots slot in use
 $AF53 c DrawCurrentSlot ; Blink the slot in use and redraw its charges
 > Witness: L1 15390 (c1, cheat, door, door3, kind6, masks, play2, rzx- x9).
-$AF6B c PrintBcd ; Print the BCD bytes at HL
+$AF6B c PrintBcd ; Print the BCD bytes at HL; its only caller is the menu's HISCORE ($9D35), the score in play is DrawScore $AE60
 > Witness: L1 15546 (c1, cheat, door, door3, kind6, masks, play2, rzx- x10).
 $AF74 c PrintBcdByte ; Two digits
 > Witness: L1 31091 (c1, cheat, door, door3, kind6, masks, play2, rzx- x10).
@@ -472,7 +472,7 @@ $BA60 c ShowLifterName ; ShowMaskName(LIFTER), keeping AF
 $BA68 c PodStart ; State 11: the materialisation at a new game (effect 9), then the dissolve
 > Witness: L1 21 (c1, cheat, door, door3, kind6, masks, play2, rzx- x8).
 $BA7B MattPodDissolve ; state 12
-$BA93 c LavaDrain ; Zone 1: 2 energy a step
+$BA93 c LavaDrain ; Zone 1: 2 energy when Matt's head hits a solid character in a jump (MattJumpRise $B83E, JackrabbitJump $B91C / $B925)
 > Witness: L1 51 (rzx-12000, rzx-16000, rzx-20000).
 $BAA7 b Dying ; non-zero while Matt dies
 $BAA8 c Death ; Matt sinks for 32 passes, effect 8, then GameOver
@@ -506,7 +506,7 @@ $BD84 c MoveShot ; Matt's shot: x + dx; gone off $38-$C3 or in a wall
 $BDA4 HeldMasks ; kinds 1-4
 $BDD1 c EndPenetrator ; Fire released after PENETRATOR: Matt inside a wall dies (Explosion, GameOver)
 > Witness: L1 1143 (c1, door, door3, masks, rzx- x8).
-$BE0D b PenetratorCost ; Extra charges of the next PENETRATOR step: KindChaser $C68E sets 16 while PenetratorOn
+$BE0D b PenetratorCost ; Extra charges of the next PENETRATOR step: KindChaser $C68E sets $10 (BCD, 10 charges) every pass it runs while PenetratorOn; Penetrator $BE23 adds it to (PassBcd AND 1) and clears it
 $BE0E Penetrator ; kind 1 held
 $BE39 UltraFlash ; RET: ULTRA FLASH does nothing when fired
 $BE3A Mirage ; RET: MIRAGE does nothing when fired
@@ -516,7 +516,7 @@ $BE3B b EnemyTemplates 12 ; 20 records of 12 bytes: score (BCD word), picture, d
 $BF2B c Spawn ; An empty object gets the screen's enemy kind (EnemyKind), every pass for kinds 5, 6, 8-10, else at random
 > Witness: L1 91061 (c1, cheat, door, door3, kind6, masks, play2, rzx- x9).
 $BF64 SpawnNothing ; mark the slot used, 2 x 2, kind none
-$BF7F ReviveObjects ; all six slots empty: object 2 back as a placeholder
+$BF7F ReviveObjects ; all six slots 0 ($40 and $80 count as taken): object 2 back as a placeholder $80, 4 x 5 at x 1, y 0, mode 6
 $BFB0 b EnemyKind ; The screen's enemy kind (RoomTable bytes 6-11)
 $BFB1 SpawnJumps ; RET for kind 0, then JP the spawner of kinds 1-10
 $BFB2 b SpawnJumpPad ; Two bytes after kind 0's RET
@@ -529,8 +529,8 @@ $BFCF c SpawnJump10 ; JP SpawnKind10 $C1F3 (room 7, screens 2 and 3)
 $BFD2 SpawnFlyer ; kind 1: a flyer from the right that homes on Matt's height (object kind 2)
 $BFF5 c SetupObject ; Copy the 12-byte template at HL into object IX
 > Witness: L1 634 (door, door3, kind6, rzx- x9).
-$C04B SpawnFaller ; kind 2: from the top (object kind 1)
-$C07E SpawnWave ; kind 3: a flyer on a wave (object kind 6)
+$C04B SpawnFaller ; kind 2: from the top (object kind 1); dy = (x AND 3) + 2 (2-5), dx = Random AND 3 but not 2 (0, 1 or 3: right or straight)
+$C07E SpawnWave ; kind 3: a flyer on a wave (object kind 6), when Random AND $44 = 0 and Matt's x < $91
 $C0A6 SpawnWalker ; kind 4: once a screen, a walker on FloorRow (object kind 7)
 $C0D6 b ChaserState ; one chaser at a time, and its timer ($0300)
 $C0D9 SpawnChaser ; kind 5: the chaser (object kind 8)
@@ -570,10 +570,10 @@ $C3A6 KindFlyer ; 2
 $C3F1 KindExplosion ; 3
 $C401 c HitsWall ; Carry when the object's corners touch a solid character
 > Witness: L1 12137 (c1, cheat, door3, kind6, masks, rzx- x9).
-$C457 KindTurret ; 4: bobs, now and then fires a turret shot (kind 5); killed, Explode runs before AwardScore, so the explosion template's score 0 is added: a turret never scores
+$C457 KindTurret ; 4: bobs, now and then fires a turret shot (kind 5) into slot+1 ($40) or a free slot+2 (AND $3F = 0), then rises again for 6 passes (its animation reset to 0); killed, Explode runs before AwardScore, so the explosion template's score 0 is added: a turret never scores
 $C503 c ObjectCell ; HL = the character map place of object IX
 > Witness: L1 1891 (door, rzx- x7).
-$C521 KindTurretShot ; 5: damages Matt only while the slot before it holds a turret: the shot of a dead turret is harmless
+$C521 KindTurretShot ; 5: damages Matt only while the slot before it holds a turret (kind 4): the shot of a dead turret is harmless, and so is a shot KindTurret put into slot+2 (the slot before it is the first shot or its $40); such a shot ends as 0, not $40
 $C562 KindWave ; 6, its heights WaveHeights $C5B5
 $C5B5 b WaveHeights ; 18 heights and 18 animation steps of the wave
 $C5D9 KindWalker ; 7
@@ -601,7 +601,7 @@ $C980 c KindEighteen ; Kinds 18 and 19 (SpawnKind10's group)
 > Run only in work/stage2/rec/door3 (an EnemyKind POKE), frames 1478-1968.
 > Witness: L1 167 (door3).
 @module renderer
-$C9EA c Twinkle ; Eight bits of the characters at $E710 ($E728 in zone 3) switched on and off in turn (TwinkleSteps)
+$C9EA c Twinkle ; One line in each of 8 characters from $E710 (chars $E2-$E9; from $E728, chars $E5-$EC, in zone 3) set to $FF or 0 in turn (TwinkleSteps)
 > Witness: L1 15361 (c1, cheat, door, door3, kind6, masks, play2, rzx- x9).
 $CA35 b TwinkleSteps ; The eight steps' states
 $CA3D c AnimateLift ; Zone 0: move the lift (characters $69 / $6B) up and down its shaft

@@ -52,12 +52,12 @@ The rules keep their state in fixed bytes spread over the code. These are the on
 | PickupRecords | `$AF1B` | the screen's two pick-ups: y, x, kind, char address, PickupTable address, first char |
 | Score | `$AE41` | 8 BCD digits |
 | Energy | `$AEA6` | 255 full, 0 the end |
-| MaskSlots | `$AF2B` | 4 slots of 4 bytes: colour, kind, BCD charges, level |
+| MaskSlots | `$AF2B` | 4 slots of 4 bytes: HUD column (the low byte of the icon's screen address), kind, BCD charges, level |
 | CurrentSlot | `$AF51` | the address of the slot in use |
 | PassCounter, PassBcd | `$AF0C`, `$CC5C` | the passes of the main loop, binary and BCD |
 | PenetratorOn | `$B3EA` | `$FF` while the PENETRATOR is held |
 | PenetratorCost | `$BE0D` | extra charges of the next PENETRATOR step (the chaser sets `$10`) |
-| DissolveCount | `$A2CF` | Matt's dissolve: 1 or 2 while he fades, 4 when he appears |
+| DissolveCount | `$A2CF` | Matt's dissolve: 1 (energy out), 1 -> 4 through a password-door warp, 2 with PENETRATOR, 4 -> 1 as he appears from a pod |
 | DeathFlag, Dying | `$B2F8`, `$BAA7` | die this pass; Matt is dying (no fire, no damage) |
 | ZoneSlots | `$A194` | the live zone (0-3), then the parked ones |
 | Controls | `$A138` | bits 0 right, 1 left, 2 down, 3 up, 4 fire |
@@ -202,8 +202,8 @@ flowchart TD
 Worked example: room 0's record at `$953B` is `FF FF 0A FF 00 44 00 02 00 02 08 00`. Bytes 0 and 1 are `$FF`: walls at
 both ends. Byte 2 is `$0A`: the pod leads to room 10. Byte 4 is 0: the surface. Byte 5 is `$44`: in room 10, x =
 (`$44` AND `$1F`) x 4 + `$40` = `$50`, screen = `$44` >> 5 = 2. Bytes 6-11 give the enemy kinds of the six screens: none,
-fallers, none, fallers, guards, none. In `rzx-00000` Matt took the pod at frame 2300 and stood in room `$0A` at screen
-`$10` (screen 2), x `$50`, at frame 2312.
+fallers, none, fallers, guards, none. In `rzx-00000` Matt pressed down on the pod after frame 2300 and stood in room `$0A` at
+screen `$10` (screen 2), x `$50`, at frame 2312.
 
 ![The world as data: 16 rooms of six screens, their enemy kinds, exits and pick-ups](img/objects/world.png)
 
@@ -215,8 +215,8 @@ docs/img/objects/world.png`.
 **The point**: the whole world is 16 x 12 bytes of table plus 16 x 240 bytes of map. The enemy kind is chosen per
 screen, not per place: a screen spawns one kind only.
 
-Witness: RoomTable read by DrawRoom (L1 80, `c1`, `door`, `play2`, `rzx-` x9), LeftEdge (L1 38), RightEdge (L1 63) and
-Teleport (L1 4, `rzx-00000`, `rzx-04000`, `rzx-12000`, `rzx-20000`); the `rzx-00000` samples of frames 2300-2312.
+Witness: RoomTable read by DrawRoom (L1 87, `c1`, `cheat`, `door`, `door3`, `kind6`, `masks`, `play2`, `rzx-` x9), LeftEdge (L1 38),
+RightEdge (L1 64) and Teleport (L1 4, `rzx-00000`, `rzx-04000`, `rzx-12000`, `rzx-20000`); the `rzx-00000` samples of frames 2300-2312.
 
 ## 7.3 The map and the blocks: a room decoded
 
@@ -304,15 +304,17 @@ the build. Made by `python3 tools/fig_objects.py room-decode docs/img/objects/ro
 ![DrawRoom expands a screen's blocks into the character map](img/routines/DrawRoom-decode.gif)
 
 How to read it: the character map `$F080` (32 x 20) as hex, filling block by block, and on the right the code. The
-memory shown is room 10's map `$7F60-$804F`. Recording `rzx-00000`, TTD frames 2311:0-2313:0: the pod's arrival in
-room 10. Made by `python3 ../../kit/routine_anim.py --work work/docs/mxC/rzx-00000 --window 2311:0-2313:0 --listing
-build/game.lst --pc A919-A96F --view buffer:F080:32x20:hex --range 7F60-804F --out
+memory shown is room 10's map `$7F60-$804F`. Recording `rzx-00000`, the pod's arrival in room 10: the decode loop from
+2311:18941 to 2311:38022, 90 pictures. Made from the kept trace of frames 2309-2314: `python3 tools/trace_cut.py
+work/docs/mxC/rzx-00000/traces/2309_0-2314_0.uatr --from 2311:18900 --to 2311:38030 --out
+work/docs/fixB/decode-2311.uatr`, then `python3 ../../kit/routine_anim.py --trace work/docs/fixB/decode-2311.uatr
+--listing build/game.lst --pc A919-A96F --view buffer:F080:32x20:hex --range 7F60-804F --title '...' --out
 docs/img/routines/DrawRoom-decode.gif`.
 
 **The point**: two lookups make a screen: map byte to block, block to 16 characters. One bit in the attribute table
 makes the walls, so the collision map costs nothing beyond the picture.
 
-Witness: DrawRoom L1 80 (`c1`, `door`, `play2`, `rzx-` x9); IsSolid read by MattStep, HitsWall and MoveShot; the
+Witness: DrawRoom L1 87 (`c1`, `cheat`, `door`, `door3`, `kind6`, `masks`, `play2`, `rzx-` x9); IsSolid read by MattStep, HitsWall and MoveShot; the
 `rzx-00000` trace of frames 2311-2313; `tools/roommap.py` draws every room from the same bytes.
 
 ## 7.4 The exits: edges, screens and pods
@@ -391,14 +393,17 @@ work/docs/mxC/rzx-00000 --from 2290 --to 2330 --step 1 --delay 60 --hold 800 doc
 ![Teleport and DrawRoom at the pod](img/routines/Teleport.gif)
 
 How to read it: the screen, and on the right the code as it runs: MattWalk sees the pod, Teleport reads the record,
-DrawRoom expands the new screen. Recording `rzx-00000`, TTD frames 2309:0-2314:0. Made by `python3
-../../kit/routine_anim.py --work work/docs/mxC/rzx-00000 --window 2309:0-2314:0 --listing build/game.lst --pc
-B460-B4BF,B6B3-B6D7,A89D-A9BD --view screen --out docs/img/routines/Teleport.gif`.
+DrawRoom expands the new screen. Recording `rzx-00000`, from MattWalk at 2311:16958 to the end of the block decode
+(2311:38100), 90 pictures of 235 T: SwapZone and the flush that follow run in the next frames and are left out. Made
+from the kept trace of frames 2309-2314: `python3 tools/trace_cut.py work/docs/mxC/rzx-00000/traces/2309_0-2314_0.uatr
+--from 2311:16950 --to 2311:38100 --out work/docs/fixB/teleport-2311.uatr`, then `python3 ../../kit/routine_anim.py
+--trace work/docs/fixB/teleport-2311.uatr --listing build/game.lst --pc B460-B4BF,B6B3-B6D7,A89D-A9BD --view screen
+--title '...' --out docs/img/routines/Teleport.gif`.
 
 **The point**: a pod is one byte of exit and one byte of place. The arrival byte belongs to the room Matt leaves, so each
 room can drop Matt anywhere in the next one.
 
-Witness: LeftEdge L1 38 (`c1`, `rzx-00000`, `rzx-32000`); RightEdge L1 63; Teleport L1 4; ExitByte3 never runs (byte 3
+Witness: LeftEdge L1 38 (`c1`, `rzx-00000`, `rzx-32000`); RightEdge L1 64; Teleport L1 4; ExitByte3 never runs (byte 3
 is `$FF` in every room); the `rzx-00000` samples of frames 2296-2318.
 
 ## 7.5 What the map holds: pick-ups, turrets, items and spawn points
@@ -487,7 +492,8 @@ Recording: none, the bytes of the build. Made by `python3 tools/fig_objects.py m
 **The point**: the map is both the picture and the level's state. Turrets, items and pick-ups are found again each time a
 screen is drawn, and their removal is a byte written into the map or a bit in the pick-up table.
 
-Witness: PlacePickupsInScreen and the searches L1 79 (`c1`, `door`, `play2`, `rzx-` x9); CheckPickups L1 2460;
+Witness: PlacePickupsInScreen and the searches L1 86 (`c1`, `cheat`, `door`, `door3`, `kind6`, `masks`, `play2`,
+`rzx-` x9); CheckPickups L1 2508;
 FindEmptySlot L1 5 (`rzx-00000`, `rzx-16000`); the slots in the `rzx-00000` samples.
 
 ## 7.6 The object table and the record
@@ -497,7 +503,7 @@ Objects `$A43F` holds eight records of 38 (`$26`) bytes: Matt, his shot (MattSho
 
 | Field | What |
 | --- | --- |
-| +`$00` | the kind (bits 0-5; Matt: his state 1-12); bit 7 placed, bit 6 dying; `$80` an empty placeholder |
+| +`$00` | the kind (bits 0-5; Matt: his state 1-12); bit 7 placed; bit 6 only in the `$40` reservation, which drawing and the shot test skip (`AND $BF`); `$80` an empty placeholder |
 | +`$02` | the direction (bit 7: left) |
 | +`$03`, +`$04` | x (2 pixels from `$40`), y (pixels) |
 | +`$05`, +`$06` | width and height in characters |
@@ -524,7 +530,8 @@ Objects `$A43F` holds eight records of 38 (`$26`) bytes: Matt, his shot (MattSho
 record(i) = $A43F + 38 i          # 0 Matt, 1 the shot, 2-7 the enemies
 SetupObject(IX, template HL):     # 12 bytes into the record
     +14, +15 = score;  +16, +17 = picture;  +1E = damage;  +18 = animation;  +1A = mask
-    +05, +06 = width, height;  +19 = mode;  +21 = hits;  +20 = colour (bit 7: random 1-7)
+    +05, +06 = width, height;  +19 = mode;  +21 = hits;  +20 = colour (bit 7: random 1-7) OR $40
+    +1D, +02, +1B, +1C = 0                         # the counter, the direction, dx and dy
 ```
 
 ```asm
@@ -562,7 +569,8 @@ Worked example: object 3 at `rzx-00000` frame 990 (`$A4B1`):
 
 - +0 = 1: a faller. x `$92`, y `$48`, 2 x 2 characters.
 - +`$14`/+`$15` = `33 00`: 33 points. +`$16`/+`$17` = `$D260`: SpriteFaller.
-- +`$1B`/+`$1C` = 0, 4: it falls 4 pixels a pass.
+- +`$1B`/+`$1C` = 0, 4: it falls 4 pixels a pass (SpawnFaller: dy = (x AND 3) + 2, here `$92` AND 3 = 2, so 4;
+  dx = Random AND 3, never 2, here 0).
 - +`$1E` = `$0A`: a touch costs 10 energy. +`$21` = 1: one hit kills it.
 - +`$20` = `$41`: bright blue, picked at random (the template's colour is `$FF`).
 
@@ -578,7 +586,7 @@ fields the rules use; the names are on the right. Recording `rzx-00000`, TTD fra
 **The point**: one record format serves the hero, his shot and every enemy. A kill or a transformation is a write to
 byte 0 and a template copy; the drawing code never knows what an object is.
 
-Witness: SetupObject L1 569 (`door`, `rzx-` x9); the records in every sample (`work/docs/mxC/*/vars.jsonl`).
+Witness: SetupObject L1 634 (`door`, `door3`, `kind6`, `rzx-` x9); the records in every sample (`work/docs/mxC/*/vars.jsonl`).
 
 ## 7.7 The enemy templates
 
@@ -647,7 +655,7 @@ docs/img/objects/templates.png`.
 **The point**: the rules of each enemy (how much it is worth, how much it hurts, how many hits it takes) are data in
 one table, apart from its movement in the code.
 
-Witness: SetupObject L1 569; the template bytes from `src/res/tables/enemies.csv`; the faller record at frames 990 and
+Witness: SetupObject L1 634; the template bytes from `src/res/tables/enemies.csv`; the faller record at frames 990 and
 996 of `rzx-00000`. The annotation puts `@res enemies.bin` on PenetratorCost `$BE0D` (1 byte) instead of the table at
 `$BE3B` (`work/docs/mxC-src-changes.md`).
 
@@ -665,7 +673,7 @@ not 0) is left alone. For an empty slot Spawn reads EnemyKind, the screen's kind
 | ---: | --- | --- | --- |
 | 1 | SpawnFlyer `$BFD2` | 2, flyer | only while Matt's x is below `$91`; from the right edge, a random height |
 | 2 | SpawnFaller `$C04B` | 1, faller | from above the screen at a random column |
-| 3 | SpawnWave `$C07E` | 6, wave flyer | Random AND `$44` = 0 |
+| 3 | SpawnWave `$C07E` | 6, wave flyer | Random AND `$44` = 0 and Matt's x below `$91` |
 | 4 | SpawnWalker `$C0A6` | 7, walker | once per slot per screen (+`$1F`) |
 | 5 | SpawnChaser `$C0D9` | 8, chaser | ChaserState on, timer `$300` |
 | 6 | SpawnKind6 `$C0F7` | 16 | once per screen, effect 10 |
@@ -675,7 +683,8 @@ not 0) is left alone. For an empty slot Spawn reads EnemyKind, the screen's kind
 | 10 | SpawnKind10 `$C1F3` | 18 and 19, a group | |
 
 When nothing spawns, SpawnNothing marks the slot with the placeholder `$80` (2 x 2 at x 1, y 0) unless object 2 is the
-chaser. ReviveObjects, at the end of RunObjects, puts object 2 back as a placeholder when all six slots are empty.
+chaser. ReviveObjects `$BF7F`, at the end of RunObjects, puts object 2 back when all six slots hold 0 (a `$40` or `$80` counts
+as taken): state `$80`, 4 x 5 characters at x 1, y 0, mode 6.
 
 ```text
 Spawn(IX):
@@ -735,14 +744,18 @@ set), the faller template's values in +`$14`-+`$21`. It fell into view over the 
 ![Spawn fills an empty slot with a faller](img/routines/Spawn.gif)
 
 How to read it: the six enemy records `$A48B` (38 x 6 bytes) as hex, and on the right the code. Spawn finds the empty
-slot, SpawnFaller places it and SetupObject copies the template. Recording `rzx-00000`, TTD frames 977:0-979:0. Made by
-`python3 ../../kit/routine_anim.py --work work/docs/mxC/rzx-00000 --window 977:0-979:0 --listing build/game.lst --pc
-BF2B-C26E --view buffer:A48B:38x6:hex --out docs/img/routines/Spawn.gif`.
+slot, SpawnFaller places it and SetupObject copies the template. Recording `rzx-00000`, the Spawn call of frame 977
+that makes the faller (977:24042 to the return of SetupObject), 60 pictures. Made from the kept trace of frames 977-979:
+`python3 tools/trace_cut.py work/docs/mxC/rzx-00000/traces/977_0-979_0.uatr --from 977:24000 --to 977:25500 --out
+work/docs/fixB/spawn-977.uatr`, then `python3 ../../kit/routine_anim.py --trace work/docs/fixB/spawn-977.uatr
+--listing build/game.lst --pc BF2B-C26E,92C6-92DF --view buffer:A48B:38x6:hex --pictures 60 --title '...' --out
+docs/img/routines/Spawn.gif`.
 
 **The point**: the spawner is a lottery per empty slot per pass, ruled by one byte per screen. Kill an enemy and its
 slot refills a few passes later; the screens are endless sources, not fixed sets.
 
-Witness: Spawn runs in every pass of RunObjects (L1 12 990, `c1`, `door`, `play2`, `rzx-` x9); SetupObject L1 569; the
+Witness: Spawn runs six times in every pass of RunObjects (L1 91 061, `c1`, `cheat`, `door`, `door3`, `kind6`, `masks`, `play2`, `rzx-` x9);
+SetupObject L1 634; the
 samples of `rzx-00000` frames 977-979. Enemy kinds 6 and 10 (room 1 screen 2, room 7 screens 2-3) were never reached
 in play; `kind6` and `door3` POKE EnemyKind `$BFB0` to run them (SpawnKind6 L1 1919, SpawnKind10 L1 1).
 
@@ -829,10 +842,12 @@ faller's own routine then saw hits 0, added 33 points and exploded. The shot fle
 ![A faller killed by the BACKLASH shot, step by step](img/routines/KindFaller.gif)
 
 How to read it: the screen, the memory `$A400-$A5FF` (the objects) and the code: RunObjects, ShotHits, KindFaller,
-AwardScore, Explode. Recording `rzx-00000`, TTD frames 975:0-1000:0, 25 pictures. Made by `python3
-../../kit/routine_anim.py --work work/docs/mxC/rzx-00000 --window 975:0-1000:0 --listing build/game.lst --pc
-C375-C3A5,BC96-BCDF,C26F-C283,C2C1-C2C9 --view screen --range A400-A5FF --pictures 25 --out
-docs/img/routines/KindFaller.gif`.
+AwardScore, Explode. Recording `rzx-00000`, the pass of frame 995 in which the shot hits the faller (KindFaller from
+995:20298, Explode at 995:21813), 40 pictures. Made from the kept trace of frames 975-1000: `python3 tools/trace_cut.py
+work/docs/mxC/rzx-00000/traces/975_0-1000_0.uatr --from 995:20200 --to 995:22600 --out
+work/docs/fixB/faller-995.uatr`, then `python3 ../../kit/routine_anim.py --trace work/docs/fixB/faller-995.uatr
+--listing build/game.lst --pc C284-C374,C375-C3A5,BC96-BCDF,C26F-C283,C2C1-C2C9,AE45-AE5F,BFF5-C04A,93DC-941A,92C6-92DF
+--view screen --range A400-A5FF --pictures 40 --title '...' --out docs/img/routines/KindFaller.gif`.
 
 ![The kill as the player saw it](img/play/kill.gif)
 
@@ -843,8 +858,8 @@ How to read it: the screen at every frame: the shot leaves Matt, the faller burs
 **The point**: the shot test runs in the object loop, not in the shot's code, so one shot with power 2 or 3 can pass
 through several enemies in one flight. A touch both hurts Matt and pays him the enemy's score.
 
-Witness: RunObjects L1 12 990; ShotHits in every pass; TouchesMatt L1 10 278 (`door`, `rzx-` x9); Damage L1 74;
-AwardScore L1 78 (`rzx-` x9); the `rzx-00000` samples of frames 990-996.
+Witness: RunObjects L1 15 178; ShotHits in every pass; TouchesMatt L1 12 174 (`door`, `door3`, `kind6`, `rzx-` x9); Damage L1 133;
+AwardScore L1 84 (`kind6`, `rzx-` x9); the `rzx-00000` samples of frames 990-996.
 
 ## 7.10 The kinds one by one
 
@@ -853,11 +868,11 @@ ObjectJumps `$C326` gives 20 kinds:
 | Kind | Routine | What it does | Seen |
 | ---: | --- | --- | --- |
 | 0 | HangLoop `$9208` | an empty slot never reaches it (RunKind returns at 0) | |
-| 1 | KindFaller `$C375` | falls 4 a pass; a wall or the floor bursts it | `rzx-00000` 977 |
+| 1 | KindFaller `$C375` | falls 2 to 5 a pass (dy = (x AND 3) + 2) and drifts right 0, 1 or 3 (dx = Random AND 3, never 2); a wall or the floor bursts it | `rzx-00000` 977 |
 | 2 | KindFlyer `$C3A6` | flies left 2 a pass, homes on Matt's height plus an offset; gone at x `$28` | `rzx-` |
 | 3 | KindExplosion `$C3F1` | 4 passes, then empty | every kill |
-| 4 | KindTurret `$C457` | rises, bobs every 16 passes, fires kind 5 when Random AND `$53` = 0; killed or touched: block `$2B`, its stem cleared, no score (7.11) | `rzx-12000` 1255 |
-| 5 | KindTurretShot `$C521` | flies left 2 a pass, 10 damage; its slot goes back to `$40` while the turret lives; harmless once the turret is dead | `rzx-12000` |
+| 4 | KindTurret `$C457` | bobs from the start (animation 3), up and down 16 passes each; fires kind 5 when Random AND `$53` = 0 into slot+1 (`$40`) or a free slot+2, then rises again for 6 passes; killed or touched: block `$2B`, its stem cleared, no score (7.11) | `rzx-12000` 1255 |
+| 5 | KindTurretShot `$C521` | flies left 2 a pass, 10 damage; its slot goes back to `$40` while the turret lives; harmless once the turret is dead, and always harmless in slot+2 (7.11) | `rzx-12000` |
 | 6 | KindWave `$C562` | flies left 2 a pass along WaveHeights `$C5B5`; effect 6 at each swoop | `rzx-12000` 2747 |
 | 7 | KindWalker `$C5D9` | walks between x `$40` and `$B4`, turns at random; each touch costs 3 energy, the fifth kills it | `rzx-12000` 2125 |
 | 8 | KindChaser `$C64E` | sweeps the room right to left for `$300` passes, follows Matt's height; a touch kills (255) | `rzx-08000` 1034, `rzx-32000` 473 |
@@ -868,7 +883,7 @@ ObjectJumps `$C326` gives 20 kinds:
 | 13 | KindThirteen `$C78A` | the guard: bobs (GuardBob `$C7F4`), ten LIFTER hits lift it, ten shots break it into parts | `rzx-00000` 1960, `rzx-24000` |
 | 14 | KindFourteen `$C81B` | the boss: fires kind 15 when Random AND `$25` = 0 | `rzx-24000` 479 |
 | 15 | KindFifteen `$C860` | the boss's shot | `rzx-24000` 507 |
-| 16 | KindSixteen `$C89B` | enters from the right to x `$DC` (effect 10), fires kind 11 | never |
+| 16 | KindSixteen `$C89B` | flies left 2 a pass with no stop, effect 10 as it passes x `$DC`; fires kind 11 when Random AND `$92` = 0 | `kind6` (a POKE) |
 | 17 | KindSeventeen `$C8FD` | ObjectGone: 25 passes of random small explosions where the object was | after the chaser, the boss |
 | 18, 19 | KindEighteen `$C922`, and 19 | SpawnKind10's group | never |
 
@@ -878,10 +893,15 @@ touch is a kill that costs energy. The chaser and the boss touch with damage 255
 ```text
 KindTurret(IX):
     if IX.hits == 0: map[IX.mapaddr] = $2B; Explode; clear the stem; AwardScore; return   # Explode zeroed the score
-    if IX.anim != 3: every second pass IX.anim += 1; return          # rising out of its block
-    IX.dy += 1; y += 1 if IX.dy & $10 else -1                         # bobbing
+    if IX.anim != 3: every second pass IX.anim += 1; return          # rising again after a shot: 6 passes
+    IX.dy += 1; y += 1 if IX.dy & $10 else -1                         # bobbing (template 2 starts at anim 3)
     redraw its stem (TurretStem) under it
-    if Random() & $53 == 0: a kind 5 shot into the reserved slot; return
+    if Random() & $53 == 0:
+        if slot+1 == $40: shot = slot+1
+        elif slot+2 AND $3F == 0: shot = slot+2                       # empty or the placeholder $80
+        else: return                                                  # no room: no shot, no touch test
+        IX.anim = 0                                                   # the turret's own animation
+        shot.kind = 5; shot.x = x; shot.y = y + 4; SetupObject(template 3); return
     if TouchesMatt: Damage(100); as killed
 KindWalker(IX):
     if IX.hits == 0 or IX.touches == 5: empty; AwardScore; Explode
@@ -928,12 +948,14 @@ stateDiagram-v2
 
 ```mermaid
 stateDiagram-v2
-    [*] --> Rising: PlaceTurrets at block $12
-    Rising --> Bobbing: animation step 3
+    [*] --> Bobbing: PlaceTurrets at block $12, template 2 (animation 3)
     Bobbing --> Bobbing: up 16 passes, down 16 passes
     Bobbing --> Firing: Random AND $53 = 0
-    Firing --> Bobbing: a kind 5 shot in the reserved slot
+    Firing --> Rising: a kind 5 shot in slot+1 ($40) or a free slot+2, animation 0
+    Firing --> Bobbing: no free slot
+    Rising --> Bobbing: animation 3 after 6 passes, no touch test meanwhile
     Bobbing --> Destroyed: hits 0
+    Rising --> Destroyed: hits 0
     Bobbing --> Destroyed: touches Matt, Damage 100
     Destroyed --> [*]: block $2B in the map, the stem cleared, 0 points
 ```
@@ -963,22 +985,29 @@ Its block `$12` became `$2B` in room 4's map, so it stays dead when Matt comes b
 
 ![The turret bobs and fires](img/routines/KindTurret.gif)
 
-How to read it: the screen, the six enemy records `$A48B` as hex and the code of KindTurret. Recording `rzx-12000`, TTD
-frames 1255:0-1290:0. Made by `python3 ../../kit/routine_anim.py --work work/docs/mxC/rzx-12000 --window
-1255:0-1290:0 --listing build/game.lst --pc C457-C560 --view buffer:A48B:38x6:hex --out
+How to read it: the six enemy records `$A48B` as hex and the code of KindTurret, in the pass of `rzx-12000` where the
+turret bobs and fires: KindTurret from 1272:60709, the shot set up in the reserved slot from 1272:61411 (kind 5, its
+own animation back to 0), then SetupObject; 60 pictures. Made from the kept trace of frames 1255-1290: `python3
+tools/trace_cut.py work/docs/mxC/rzx-12000/traces/1255_0-1290_0.uatr --from 1272:60650 --to 1272:62100 --out
+work/docs/fixB/turret-1272.uatr`, then `python3 ../../kit/routine_anim.py --trace work/docs/fixB/turret-1272.uatr
+--listing build/game.lst --pc C457-C560,BFF5-C04A,92C6-92DF --view buffer:A48B:38x6:hex --pictures 60 --title '...' --out
 docs/img/routines/KindTurret.gif`.
 
 ![The walkers of room 12](img/routines/KindWalker.gif)
 
-How to read it: the screen and the code of KindWalker: the walk, the random turn, the touch. Recording `rzx-12000`, TTD
-frames 2125:0-2160:0. Made by `python3 ../../kit/routine_anim.py --work work/docs/mxC/rzx-12000 --window
-2125:0-2160:0 --listing build/game.lst --pc C5D9-C64D --view screen --out docs/img/routines/KindWalker.gif`.
+How to read it: the screen and the code of KindWalker: the walk, the touch test, the random turn. Recording
+`rzx-12000`, the pass of frame 2126 that runs five walkers (KindWalker from 2126:22438; the last one turns at
+2126:26940), 60 pictures. Made from the kept trace of frames 2125-2160: `python3 tools/trace_cut.py
+work/docs/mxC/rzx-12000/traces/2125_0-2160_0.uatr --from 2126:22400 --to 2126:27300 --out
+work/docs/fixB/walker-2126.uatr`, then `python3 ../../kit/routine_anim.py --trace work/docs/fixB/walker-2126.uatr
+--listing build/game.lst --pc C5D9-C64D,C36B-C374,C2D9-C314,92C6-92DF --view screen --pictures 60 --title '...' --out
+docs/img/routines/KindWalker.gif`.
 
 **The point**: each kind is a short routine over the same record. The touch rules differ by kind: most enemies die when
-they touch Matt, the walker survives five touches, the turret dies with its hit, the chaser and the boss kill him. The
+they touch Matt, the walker dies at its fifth touch, the turret explodes at its touch (Damage, then `$C4D7`), the chaser and the boss kill him. The
 order of two calls decides the pay: the turret explodes before it scores, so it never pays.
 
-Witness: RunKind L1 77 932 (`c1`, `door`, `play2`, `rzx-` x9); ObjectCell L1 1891 (`door`, `rzx-` x7); the kinds seen
+Witness: RunKind L1 91 060 (`c1`, `cheat`, `door`, `door3`, `kind6`, `masks`, `play2`, `rzx-` x9); ObjectCell L1 1891 (`door`, `rzx-` x7); the kinds seen
 in the samples (`python3 work/docs/mxC/events.py <rec>/vars.jsonl --objects`). Kinds 9 and 11 never ran:
 known only from the code; 16, 18 and 19 ran only after the EnemyKind POKEs (KindSixteen L1 488 in `kind6`,
 KindEighteen L1 167 in `door3`).
@@ -986,11 +1015,16 @@ KindEighteen L1 167 in `door3`).
 ## 7.11 Notes, quirks and what is known only from the code
 
 - **The `$40` reservation.** PlaceTurrets marks the slot after each turret as kind `$40`: bit 6 set, kind 0. Spawn sees
-  it as busy (`$40` AND `$7F` is not 0), RunKind as empty. The turret fires only into that slot, and the shot gives it
-  back when it ends.
+  it as busy (`$40` AND `$7F` is not 0), RunKind as empty, and DrawObjects and ShotHits skip it (`$40` AND `$BF` is 0).
+  The turret fires into that slot; when it is taken (a shot still flying), into slot+2 if that holds 0 or `$80`
+  (`$C4AD`). A shot in slot+1 gives the `$40` back when it ends (`$C547`, `$C558`); a shot in slot+2 leaves 0.
 - **The placeholder `$80`** fills a slot when the lottery fails. It sits at x 1, y 0, out of reach. ShotHits does not
   skip it (`$80` AND `$BF` is not 0), but no shot gets there.
-- **Bit 6 is "dying"**: ShotHits masks it off, so an object being killed is still hit-tested by kind.
+- **Bit 6 is only the reservation.** It is written only as `$40` (PlaceTurrets `$AC71`, KindTurretShot `$C547` and
+  `$C558`, the boss's shot KindFifteen `$C879`); the `AND $BF` in DrawObjects (`$A2EB`, `$A30B`) and ShotHits (`$BC9F`) make that slot
+  skipped, neither drawn nor hit. Nothing marks a dying object.
+- **PlaceTurrets' dead `SUB $02`** (`$AC55`): it subtracts 2 from the turret's y and throws the result away (`LD A,C`
+  follows), so the turret's y is the block's row.
 - **ExitByte3** `$B6D8` would leave by RoomTable byte 3; the byte is `$FF` in every room and the routine never runs.
 - **The pod block.** The rooms module's header says CheckPickups turns a used pod block `$12` into `$2B`. Block `$12` is
   the turret's block, and KindTurret writes the `$2B` (`work/docs/mxC-src-changes.md`).
@@ -1005,6 +1039,7 @@ KindEighteen L1 167 in `door3`).
 - **A turret never scores.** KindTurret calls Explode, which copies the explosion template (score 0) into the record,
   and only then AwardScore. The six turret kills of the recordings (`rzx-00000` 1788, `rzx-04000` 1080, `rzx-12000`
   1387, `rzx-16000` 3669, `rzx-20000` 1732, `rzx-24000` 346) left the score unchanged. Every other kind scores first.
-- **A turret shot is harmless once its turret is dead.** KindTurretShot does its Damage only when the slot before it
-  still holds a turret (kind 4).
+- **A turret shot is harmless once its turret is dead, and always in slot+2.** KindTurretShot does its Damage only
+  when the slot before it still holds a turret (kind 4, `$C541`). For a shot in slot+2 the slot before it is slot+1,
+  the first shot or its `$40`, never kind 4: that shot can never hurt Matt, and it ends as 0, not `$40`.
 - **Kinds never run**: 9 and 11; 16, 18 and 19 (enemy kinds 6 and 10) only after a POKE (`kind6`, `door3`).

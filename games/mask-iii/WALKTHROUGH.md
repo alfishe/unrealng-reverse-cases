@@ -152,8 +152,14 @@ some segments Matt dies and a new game starts.
 The ending is reached in `rec/rzx-36000`: room 15's last screen (`$A89D` jumps to `$ADF6` there) and "YOU HAVE FOUND
 SCOTT......", with 31 004 points, then the menu (its HISCORE shows 00000000). Stage 2 and the integration reached the
 passwords and doors 1 and 3, the Kempston control in play, the 48K beeper path, the cheat, and six of the ten masks in
-use (BACKLASH, LIFTER, LAVA SHOT, STREAMER, ULTRA FLASH, MIRAGE, PENETRATOR's wall death). Not reached yet: doors 0
-and 2, the Cursor control in play, HEALER and JACKRABBIT in use, the cheat's safe floor, enemy kinds 9 and 11.
+use (BACKLASH, LIFTER, LAVA SHOT, STREAMER, ULTRA FLASH, MIRAGE, PENETRATOR's wall death); the RZX segments use
+HEALER (`rzx-16000`, frames 271-418) and JACKRABBIT (`rzx-12000`, frames 1297-1425). Not reached yet: doors 0 and 2,
+the Cursor control in play, the cheat's safe floor, enemy kinds 9 and 11.
+
+The routine animations of docs 7, 9 and 10 whose routine is a small part of a pass are drawn from a cut of a kept
+trace (`work/docs/mxC/<rec>/traces/*.uatr`): `tools/trace_cut.py IN --find PC` lists where the routine runs,
+`--from F:T --to F:T --out work/docs/fixB/NAME.uatr` keeps that part of the pass (with the memory and the `$7FFD`
+page at its start), and `kit/routine_anim.py --trace` animates it. Each caption gives both commands.
 
 ### 6.1 The screens
 

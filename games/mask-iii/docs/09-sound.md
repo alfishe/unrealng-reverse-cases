@@ -133,7 +133,7 @@ tools/fig_sound.py fig-cost docs/img/sound/cost.png`, after `python3 tools/fig_s
 **The point**: one flag at `$FFFE` splits all sound in two. The beeper path costs up to five times the AY path,
 because the CPU itself must make every edge of the wave.
 
-Witness: Interrupt L1 53 798 (`c1`, `door`, `play2`, `rzx-` x10); StartEffects and StopEffects L1 16 624 (`c1`,
+Witness: Interrupt L1 63 268 (`c1`, `cheat`, `door`, `door3`, `kind6`, `masks`, `play2`, `rzx-` x10); StartEffects and StopEffects L1 26 094 (`c1`,
 `door`, `play2`, never in an `rzx-` segment); StopBeeper and BeeperTick L1 37 174 (the ten `rzx-` segments only)
 (`src/game/interrupt.asm`); `$FFFE` = `$01` in the `rzx-00000` samples.
 
@@ -212,7 +212,7 @@ Worked example: effect 3, the BACKLASH shot, at `$930A`: `7F FD 01 FF 7F 02 00 0
 - The sweep starts after 2 frames and adds 3 to the period a frame, one way: the tone falls.
 - Flags `$03`: tone and noise. Slot 1: channel A.
 - The start period `$0044` = 68 is a 1630 Hz tone on the 128K's 1.7734 MHz AY.
-- On a 48K the same record gives 30 bursts at pitch `$44`, rising by 3 a frame.
+- On a 48K the same record gives 30 bursts at pitch `$44`, the period rising by 3 a frame (the tone falling).
 
 ![The effect records and the instruments as a data sheet](img/sound/records.png)
 
@@ -224,8 +224,8 @@ tools/fig_sound.py fig-records docs/img/sound/records.png`.
 **The point**: an effect is an instrument plus a channel, a length and a start pitch. The player that plays the tunes
 plays the effects too, and the 48K borrows three of the bytes for a much simpler sound.
 
-Witness: EffectTable `$92E0` read by PlayEffect `$93DC` (L1 554, `c1`, `door`, `play2`, `rzx-` x9), by StartEffects
-(+B to +D) and by EffectStart `$C36A` (+0 to +9, L1 4031 in `c1`, `rec/menu`, `play2`); the envelope steps in Envelope
+Witness: EffectTable `$92E0` read by PlayEffect `$93DC` (L1 638, `c1`, `cheat`, `door`, `door3`, `kind6`, `masks`, `play2`, `rzx-` x9), by StartEffects
+(+B to +D) and by EffectStart `$C36A` (+0 to +9, L1 5258 in `c1`, `cheat`, `door3`, `kind6`, `masks`, `rec/menu`, `play2`); the envelope steps in Envelope
 `$C4D5` and the sweep in NoiseStep (`src/music/music-module.asm`).
 
 ## 9.3 PlayEffect, StartEffects and EffectStart: an effect onto its channel
@@ -253,8 +253,9 @@ PlayEffect(n):                                # main loop, any time
     if MachineFlag: BeeperStart(rec); return  # 48K, 9.7
     EffectSlots[rec.slot] = rec                # 1 A, 2 B, else C
 StopEffects():                                 # interrupt, 128K
-    for ch in A, B: if EffectStops[ch]: block[ch].hold = 0; EffectStops[ch] = 0
-    if not EffectStops[C]: block[C].hold = 0   # inverted, see 9.9
+    for ch in A, B: if EffectStops[ch]: block[ch].hold = 0; EffectStops[ch] = 0; BeeperState = 0
+    if not EffectStops[C]: block[C].hold = 0; EffectStops[C] = 0; BeeperState = 0   # inverted, see 9.9
+                                               # BeeperState = 0 is harmless on the 128K
 StartEffects():
     for ch in A, B, C:
         if EffectSlots[ch]:
@@ -303,15 +304,19 @@ clears the slot and jumps to EffectStart.
 
 ![StartEffects hands the BACKLASH shot to channel A](img/routines/StartEffects.gif)
 
-How to read it: the bytes of EffectSlots `$941B-$9423` as hex, and on the right the code as it runs: PlayEffect,
-StartEffects, EffectStart and the player in RAM 4. Recording `c1`, TTD frames 19 325:0-19 328:0. Made by `python3
-../../kit/routine_anim.py --work work/docs/mxC/c1 --window 19325:0-19328:0 --listing build/game.lst --page
-4=build/music.lst --pc 93DC-949E,C000-CFFF --view buffer:941B:9x1:hex --out docs/img/routines/StartEffects.gif`.
+How to read it: the bytes of EffectSlots `$941B-$9423` as hex, and on the right the code as it runs:
+StopEffects, StartEffects, EffectStart and the player in RAM 4. Recording `c1`: PlayEffect filled the slot in the
+main loop at 19 325:34920; the GIF is the next interrupt, 19 326:2300-5600 (StartEffects at 2496, EffectStart at
+2659), 60 pictures. Made from the kept trace of frames 19 325-19 328: `python3 tools/trace_cut.py
+work/docs/mxC/c1/traces/19325_0-19328_0.uatr --from 19326:2300 --to 19326:5600 --out
+work/docs/fixB/starteffects-19326.uatr`, then `python3 ../../kit/routine_anim.py --trace
+work/docs/fixB/starteffects-19326.uatr --listing build/game.lst --page 4=build/music.lst --pc 93DC-949E,4:C000-CFFF
+--view buffer:941B:9x1:hex --pictures 60 --title '...' --out docs/img/routines/StartEffects.gif`.
 
 **The point**: the main loop never waits for the AY. It drops an address in a slot and the interrupt starts the sound on
 its next frame, so an effect starts at most 20 ms late.
 
-Witness: PlayEffect L1 554; StartEffects L1 16 624; EffectStart L1 4031; the `c1` samples of frames 19 322-19 330 and
+Witness: PlayEffect L1 638; StartEffects L1 26 094; EffectStart L1 5258; the `c1` samples of frames 19 322-19 330 and
 the trace of 19 325-19 328.
 
 ## 9.4 The AY player in RAM 4
@@ -432,7 +437,7 @@ tools/fig_sound.py tunes docs/audio`.
 **The point**: a small player with one engine. Notes and effects are the same thing to it, so an effect sounds like a
 note of the music, and the game needs no second sound driver on the 128K.
 
-Witness: MusicPlay L1 24 214 (`c1`, `rec/menu`, `play2`); ChannelStep L1 36 801; Envelope L1 38 004; MusicStart L1 9;
+Witness: MusicPlay L1 33 684 (`c1`, `cheat`, `door3`, `kind6`, `masks`, `rec/menu`, `play2`); ChannelStep L1 49 266; Envelope L1 57 483; MusicStart L1 18;
 `tunes.txt` assembles back to the bytes of `$C670-$CBA1`.
 
 ## 9.5 The three tunes and when each plays
@@ -594,7 +599,7 @@ BeeperTick():                                    # each 48K interrupt
     if BeeperState != $FF: BeeperState -= 1
     pitch += rec.sweep
     L = pitch & $FF
-    repeat ((256 - L) >> 5) + 1 times:
+    repeat (((-L) AND $FF) >> 5) + 1 times:          # 8 bits: L = 0 gives 1 pulse
         OUT ($FE), BorderColour | $18;  wait L x 16 T
         OUT ($FE), BorderColour;        no wait (the bug)
 ```
@@ -658,9 +663,12 @@ simulator runs BeeperTick from the build. Made by `python3 tools/fig_sound.py fi
 ![BeeperTick in rzx-00000: the explosion's first bursts](img/routines/BeeperTick.gif)
 
 How to read it: the bytes `$94A8-$94AF` (BeeperState, the pitch word, the record pointer) as hex, and the code.
-PlayEffect stores the explosion's record `$9388`, then the interrupts play its bursts. Recording `rzx-00000`, TTD
-frames 995:0-997:0. Made by `python3 ../../kit/routine_anim.py --work work/docs/mxC/rzx-00000 --window 995:0-997:0
---listing build/game.lst --pc 93DC-941A,949F-950A --view buffer:94A8:8x1:hex --out docs/img/routines/BeeperTick.gif`.
+PlayEffect stored the explosion's record `$9388` in the main loop at 995:22948; the GIF is the next interrupt's
+StopBeeper and BeeperTick, 996:2200-6700, its first bursts, 60 pictures. Made from the kept trace of frames 995-997:
+`python3 tools/trace_cut.py work/docs/mxC/rzx-00000/traces/995_0-997_0.uatr --from 996:2200 --to 996:6700 --out
+work/docs/fixB/beeper-996.uatr`, then `python3 ../../kit/routine_anim.py --trace work/docs/fixB/beeper-996.uatr
+--listing build/game.lst --pc 93DC-941A,949F-950A --view buffer:94A8:8x1:hex --pictures 60 --title '...' --out
+docs/img/routines/BeeperTick.gif`.
 
 **The point**: the 48K gets every effect from the same table by reading only the pitch, the sweep and the length. It
 pays with up to 15 % of a frame in the interrupt, and the sound is a train of clicks.
@@ -724,8 +732,8 @@ Witness: 9.1 (the flag and the paths), 9.7 (the beeper), [doc 3](03-build-and-lo
   test is `RET NZ` (`$9491`): it zeroes channel C's hold every interrupt while the flag is clear, and does nothing when
   it is set. Channel C carries the death and the explosions. The simulator ran every tune and every effect with the
   test fixed (`python3 tools/fig_sound.py chanc`). No effect changes. Tune 2 differs in 72 frames' registers and tune 3
-  in 97, but the audible part (the channels with a volume above 0) of no frame changes. The bug is inaudible: the
-  envelopes of channel C end by themselves.
+  in 97, but the audible part (the channels with a volume above 0) of no frame changes. The bug is inaudible, by the case's
+  simulator (no emulator capture compares the two): the envelopes of channel C end by themselves.
 - **BeeperTick's low half never waits** (9.7): the `JR NZ` at `$9505` has no `DEC` before it.
 - **BeeperStart overwrites its own first byte** (9.7) and works because all the records lie in `$92xx-$93xx`.
 - **StopRequest `$9223`** is never written by the game. Its loaded value `$FF` makes the first 128K interrupt call

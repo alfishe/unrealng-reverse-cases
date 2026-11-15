@@ -40,7 +40,8 @@ There is no second level, no lives and no continue: one death ends the game.
 flowchart LR
     S["room 0, the surface: Matt in the pod"] --> W["16 rooms through 4 zones, by pods and edges"]
     W --> E["room 15, screen 5: YOU HAVE FOUND SCOTT"]
-    W -->|"energy 0, or a deadly floor"| G["MISSION TERMINATED"]
+    W -->|"energy 0, a deadly floor, a fall out of the play area"| G["MISSION TERMINATED"]
+    W -->|"PENETRATOR ends inside a wall: Explosion"| G
     G --> M["the menu, the high score"]
     E --> M
 ```
@@ -107,8 +108,10 @@ The play screen has two parts. The play window is character rows 0-17, redrawn f
 | INFO | left, row 23 | the message line: a mask's name, a password, "CODE BROKEN" | Scroller `$AF82`, in the interrupt |
 | the title | right, rows 21-23 | MASK III | the panel picture PlayPanel `$F600` |
 
-The panel picture is drawn once by the menu at the first start; the game only updates its numbers and icons
-([doc 8](08-hud-and-text.md)).
+The menu draws the panel from PlayPanel `$F600` at every start (`$981C`). At the first start that is the picture
+loaded from tape; NewGame's BuildTables then writes its tables over `$F600`, so every later menu first copies the
+panel back from the screen (SaveHud `$9CA0`, while HudSaved `$9710` is 0). In play the game only updates the numbers
+and icons ([doc 8](08-hud-and-text.md)).
 
 ## 1.5 The world
 
@@ -119,7 +122,7 @@ characters. The room table at `$953B` gives each room its zone, its exits and on
 | Zone | Name in these documents | Rooms | What it looks like | Its hazard |
 | ---: | --- | --- | --- | --- |
 | 0 | the surface | 0-3 | green hills, water, crates, the moon in the sky | the deadly floor (character `$EA`) |
-| 1 | the caverns | 4-6 | magenta rock and lava | the deadly floor `$EA`; LavaDrain: 2 energy a step |
+| 1 | the caverns | 4-6 | magenta rock and lava | the deadly floor `$EA`; LavaDrain: 2 energy a head bump in a jump |
 | 2 | the moon | 7-9 | the lunar surface | the deadly floor `$EA`; MoonFloor: characters `$FE` and up kill; MoonMasks empties every PENETRATOR slot |
 | 3 | the base | 10-15 | VENOM's base, cyan | the deadly floor (character `$ED`) |
 
@@ -156,11 +159,11 @@ flowchart LR
   R0 -.->|"password doors"| D["11, 3, 7, 7"]
 ```
 
-The RZX run takes exactly this order (`$950A` in its memory every 500 frames, WALKTHROUGH 6.0). The zones alternate:
-the base comes between every two other rooms.
+The RZX run takes exactly this order (`$950A` in its memory every 500 frames, WALKTHROUGH 6.0). A base room comes
+between the other rooms, except at the three right exits: 1 -> 2, 5 -> 6 and 8 -> 7 (`src/res/tables/rooms.csv`).
 
 The four password doors in room 0, screen 5, are short cuts: door 0 goes to room 11, door 1 to room 3, doors 2 and 3
-to room 7 (WarpRooms `$BA1D` = `0B 03 07 07`). Door 3 also gives LIFTER (1.6).
+to room 7 (WarpRooms `$BA1D` = `0B 03 07 07`). Door 3 also gives LIFTER and raises BACKLASH (1.6).
 
 ### Against the published maps
 
@@ -179,12 +182,37 @@ Matt has one energy value, Energy `$AEA6`: 255 when a game starts, and the game 
 | What takes energy | How much | Where |
 | --- | ---: | --- |
 | touching an enemy | the enemy's damage (1.7): 3 to 255 | Damage `$C2CA` |
-| a block item (block `$1B`) touched | 25 | TakeBlockItem `$B33D` |
-| a step in the caverns (zone 1) | 2 | LavaDrain `$BA93` |
+| a block item (block `$1B`) touched | 25 (read from the code: no recording takes one) | TakeBlockItem `$B33D` |
+| the head bumps a ceiling in a jump, zone 1 only | 2 | LavaDrain `$BA93`, from MattJumpRise `$B83E` and JackrabbitJump `$B91C` / `$B925` |
 | a deadly floor | all: Matt dies at once | DeadlyFloor `$B2F9`, MoonFloor `$B32C` |
-| PENETRATOR ending inside a wall | all | EndPenetrator `$BDD1` |
+| a fall out of the play area (y + `$30` at least `$A0`) | all: DeathFlag (read from the code: no recording falls out) | MattStep `$B403-$B40E` |
+| PENETRATOR ending inside a wall | all: Explosion, then GameOver | EndPenetrator `$BDD1` |
 
 HEALER is the only way back: 2 energy a charge. Energy never refills between rooms.
+
+While PENETRATOR is held, enemies cannot touch Matt (TouchesMatt returns at once). A chaser costs charges instead:
+each pass it runs while PENETRATOR is on, KindChaser sets PenetratorCost `$BE0D` to `$10` (`$C686-$C68E`), and the
+next PENETRATOR step takes `$10` BCD more, 10 or 11 charges instead of 0 or 1 (read from the code).
+
+LavaDrain is a ceiling, not a floor: MattJumpRise and JackrabbitJump call it when the character above Matt's head is
+solid, and it takes 2 only when the live zone is 1.
+
+```z80
+LavaDrain:                ; $BA93
+  PUSH AF
+  LD A,(ZoneSlots)        ; the live zone
+  DEC A
+  JR NZ,l_BAA5            ; not the caverns: nothing
+  LD A,(Energy)
+  SUB $02
+  JR NC,l_BAA2
+  XOR A                   ; not below 0
+l_BAA2:
+  LD (Energy),A
+l_BAA5:
+  POP AF
+  RET
+```
 
 ```z80
 Damage:                   ; $C2CA, IX = the enemy
@@ -207,10 +235,11 @@ DeathFlag; Death sinks Matt through the floor in 32 steps and calls GameOver ([d
 flowchart LR
     A["touch an enemy"] -->|"- damage"| E["Energy"]
     B["block item"] -->|"- 25"| E
-    C["a step in the caverns"] -->|"- 2"| E
+    C["a head bump in a jump, zone 1"] -->|"- 2"| E
     H["HEALER, a charge"] -->|"+ 2"| E
     E -->|"0"| N["state 9: 50 passes"] --> G["GameOver"]
-    F["deadly floor"] --> D["Death: sink 32 steps"] --> G
+    F["deadly floor, a fall out of the play area"] --> D["Death: sink 32 steps"] --> G
+    P["PENETRATOR ends inside a wall"] --> X["Explosion"] --> G
     G --> M["MISSION TERMINATED, the high score, the menu"]
 ```
 
@@ -277,10 +306,38 @@ recordings give them by a POKE: STREAMER and LAVA SHOT fire their shots, ULTRA F
 
 ### The pods
 
-A pod is the booth at the end of a room (screen 5), and room 0's start. Matt steps in and presses down: he dissolves
-(PodStart `$BA68`, state 11-12), and the room in byte 2 of the room table is drawn, with Matt at the place byte 5
-gives. The ride is the heaviest moment of the game: up to ten frames with the screen frozen and redrawn from the
-bottom ([doc 4, 4.5](04-game-loop.md#45-the-heaviest-frame-the-room-change)).
+A pod is the booth at the end of a room (screen 5), and room 0's start. Matt stands on it (characters `$14` / `$15`)
+and presses down (`$B473-$B48A`): Teleport `$B6B3` sets the room from byte 2 of the room table and Matt's place from
+byte 5, and jumps to DrawRoom. There is no dissolve on the way: the dissolve-in (PodStart `$BA68`, states 11-12) is
+the arrival at a new game only (NewGame `$918F` sets state 11). The ride is the heaviest moment of the game: up to ten
+frames with the screen frozen and redrawn from the bottom
+([doc 4, 4.5](04-game-loop.md#45-the-heaviest-frame-the-room-change)).
+
+```z80
+Teleport:                 ; $B6B3
+  LD IX,(RoomRecord)
+  LD A,(IX+$02)           ; the pod's room
+  CP $FF
+  RET Z                   ; no pod here
+  LD (RoomNumber),A
+  LD A,(IX+$05)           ; the arrival byte
+  LD L,A
+  AND $1F
+  ADD A,A
+  ADD A,A
+  ADD A,$40
+  LD (Objects+$0003),A    ; x = (b AND $1F) x 4 + $40
+  LD A,L
+  AND $E0
+  RRCA
+  RRCA
+  LD (RoomScreen),A       ; RoomScreen = 8 x the screen
+  JP DrawRoom
+```
+
+Worked example: room 10's pod. Its record's byte 2 is 1 and byte 5 is 4: Matt arrives in room 1, screen 0, at
+x = 4 x 4 + `$40` = `$50`. `rec/rzx-04000` draws room 1 at frames 463-471 with no dissolve (the animation in doc 4,
+4.5).
 
 ### The doors and the passwords
 
@@ -290,6 +347,31 @@ each sets a flag; PETALS OF DOOM counts only when the other three are already se
 
 At the next game PasswordPods `$ACBC` lights one lamp in room 0, screen 5 for each flag. Matt stands at a lit door
 and presses down: he dissolves and arrives in the door's room (1.5).
+
+| Password | Shown in room | Flag | Door | Leads to |
+| --- | ---: | --- | ---: | ---: |
+| MAYHEM | 11 | `$9F6D` | 0 | 11 |
+| TRANSMOGRIFY | 3 | `$9F6E` | 1 | 3 |
+| VALKYR | 7 | `$9F6F` | 2 | 7 |
+| PETALS OF DOOM | 10 | `$9F70`, set only when the other three are | 3 | 7, and WarpBonus |
+
+RoomMessage `$AD28` builds each message from Passwords `$A009` + 0, 7, `$14`, `$1B` and shows it in room 11, 3, 7 or
+10; the menu sets the flags in the same order (`$9FBA-$9FF2`). The door Matt stands at picks flag n (`$B4AE-$B4BB`),
+and the warp's end takes room WarpRooms[n].
+
+Door 3's bonus, WarpBonus `$BA21`, does more than give LIFTER. FindLifterSlot `$BA3E` walks the slots from slot 0 and
+stops at the first EMPTY or PENETRATOR slot (else slot 0); every BACKLASH slot it passes on the way gets level 3. The
+chosen slot becomes LIFTER with 99 charges at level 1, so a PENETRATOR in it is lost.
+
+```text
+WarpBonus:
+    if slot 0 is EMPTY: show the name LIFTER
+    for slot in 0..3:
+        if slot.kind == BACKLASH: slot.level = 3
+        if slot.kind in (EMPTY, PENETRATOR): stop here
+    if none stopped: slot = slot 0
+    slot.kind = LIFTER; slot.charges = 99; slot.level = 1
+```
 
 ```mermaid
 flowchart LR
@@ -351,8 +433,9 @@ the passwords are rewards for reaching rooms, used in the next game.
 
 ## 1.7 The enemies
 
-Each screen has one enemy kind (room table bytes 6-11). Spawn `$BF2B` fills an empty object slot with that kind
-every pass, from the kind's template at EnemyTemplates `$BE3B`. The turrets are not in the table: each block `$12` of
+Each screen has one enemy kind (room table bytes 6-11). Spawn `$BF2B` fills an empty object slot with that kind,
+from the kind's template at EnemyTemplates `$BE3B`. Kinds 5, 6, 8, 9 and 10 try every pass; the others only when
+`Random AND $2E` is 0 (about 1 pass in 16); while a chaser lives (ChaserState `$C0D6` not 0) nothing spawns. The turrets are not in the table: each block `$12` of
 a screen becomes a turret.
 
 ![The enemies, their pictures and their templates](img/design/enemies.png)
@@ -383,7 +466,8 @@ pod. Two POKE recordings run them (EnemyKind `$BFB0` written, said in their scri
 
 ![door3 frame 1750: SpawnKind10's group on the moon](img/play/door3-001750-kind18-19.png)
 
-![kind6 frame 1000: SpawnKind6's object of kind 16 in room 0](img/play/kind6-001000-kind16.png) Template 7 (500 points, a picture of its own) is used by no spawner. [Doc 7](07-objects.md) and
+![kind6 frame 1000: SpawnKind6's object of kind 16 in room 0](img/play/kind6-001000-kind16.png) Template 7 (500 points, a picture of its own) is used by no spawner: KindSixteen loads it at `$C8EB` for the kind-11
+objects it makes. [Doc 7](07-objects.md) and
 [doc 10](10-gameplay-logic.md) have the movers.
 
 A shot's power is its mask's level. Each pass the shot overlaps an enemy, RunObjects `$C284` takes one from the
@@ -422,4 +506,6 @@ The pod ride from room 10 to room 1, frame by frame, is the animation in
 - ULTRA FLASH, MIRAGE, LAVA SHOT and STREAMER lie in no room; ULTRA FLASH and MIRAGE do nothing when fired.
 - MaskEffect `$B239` would flash the border for ULTRA FLASH and give HEALER 1 energy a charge; no instruction calls it.
 - Door 3's LIFTER (WarpBonus `$BA21`), the enemy kinds 6 and 10 (KindSixteen `$C89B`, KindEighteen `$C980`) and
-  Explosion `$BB78` ran only in the POKE recordings `door3`, `kind6` and `masks`, not in play; template 7 in none.
+  Explosion `$BB78` ran only in the POKE recordings `door3`, `kind6` and `masks`, not in play; template 7 only through
+  KindSixteen.
+- A block item, a fall out of the play area and PENETRATOR's extra cost near a chaser: no recording shows them.

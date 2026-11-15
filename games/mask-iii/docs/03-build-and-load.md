@@ -159,6 +159,11 @@ flowchart TD
   H --> J
 ```
 
+![The 128K test on a 128K and on a 48K, step by step](img/load/paging-test.png)
+
+*`tools/fig_paging.py`: the steps of LoaderMain `$5E18-$5E41` (`build/loader.lst`) with the byte at `$C000` in each
+bank after each step; the 128K path is that of `c1`, the 48K path that of `c48`.*
+
 The point: the game learns the machine from one byte, `$FFFE`, which the loader leaves for it. The interrupt
 handler reads it every frame to choose the AY player in RAM 4 or the beeper
 ([doc 4, 4.3](04-game-loop.md#43-the-interrupt-handler)).
@@ -173,6 +178,7 @@ The copied code ends at block offset `$87`. The rest of the block is no code the
 | `$FF88-$FFB5` | zeros | padding |
 | `$FFB6-$FFF3` | `54 00 9E 92 2F AF 33 AF` ... | StackLeftover: words that fall in the game's code (`$929E`, `$9244`, `$9247` inside the interrupt handler, `$AF33`, `$87D0`) |
 | `$FFF4-$FFF6` | `C3 26 92` | `JP $9226`, as GameEntry writes it |
+| `$FFF7-$FFFD` | `5A A5 80 E2 88 E2 3C` | nothing: no instruction of the loader or the game reads or writes them, and the stack (from `$FFF0` down) never reaches them; whatever the saved memory held there |
 | `$FFFE` | `00` | MachineFlag of a 128K |
 | `$FFFF` | `18` | the `JR` of the IM 2 trick |
 
@@ -210,7 +216,7 @@ the `JR` byte written at `$FFFF` by `$9131` and the handler `$9226` entered thro
 | 3000 | the loading screen complete |
 | 15 019 | GameEntry `$9100` |
 | 15 021 | the first interrupt through the `JR` |
-| 17 750 | the menu |
+| 15 100 | the menu is on screen (the last picture of `load-c1.gif`; the menu screenshot is of frame 17 750) |
 
 ## 3.5 The build
 
@@ -288,8 +294,8 @@ ZXDB's `.pok` file (`work/candidates/zxdb/`) and the 48K TAP's `POKES/MASK3.POK`
 | No enemies | 49941,201 | `$C315` | RunKind: `LD A,(IX+$00)` | `RET` | no enemy moves or collides |
 | Infinite ammo | 45600,0 | `$B220` | `SUB C` in UseCharge | `NOP` | the charges never go down |
 | Waterproof | 45803,201 | `$B2EB` | `JR NC` in RestoreOnePickup | `RET` | see below |
-| Lives (1) | 46045,58 | `$B3DD` | `LD (Energy),A` in TakeBlockItem | `LD A,(Energy)` | a block item costs nothing |
-| Lives (2) | 47778,179 | `$BAA2` | `LD (Energy),A` in LavaDrain | `OR E`, then `AND (HL)`, `XOR (HL)` | the lava drains nothing |
+| Lives (1) | 46045,58 | `$B3DD` | `LD (Energy),A` in TakeBlockItem | `LD A,(Energy)` | a block item costs nothing while the energy is 25 or more; below 25 it sets the energy to 0 (see below) |
+| Lives (2) | 47778,179 | `$BAA2` | `LD (Energy),A` in LavaDrain | `OR E`, then `AND (HL)`, `XOR (HL)` | a head bump in zone 1 costs nothing |
 | Lives (3) | 49872,208 | `$C2D0` | `LD (Energy),A` in Damage | `RET NC` | an enemy's touch costs nothing |
 | Lives (4) | 45589,201 | `$B215` | `RET NZ` in UseCharge | `RET` | the charges never go down |
 | Immunity, crashes (1) | 42849,0 | `$A761` | `DEC (IX+$08)` in DrawShifted | `NOP`, `DEC (HL)`, `EX AF,AF'` | |
@@ -307,10 +313,25 @@ Worked example, Immunity:
 Three findings come out of the table, known only from the code:
 
 - "Waterproof" does not do what its name says. `$B2EB` is inside RestoreOnePickup, which puts the background back
-  under a mask's icon. The POKE makes it return after the first row of the 2 x 2 icon, so half of the background is not put back. The deadly floor check is DeadlyFloor `$B2F9`
-  (45817), which the POKE does not touch.
+  under a mask's icon. The POKE makes it return after the first row of the 2 x 2 icon, so half of the background is
+  not put back. The deadly floor check is DeadlyFloor `$B2F9` (45817), which the POKE does not touch.
+- "Waterproof" also breaks the second icon. RestorePickups `$B2C5` calls RestoreOnePickup for icon 0 and falls into
+  it for icon 1 with the same `DE`, the pointer into PickupSaves `$A253`. Cut short, the first call leaves `DE` two
+  bytes behind, so icon 1's top row gets icon 0's saved bottom row (read from the code).
+- "Lives (1)" protects only a full enough bar. `LD A,(Energy)` leaves the flags of the `SUB $19` before it, so with
+  less than 25 the carry is still set, `RET NC` falls through, and `XOR A`, `LD (Energy),A` set the energy to 0:
+
+```z80
+  LD A,(Energy)           ; $B3D8
+  SUB $19                 ; carry when Energy < 25
+  LD A,(Energy)           ; $B3DD, the POKE: was LD (Energy),A; the flags stay
+  RET NC                  ; 25 or more: nothing taken
+  XOR A
+  LD (Energy),A           ; $B3E2: below 25, the energy becomes 0
+```
 - "Lives (4)" is a second infinite-ammo POKE: UseCharge returns before it takes a charge, as with the cheat.
-- The three "crashes" POKEs break the sprite drawing and the score's print; the third calls into the ROM.
+- The three "crashes" POKEs break the sprite drawing and the menu's HISCORE print (PrintBcd `$AF6B`, whose only
+  caller is `$9D35` in the menu; the score in play is drawn by DrawScore `$AE60`); the third calls into the ROM.
 
 The game has no lives, so the "Lives" POKEs keep the energy instead.
 
@@ -363,7 +384,7 @@ With CheatOn set, two routines return at once:
 | UseCharge `$B210` | `LD A,(CheatOn)`, `AND A`, `RET NZ` at `$B211-$B215` | the masks keep their charges |
 | DeadlyFloor `$B2F9` | the same at `$B2F9-$B2FD` | the deadly floors and the moon's floor do not kill |
 
-Energy is not protected: enemies, block items and the lava still drain it.
+Energy is not protected: enemies, block items and the head bumps in zone 1 still drain it.
 
 ```mermaid
 flowchart LR
@@ -374,7 +395,7 @@ flowchart LR
     O --> D["DeadlyFloor: no death"]
 ```
 
-The witness: CheatCheck runs in every play interrupt of every recording (L1 39 665 entries). Its effect is in the
+The witness: CheatCheck runs in every play interrupt of every recording (L1 46 478 entries in c1, cheat, door, door3, kind6, masks, play2 and ten `rzx-` segments). Its effect is in the
 stage 2 notes: the CheatOn tests in UseCharge and DeadlyFloor. The `cheat` recording types JUDGE DREDD: CheatOn is
 `$FF` in play and a LAVA SHOT fired six times keeps its 99 charges ([doc 10](10-gameplay-logic.md)); the safe floor
 is known from the code.

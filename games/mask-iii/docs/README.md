@@ -37,7 +37,7 @@ Each term once, here; the documents use these names and no others.
 | IM 2 vector trick | the `$FF` table at `$FE00`, the `JR` at `$FFFF` that reads its offset from ROM `$0000`, and the `JP $9226` at `$FFF4` |
 | LavaDrain | `$BA93`: 2 energy per head bump in zone 1 |
 | level | a slot's byte +3: the power of its shot, from MaskLevels `$AF3B` |
-| LIFTER | mask 6: a shot that lifts any enemy out in one hit (kind 10), 8 charges a shot; door 3 gives one (WarpBonus `$BA21`) |
+| LIFTER | mask 6: a shot that lifts in one hit the kinds that test +`$22` (faller, flyer, walker, riser, wave, the shots), the guard after ten hits, never the turret, the chaser or the boss (kind 10), 8 charges a shot; door 3 gives one (WarpBonus `$BA21`) |
 | live zone | the zone set at ZoneChars `$E000` / ZoneAttrs `$EF00` that the renderer reads |
 | long jump | state 7, the JACKRABBIT's flight: up rises 4 a pass, a charge each 5 passes |
 | MachineFlag | `$FFFE`, 0 on a 128K: the loader's answer, read by the interrupt |

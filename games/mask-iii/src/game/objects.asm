@@ -347,7 +347,8 @@ DrawCurrentSlot:
   LD E,A
   LD A,(IX+$02)
 
-; Print the BCD bytes at HL
+; Print the BCD bytes at HL; its only caller is the menu's HISCORE ($9D35), the
+; score in play is DrawScore $AE60
 ;
 ; Witness: L1 15546 (c1, cheat, door, door3, kind6, masks, play2, rzx- x10).
 PrintBcd:
@@ -1309,8 +1310,9 @@ l_BE02:
   LD (DissolveCount),A
   RET
 
-; Extra charges of the next PENETRATOR step: KindChaser $C68E sets 16 while
-; PenetratorOn
+; Extra charges of the next PENETRATOR step: KindChaser $C68E sets $10 (BCD, 10
+; charges) every pass it runs while PenetratorOn; Penetrator $BE23 adds it to
+; (PassBcd AND 1) and clears it
 PenetratorCost:
   DEFB $00
 
@@ -1415,7 +1417,9 @@ SpawnNothing:
 ;
 ; Used by the routine at RunObjects.
 ReviveObjects:
-  LD IX,Enemies           ; all six slots empty: object 2 back as a placeholder
+  LD IX,Enemies           ; all six slots 0 ($40 and $80 count as taken):
+                          ; object 2 back as a placeholder $80, 4 x 5 at x 1, y
+                          ; 0, mode 6
   LD B,$06
   LD DE,$0026
   LD A,$00
@@ -1574,7 +1578,9 @@ l_C038:
 ;
 ; Used by the routine at l_BFB7.
 SpawnFaller:
-  LD (IX+$00),$01         ; kind 2: from the top (object kind 1)
+  LD (IX+$00),$01         ; kind 2: from the top (object kind 1); dy = (x AND
+                          ; 3) + 2 (2-5), dx = Random AND 3 but not 2 (0, 1 or
+                          ; 3: right or straight)
   LD HL,EnemyTemplates
   CALL SetupObject
   LD (IX+$04),$E0
@@ -1600,7 +1606,8 @@ l_C06A:
 ;
 ; Used by the routine at l_BFBA.
 SpawnWave:
-  CALL Random             ; kind 3: a flyer on a wave (object kind 6)
+  CALL Random             ; kind 3: a flyer on a wave (object kind 6), when
+                          ; Random AND $44 = 0 and Matt's x < $91
   AND $44
   RET NZ
   LD A,(Objects+$0003)
@@ -2222,9 +2229,11 @@ l_C447:
 ;
 ; Used by the routine at l_C332.
 KindTurret:
-  LD A,(IX+$21)           ; 4: bobs, now and then fires a turret shot (kind 5);
-                          ; killed, Explode runs before AwardScore, so the
-                          ; explosion template's score 0 is added: a turret
+  LD A,(IX+$21)           ; 4: bobs, now and then fires a turret shot (kind 5)
+                          ; into slot+1 ($40) or a free slot+2 (AND $3F = 0),
+                          ; then rises again for 6 passes (its animation reset
+                          ; to 0); killed, Explode runs before AwardScore, so
+                          ; the explosion template's score 0 is added: a turret
                           ; never scores
   AND A
   JP Z,l_C4D7
@@ -2337,7 +2346,10 @@ ObjectCell:
 ; Used by the routine at l_C335.
 KindTurretShot:
   LD A,(IX+$21)           ; 5: damages Matt only while the slot before it holds
-                          ; a turret: the shot of a dead turret is harmless
+                          ; a turret (kind 4): the shot of a dead turret is
+                          ; harmless, and so is a shot KindTurret put into
+                          ; slot+2 (the slot before it is the first shot or its
+                          ; $40); such a shot ends as 0, not $40
   AND A
   JR Z,l_C54E
   LD A,(IX+$22)

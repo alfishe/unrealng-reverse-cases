@@ -463,6 +463,42 @@ both bits of an axis can reach Controls. MattWalk then tests down, up, left and 
 first ([doc 10](10-gameplay-logic.md)), so on a Kempston "left and right" walks left and "up and down" is down. Fire
 is always read, so fire combines with any move.
 
+### A bug: left and right on a Kempston
+
+MattStep sets Matt's facing before the walk, from the same Controls byte, and tests the bits the other way round:
+left first, then right, each overwriting the facing (`$B427-$B442`). The walk tests left first and stops there
+(`$B56B`). So with both bits set Matt walks left and faces right: the picture walks backwards.
+
+```z80
+  LD (IX+$12),$00         ; $B427: the step: none
+  LD A,(Controls)
+  BIT 1,A                 ; left
+  JR Z,l_B43A
+  LD (IX+$02),$80         ; face left
+  LD (IX+$12),$FE         ; step -2
+l_B43A:
+  BIT 0,A                 ; right, tested after left: it wins
+  JR Z,l_B446
+  LD (IX+$02),$00         ; face right
+  LD (IX+$12),$02         ; step +2
+  ...
+l_B56B:                   ; in the walk
+  BIT 1,C                 ; left, tested before right: it wins
+  JR Z,l_B5B5
+  ...
+  SUB $02                 ; x - 2
+```
+
+```text
+facing = left if Controls bit 1; facing = right if Controls bit 0     ; the last one wins
+if Controls bit 1: x -= 2                                            ; the first one wins
+elif Controls bit 0: x += 2
+```
+
+Worked example: a Kempston reads `$03` (left and right). MattStep leaves facing `$00` (right) and step `+2`; the
+walk takes the left branch and moves x by -2. The keys cannot do this: ReadControls never sets both bits (5.5).
+Known only from the code: no recording drove a Kempston with both bits of an axis.
+
 ## 5.6 From Controls to Matt
 
 Controls is read by four parts of a pass ([doc 4](04-game-loop.md#44-the-main-loop-and-the-order-of-a-pass)):
@@ -637,7 +673,7 @@ address are abandoned.
 flowchart TD
     I["Interrupt $9226, in play"] --> S["Scroller $AF82"]
     S --> B{"IN $7FFE OR IN $FEFE: bit 0 = 0?"}
-    B -- "no" --> R["restore the registers, EI, RETI"]
+    B -- "no" --> R["restore the registers, EI, RET"]
     B -- "yes: CAPS SHIFT and SPACE" --> G["JP GameStart $CBF9: SP = $FFF0, the menu"]
 ```
 
@@ -878,8 +914,8 @@ its input.
   (no port table) is an inference.
 - MaskKeys calls EndPenetrator before it checks that the chosen slot is not EMPTY. No recording pressed the key of an
   empty slot while PENETRATOR was running.
-- With a Kempston stick, "left and right" walks left and "up and down" crouches (MattWalk's order). No recording drove
-  a Kempston stick with both bits of an axis.
+- With a Kempston stick, "left and right" walks left facing right (the bug in 5.5) and "up and down" crouches
+  (MattWalk's order). No recording drove a Kempston stick with both bits of an axis.
 - CheatCheck's hidden operands (`$BA77` + `INC B`, `$E406` + `$BB6B`). The cheat's effect is in stage 2's notes
   (`work/stage2/NOTES.md`); the `cheat` recording types JUDGE DREDD and shows it working ([doc 10](10-gameplay-logic.md)).
 - DefineKeys zeroes KeysNow, and code 0 is CAPS SHIFT. So CAPS SHIFT can never be defined: AskKey finds `$00` in the

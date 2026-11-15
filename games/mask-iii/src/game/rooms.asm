@@ -184,8 +184,11 @@ MenuFlag:
   DEFB $00,$01            ; non-zero: Interrupt runs MenuInterrupt instead of
                           ; CheatCheck
 HudSaved:
-  DEFB $FF                ; non-zero once SaveHud has kept the play screen's
-                          ; panel
+  DEFB $FF                ; $FF as loaded: the first Menu skips SaveHud
+                          ; (PlayPanel $F600 still holds the loaded panel);
+                          ; Menu then sets 0, so every later Menu copies the
+                          ; screen's panel back to $F600 (BuildTables overwrote
+                          ; it)
 MenuColours:
   DEFB $00,$01,$02,$03,$04,$05,$06,$07 ; 16 colours for the menu's lit icon and
   DEFB $07,$06,$05,$04,$03,$02,$01,$00 ; bars
@@ -201,12 +204,15 @@ MapPointer:
 ; Draw the screen RoomScreen of room RoomNumber and set up its objects,
 ; pick-ups and message
 ;
-; Room 15 at screen 5 is the end: Ending $ADF6. Clears objects 2-7, expands the
-; 8 x 5 blocks into the character map, SwapZone, marks every cell dirty and
-; flushes, sets EnemyKind $BFB0 from RoomTable byte 6 + screen, then MoonMasks
-; $ADD2, AnimatedCharList $AB6B, FindLift $AA75, PlaceTurrets $AC42,
-; FindFloorRow $AC80, FindSpawnPoints $ACA0, FindBlockItems $ACEA,
-; PlacePickupsInScreen $A9BE and RoomMessage $AD28.
+; Room 15 at screen 5 is the end: Ending $ADF6. Clears objects 2-7 (3-7 while
+; the chaser lives), expands the 8 x 5 blocks into the character map, SwapZone,
+; marks every cell dirty and flushes, sets EnemyKind $BFB0 from RoomTable byte
+; 6 + screen, then MoonMasks $ADD2, AnimatedCharList $AB6B, FindLift $AA75,
+; PlaceTurrets $AC42, FindSpawnPoints $ACA0, FindBlockItems $ACEA, FindFloorRow
+; $AC80, PlacePickupsInScreen $A9BE, EffectStops+1 = $FF and RoomMessage $AD28.
+; Before the blocks: a new room (RoomNumber not MapPointer+2) clears
+; ChaserState, ShotOff $BD7F ends Matt's shot, and with ChaserState set only
+; objects 3-7 are cleared (the chaser survives a screen change).
 ;
 ; Witness: L1 87 (c1, cheat, door, door3, kind6, masks, play2, rzx- x9).
 DrawRoom:
@@ -694,7 +700,9 @@ l_AC38:
   JR NZ,l_AC35
   RET
 
-; Every block $12 of the screen becomes a turret object (kind 4)
+; Every block $12 of the screen becomes a turret object (kind 4, template 2:
+; animation 3, so it bobs at once), the next slot reserved ($40); the SUB $02
+; at $AC55 is dead (LD A,C follows), so y is the block's row
 ;
 ; Witness: L1 86 (c1, cheat, door, door3, kind6, masks, play2, rzx- x9).
 PlaceTurrets:

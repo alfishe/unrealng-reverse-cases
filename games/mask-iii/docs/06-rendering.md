@@ -57,6 +57,7 @@ MASK III never draws a sprite on the screen. Every picture goes through one leve
 | `$F080-$F2FF` | 640 | the character map, 32 x 20; screen row 0 is `$F0C0` | DrawRoom, DrawObject, the pick-ups | FlushDirty, the game logic |
 | `$F300-$F3BF` | 192 | the mirrored frame | MirrorFrame | MakeMask, DrawShifted |
 | `$F3C0-$F5FF` | 576 | the dirty marks, 32 x 18, one per shown cell | DrawRoom, DrawObject, the pick-ups, AnimateZone | FlushDirty |
+| `$F600-$FDFF` before BuildTables | 1536 + 192 | PlayPanel `$F600` and PanelAttrs `$FC64`: the play panel, the tape's until the first game, then the one SaveHud `$9CA0` keeps at each Menu | the tape, SaveHud | Menu (the panel at the game start, [doc 8](08-hud-and-text.md#81-the-play-panel)) |
 | `$F600-$F6FF` | 256 | bit reverse | BuildTables | MirrorFrame |
 | `$F700-$F7FF` | 256 | dilate: b OR b << 1 OR b >> 1 | BuildTables | MakeMask |
 | `$F800-$FDFF` | 1536 | the shift tables, 2, 4 and 6 pixels | BuildTables | DrawShifted |
@@ -83,8 +84,8 @@ flowchart LR
 Worked example: the cell at screen row 9, column 5 has offset 32 x 9 + 5 = `$125`. Its map byte is `$F1E5`, its
 dirty mark `$F4E5`, its attribute `$5925`, and its first pixel line `$4825` (third 1, character row 1, column 5).
 
-Witness: the c1 pass traced at 18669:38407-18672:12707 writes the play window only from FlushDirty's two stores
-`l_A1FE` and `l_A24C` (6.11).
+Witness: the c1 pass traced at 18669:38407-18672:12707 writes the play window only from FlushDirty's stores,
+which the trace credits to two labels: `l_A1FE` (the line copies at `$A223-$A23F`) and `l_A24C` (the attribute) (6.11).
 
 The point: the play window is a character display. A sprite is a handful of characters made for this pass, and the
 screen only ever receives whole cells.
@@ -103,7 +104,10 @@ map, from `$F080`:
 DrawRoom:
     if RoomNumber == 15 and RoomScreen == $28: goto Ending
     FirstSpriteChar = 0
-    clear the six enemy records (state, +$1F)
+    if RoomNumber != MapPointer+2: ChaserState = 0      # a new room; MapPointer+2 = RoomNumber
+    ShotOff()                                    # $BD7F: Matt's shot ends
+    clear the enemy records' state and +$1F: all six, or the last five while ChaserState is set
+                                                 # the chaser in slot 2 survives a screen change
     src = $7600 + 240 * RoomNumber + RoomScreen
     dst = $F080                                  # map row 0 (hidden)
     for by in 0..4:
@@ -118,7 +122,9 @@ DrawRoom:
     FlushDirty()                                 # the whole window
     EnemyKind = record[6 + screen]
     MoonMasks, AnimatedCharList, FindLift, PlaceTurrets, FindSpawnPoints, FindBlockItems, FindFloorRow,
-    PlacePickupsInScreen, RoomMessage
+    PlacePickupsInScreen
+    EffectStops+1 = $FF
+    RoomMessage
 ```
 
 The inner block copy is unrolled: four `LDI` a character row, `$1C` added to step to the next row of a 32-wide map
@@ -222,7 +228,8 @@ Three things about the attributes follow from the figure and the code:
   black. Paper is 0 in all zones anyway, except 5 characters of zone 2;
 - characters `$EA-$FF` are the foreground: DrawObject never puts a sprite over them (6.6).
 
-SwapZone exchanges 2304 bytes under `DI`, at 72 T a byte. The routine, its timing and the lost interrupts are in
+SwapZone exchanges 2304 bytes under `DI`: the 2048 pattern bytes at 72 T each and the 256 attribute bytes at 56 T
+each, 2048 x 72 + 256 x 56 = 161 792 T for the loops. The routine, its timing and the lost interrupts are in
 [doc 4, 4.5](04-game-loop.md#swapzone-under-di). After the swap it sets TurretStem from TurretStems `$A1EC` + zone:
 the character a turret's stem uses in that zone.
 
@@ -355,7 +362,8 @@ A251  DD E9                       JP (IX)
 Worked example, the cost:
 
 - a clean cell is one turn of `l_A1FE`: 7 + 6 + 10 = 23 T. An idle window costs 576 x 23 = 13 248 T;
-- a marked cell costs 445 T: the scan step, the address arithmetic, 8 unrolled line copies (112 T) and the attribute;
+- a marked cell costs 445 T in the zone's characters and 447 T in the sprite characters (the `BIT 3,H` branch): the
+  scan step, the address arithmetic, 8 unrolled line copies with their `INC D` / `INC L` (168 T) and the attribute;
 - a whole window, as after DrawRoom, is 576 x 445 = 256 320 T. Doc 4 measures about 260 674 T for the room 1
   change: the difference is the sentinel and the call.
 
@@ -451,7 +459,7 @@ position, then walks (w + 1) columns of (h + 1) cells, one more than the frame e
 ```text
 DrawObject(IX):
     row  = (y + $30) AND $F8                        # field +$25: 8 x the map row
-    col  = (x - $40) >> 2   (signed)                # field +$13
+    col  = (x - $40) >> 2   (signed)                # field +$13 holds x - $40, before the shift
     cell = $F000 + 4 * row + col
     B    = NextSpriteChar                           # field +$0B
     save = PickupSavePtr                            # field +$0E/$0F
@@ -692,7 +700,8 @@ time. The 1.5 KB of tables buy the speed.
 A mask lying in the room is drawn as a 2 x 2 sprite that never moves. PlacePickupsInScreen `$A9BE`, called by
 DrawRoom, finds up to two pick-ups of the screen and fills the records at `$AF1B` and `$AF23`. PlacePickup `$A9DA`:
 
-- works out the map address: `$F0C0` + 32 x row + column - 4 x screen (record +3/+4);
+- works out the map address: `$F0C0` + 32 x row + column - 4 x RoomScreen (RoomScreen is 8 x the screen, so this
+  is 32 x the screen) and keeps it in record +3/+4;
 - takes 4 sprite characters from FirstSpriteChar `$A2CE` and adds 4 to it;
 - copies the 32-byte icon MaskIcons `$D580` + 32 x kind into `$E800` + 8 x char;
 - writes MaskColours `$AF46`[kind] OR `$40` into their 4 attributes at `$EE00`.
@@ -766,9 +775,14 @@ A3DF  10 DE                       DJNZ l_A3BF
 
 Who sets DissolveCount:
 
-- 1: the death when the energy runs out (MainLoop at `$CC3B`) and the warp of a password door (StartWarp at `$B9CF`);
-- 2: PENETRATOR held (Penetrator at `$BE20`): Matt is drawn thinned while he walks through walls;
-- 0: the new game (`$91F0`), the end of the warp (`$BA11`) and the end of PENETRATOR (`$BE09`).
+- 1: the death when the energy runs out (MainLoop at `$CC3B`) and the start of a password-door warp (StartWarp at
+  `$B9CF`);
+- up by one every 16 passes: PasswordWarp (`$B9E2`), so the warp goes 1 -> 2 -> 3 -> 4 while Matt fades out (doc 10.15);
+- 4: a pod's materialisation (PodStart at `$BA74`); MattPodDissolve lowers it by one every 16 passes (`$BA85`), 4 -> 3
+  -> 2 -> 1, and clears it at the end (`$BA8F`);
+- 2: PENETRATOR held (Penetrator at `$BE20`, every pass): Matt is drawn thinned while he walks through walls;
+  EndPenetrator clears it only while it is 2 (`$BE09`);
+- 0: the new game (`$91F0`), the end of the warp (`$BA11`) and Death (`$BAB3`).
 
 ![Dissolve at work](img/routines/Dissolve.gif)
 
@@ -800,14 +814,19 @@ shows an animated character changes with it.
    or `$6B`/`$6C`, one above the other) at LiftPlace `$AA72`, clears the cell it left and marks the cells 1;
 3. three counters step: `$CABD` 0-7, `$CABE` 5 down to 0, `$CABF` 0-11;
 4. the zone's frame characters are copied over the live ones;
-5. Twinkle `$C9EA` changes one character (`$E710`, or `$E728` in zone 3) by the steps at `$CA35`.
+5. Twinkle `$C9EA` sets one line in each of 8 characters: it walks 8 characters from `$E710` (characters `$E2-$E9`),
+   or from `$E728` in zone 3 (`$E5-$EC`), HL + 8 a step, and writes `$FF` or 0 into the line that its step in
+   TwinkleSteps `$CA35` names.
 
-| Zone | Copies (frame -> live) |
+The copies of step 4. The counters are `$CABD` (c0, 0-7), `$CABE` (c1, 5-0) and `$CABF` (c2, 0-11); a source moves by
+the counter times the size given.
+
+| Zone | Copies (frame -> live, bytes) |
 | --- | --- |
-| 0 | `$E600` -> `$E300`, `$E210` -> `$E758`, `$E460` -> `$E4E0` |
-| 1 | `$E400` -> `$E288`, `$E630` -> `$E600`, `$E788` -> `$E508` |
-| 2 | `$E3A0` -> `$E360` |
-| 3 | `$E580` -> `$E700` |
+| 0 | `$E600` + 32 x c0 -> `$E300` (32); `$E210` + 32 x c1 -> `$E758` (32); `$E460` + 16 x c0 -> `$E4E0` (16) and `$E560` + 16 x c0 -> `$E5E0` (16) |
+| 1 | `$E400` + 32 x c0 -> `$E288` (16) and `$E500` + 32 x c0 -> `$E388` (16); `$E630` + 32 x c1 -> `$E600` (16) and `$E730` + 32 x c1 -> `$E700` (16); `$E788` + 16 x (the byte at `$CAC0` + c1) -> `$E508` (16), only when AnimLast `$CB41` is set, or when c1 is 5 and Random AND 7 is 0 (AnimLast then keeps c1) |
+| 2 | `$E3A0` + 8 x (the byte at `$CAC7` + c1) -> `$E360` (8) |
+| 3 | `$E580` + 32 x c2 -> `$E700` (32) |
 
 ```text
 CAAD  21 A1 AA      MarkAnimated: LD HL,AnimatedCells
@@ -877,7 +896,7 @@ How to read: the screen at scale, each written byte in its writer's colour; the 
 | 23 372 | 18669:61779 | DrawObjects |
 | 150 023 | 18671:46614 | FlushDirty |
 
-The interrupts fall at 18670:0 and 18671:0; the Scroller writes about 2800 T after each.
+The interrupts fall at 18670:0, 18671:0 and 18672:0; the Scroller writes about 2800 T after each.
 
 Worked example: FlushDirty's 232 pixel bytes are 29 cells of 8 lines, and its 29 attribute writes agree: this pass
 copied 29 cells, about 29 x 445 = 12 905 T of copying for a window of 576 cells. DrawScore, by contrast, rewrites
@@ -886,7 +905,7 @@ copied 29 cells, about 29 x 445 = 12 905 T of copying for a window of 576 cells.
 Against the beam (the figure in [doc 4](04-game-loop.md#one-pass-against-the-beam), `img/loop/beam-pass-c1.png`):
 the panel is written early in the pass, then for nearly two frames nothing reaches the screen, then FlushDirty writes
 the window from the bottom up with no regard to the beam. The tearing is per cell: a cell is copied in one go, 8 lines
-within 112 T. The beam spends about 1800 T inside a cell's 8 lines, so a cell is shown half old and half new only
+within 168 T. The beam spends about 1800 T inside a cell's 8 lines, so a cell is shown half old and half new only
 when the copy lands in that span; most of the tearing falls between cells.
 
 The point: the screen sees the play window once a pass, in one burst at the end. Everything before it is
@@ -894,8 +913,9 @@ invisible work.
 
 ## 6.12 Known only from the code
 
-- **Six placeholder objects.** Records 2-7 hold state `$80` (live), a position off the left edge and a null frame
-  pointer. Each is "drawn": 9 character numbers, MakeMask and DrawShifted over the ROM bytes at `$0000`, about
+- **Six placeholder objects.** In room 0, screen 0 EnemyKind is 0, and Spawn's kind 0 is a `RET`
+  ([doc 7, 7.8](07-objects.md#78-the-spawner)), so the slots keep the placeholder `$80`. Records 2-7 hold state
+  `$80` (live), a position off the left edge and a null frame pointer. Each is "drawn": 9 character numbers, MakeMask and DrawShifted over the ROM bytes at `$0000`, about
   12 300 T. No cell is shown, so no recording shows them; only the trace's timing does. That is 40 % of a pass in
   room 0.
 - **The hidden map rows.** MattStep clears `$F000-$F0BF` each pass (`LD HL,$F0BF`, 192 bytes): the mask buffer and

@@ -47,7 +47,8 @@ the loader and the zone sets leave.
 
 ## 2.2 The memory map
 
-Stage 2 named every byte in `src/game/game.ann` (363 entries in 11 modules). The map as it stands in play:
+Stage 2 named every byte in `src/game/game.ann` (363 entries in 10 modules; the AY player in RAM 4 is an eleventh,
+`src/music/music.ann`). The map as it stands in play:
 
 ![The 64 KB in play, 4 KB a row](img/memory/memmap.png)
 
@@ -55,7 +56,7 @@ Stage 2 named every byte in `src/game/game.ann` (363 entries in 11 modules). The
 
 | Range | Bytes | What | Module |
 | --- | ---: | --- | --- |
-| `$4000-$5AFF` | 6912 | the screen: the play window rows 0-17, the panel rows 18-23 | |
+| `$4000-$5AFF` | 6912 | the screen: the play window rows 0-17, the panel rows 18-23 | none: block 5, not in the image |
 | `$5B00-$63FF` | 2304 | zone 1 (the caverns) parked: 256 characters, 256 attributes at `$6300` | zones |
 | `$6400-$6CFF` | 2304 | zone 2 (the moon) parked | zones |
 | `$6D00-$75FF` | 2304 | zone 3 (the base) parked | zones |
@@ -83,11 +84,13 @@ Stage 2 named every byte in `src/game/game.ann` (363 entries in 11 modules). The
 | `$F300-$F3BF` | 192 | MirrorFrame's mirrored picture | buffers |
 | `$F3C0-$F5FF` | 576 | the dirty map, FlushDirty's scan from `$F5FF` down | buffers |
 | `$F600-$FDFF` | 2048 | BuildTables: the bit-reverse table `$F600`, the dilate table `$F700`, the shift tables `$F800-$FDFF` (the play panel as loaded) | buffers |
-| `$FE00-$FF00` | 257 | the IM 2 table, all `$FF` | |
-| `$FF01-$FFF3` | 243 | the stack, from `SP` = `$FFF0` down | |
-| `$FFF4-$FFF6` | 3 | ImJump: `JP $9226` | |
-| `$FFFE` | 1 | MachineFlag: 0 on a 128K | |
-| `$FFFF` | 1 | ImJr: `$18`, the `JR` | |
+| `$FE00-$FF00` | 257 | the IM 2 table, all `$FF` | none: written by GameEntry |
+| `$FF01-$FFEF` | 239 | the stack, from `SP` = `$FFF0` down (52 bytes used at most, 2.8) | none |
+| `$FFF0-$FFF3` | 4 | unused: above the stack top | none |
+| `$FFF4-$FFF6` | 3 | ImJump: `JP $9226` | none: written by GameEntry |
+| `$FFF7-$FFFD` | 7 | unused: the loader block's bytes, never read or written (doc 3, 3.3) | none |
+| `$FFFE` | 1 | MachineFlag: 0 on a 128K | none: written by the loader |
+| `$FFFF` | 1 | ImJr: `$18`, the `JR` | none: written by GameEntry |
 | RAM 4 `$C000-$CF9F` | 4000 | the AY player and the three tunes (128K only) | music |
 
 Stage 1 called `$5B00-$75FF` "three parked zone sets" with the order unknown, and `$F000-$FDFF` "the room buffer".
@@ -108,10 +111,15 @@ flowchart LR
     Z["ZoneSlots $A194: live, slot 1, slot 2, slot 3"] -.-> L
 ```
 
+The first rooms of the way through (1.5 of doc 1), as SwapZone leaves ZoneSlots:
+
 ```text
 as loaded:      ZoneSlots = 0, 1, 2, 3     ; zone 0 live
-enter room 4:   SwapZone(1): 0 <-> 1       ; ZoneSlots = 1, 0, 2, 3
-enter room 12:  SwapZone(3): 1 <-> 3       ; ZoneSlots = 3, 0, 2, 1
+enter room 10:  SwapZone(3): 0 <-> 3       ; ZoneSlots = 3, 1, 2, 0  (the first swap of a game)
+enter room 1:   SwapZone(0): 3 <-> 0       ; ZoneSlots = 0, 1, 2, 3
+enter room 11:  SwapZone(3): 0 <-> 3       ; ZoneSlots = 3, 1, 2, 0
+enter room 4:   SwapZone(1): 3 <-> 1       ; ZoneSlots = 1, 3, 2, 0
+enter room 12:  SwapZone(3): 1 <-> 3       ; ZoneSlots = 3, 1, 2, 0
 ```
 
 Worked example: zone 1's set is split by the loader. The loader runs at `$5E00`, inside slot 1. So the tape puts
@@ -134,7 +142,8 @@ off on each zone change.
 Executed: `$9100-$CC5B` only (and the loader's `$5E00` and `$FF00` in c1). Read: the room maps and blocks, the
 pictures, the live zone, and the character and dirty maps most of all. Written: the parked zone sets (on a zone
 change), the buffers `$DF80-$FDFF`, variable bands in the code area, and the screen. Nothing writes the room maps
-except two block changes (a taken item, a used pod), which NewGame undoes.
+except two block changes (a taken block item becomes `$47`, TakeBlockItem `$B33D`; a destroyed turret becomes `$2B`,
+`$C4DD`), which NewGame undoes.
 
 ## 2.4 The state variables
 
@@ -148,7 +157,7 @@ except two block changes (a taken item, a used pod), which NewGame undoes.
 | Score | `$AE41` | 8 BCD digits |
 | Energy | `$AEA6` | 255 full, 0 the end |
 | PassCounter | `$AF0C` | the passes, binary |
-| MaskSlots | `$AF2B` | 4 slots of 4 bytes: picture, kind, BCD charges, level |
+| MaskSlots | `$AF2B` | 4 slots of 4 bytes: the HUD column of the icon (`$61`, `$64`, `$67`, `$6A`), kind, BCD charges, level |
 | ZoneSlots | `$A194` | the live zone, then the zones in the three parked slots |
 | Hiscore | `$9D16` | 4 BCD bytes |
 | PasswordFlags | `$9F6D-$9F70` | the four passwords typed |
@@ -319,8 +328,8 @@ GameOver and the menu.
 | the interrupt | pages RAM 4, the AY player, the effects on the AY | StopBeeper, BeeperTick |
 | the tunes | menu, game over, game start | none |
 | the effects | PlayEffect queues them for the AY | PlayEffect starts the beeper |
-| the menu's logo raster (MenuInterrupt, `$98BB`) | a delay loop of `BC` = `$01CC` | `BC` = `$01AF`: the 48K's frame and line timing differ |
-| the handler's cost in play | 1711 T an interrupt (`c1-play`) | 2600 T (`rec/rzx-16000`, the beeper path) |
+| the menu's logo raster (MenuInterrupt, `$98BB`) | a delay loop of `BC` = `$01CC` | `BC` = `$01AF`, for the 48K's other frame and line timing (read from the code, not measured against the beam) |
+| the handler's cost in play | 1711 T an interrupt, 2.4 % (`c1-play`) | 2429 T, 3.5 % (`c48`, frames 17 100-18 675, play only); 2600 T on the beeper path of the 128K model (`rec/rzx-16000`) |
 
 ```mermaid
 flowchart LR
@@ -344,7 +353,7 @@ The image holds bytes that the game overwrites before it reads them, and routine
 | `$6300-$63FF` | Zone1AttrsLeftover: an older copy of zone 1's attributes | GameEntry copies `$EE00` over it; 255 of 256 bytes equal |
 | `$E800-$EDFF` | 1536 bytes of leftovers in SpriteChars | DrawObject writes every sprite character before it is read |
 | `$F500-$F5FF` | 256 bytes | cleared as the dirty map |
-| `$F600-$FBFF` | PlayPanel: the panel's characters | the menu draws it at the first start; then BuildTables writes its tables over it |
+| `$F600-$FBFF` | PlayPanel: the panel's characters | the menu draws it at every start; BuildTables writes its tables over it, so each later menu copies the panel back from the screen first (SaveHud `$9CA0`) |
 | `$FC00-$FC63`, `$FD24-$FDFF` | leftovers around the panel's attributes | BuildTables' shift tables |
 | `$CC5D` | PassBcdSpare: 35 bytes | after the main loop |
 | `$FFB6-$FFF3` | the loader block's tail: a stack's contents | the block was saved from memory with the game running (doc 3) |

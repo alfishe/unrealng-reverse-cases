@@ -45,7 +45,7 @@ Witness: L1 40146 (c1, cheat, door, door3, kind6, masks, play2, rzx- x10).
 
 **Draw the screen RoomScreen of room RoomNumber and set up its objects, pick-ups and message**
 
-Room 15 at screen 5 is the end: Ending `$ADF6`. Clears objects 2-7, expands the 8 x 5 blocks into the character map, SwapZone, marks every cell dirty and flushes, sets EnemyKind `$BFB0` from RoomTable byte 6 + screen, then MoonMasks `$ADD2`, AnimatedCharList `$AB6B`, FindLift `$AA75`, PlaceTurrets `$AC42`, FindFloorRow `$AC80`, FindSpawnPoints `$ACA0`, FindBlockItems `$ACEA`, PlacePickupsInScreen `$A9BE` and RoomMessage `$AD28`.
+Room 15 at screen 5 is the end: Ending `$ADF6`. Clears objects 2-7 (3-7 while the chaser lives), expands the 8 x 5 blocks into the character map, SwapZone, marks every cell dirty and flushes, sets EnemyKind `$BFB0` from RoomTable byte 6 + screen, then MoonMasks `$ADD2`, AnimatedCharList `$AB6B`, FindLift `$AA75`, PlaceTurrets `$AC42`, FindSpawnPoints `$ACA0`, FindBlockItems `$ACEA`, FindFloorRow `$AC80`, PlacePickupsInScreen `$A9BE`, EffectStops+1 = `$FF` and RoomMessage `$AD28`. Before the blocks: a new room (RoomNumber not MapPointer+2) clears ChaserState, ShotOff `$BD7F` ends Matt's shot, and with ChaserState set only objects 3-7 are cleared (the chaser survives a screen change).
 
 Witness: L1 87 (c1, cheat, door, door3, kind6, masks, play2, rzx- x9).
 
@@ -173,7 +173,7 @@ Witness: L1 19 (door, rzx- x7).
 
 ### `PlaceTurrets` (`$AC42`)
 
-**Every block `$12` of the screen becomes a turret object (kind 4)**
+**Every block `$12` of the screen becomes a turret object (kind 4, template 2: animation 3, so it bobs at once), the next slot reserved (`$40`); the SUB `$02` at `$AC55` is dead (LD A,C follows), so y is the block's row**
 
 Witness: L1 86 (c1, cheat, door, door3, kind6, masks, play2, rzx- x9).
 
@@ -1112,7 +1112,7 @@ Witness: L1 21 (c1, cheat, door, door3, kind6, masks, play2, rzx- x8).
 
 ### `Twinkle` (`$C9EA`)
 
-**Eight bits of the characters at `$E710` (`$E728` in zone 3) switched on and off in turn (TwinkleSteps)**
+**One line in each of 8 characters from `$E710` (chars `$E2-$E9`; from `$E728`, chars `$E5-$EC`, in zone 3) set to `$FF` or 0 in turn (TwinkleSteps)**
 
 Witness: L1 15361 (c1, cheat, door, door3, kind6, masks, play2, rzx- x9).
 
@@ -1343,7 +1343,7 @@ Witness: L1 15390 (c1, cheat, door, door3, kind6, masks, play2, rzx- x9).
 
 ### `PrintBcd` (`$AF6B`)
 
-**Print the BCD bytes at HL**
+**Print the BCD bytes at HL; its only caller is the menu's HISCORE (`$9D35`), the score in play is DrawScore `$AE60`**
 
 Witness: L1 15546 (c1, cheat, door, door3, kind6, masks, play2, rzx- x10).
 
@@ -3307,7 +3307,7 @@ Witness: L1 21 (c1, cheat, door, door3, kind6, masks, play2, rzx- x8).
 
 ### `LavaDrain` (`$BA93`)
 
-**Zone 1: 2 energy a step**
+**Zone 1: 2 energy when Matt's head hits a solid character in a jump (MattJumpRise `$B83E`, JackrabbitJump `$B91C` / `$B925`)**
 
 Witness: L1 51 (rzx-12000, rzx-16000, rzx-20000).
 

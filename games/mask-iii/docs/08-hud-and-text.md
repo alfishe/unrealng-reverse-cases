@@ -52,6 +52,10 @@ field; the list below gives its row, columns, routine and screen address.
 Menu `$9723` puts the panel on the screen when fire starts a game: DrawGraphic of PlayPanel at row 18, the 192
 attributes from PanelAttrs to `$5A40`, then 10 spaces at row 23, column 1 to clear the message line.
 
+The picture of figure 8.1 is the authors' own play screen (score 00012042). It is on the screen only at the first
+game's start, from the menu's DrawGraphic to the first pass: NewGame's DrawAllSlots (`$91C3`) redraws the slots
+and the first pass's DrawScore the score.
+
 ```mermaid
 flowchart LR
     T["tape: PlayPanel $F600, PanelAttrs $FC64"] -->|"fire in the menu"| S["screen rows 18-23"]

@@ -48,6 +48,6 @@ $5E58 LoadMusic ; a 128K: tape block 7 into RAM 4
 
 $FF88 s LoaderPad ; Zeros after the copied code
 $FFB6 b StackLeftover 8 ; The stack as it was when the block was saved: 74 bytes, read by nothing
-$FFF4 JumpToHandlerLeftover ; JP $9226, as the game's entry writes it
+$FFF4 JumpToHandlerLeftover ; JP $9226, as the game's entry writes it ($FFF4-$FFF6); then $FFF7-$FFFD, 5A A5 80 E2 88 E2 3C: read and written by nothing, above the stack top $FFF0
 $FFFE MachineFlag ; the 128K flag: 0 on a 128K, $FF on a 48K (written by LoaderMain, read by the game's interrupt)
 $FFFF JrLeftover ; $18 (JR), as the game's entry writes it

@@ -34,14 +34,17 @@ MASK III has one main loop and no frame lock. The loader hands over to GameEntry
 IM 2 table and falls into GameStart `$CBF9`. GameStart is the hub: every way out of a game comes back to it.
 
 GameStart resets the stack, enables interrupts, runs the menu, then sets up a new game. Then it falls through into
-MainLoop `$CC03`. The main loop never returns. It leaves in one of four ways:
+MainLoop `$CC03`. The main loop never returns. It leaves in one of five ways:
 
 1. Matt dies: `JP NZ,Death` at `$CC1F`, then GameOver `$BACC`, then `JP GameStart`;
 2. the energy reaches 0: the main loop sets Matt's state 9, MattNoEnergy `$B9B8` waits, then GameOver;
 3. Matt reaches room 15's last screen: DrawRoom `$A89D` jumps to Ending `$ADF6`, which ends in `JP GameStart`;
-4. the player presses BREAK (CAPS SHIFT and SPACE): the interrupt handler itself jumps to GameStart.
+4. the player presses BREAK (CAPS SHIFT and SPACE): the interrupt handler itself jumps to GameStart;
+5. PENETRATOR ends with Matt inside a wall: EndPenetrator `$BDD1` sets Dying, calls Explosion `$BB78` and jumps to
+   GameOver (`$BDF7-$BDFF`), from inside the pass (EndPenetrator is reached from MaskKeys `$B098`, FireMask `$BCEA`,
+   HeldMasks `$BDA9` when fire is released, and Penetrator's last charge `$BE36`).
 
-The last way is unusual. The jump happens inside the interrupt, with the main loop's registers still on the stack.
+The fourth way is unusual. The jump happens inside the interrupt, with the main loop's registers still on the stack.
 GameStart's first instruction, `LD SP,$FFF0`, throws them away. The handler's `EI` is never reached, so GameStart
 has its own `EI` at `$CBFC`.
 
@@ -66,6 +69,8 @@ stateDiagram-v2
     MainLoop --> Ending: room 15, screen 5
     Ending --> GameStart: YOU HAVE FOUND SCOTT, WELL DONE
     MainLoop --> GameStart: BREAK, from inside the interrupt
+    MainLoop --> Explosion: PENETRATOR ends inside a wall
+    Explosion --> GameOver: 150 HALTs
 ```
 
 Pseudocode of the hub (`src/game/interrupt.asm`):
@@ -82,7 +87,8 @@ MainLoop:
 ```
 
 The witness is c1. The loader arrives at frame 1094 T 37 200. GameEntry runs at frame 15 019 T 60 034. The first
-interrupt goes through the `JR` at frame 15 021. The menu is on screen by frame 17 750, and the first game starts at
+interrupt goes through the `JR` at frame 15 021. The menu is on screen by frame 15 100 (the last picture of
+`load-c1.gif`; the menu screenshot is of frame 17 750), and the first game starts at
 about frame 18 300 (WALKTHROUGH 1). In `rec/rzx-28000` Matt dies, MISSION TERMINATED is printed and a new game
 starts, all inside one 4000-frame segment.
 
@@ -180,7 +186,7 @@ Interrupt:
     FrameCounter += 1
     border = BorderColour
     if MenuFlag == 0: CheatCheck()            ; JUDGE DREDD
-    else:             MenuInterrupt()         ; the logo raster, the menu keys
+    else:             MenuInterrupt()         ; the logo raster, the lit icon, the colours (no keys)
     if MachineFlag == 0:                      ; 128K
         page RAM 4 ($7FFD = $14)
         if TuneRequest: MusicStart(TuneRequest - 1); TuneRequest = 0
@@ -267,6 +273,7 @@ top of memory `$FFC0-$FFFF`: the registers pushed below `$FFF0`, the `JP` at `$F
 | --- | --- | ---: | ---: | ---: |
 | `c1-play`, frames 18 500-22 300, room 0 | 128K, the AY player | 3800 in 3800 frames | 1711 | 2.4 % |
 | `rec/rzx-16000`, 4000 frames, rooms 12 and 5 | the beeper (the RZX's flag) | 3999 | 2600 | 3.7 % |
+| `c48`, frames 17 100-18 675, play on the 48K model | the beeper | 1575 in 1575 frames | 2429 | 3.5 % |
 | `c1-menu`, frames 15 100-17 790 | 128K, MenuInterrupt | 2690 | 64 914 | 91.5 % |
 
 The same numbers come from the L1s alone. `work/docs/mxA/intcost.py` adds the T of the handler, its play callees and
@@ -276,10 +283,11 @@ RAM 4:
 | --- | ---: | ---: |
 | `c1-play` | 1686 | 212 |
 | `rec/rzx-16000` | 2578 | 0 |
-| `c48` (2175 frames on the 48K model, menu and play) | 1425 | 0 |
+| `c48`, frames 17 100-18 675 (play on the 48K model, `work/review/rvA/c48/l1.json`) | 2389 | 0 |
 
-The difference from 1711 is the 41 T of the acknowledge, the `JR` and the `JP`, and a few T of the
-`CALL NZ` not taken.
+The difference from 1711 is 25 T, and from 2429 40 T. `intcost.py` counts only the handler's own ranges, so it misses
+the `JR` at `$FFFF` and the `JP` at `$FFF4` (22 T); the rest is how the two tools draw the entry's edges. The 48K
+window is play only: an earlier figure of 1425 T mixed `c48`'s menu and play.
 
 Worked example: the c1 play window has 3800 frames of 70 908 T. The handler takes 3800 x 1711 = 6 501 800 T.
 That is 6 501 800 / 269 450 400 = 2.4 % of the CPU.
@@ -290,7 +298,8 @@ Three findings come out of these tables.
   The menu tune costs more: the music module is 6.0 % of the menu window's CPU, about 4250 T a frame.
 - The beeper path costs more than the AY path: BeeperTick toggles port `$FE` itself while an effect sounds.
 - The menu's interrupt is nearly a whole frame, 64 914 T of 70 908. MenuInterrupt draws the logo's colour raster
-  and reads the menu keys. The menu's own loop gets the rest and waits on `HALT`.
+  with its delay loop, lights the chosen control's icon and scrolls the colours; it reads no key. The menu's own loop,
+  MenuLoop `$9775`, reads the keys in the rest of the frame and waits on `HALT`.
 
 The whole-recording average of c1 (30 032 T an interrupt, WALKTHROUGH 1) is not the AY player's cost: it mixes the
 menu's interrupts into the average; the play window measures 212 T.
@@ -307,7 +316,7 @@ MainLoop:                 ; $CC03
   CALL ReadControls       ; $A13B: keys, Kempston, Interface 2, Cursor
   CALL MattStep           ; $B3EB: Matt by his state
   CALL MoveShot           ; $BD84: Matt's shot
-  CALL Hazards            ; $B2F1: the deadly floor, the lava
+  CALL Hazards            ; $B2F1: DeadlyFloor, TakeBlockItem
   CALL RunObjects         ; $C284: spawn, move, collide the enemies
   CALL FireMask           ; $BCE0: the mask in use
   CALL MaskKeys           ; $B089: keys 1-4
@@ -395,7 +404,7 @@ Read against the beam, the pass goes like this:
 
 | Frame | T | What the figure shows |
 | --- | --- | --- |
-| every frame | 1846 | the interrupt (the green line); Scroller writes the message line, rows 184-191 (`l_AFB5`), at T 2500-4000 |
+| every frame | about 1870-1900 | the interrupt (the green line): the `JR` at `$FFFF` at T 1868-1881, Interrupt's first instruction at T 1890-1903 in frames 19 000-19 004 (`passes.py` over the trace; `Interrupt.gif` shows the entry of frame 19 001 at 1902); Scroller writes the message line, rows 184-191 (`l_AFB5`), at T 2500-4000 |
 | 19 000 | 0-34 000 | the previous pass's FlushDirty (`l_A1FE`, `l_A24C`): Matt's cells, lines 70-120 |
 | 19 000 | 43 421 | this pass starts: the controls, Matt, the enemies |
 | 19 000 | 53 000-62 000 | DrawScore's digits (`l_AE8F`, lines 148-160) and the slot's icon (`l_B040`) |
@@ -516,8 +525,12 @@ SwapZone(A):
     enable interrupts
 ```
 
-Worked example: 2048 + 256 = 2304 bytes at 72 T a byte is 165 888 T. The trace measures 167 307 T from the `DI` at
-463:49 673 to the `EI` at 466:4220; the slot search and the set-up are the rest. That is 2.36 frames with interrupts
+The attribute loop is shorter: `LD C,(HL)`, `EX DE,HL`, `LD B,(HL)`, `LD (HL),C`, `EX DE,HL`, `LD (HL),B`, `INC L`,
+`INC E`, `JR NZ`: 56 T a byte.
+
+Worked example: 2048 bytes at 72 T and 256 at 56 T are 147 456 + 14 336 = 161 792 T. The trace measures 167 307 T
+from the `DI` at 463:49 673 to the `EI` at 466:4220; the other 5515 T are the slot search, the set-up and the
+ULA's waits on the parked set, which lies in contended memory (`$6D00`, zone 3). That is 2.36 frames with interrupts
 off.
 
 The witness is `kit/rs.py interrupts` over the r04 window: frames 464, 465 and 466 have no interrupt entry. The ULA
@@ -570,11 +583,11 @@ The game has no frame lock, but some places wait on `HALT`. All are outside the 
 
 | Where | Waits | How long | Witness |
 | --- | --- | --- | --- |
-| Menu `$9780` (DrawMenu's loop) | one `HALT` a menu step | a frame a step | c1 frames 17 750-18 300 |
-| MenuWipe `$9852` | one `HALT` a diagonal, E from `$F8` to `$3D` | 70 frames | c1, play2, `rzx-` |
-| ScreenWipe `$A049` | one `HALT` a line pair | 88 frames | c1, door, play2 |
+| MenuLoop `$9775` (the `HALT` at `$9780`) | one `HALT` a menu step | a frame a step | c1 frames 15 100-18 300 |
+| MenuWipe `$984D` (the `HALT` at `$9852`) | one `HALT` a diagonal, E from `$F8` to `$3D` | 70 frames | c1, play2, `rzx-` |
+| ScreenWipe `$A040` (the `HALT` at `$A049`) | one `HALT` a line pair | 88 frames | c1, door, play2 |
 | SlowPrint `$BB13`: before the text, a character, after it | 70, 4 a character, 100 `HALT`s | see the example | play2, `rzx-` x8 |
-| Explosion `$BB78` | 150 `HALT`s | 3 s | not executed in any recording |
+| Explosion `$BB78` (the `HALT` at `$BBFC`) | 150 `HALT`s | 3 s | once, in `masks` (PENETRATOR released inside the hill at frame 1249) |
 
 Worked example: GameOver prints MISSION TERMINATED (18 characters) with SlowPrint. That is 70 + 18 x 4 + 100 =
 242 `HALT`s, 4.84 s at 50 frames a second.
@@ -605,7 +618,8 @@ l_BB34:
 ```
 
 The `DI` places: GameEntry `$9100`, SwapZone `$A19D-$A1EA`, NewGame `$915B` (to reset the stack under the return
-address, `EI` at `$9161`), and three in the menu at `$9A15`, `$9B18`, `$9EA9`.
+address, `EI` at `$9161`) and HangLoop `$9208`, which never runs. The menu has none: the `$F3` bytes at `$9A15`,
+`$9B18` and `$9EA9` are inside its graphics and text, not instructions.
 
 The timers in play count passes, not frames:
 

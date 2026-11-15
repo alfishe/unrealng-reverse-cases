@@ -26,7 +26,9 @@ StackLeftover:
   DEFB $00,$CC,$4D,$00,$38,$80
 JumpToHandlerLeftover:
   DEFB $C3,$26,$92,$5A,$A5,$80,$E2,$88 ; JP $9226, as the game's entry writes
-  DEFB $E2,$3C                         ; it
+  DEFB $E2,$3C                         ; it ($FFF4-$FFF6); then $FFF7-$FFFD, 5A
+                                       ; A5 80 E2 88 E2 3C: read and written by
+                                       ; nothing, above the stack top $FFF0
 MachineFlag:
   DEFB $00                ; the 128K flag: 0 on a 128K, $FF on a 48K (written
                           ; by LoaderMain, read by the game's interrupt)

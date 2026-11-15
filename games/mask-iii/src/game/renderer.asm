@@ -461,13 +461,15 @@ l_A431:
 ; The 8 objects of $26 bytes: Matt, Matt's shot $A465, the six others from
 ; $A48B
 ;
-; Fields: +0 kind (bit 7 placed, bit 6 dying), +2 direction (bit 7 left), +3 x
-; (2 pixels a unit, column (x - $40) / 4), +4 y, +5 width and +6 height in
-; characters, +9/+A buffer, +B first character, +C/+D frame, +E/+F save
-; pointer, +10-+12 timers, +14/+15 the score it gives (BCD), +16/+17 the sprite
-; base, +18 animation step, +19 mode (frame size), +1A animation mask, +1B dx,
-; +1C dy, +1E damage to the energy, +1F once-a-room flag, +20 colour, +21 hits
-; left, +22 hit by Matt's shot. Witness: read and written every pass (c1).
+; Fields: +0 kind (bit 7 placed; bit 6 only in the $40 reservation after a
+; turret, which DrawObjects and ShotHits skip with AND $BF), +2 direction (bit
+; 7 left), +3 x (2 pixels a unit, column (x - $40) / 4), +4 y, +5 width and +6
+; height in characters, +9/+A buffer, +B first character, +C/+D frame, +E/+F
+; save pointer, +10-+12 timers, +14/+15 the score it gives (BCD), +16/+17 the
+; sprite base, +18 animation step, +19 mode (frame size), +1A animation mask,
+; +1B dx, +1C dy, +1E damage to the energy, +1F once-a-room flag, +20 colour,
+; +21 hits left, +22 hit by Matt's shot. Witness: read and written every pass
+; (c1).
 Objects:
   DEFB $01,$00,$C8,$64,$60,$04,$04,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$01,$00,$00,$00,$00,$00,$00,$47,$00,$00,$00,$00,$00
 MattShot:
@@ -1127,8 +1129,8 @@ l_A88F:
 
   ORG $C9EA
 
-; Eight bits of the characters at $E710 ($E728 in zone 3) switched on and off
-; in turn (TwinkleSteps)
+; One line in each of 8 characters from $E710 (chars $E2-$E9; from $E728, chars
+; $E5-$EC, in zone 3) set to $FF or 0 in turn (TwinkleSteps)
 ;
 ; Witness: L1 15361 (c1, cheat, door, door3, kind6, masks, play2, rzx- x9).
 Twinkle:
