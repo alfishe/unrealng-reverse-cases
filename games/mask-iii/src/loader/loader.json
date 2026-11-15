@@ -1,0 +1,29 @@
+{
+  "about": "TZX block 4, the loader: 256 bytes loaded at $FF00, which copies itself to $5E00 and runs there: python3 ../../kit/mkgame.py --part src/loader/loader.json --install",
+  "image_cmd": ["sh", "-c", "python3 tools/image.py work/parts/loader-ff00.bin --block 4 > /dev/null"],
+  "image": "work/parts/loader-ff00.bin",
+  "at": "FF00",
+  "top": "loader",
+  "out": "loader.bin",
+  "dest": "src/loader",
+  "device": "ZXSPECTRUM128",
+  "mode": "blocks",
+  "header": [
+    "; MASK III: VENOM Strikes Back, Gremlin Graphics 1988: TZX block 4, the loader (256 bytes at $FF00). Its first",
+    "; 15 bytes copy the rest to $5E00 and jump there; the copy loads the screen, tests for 128K paging, loads the game",
+    "; and on a 128K the music into RAM 4. The block's last 74 bytes are what the stack held when it was saved."
+  ],
+  "l1": [{"path": "work/stage1/c1/l1.json", "reads": false}],
+  "segments": [
+    {"title": "the start at $FF00", "ann": "src/loader/loader.ann", "lo": "FF00", "hi": "FF0F",
+     "bases": {"0": "C000"},
+     "l1": [{"path": "work/stage1/c1/l1.json", "lo": "FF00", "hi": "FF0F", "reads": false}]},
+    {"title": "the loader as copied to $5E00", "ann": "src/loader/loader.ann", "lo": "FF0F", "hi": "FF88", "run": "5E00",
+     "bases": {"5": "4000"},
+     "l1": [{"path": "work/stage1/c1/l1.json", "lo": "5E00", "hi": "5E79", "reads": false}]},
+    {"title": "the block's tail", "ann": "src/loader/loader.ann", "lo": "FF88", "hi": "10000",
+     "bases": {"0": "C000"}, "l1": []}
+  ],
+  "data_entries": "stop",
+  "work": "work/stage2/mkloader"
+}

@@ -24,7 +24,9 @@
     "stage1/rec/rzx-24000",
     "stage1/rec/rzx-28000",
     "stage1/rec/rzx-32000",
-    "stage1/rec/rzx-36000"
+    "stage1/rec/rzx-36000",
+    "stage2/rec/play2",
+    "stage2/rec/door"
   ],
   "ref_builds": [
     [

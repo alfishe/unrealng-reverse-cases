@@ -1,0 +1,24 @@
+{
+  "about": "TZX block 7, the 128K music: Ben Daglish's AY player and its tunes, 4000 bytes loaded into RAM 4 at $C000 on a 128K only: python3 ../../kit/mkgame.py --part src/music/music.json --install",
+  "image_cmd": ["sh", "-c", "python3 tools/image.py work/parts/music-c000.bin --block 7 > /dev/null"],
+  "image": "work/parts/music-c000.bin",
+  "org": "C000",
+  "ann": "src/music/music.ann",
+  "top": "music",
+  "bin": "music.bin",
+  "dest": "src/music",
+  "device": "ZXSPECTRUM128",
+  "bank": 4,
+  "bases": {"4": "C000"},
+  "header": [
+    "; MASK III: VENOM Strikes Back, Gremlin Graphics 1988: TZX block 7, the AY music (Ben Daglish's player and its",
+    "; tunes), 4000 bytes that LoaderMain loads into RAM 4 at $C000 on a 128K; the game's interrupt pages it in."
+  ],
+  "l1": [
+    {"path": "work/stage1/c1/l1.json", "reads": true},
+    "work/stage1/rec/menu/l1.json",
+    "work/stage2/rec/play2/l1.json"
+  ],
+  "data_entries": "stop",
+  "work": "work/stage2/mkmusic"
+}

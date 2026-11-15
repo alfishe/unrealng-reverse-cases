@@ -1,0 +1,17 @@
+# The tape ("Mask III.tzx" in orig/MASKIII-VENOMStrikesBack.tzx.zip) as tools/mktape.py writes it: one line a TZX
+# block, in order (the format is in tools/mktape.py; the blocks in docs/03-build-and-load.md 3.1). The items are the
+# parts tools/build.sh assembles into build/:
+#   basic.bin    src/tape/basic.asm, the BASIC "MASK3" (block 2)
+#   loader.bin   src/loader/loader.asm, the loader at $FF00 (block 4)
+#   screen.bin   src/screen/screen.asm, the loading screen at $4000 (block 5)
+#   game.bin     src/game/game.asm, the game $6000-$FDFF (block 6)
+#   music.bin    src/music/music.asm, the AY music for RAM 4 at $C000 (block 7, read on a 128K only)
+tzx 1.10
+text Created with Ramsoft MakeTZX
+header 1015 0 MASK3 @basic.bin 0 @basic.bin
+data 6073 basic.bin
+header 1010 3 loader @loader.bin 65280 32804
+data 7425 loader.bin
+data 8282 screen.bin
+data 9149 game.bin
+data 9117 music.bin

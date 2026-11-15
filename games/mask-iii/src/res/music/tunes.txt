@@ -1,0 +1,41 @@
+# MASK III: the AY tunes (tools/tunes.py has the format); tune 1 the menu, 2 game over, 3 the game start
+# (TuneRequest $9222 = tune; MusicStart takes tune - 1)
+@C670 pattern 00: $80 E-3:8 E-3:8 D-4:8 E-3:8 C#4:8 E-3:8 E-3:8 B-3:8 E-3:8 E-3:8 A-3:8 E-3:8 G-3:8 E-3:8 A-3:8 D-3:8 E-3:8 E-3:8 D-4:8 E-3:8 C#4:8 E-3:8 E-3:8 B-3:8 E-3:8 E-3:8 A-3:8 E-3:8 G-3:8 D-4:8 A-3:8 E-4:8 E-3:8 E-3:8 D-4:8 E-3:8 C#4:8 E-3:8 E-3:8 B-3:8 E-3:8 E-3:8 A-3:8 E-3:8 G-3:8 E-3:8 A-3:8 D-3:8 C-3:8 C-3:8 C-4:8 C-3:8 C-4:8 C-3:8 B-3:8 A-3:8 A-2:8 A-2:8 A-3:8 A-2:8 A-3:8 C#3:8 D-3:8 D#3:8 $FF
+@C6F2 pattern 01: r:128 $FF
+@C6F5 pattern 02: $80 E-3:8 E-3:8 D-4:8 E-3:8 $82 E-4:8 $80 E-3:8 E-3:8 B-3:8 E-3:8 E-3:8 A-3:8 E-3:8 $82 E-4:8 $80 E-3:8 A-3:8 D-3:8 E-3:8 E-3:8 D-4:8 E-3:8 $82 E-4:8 $80 E-3:8 E-3:8 B-3:8 E-3:8 E-3:8 A-3:8 E-3:8 $82 E-4:8 $80 D-4:8 A-3:8 E-4:8 E-3:8 E-3:8 D-4:8 E-3:8 $82 E-4:8 $80 E-3:8 E-3:8 B-3:8 E-3:8 E-3:8 A-3:8 E-3:8 $82 E-4:8 $80 E-3:8 A-3:8 D-3:8 C-3:8 C-3:8 C-4:8 C-3:8 $82 E-4:8 $80 C-3:8 B-3:8 A-3:8 A-2:8 A-2:8 A-3:8 A-2:8 $82 E-4:8 $80 C#3:8 D-3:8 D#3:8 $FF
+@C787 pattern 03: $81 E-5:4 G-5:4 B-5:4 E-6:4 $FF
+@C791 pattern 04: $81 E-5:4 G-5:4 C-6:4 E-6:4 $FF
+@C79B pattern 05: $81 E-5:4 A-5:4 C-6:4 E-6:4 $FF
+@C7A5 pattern 06: r:2 $FF
+@C7A8 pattern 07: $86 B-5:128 D-6:128 A-5:128 E-6:128 G-6:128 B-6:128 A-6:128 G-6:128 $FF
+@C7BA pattern 08: $90 $80 B-2:8 B-2:8 B-3:8 B-2:8 A-3:8 B-3:8 B-2:8 A-3:8 $FF
+@C7CD pattern 09: $83 D-4:56 C#4:16 D-4:16 r:32 D-4:8 D-4:40 D-4:8 C#4:8 D#4:48 E-4:8 F#4:8 E-4:8 $FF
+@C7E7 pattern 10: $84 $C1 B-1:1 $FF C#4:8 C#4:16 A-3:16 A-3:16 C#4:16 C#4:16 C#4:8 A-3:8 A-3:8 F#3:8 F#3:8 C#4:8 C#4:16 A-3:16 A-3:16 A-3:8 C#4:4 C#4:4 C#4:8 A-3:4 A-3:4 A-3:8 F#3:4 F#3:4 F#3:8 D#3:4 D#3:4 D#3:6 $C2 $FF
+@C826 pattern 11: $83 A#5:8 A-5:8 G-5:8 E-5:24 G-5:8 E-5:24 G-5:8 E-5:16 E-5:8 G-5:8 A-5:8 A#5:8 A-5:8 G-5:8 E-5:24 D-5:8 E-5:72 $FF
+@C84A pattern 12: A#5:8 B-5:8 E-6:8 B-5:16 A#5:16 A-5:24 A-5:8 G-5:8 A-5:8 G-5:8 E-5:8 D-5:8 A#5:8 B-5:8 E-6:8 B-5:16 A-5:8 G-5:8 E-5:72 $FF
+@C871 pattern 13: $80 D-3:16 D-4:16 $82 E-4:8 $80 C-4:8 B-3:8 A-2:24 A-3:16 $82 E-4:8 $80 C-3:8 C#3:8 D-3:24 D-4:16 $82 E-4:8 $80 C-4:8 B-3:8 A-2:24 A-3:16 $82 E-4:8 $80 C#3:8 D-3:8 D#3:8 $FF
+@C8A5 pattern 14: $83 F#5:32 F#5:8 E-5:8 D-5:8 E-5:40 C#5:8 B-4:8 A-4:32 F#5:16 F#5:8 E-5:8 D-5:8 E-5:40 C#5:8 B-4:8 A-4:8 B-4:8 $FF
+@C8C9 pattern 15: $85 $91 A-5:8 A-5:8 A-5:8 A-5:8 A-5:8 A-5:8 A-5:8 A-5:8 $92 A-5:8 A-5:8 A-5:8 A-5:8 A-5:8 A-5:8 A-5:8 A-5:8 $90 $FF
+@C8EE pattern 16: $84 $C1 B-1:1 $FF F#3:8 F#3:8 r:56 C#4:16 C#4:16 A-3:16 A-3:8 F#3:8 F#3:8 r:56 C#4:8 C#4:8 C#4:8 A-3:8 F#3:8 A-3:8 A-3:6 $C2 $FF
+@C917 pattern 17: $81 E-6:4 D-6:4 B-5:4 A-5:4 $FF
+@C921 pattern 18: $80 B-2:8 B-2:8 B-3:8 B-2:8 $82 E-4:8 $80 B-3:8 B-2:8 A-3:8 $FF
+@C935 pattern 19: $80 E-2:8 E-2:8 D-3:8 E-3:8 $82 E-4:8 $80 D-2:8 D-3:8 D#2:8 $FF
+@C949 pattern 20: $83 G-6:32 F#6:32 $93 $FF
+@C950 pattern 21: $84 $C1 B-1:1 $FF E-4:8 E-4:16 C#4:16 C#4:16 A-3:8 $FF
+@C960 pattern 22: $85 E-5:8 G#5:8 B-5:8 E-6:8 G#6:8 E-6:8 B-5:8 G#5:8 D#5:8 F#5:8 B-5:8 D#6:8 F#6:8 D#6:8 B-5:8 F#5:8 C#5:8 F#5:8 A#5:8 C#6:8 F#6:8 C#6:8 A#5:8 F#5:8 C#5:8 F-5:8 G#5:8 C#6:8 F-6:8 C#6:8 G#5:8 F-5:8 E-5:8 G#5:8 B-5:8 E-6:8 G#6:8 E-6:8 B-5:8 G#5:8 D#5:8 F#5:8 B-5:8 D#6:8 F#6:8 D#6:8 B-5:8 F#5:8 C#5:128 r:4 $FF
+@C9C6 pattern 23: $80 E-3:16 E-3:16 $82 E-4:8 $80 E-3:8 D#3:8 B-2:24 B-2:16 $82 E-4:8 $80 D#3:8 E-3:8 F#3:24 F#3:16 $82 E-4:8 $80 F#3:8 F-3:8 C#3:24 C#3:16 $82 E-4:8 $80 C#3:8 D#3:8 E-3:24 E-3:16 $82 E-4:8 $80 E-3:8 D#3:8 B-2:24 B-2:16 $82 E-4:8 $80 D#3:8 E-3:8 F#3:128 r:4 $FF
+@CA14 pattern 24: $83 G#5:32 G#5:8 F#5:8 E-5:8 F#5:40 D#5:8 C#5:8 B-4:8 A#4:40 A#4:8 B-4:8 C#5:8 C#5:40 F-5:8 F#5:8 G#5:8 G#5:40 G#5:8 F#5:8 E-5:8 F#5:40 D#5:8 C#5:8 B-4:8 A#4:128 r:4 $FF
+@CA4A pattern 25: $84 E-4:8 E-4:16 C#4:16 C#4:8 A-3:8 A-3:8 F#3:128 r:4 $FF
+@CA5C pattern 26: $80 E-2:8 E-2:8 E-3:8 E-2:8 D-3:8 B-2:8 D-3:8 E-3:8 E-2:128 r:4 $FF
+@CA72 patterns-lo: $70 $F2 $F5 $87 $91 $9B $A5 $A8 $BA $CD $E7 $26 $4A $71 $A5 $C9 $EE $17 $21 $35 $49 $50 $60 $C6 $14 $4A $5C
+@CA8D patterns-hi: $C6 $C6 $C6 $C7 $C7 $C7 $C7 $C7 $C7 $C7 $C7 $C8 $C8 $C8 $C8 $C8 $C8 $C9 $C9 $C9 $C9 $C9 $C9 $C9 $CA $CA $CA
+@CAA8 songs: $CABA $CB06 $CB37 $CB8F $CB93 $CB97 $CB99 $CB9C $CBA0
+@CABA order tune 1 A: $FE $F4 $82 p00 $84 p08 $82 p02 p13 $82 p02 p13 $FE $F6 p13 $FE $FB $88 p08 $84 p08 $FE $F9 p08 p08 $FE $F7 p08 p08 $FE $FB $84 p08 $FE $F9 p08 p08 $FE $F7 p08 p08 $FE $FB $84 p18 $FE $F9 p18 p18 $FE $F7 p18 p18 $FE $FB $84 p18 $FE $F9 p18 p18 $FE $F7 p18 p18 $FE $F6 p19 p02 p02 p13 $FE $FB $90 p08 $FF
+@CB06 order tune 1 B: $C0 $46 $FE $F4 p00 p06 $FE $03 p16 p06 p16 p06 p10 $FE $F4 p11 p11 p12 p12 p14 $FE $00 p11 p11 p12 p12 p14 $FE $02 p14 $FE $FB $88 p08 $FE $02 p07 p07 p20 p11 p11 p12 p12 p14 $FE $FB $90 p08 $FF
+@CB37 order tune 1 C: $FE $03 $84 p01 p16 p06 p16 p06 p10 p06 $FE $00 $98 p03 $84 p04 $84 p05 $98 p03 $84 p04 $84 p05 p15 p15 $98 p03 $84 p04 $84 p05 $98 p03 $84 p04 $84 p05 p15 p15 $FE $02 p15 p15 p16 p06 p16 p06 $90 p17 $90 p17 $90 p17 $90 p17 $90 p17 $90 p17 $90 p17 $90 p17 p21 $98 p03 $84 p04 $84 p05 $98 p03 $84 p04 $84 p05 p15 p15 p16 p06 p16 p06 p16 p06 p16 p06 $FF
+@CB8F order tune 2 A: $FE $0C p22 $FF
+@CB93 order tune 2 B: $FE $F4 p23 $FF
+@CB97 order tune 2 C: p24 $FF
+@CB99 order tune 3 A: p06 p25 $FF
+@CB9C order tune 3 B: $FE $FB p26 $FF
+@CBA0 order tune 3 C: p25 $FF

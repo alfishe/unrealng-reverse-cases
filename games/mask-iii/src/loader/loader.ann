@@ -1,0 +1,53 @@
+# The annotations of TZX block 4, the loader (kit/mkgame.py --part src/loader/loader.json). Format:
+# ../../../../docs/ann-format.md.
+#
+# 256 bytes loaded at $FF00 by the BASIC's LOAD "" CODE and called by its USR 65280. LoaderStart copies the block
+# from $FF0F on to $5E00 and jumps there, so the game's load at $6000-$FDFF cannot run over the code that loads it.
+# Witness: c1 (work/stage1/c1: power-on, the original TZX at ROM speed on the 128K): LoaderStart runs once at frame
+# 1094, the copy at $5E00 from frame 1094 T 37 200 to the JP to the game at frame 15 019 T 60 034
+# (kit/rs.py stages --work work/stage1/c1).
+
+@equ $0000 RomReset ; the ROM's reset: a load error restarts the machine
+@equ $0556 LdBytes ; the ROM's LD-BYTES: IX = address, DE = length, A = flag, carry set = load; carry clear on return = an error
+@equ $4000 Screen 6912 ; the screen, where tape block 5 loads
+@equ $5E00 LoaderMain ; where LoaderStart copies the loader (the loader segment's entry)
+@equ $6000 GameBlock ; the game's block (tape block 6, src/game) and the loader's stack top
+@equ $9100 GameEntry ; the game's entry (src/game/game.ann)
+@equ $C000 PagedRam ; the top 16 K, where port $7FFD pages RAM 0 or RAM 4 on a 128K (src/music in RAM 4)
+@equ $FFFE MachineFlag ; the 128K flag in the block's tail (its label there)
+@isub $5E04 LD DE,6912
+@isub $5E45 LD DE,40448
+@isub $5E63 LD DE,4000
+@isub $FF07 LD BC,512
+
+@module start ; The start at $FF00: the loader copies itself to $5E00
+@about USR 65280 enters here. The game's block loads at $6000-$FDFF and the music block at $C000 of RAM 4, so the loader cannot stay at $FF00 on a 48K (the game's load stops short of it, but the stack the ROM uses lies there) nor in the paged top 16 K on a 128K: it moves to $5E00, in the room CLEAR 24570 left between the BASIC and the game.
+
+$FF00 c LoaderStart ; Copy the block's bytes from $FF0F on to $5E00 and run them there
+> DI, then LDIR of 512 bytes from LoaderMain's place in the block ($FF0F) to LoaderMain $5E00, and JP $5E00. The copy is longer than the block: it runs on past $FFFF into the ROM at $0000-$010E, whose bytes land at $5EF1-$5FFF and are never run. The 121 bytes of code end at $5E78.
+> Witness: L1 1 (c1).
+
+@module loader ; The loader at $5E00: the screen, the 128K test, the game, the music
+@about Every block is a standard ROM block read by the ROM's LD-BYTES ($0556), flag $FF; a load error (carry clear) jumps to $0000, a reset. Between the screen and the game the loader tests for 128K paging and leaves its answer in MachineFlag $FFFE (0 a 128K, $FF a 48K): the game reads it in every interrupt to play the AY music or the beeper (src/game, Interrupt $9226).
+
+$5E00 c LoaderMain ; Load the screen, test for 128K paging, load the game and on a 128K the music, then enter the game
+> 1. The loading screen: IX = Screen $4000, DE = 6912, LD-BYTES (tape block 5).
+> 2. MachineFlag = $FF (a 48K until proved otherwise); SP = GameBlock $6000, under the game's block.
+> 3. The paging test, through port $7FFD (BC): page RAM 0 at $C000 ($10: RAM 0, the 48K ROM 1, the screen in RAM 5) and write $2A at $C000; page RAM 4 ($14) and read $C000. A 48K has no port $7FFD: the read gives the $2A back, and the test stops (JR Z to LoadGame, MachineFlag left $FF). Otherwise the byte must be RAM: write 0, DEC (HL), OR (HL), INC A gives 0 only if the $FF stuck. Then page RAM 0 again: its $2A must still be there (two banks, not one mirrored). Only when all three hold, MachineFlag = 0.
+> 4. LoadGame: IX = GameBlock $6000, DE = 40448, LD-BYTES (tape block 6, $6000-$FDFF).
+> 5. On a 48K (MachineFlag not 0) JP GameEntry $9100 at once: the tape's last block is never read. On a 128K LoadMusic: page RAM 4, IX = $C000, DE = 4000, LD-BYTES (tape block 7, src/music), page RAM 0 back ($10) and JP GameEntry.
+> The test leaves RAM 0 paged on both paths; on a 48K the writes at $C000 land in plain RAM that the game's load then overwrites. c1 (the 128K): MachineFlag = 0 at the game's entry (frame 15 019) and RAM 4 holds block 7 byte for byte (work/stage1/images/entry). The 48K path: work/stage2/rec/c48 (stage 2 NOTES).
+> Witness: L1 1 (c1).
+$5E2D NotMirrored ; RAM 4 read back something else: check it is RAM
+$5E34 Ram4Ok ; RAM 4 holds a written byte: check RAM 0 kept its $2A
+$5E41 LoadGame ; tape block 6, the game
+$5E58 LoadMusic ; a 128K: tape block 7 into RAM 4
+
+@module tail ; The block's tail: zeros, then what the stack held when the block was saved
+@about The copy at $5E00 ends at $5E78 (block offset $87). The rest of the block is no code the loader runs: zeros up to $FFB5, then 74 bytes that read like the top of a stack, a leftover of the machine the block was saved from: words that fall in the game's code ($929E, $9244 and $9247 inside its interrupt handler, $AF33, $87D0), two copies of the ROM-like run $3A $5C $06 $13 $21 $11, and at $FFF4 the JP $9226 and at $FFFF the $18 that the game's entry writes itself (GameEntry $9100: the IM 2 jump), and at $FFFE the 0 of a 128K. The game's entry writes $FFF4-$FFF6 and $FFFF again and the loader writes MachineFlag, so none of these bytes is read as it came off the tape (known from the code: LoaderMain writes $FFFE before any read).
+
+$FF88 s LoaderPad ; Zeros after the copied code
+$FFB6 b StackLeftover 8 ; The stack as it was when the block was saved: 74 bytes, read by nothing
+$FFF4 JumpToHandlerLeftover ; JP $9226, as the game's entry writes it
+$FFFE MachineFlag ; the 128K flag: 0 on a 128K, $FF on a 48K (written by LoaderMain, read by the game's interrupt)
+$FFFF JrLeftover ; $18 (JR), as the game's entry writes it

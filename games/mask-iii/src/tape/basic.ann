@@ -1,0 +1,19 @@
+# The annotations of TZX block 2, the BASIC program "MASK3" at PROG $5CCB-$5CEE (36 bytes): the source of
+# src/tape/basic.asm and src/tape/basic-module.asm (../../kit/mkgame.py --part src/tape/basic.json). Format:
+# ../../../../docs/ann-format.md. Witness: c1 (work/stage1/c1: power-on, the tape at ROM speed on the 128K), whose
+# ROM loads this block at $5CCB (the bytes $5CCB-$5CEE read 4 to 15 times in c1's L1) and runs its line 10.
+
+@module basic ; The BASIC: line 10, CLEAR 24570, load the loader, run it
+@about Tape block 2 holds the program "MASK3" (header block 1: LINE 0, program length 36, no variables). Its one line is 10 CLEAR 24570: LOAD "" CODE : RANDOMIZE USR 65280. Every number is its digits, then the number marker $0E and the five-byte small-integer form the ROM reads. The header's LINE 0 is below the first line, so the program runs from line 10 at once.
+@about c1: the ROM loads the block and runs the line; LOAD "" CODE takes the header "loader" (block 3) and its 256 bytes at $FF00 (block 4, src/loader), and USR 65280 calls LoaderStart $FF00.
+
+$5CCB b BasicLine10 ; BASIC line 10: CLEAR 24570: LOAD "" CODE : RANDOMIZE USR 65280
+> The whole program (the header's program length 36 covers it all): the line number 10 (two bytes, high byte first), the line's length (32, low byte first), then three statements split by ":" ($3A) and closed by ENTER ($0D).
+> CLEAR 24570 puts RAMTOP at $5FFA, just under the game's block at $6000 (TZX block 6), so the ROM's stack and the GO SUB stack stay out of the way of the load. LOAD "" CODE loads the next CODE file at the address its header gives, $FF00 (the loader). RANDOMIZE USR 65280 calls it; it never returns.
+$5CCD ; the line's length, 32
+$5CCF ; CLEAR ($FD) "24570"
+$5CD5 ; $0E and 24570 = $5FFA
+$5CDB ; ":" LOAD ($EF) "" CODE ($AF)
+$5CE0 ; ":" RANDOMIZE ($F9) USR ($C0) "65280"
+$5CE8 ; $0E and 65280 = $FF00
+$5CEE ; ENTER

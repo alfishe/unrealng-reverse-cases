@@ -1,0 +1,15 @@
+{
+  "about": "TZX block 5, the loading screen (6912 bytes), loaded by the loader at $4000: python3 ../../kit/mkgame.py --part src/screen/screen.json --install",
+  "image_cmd": ["sh", "-c", "python3 tools/image.py work/parts/screen-4000.bin --block 5 > /dev/null"],
+  "image": "work/parts/screen-4000.bin",
+  "org": "4000",
+  "ann": "src/screen/screen.ann",
+  "top": "screen",
+  "bin": "screen.bin",
+  "dest": "src/screen",
+  "device": "ZXSPECTRUM48",
+  "header": ["; MASK III: VENOM Strikes Back, Gremlin Graphics 1988: TZX block 5, the loading screen, loaded at $4000 by LoaderMain $5E00."],
+  "l1": [],
+  "data_entries": "stop",
+  "work": "work/stage2/mkscreen"
+}

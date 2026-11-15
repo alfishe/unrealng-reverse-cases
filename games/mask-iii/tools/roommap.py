@@ -3,6 +3,8 @@
 
     python3 tools/roommap.py MEM64K.bin ROOM SCREEN OUT.png      # one screen of a room
     python3 tools/roommap.py --map DUMP_DIR FIRST LAST OUT.png  # rooms FIRST-LAST, 6 screens each (a strip), from an RZX dump
+    python3 tools/roommap.py --res OUT_DIR                      # every room (room-NN.png) and the world map (world.png)
+                                                                # from the resources in src/res, as a new game has them
 
 The data (WALKTHROUGH 6.3): the room table at `$953B`, 12 bytes a room (exits left, right, and the third
 exit taken at `$B6B3`; byte 4 the zone); the room maps at `$7600 + 240 * room`, 48 blocks across and 5 down, six
@@ -46,7 +48,53 @@ def draw_screen(mem, room, screen, scale=1):
     return im.resize((256 * scale, 144 * scale), Image.NEAREST) if scale != 1 else im
 
 
+def res_memory(zone):
+    """a 64K image of the parts DrawRoom reads, from src/res (tools/res_formats.py), with ZONE's set live"""
+    import res_formats
+    got = {}
+    for source in res_formats.sources():
+        name, data = res_formats.decode(source)
+        got[name] = data
+    mem = bytearray(65536)
+    for r in range(16):
+        mem[0x7600 + 240 * r:0x76F0 + 240 * r] = got['rooms/room-%02d.bin' % r]
+    mem[0x8500:0x9100] = got['blocks/blocks.bin']
+    mem[0x953B:0x95FB] = got['tables/rooms.bin']
+    chars = {0: got['charsets/zone0.bin'], 1: got['charsets/zone1-low.bin'] + got['charsets/zone1-high.bin'],
+             2: got['charsets/zone2.bin'], 3: got['charsets/zone3.bin']}
+    mem[0xE000:0xE800] = chars[zone]
+    mem[0xEF00:0xF000] = got['charsets/zone%d-attr.bin' % zone]
+    return mem
+
+
+def draw_res(out):
+    os.makedirs(out, exist_ok=True)
+    big, small = kitlib.font(30), kitlib.font(26)
+    cw, ch = 6 * 256 + 16, 144 + 56
+    world = Image.new('RGB', (cw, 16 * ch), (24, 24, 30))
+    d = ImageDraw.Draw(world)
+    for r in range(16):
+        mem = res_memory(0)
+        rec = mem[0x953B + 12 * r:0x953B + 12 * r + 12]
+        mem = res_memory(rec[4])
+        strip = Image.new('RGB', (6 * 256, 144))
+        for s in range(6):
+            strip.paste(draw_screen(mem, r, s), (s * 256, 0))
+        strip.save(os.path.join(out, 'room-%02d.png' % r))
+        x0, y0 = 8, r * ch + 46
+        ex = ' '.join('--' if e == 0xFF else f'{e:02d}' for e in rec[:3])
+        kinds = ' '.join(str(k) for k in rec[6:12])
+        d.text((x0, y0 - 40), f'room {r}: zone {rec[4]}, left/right/pod {ex}', fill=(230, 230, 230), font=big)
+        d.text((x0 + 800, y0 - 38), f'enemy kinds by screen: {kinds}', fill=(190, 190, 190), font=small)
+        world.paste(strip, (x0, y0))
+    world.save(os.path.join(out, 'world.png'))
+    print(out, 'rooms 0-15 and world.png', world.size)
+
+
 def main():
+    if sys.argv[1] == '--res':
+        draw_res(sys.argv[2])
+        return
     if sys.argv[1] == '--map':
         dump, first, last, out = sys.argv[2], int(sys.argv[3]), int(sys.argv[4]), sys.argv[5]
         idx = json.load(open(os.path.join(dump, 'index.json')))

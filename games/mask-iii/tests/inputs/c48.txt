@@ -1,0 +1,17 @@
+# c48 (stage 2): the original on the 48K at ROM speed (the loader finds no RAM 4 and skips block 7): the menu,
+# 4 KEYBOARD, fire (SPACE) to start, right (W) and fire, up (P): the beeper effects instead of the AY.
+0 -
++300 4
++5 -
++60 SPACE
++10 -
++400 W
++100 W SPACE
++20 W
++100 P
++20 -
++50 SPACE
++10 -
++300 W
++200 -
++600 END
