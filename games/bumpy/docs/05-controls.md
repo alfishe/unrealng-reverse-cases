@@ -35,7 +35,7 @@ The game reads two devices and nothing else:
 | Device | Port | Read by | Bits used |
 | --- | --- | --- | --- |
 | the keyboard | `$7FFE`, `$BFFE`, ... `$FEFE` (eight half-rows) | ReadControls `$B418` | bits 0-4, 0 = held |
-| a Kempston stick | `$DF`, with A = the last half-row's byte, so `$FFDF` with no key held | ReadControls `$B42B` | bits 0-4, 1 = held: right, left, down, up, fire |
+| a Kempston stick | `$DF`, with A = the last half-row's byte, so `$FFDF` unless a key of the CAPS SHIFT-V half-row is held (`$EFDF` with V, the cheat); A5 is 0 either way | ReadControls `$B42B` | bits 0-4, 1 = held: right, left, down, up, fire |
 
 The game has no Kempston port of its own choosing: the instruction is `IN A,($DF)`.
 Port `$DF` is `1101 1111`: A5 is 0, A7 and A6 are 1.
@@ -73,7 +73,7 @@ The first `menu` recording, with the mouse at Y = 85, stored `$EA` at `$B43E` an
 `$15`, bits 0, 2 and 4 (right, down, fire in the Kempston set's codes `$40`, `$42`, `$44`), stored complemented as
 `$EA`.
 
-Witness: ReadControls L1 925 798, in every recording.
+Witness: ReadControls L1 947 851, in every recording.
 
 The point: the stick port is a single constant byte; whatever answers it, or fails to, is read as a stick.
 
@@ -142,7 +142,7 @@ Two flaws follow from the early `RET Z`:
 Every key test calls ReadControls again: TestKey `$B6CB` reads all 9 bytes for each key it tests.
 A pass in play reads the controls about 4 times (R, D, H, then S in the state routine), plus the landing's tests.
 
-Witness: L1 925 798 ReadControls against L1 92 281 passes of MainLoop: about 10 reads a pass, counting the menu, the
+Witness: L1 947 851 ReadControls against L1 93 416 passes of MainLoop: about 10 reads a pass, counting the menu, the
 waits and the landings.
 
 The point: the controls are read fresh for every key test, with interrupts off, and the stick byte only changes when
@@ -214,7 +214,7 @@ codes in blue, the cheats in red. How to read: each key shows its code (row × 8
 below; the text under the keyboard gives row 8, the Kempston byte. Read from the built image (the three sets at
 `$F092-$F0A9`) and the TestKey operands, no recording: `python3 tools/fig_controls.py`.*
 
-Witness: TestKeyBit L1 423 995, in every recording.
+Witness: TestKeyBit L1 428 989, in every recording.
 
 The point: one 9-byte table and one self-patching `BIT` serve every key and the stick; any key or stick bit can go in
 any slot.
@@ -267,7 +267,7 @@ Worked example: `c1` at frame 13 782 presses 2 in the menu: ControlChoice `$F083
 At 0 (start), LoadControls copies `28 30 11 10 00 00 0C 2B` from `$F092` to `$F084`.
 The bytes were already the same: KeySlots is stored with the keyboard set in the image.
 
-Witness: LoadControls L1 8 (`c1`, `gameover`, `menu`, `twoname`); the `menu` recording plays the Sinclair set at
+Witness: LoadControls L1 9 (`c1`, `exitbelow`, `gameover`, `menu`, `twoname`); the `menu` recording plays the Sinclair set at
 frames 6376-7252 and the Kempston set from 7400.
 
 The point: the three sets differ in the first six codes (the sixth, fire 2, is never read); pause and quit are H and R
@@ -415,7 +415,7 @@ Pause waits; the timer `$AB04` holds its value until the key at frame 5924
 `gameover` presses S three times in each of its two games; in the first, lives 2 to 1 at frame 602, 1 to 0 at 1080,
 game over at 1458.
 
-Witness: Pause in `menu`; SelfDestruct L1 12 (`gameover`, `twoname`); BackToMenu in `menu` (R after keyboard play).
+Witness: Pause in `menu`; SelfDestruct L1 15 (`gameover`, `scoreloop`, `twoname`); BackToMenu in `menu` (R after keyboard play).
 
 The point: the in-play keys are fixed codes except the pause, which follows the control set.
 

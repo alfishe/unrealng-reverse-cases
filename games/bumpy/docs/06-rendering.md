@@ -36,7 +36,9 @@ Conventions:
 ## 6.1 The screen layout
 
 The board is 6 × 6 cells on a 40 × 32 pixel grid; what is drawn spans x 8-239 (columns 1-29), between the two
-yellow side panels in columns 0 and 30. Column 31 is never used.
+yellow side panels in columns 0 and 30.
+Column 31 is used only by the two-player READY? text, which prints PLAYER n down it and stays there for the whole
+game (Player1ReadyText `$AD48`, Player2ReadyText `$AD84`; [the shot](img/play/twoname-000200-two-ready.png)).
 
 | Part | Where | Drawn by |
 | --- | --- | --- |
@@ -129,7 +131,8 @@ flowchart LR
 SpectrumLines maps CPC line `n` to Spectrum line `n - 7`: the first 7 CPC lines and the last 8 go to a scratch area
 at `$FCE0`, so a picture that runs off the board's top or bottom is drawn and never seen.
 The CPC screen is 200 lines of 80 bytes (320 pixels in mode 1); the game used 240 of those pixels and 192 lines plus
-the margins, which is why the board fits the Spectrum's 256 × 192: panels in columns 0 and 30, column 31 unused.
+the margins, which is why the board fits the Spectrum's 256 × 192: panels in columns 0 and 30, column 31
+free of the board (only the two-player READY? text uses it).
 
 Worked example: cell 14, CellAddresses + 28 = `$CBD6`.
 The offset is `$0BD6`: s = `$0BD6 / $800` = 1, and `$03D6` = 982 = 12 × 80 + 22, so r = 12 and b = 22.
@@ -218,6 +221,10 @@ DrawSprite(cpc address, picture, lines B, width SpriteWidth in CPC bytes):
     enable interrupts
 ```
 
+Odd widths of 3 or more at an odd column draw one byte pair short: `SRL B` / `DEC B` at `$E39E` (DrawSprite) and
+`$E474` (XorSprite) give W / 2 − 1 pairs after the first byte, so W − 2 source bytes are read a line.
+The bug is latent: no caller uses such a width (the widths in use are 1, 2, 4, 6, 8 and `$12`).
+
 ```mermaid
 flowchart TD
     A["DrawSprite / XorSprite"] --> B["ScreenAddrToLine, LineAddress"]
@@ -266,7 +273,7 @@ each picture is drawn in its low plane, as the Spectrum shows it, with its addre
 
 | Picture | Address | Size (CPC bytes × lines) | Drawn by |
 | --- | --- | --- | --- |
-| the round ball | `$67E8` | 4 × 10 | XorSprite, ink 7 |
+| the round ball | `$67E8` | 4 × 10 | XorSpriteColoured, ink 7 |
 | the rolling ball, 15 frames | `$6810-$6A40` | 4 × 10 | XorSprite (BallFramesRight `$C4E2`, BallFramesLeft) |
 | the objects 1-40 | `$6CB0 + 56 × k` | 4 × 14 | XorSpriteColoured, ink ObjectInks `$C6F6` + k |
 | the plain platform | `$7788` | 8 × 4 | XorSprite |
@@ -482,8 +489,8 @@ flowchart LR
 ```
 
 Each one-shot animation (wear, lock, brick, water) has one slot: a flag, a step and a step table.
-A second wear started before the first ends would take the slot over, but the ball cannot leave two worn cells within
-4 passes, so no recording shows it.
+A second wear started before the first ends would take the slot over; the longest change (FallAway) runs 9 passes,
+and no recording shows a takeover.
 
 ![A brick layer knocked off](img/routines/BrickStep.gif)
 

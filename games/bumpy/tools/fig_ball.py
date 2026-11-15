@@ -149,12 +149,12 @@ ROLE = [  # (substring of the handler's name, colour, short text)
 JOB = {
     'BounceStep0': 'sound, wear', 'BounceStep1': 'crumble', 'BounceStep9': 'spring', 'BounceStep11': 'spr. 2',
     'BounceStep13': 'object', 'BounceStep14': 'spr. 3', 'BounceStep15': 'spr. 4',
-    'LeftStep0': 'sound, tilt', 'LeftStep5': 'wall?', 'LeftStep8': 'cell -1', 'LeftStep9': 'spring, water',
+    'LeftStep0': 'sound, tilt, wear', 'LeftStep5': 'wall?, crumble', 'LeftStep8': 'cell -1', 'LeftStep9': 'spring, water',
     'LeftStep11': 'spr. 2', 'LeftStep13': 'object', 'LeftStep14': 'spr. 3', 'LeftStep15': 'fire, spikes',
-    'RightStep0': 'sound, tilt', 'RightStep5': 'wall?', 'RightStep8': 'cell +1', 'RightStep9': 'spring, water',
+    'RightStep0': 'sound, tilt, wear', 'RightStep5': 'wall?, crumble', 'RightStep8': 'cell +1', 'RightStep9': 'spring, water',
     'RightStep11': 'spr. 2', 'RightStep13': 'object', 'RightStep14': 'spr. 3', 'RightStep15': 'fire, spikes',
-    'UpStep0': 'sound, bricks', 'UpStep1': 'bricks', 'UpStep2': 'bricks', 'UpStep3': 'spring, bricks',
-    'UpStep4': 'above?', 'UpStep5': 'cell -6', 'UpStep6': 'object', 'UpStep7': 'bricks',
+    'UpStep0': 'sound, bricks, wear', 'UpStep1': 'bricks', 'UpStep2': 'bricks', 'UpStep3': 'spring, bricks, crumble',
+    'UpStep4': 'above?, bricks', 'UpStep5': 'cell -6, bricks', 'UpStep6': 'object, bricks', 'UpStep7': 'bricks',
     'DownStep0': 'water', 'DownStep3': 'cell +6', 'DownStep4': 'spring', 'DownStep5': 'object',
     'DownStep7': 'fire, spikes',
 }
@@ -168,8 +168,8 @@ KIND = {'sound': (140, 140, 250), 'crumble': (240, 200, 70), 'spring': (90, 200,
 def steps():
     font, small, tiny = kitlib.font(15), kitlib.font(12), kitlib.font(11)
     W = 1050
-    cw, chh, left = 54, 56, 122
-    H = 90 + 5 * chh + 90
+    cw, chh, left = 54, 66, 122
+    H = 90 + 5 * chh + 110
     im = Image.new('RGB', (W, H), kitlib.BACKGROUND)
     d = ImageDraw.Draw(im)
     d.text((10, 8), 'What each move does at each step: the check table\'s handler (StepDispatch $AE4B) before the '
@@ -198,7 +198,8 @@ def steps():
             'The handlers are BounceStep0 $C778 ... DownStep7 $CECC (src/game/ball.asm); the address under each box.',
             '"wall?" reads the screen byte beside the ball (LeftStep5, RightStep5); "above?" the cell above (UpStep4).',
             '"cell -1", "+1", "-6", "+6": BallCell $AA44 changes; the object is taken at step 13 (up 6, down 5).',
-            '"fire spikes": the landing on a burning platform or spikes kills at the last step.']):
+            '"fire spikes": the landing on a burning platform or spikes kills at the last step.',
+            '"wear" arms the change of a crumbling platform (types 2-4); "crumble" starts it, whether the ball stays or leaves.']):
         d.text((10, y + 18 * k), text, fill=kitlib.DIM, font=small)
     os.makedirs(OUT, exist_ok=True)
     path = os.path.join(OUT, 'steps.png')

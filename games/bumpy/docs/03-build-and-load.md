@@ -118,9 +118,9 @@ flowchart LR
 | --- | --- | --- | --- | --- |
 | the BASIC | 182-636 | blocks 0 and 1, autostart `LINE 10` (3.1) | the tape plays at 182; the line's first byte `$5CCB` is last read at 636 | yes |
 | the loading screen | between 636 and 3211 | blocks 2 and 3 to `$4000`, 6912 bytes, black on black until the attributes arrive | the shot at 2182 is still black, the one at 5182 shows the whole screen ([load GIF](img/load/tape-load.gif)) | yes |
-| the code block | 3211-13 356 | block 5 to `$61A8-$F8D3`, 204.6 s with its pilot | `$61A8` written at 3211, `$F8D3` at 13 356: 10 145 frames, 202.9 s, the rest is the 2 s pilot | yes |
+| the code block | 3211-13 356 | block 5 to `$61A8-$F8D3`, 204.6 s with its pilot | `$61A8` written at 3211, `$F8D3` at 13 356: 10 145 frames, 202.6 s (69 888 T a frame at 3.5 MHz); the rest, 2.0 s, is the pilot (3223 pulses × 2168 T) | yes |
 | the entry | 13 357 | `RANDOMIZE USR 43900`: `CALL $AB7C`, the image as loaded | the first fetch of `$AB7C` at T 19 678, the code written `$61A8-$F8D3` by LD-BYTES `$05AE` (L1 arrivals) | yes |
-| the menu | 13 366, 13 782 | GameStart `DI`, CALL Menu `$EF33` | Menu's code first runs at 13 366 (`$EF55`); the menu is on screen at 13 782 ([shot](img/play/c1-013782-menu.png)); the tape ends at 13 682 | yes |
+| the menu | 13 366, 13 782 | GameStart `DI`, CALL Menu `$EF33` | Menu `$EF33` starts in frame 13 357; its key loop (`$EF55`, after the first `HALT`) first runs at 13 366; the menu is on screen at 13 782 ([shot](img/play/c1-013782-menu.png)); the tape ends at 13 682 | yes |
 
 Worked example, the font trick: CHARS `$5C36` holds the font address minus 256.
 `POKE 23607,128` makes it `$8000`, so a character c prints from `$8000` + 8 × c.
@@ -148,6 +148,15 @@ cmp BUMPY.TAP orig.tap                                   # "build: identical"
 ```
 
 The `.asm` files are not edited by hand.
+
+| Input | Made by | Gives |
+| --- | --- | --- |
+| `src/game/game.ann` (650 entries) | `R/kit/mkgame.py` | the 15 `src/game/*.asm` files, assembled into `game.bin` (38 700 bytes) |
+| `src/res` (44 editable files: 28 PNG, 8 TXT, 8 CSV; and 4 BIN kept as bytes) | `tools/res_formats.py build` | `build/res`: 61 binaries, 60 INCBINed by `game.asm`, 1 by `screen.asm` |
+| `src/tape/basic.ann` | `R/kit/mkgame.py` | `src/tape/basic.asm`, assembled into `basic.bin` (191 bytes) |
+| `src/screen/screen.ann` and `src/res/screens/loading.png` | `R/kit/mkgame.py`, `tools/res_formats.py` | `src/screen/screen.asm`, assembled into `screen.bin` (6912 bytes) |
+| `orig/Bumpy.tap.zip` | `tools/image.py --tap` | `build/orig.tap`, the original to compare with |
+
 `R/kit/mkgame.py` writes them from the annotation files (`src/game/game.ann`, `src/tape/basic.ann`,
 `src/screen/screen.ann`): one line an entry, its name, title, description and witness.
 The header's quirks are kept: "BUMPY.SCR" says 32768 although it loads to `$4000`, and "BUMPY.CDE"'s second parameter
@@ -248,9 +257,10 @@ ZXDB's known-errors note gives one more POKE: 46124,31.
 With 31 (`$1F`) the game reads the Kempston stick from port `$1F`, the address a standard Kempston interface decodes
 ([doc 5](05-controls.md)).
 
-The hacks of the game (Andy Tacker, Bill Gilbert, Master Studio's Russian translation) are other builds: 37 to 143
-of the 151 code pieces (README).
-They change texts and the cracks' loaders, not the game.
+Master Studio's Russian translation keeps 143 of the 151 code pieces (`work/stage1/copy-compare.tsv`): its texts
+changed.
+The Andy Tacker and Bill Gilbert hacks are 33 KB tapes (33 228 and 33 101 bytes, shorter than the 38 700-byte code)
+with 37 of the 151 pieces and none of the screen's, probably packed; what they change was not examined.
 
 The game has a cheat of its own, R+SPACE+V at the start of a game, which gives 99 of everything
 ([doc 5](05-controls.md)).

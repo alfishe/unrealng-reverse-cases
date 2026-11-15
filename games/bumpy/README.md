@@ -1,7 +1,7 @@
 # Bumpy (Loriciels, 1989)
 
 State: docs written, in review (2026-11-14): docs 01-10 by one writer, docs 11 and 12 generated, the tape builds
-identical from the sources. 12 documents, 75 figures (PNG), 19 animations (GIF), 60 mermaid diagrams and 15 audio
+identical from the sources. 12 documents, 82 figures (PNG), 19 animations (GIF), 61 mermaid diagrams and 15 audio
 files (15 short WAV, no MP3; 588 KB), counted on 2026-11-14 with:
 
 ```sh

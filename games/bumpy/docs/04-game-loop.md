@@ -107,8 +107,8 @@ stateDiagram-v2
     Menu --> NewGame: 0 starts, MenuChoice 0 or 2
     Menu --> Demo: 3000 idle frames, MenuChoice 4
     Menu --> HallShown: 3000 idle frames, every other time
-    HallShown --> Menu: 750 frames
-    Demo --> LifeStart: DemoFlag 1, no READY?
+    HallShown --> Menu: 750 frames or a key
+    Demo --> NewGame: DemoFlag 1, JP NewGameOnePlayer (no READY? later)
     NewGame --> LifeStart
     LifeStart --> Play: a key at READY?
     Play --> LevelEnd: state 8, the ball on the exit
@@ -129,10 +129,11 @@ Worked example, `twoname` (stage 2): two players lose three lives each by S.
 Each LoseLife hands the turn over, so LifeStart runs with CurrentPlayer `$ADDB` alternating 1, 2, 1, 2.
 Player 1's last life ends in GameOver with a score POKEd to 2000, which is not below `$EF25` (1700): the name entry
 runs ([EnterName.gif](img/routines/EnterName.gif), doc 8).
-The hand-over `$BADF` then gives player 2 his last life.
+The hand-over (GameOver `B7A6 JP SwitchToPlayer2`, `$BAF1`, which falls into LoseLifeWait `$BAF6`) then gives player 2
+his last life.
 His GameOver goes through the name entry, finds player 1 marked `$FA` and ends in GameOverPause `$B7A9`.
 
-Witnesses: LifeStart L1 57, LevelEnd L1 101, GameOverPause L1 3, WaitKeyOrSecond L1 56 (game.ann).
+Witnesses: LifeStart L1 62, LevelEnd L1 102, GameOverPause L1 3, WaitKeyOrSecond L1 60 (game.ann).
 
 ![READY? at LifeStart](img/play/c1-014018-ready.png)
 
@@ -230,7 +231,7 @@ MainLoop:
   ACD8  CALL WallStep             ; a lock opening
   ACDB  CALL AnimateFires         ; every fourth pass
   ACDE  CALL AnimateWalls         ; every fourth pass
-  ACE1  CALL AnimateExit          ; the open exit
+  ACE1  CALL AnimateExit          ; the open exit, every second pass
   ACE4  CALL TickTimer            ; Timer $AB04 - 1, held at 0
   ACE7  CALL BottleFlashOff       ; a CPC border flash, now a RET
   ACEA  LD A,$2B                  ; R: back to the menu
@@ -261,7 +262,7 @@ The same in pseudocode:
 loop:
     CellPlatform = platform of the ball's cell
     BrickStep, WaterStep, PlatformChangeStep, WallStep     ; each runs only when its flag is set
-    AnimateFires, AnimateWalls, AnimateExit                ; every fourth pass, the exit when open
+    AnimateFires, AnimateWalls, AnimateExit                ; fires and walls every fourth pass, the exit every second pass while open
     if Timer > 0: Timer -= 1
     BottleFlashOff                                         ; FirmwareStub: nothing
     if key R: goto BackToMenu
@@ -334,8 +335,9 @@ It costs more than the ball.
 --pc AB7C-F5BA --range 4000-FFFF --pictures 72 --out docs/img/routines/MainLoop.gif`. The PC walks Dispatch, BallRight and its XOR, MainLoop's
 calls, then DrawHud.*
 
-Witness: MainLoop L1 92 281 and TickTimer L1 92 279 over all recordings (game.ann); the two differ by the passes left
-by R.
+Witness: MainLoop L1 93 416 and TickTimer L1 93 414 over all recordings (game.ann).
+Every pass runs TickTimer (R is tested after it, at `ACEA`); the 2 are probably recordings that end inside a pass
+before `ACE4`.
 
 The point: a pass is the animations, the keys, the HUD, then one ball step; the HUD is the largest single cost.
 
@@ -381,7 +383,7 @@ Worked example: in `rec/l83` frame 349, DrawHud starts at T 22 621 and the `HALT
 The beam is then on screen line 108.
 The next INT comes at frame 350 T 1825, so the pass waits 33 100 T.
 
-Witness: WaitFrame L1 95 897, WaitOneFrame L1 95 861 (game.ann). WaitFrame runs 3616 more times than MainLoop: the
+Witness: WaitFrame L1 97 266, WaitOneFrame L1 97 227 (game.ann). WaitFrame runs 3850 more times than MainLoop: the
 level ends, the deaths and the pause between lives.
 
 The point: the `HALT` sits after the HUD and before the ball, so the ball's step starts in the top border of the next
@@ -453,8 +455,9 @@ flowchart LR
     S8 --> LS["LifeStart $ABD8"]
 ```
 
-Worked example: the ball lands on the exit (platform 11) at the end of a bounce.
-BallBounceEnd jumps to LandingCheck `$B09E`, which calls ChooseNextState.
+Worked example, `rec/l83`: the ball rises into the exit cell (platform 11; UpStep4 lets the ball into a cell above
+with platform 0, 10 or 11).
+At the up move's last step BallUpEnd `$B004` sets BallStep 0 and calls ChooseNextState (`B009`) directly.
 ChooseNextState finds CellPlatform `$AB1C` = `$0B` and stores 8 in BallState (SetStateLevelEnd `$B86D`).
 At the next pass, Dispatch computes 8 AND 15 = 8, doubled to 16.
 StateTable + 16 = `$AD39` holds `$B2C2`, LevelEnd.

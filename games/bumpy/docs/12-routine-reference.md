@@ -187,7 +187,7 @@ Witness: L1 1 (c1).
 
 **The menu, then a new game or the demo by the menu's choice `$B3B1`**
 
-Calls Menu `$EF33`, then clears the demo flag `$ABA6` and the cheat-mode flag `$ADDD`. By `$B3B1`: 0 starts a one-player game (`$ADDC` = 1), 2 a two-player game (`$ADDC` = 2), 1 the demo (`$ABA6` = 1, the demo input pointer `$ABA4` = `$D25A`, one byte before the demo's moves at `$D25B`; the demo plays one player). Quitting a game (R in MainLoop, QuitToMenu `$B7B2`) and the end of the demo come back here.
+Calls Menu `$EF33`, then clears the demo flag `$ABA6` and the cheat-mode flag `$ADDD`. By MenuChoice `$B3B1`: 0 starts a one-player game (`$ADDC` = 1), 2 a two-player game (`$ADDC` = 2), any other value (Menu writes 4) the demo (`$ABA6` = 1, the demo input pointer `$ABA4` = `$D25A`, one byte before the demo's moves at `$D25B`; the demo plays one player). Quitting a game (R in MainLoop, QuitToMenu `$B7B2`) and the end of the demo come back here.
 
 Witness: L1 7 (c1, gameover, menu, twoname).
 
@@ -237,7 +237,7 @@ Entered from NewGame, from the level end (LevelEnd `$B2C2` through `$B3AE`) and 
 
 The players: the current player `$ADDB` is kept in `$ADDE`. With two players (`$ADDC` = 2) the code copies player 2's record (`$AB10`) to the working copy `$AAFB` and sets `$ADDB` = 2, then player 1's (`$AB09`) and `$ADDB` = 1, each time testing lives = `$FA` (the mark of a player out) with a JR Z to the very next line: the test does nothing (known only from the code). Then `$ADDB` = `$ADDE` again and the record of the current player is copied to `$AAFB` (7 bytes: score word, water, keys, hammers, level, lives), with the text to show: ReadyText `$AD3B` (one player), Player1ReadyText `$AD48` or Player2ReadyText `$AD84`.
 
-In a game: ClearPlayArea, BuildLevel `$CF2E`, PrintText `$E667` of that text; in the demo BuildLevel only. Then water, keys and hammers are kept in `$AB06-$AB08` (the stores at the level's start), `$BB32` reads the platform under the ball, and D (`$32`) calls CheatModeSwitch `$ADDF` (a RET). A game then draws the HUD (`$E58B`), waits for all keys up (WaitRelease `$B401`) and for a key (WaitPressHeld `$B6DD`), and the key sets the first move (DecideMove `$B7E4`). Last, in both: ClearPlayArea and BuildLevel again (the text goes), the HUD and WaitFrame `$B6E4`; MainLoop follows.
+In a game: ClearPlayArea, BuildLevel `$CF2E`, PrintText `$E667` of that text; in the demo BuildLevel only. Then water, keys and hammers are kept in `$AB06-$AB08` (the stores at the level's start), `$BB32` reads the platform under the ball, and D (`$32`) calls CheatModeSwitch `$ADDF` (a RET). A game then draws the HUD (`$E58B`), waits for all keys up (WaitRelease `$B401`) and for a key (WaitPressHeld `$B6DD`), and the key sets the first move (ChooseNextState `$B7E4`). Last, in both: ClearPlayArea and BuildLevel again (the text goes), the HUD and WaitFrame `$B6E4`; MainLoop follows.
 
 Witness: L1 62 (c1, exitbelow, fire, gameover, menu, rightspike, scoreloop, twoname, l51, l59, l96, l98, rzx x24).
 
@@ -667,9 +667,9 @@ Witness: L1 19058 (c1, exitbelow, gameover, menu, scoreloop, twoname, l x12, rzx
 
 ### `BallUpMove` (`$AFD6`)
 
-**State 3's step: 4 lines up, S kills; after step 7 DecideMove**
+**State 3's step: 4 lines up, S kills; after step 7 ChooseNextState**
 
-Round ball, UpOffsets `$B054` (8 x 4 lines = 32 lines, one cell row). After step 7, BallStep = 0 and DecideMove `$B7E4` picks the next state (the ball is on the platform above).
+Round ball, UpOffsets `$B054` (8 x 4 lines = 32 lines, one cell row). After step 7, BallStep = 0 and ChooseNextState `$B7E4` picks the next state (the ball is on the platform above).
 
 Witness: L1 18538 (c1, exitbelow, gameover, menu, scoreloop, twoname, l x12, rzx00-rzx77, rzx79-rzx99).
 
@@ -729,9 +729,9 @@ Witness: L1 19923 (c1, gameover, menu, scoreloop, twoname, l x12, rzx00-rzx99).
 
 ### `LandingCheck` (`$B09E`)
 
-**The end of a move: on a platform DecideMove, in the air fall, off the bottom row lost**
+**The end of a move: on a platform ChooseNextState, in the air fall, off the bottom row lost**
 
-`$AA44` is the ball's cell (0-35, six columns by six rows; 30-35 the bottom row) and `$AB1C` the platform in it. A platform: DecideMove `$B7E4`. No platform above the bottom row: BallState = 4 (fall one cell); if the cell below (CellPlatforms `$AA6B` + cell + 6) holds bricks (`$0A`) DecideMove runs at once. No platform on the bottom row: BallState = 7 (lost below), BallStep = 0. Witness: state 7 started 8 times in the recordings (`$B0E0`).
+`$AA44` is the ball's cell (0-35, six columns by six rows; 30-35 the bottom row) and `$AB1C` the platform in it. A platform: ChooseNextState `$B7E4`. No platform above the bottom row: BallState = 4 (fall one cell); if the cell below (CellPlatforms `$AA6B` + cell + 6) holds bricks (`$0A`) ChooseNextState runs at once. No platform on the bottom row: BallState = 7 (lost below), BallStep = 0. Witness: state 7 started 8 times in the recordings (`$B0E0`).
 
 Witness: L1 6174 (c1, exitbelow, fire, gameover, menu, rightspike, scoreloop, twoname, l x12, rzx00-rzx99).
 
@@ -1031,7 +1031,7 @@ Witness: L1 8 (rzx x6).
 
 **State 8: the ball sinks into the exit, the timer counts into the score, the next level**
 
-Reached when the ball lands on the exit (platform `$0B`: DecideMove sets state 8). With CheatMode `$ADDD` the level would come from a routine's L (CALL `$B754`, a RET; then L reduced below 100 by steps of 97: known only from the code). Else NextLevel `$B2D5`.
+Reached when the ball lands on the exit (platform `$0B`: ChooseNextState sets state 8). With CheatMode `$ADDD` the level would come from a routine's L (CALL `$B754`, a RET; then L reduced below 100 by steps of 97: known only from the code). Else NextLevel `$B2D5`.
 
 Witness: L1 102 (exitbelow, menu, l x12, rzx x88).
 
@@ -3538,7 +3538,7 @@ Witness: L1 110 (menu, l10, l36, l56, l59, rzx x28).
 
 **Run the next step of a worn platform's animation, if one is active**
 
-When `$AA15` is set (copied from `$AA14` by the landing handlers once the ball has left): jumps to the step table `$AB22` (WearTo3Steps `$C53C`, WearTo4Steps `$C544` or FallAwaySteps `$C54C`) entry `$AB21` and advances `$AB21`. The frames are XORed at `$AB24` (the cell's address when the change started). Called by MainLoop (`$ACD5`) and the move handlers (`$CD80`, `$CD83`, `$CDA0`, `$CE8F`).
+When `$AA15` is set (copied from `$AA14` at step 5 of a side move, step 3 of the up move or step 1 of a bounce in place, so a platform the ball keeps bouncing on wears too): jumps to the step table `$AB22` (WearTo3Steps `$C53C`, WearTo4Steps `$C544` or FallAwaySteps `$C54C`) entry `$AB21` and advances `$AB21`. The frames are XORed at `$AB24` (the cell's address when the change started). Called by MainLoop (`$ACD5`) and the move handlers (`$CD80`, `$CD83`, `$CDA0`, `$CE8F`).
 
 Witness: L1 94743 (c1, exitbelow, fire, gameover, menu, rightspike, scoreloop, twoname, l x12, rzx00-rzx99).
 
@@ -4004,7 +4004,7 @@ Witness: L1 1566 (scoreloop, l x11, rzx x87).
 
 **The ball bounced on a type 2 platform: arm its change to 3**
 
-`$AB24` = the cell's address `$AB2D`, `$AA14` = 1 (pending until the ball leaves), the steps WearTo3Steps `$C53C` from 0, the cell `$AB1B` = `$AA44`, the new type `$AB20` = 3. Called by the landing handlers (`$C7C1`, `$C8C4`, `$CB0A`, `$CD23`). Platforms 2, 3 and 4 wear: each bounce takes them one step towards nothing. Witness: 220 runs.
+`$AB24` = the cell's address `$AB2D`, `$AA14` = 1 (pending until step 5 of a side move, step 3 of the up move or step 1 of a bounce in place), the steps WearTo3Steps `$C53C` from 0, the cell `$AB1B` = `$AA44`, the new type `$AB20` = 3. Called by step 0 of the bounce, the side moves and the up move (`$C7C1`, `$C8C4`, `$CB0A`, `$CD23`). Platforms 2, 3 and 4 wear: each bounce or move from them takes them one step towards nothing, even when the ball stays.
 
 Witness: L1 250 (menu, l x9, rzx x56).
 
@@ -4019,7 +4019,7 @@ Witness: L1 250 (menu, l x9, rzx x56).
 
 **The ball bounced on a type 3 platform: arm its change to 4**
 
-As StartWearTo3 with WearTo4Steps `$C544` and the new type 4. Witness: 328 runs.
+As StartWearTo3 with WearTo4Steps `$C544` and the new type 4.
 
 Witness: L1 394 (menu, scoreloop, l x11, rzx x77).
 
@@ -4034,7 +4034,7 @@ Witness: L1 394 (menu, scoreloop, l x11, rzx x77).
 
 **The ball bounced on a type 4 platform: arm its fall (type 0, no platform)**
 
-As StartWearTo3 with FallAwaySteps `$C54C` and the new type 0. Witness: 672 runs.
+As StartWearTo3 with FallAwaySteps `$C54C` and the new type 0; a ball still bouncing on the cell falls through.
 
 Witness: L1 783 (scoreloop, l x11, rzx x87).
 
@@ -5794,7 +5794,7 @@ Witness: L1 0 ().
 
 **Install IM 2 with handler Im2HandlerKey, then call `$B3B5` (never called)**
 
-The vector table `$FDFF-$FEFF` is filled with `$FD`, a JP Im2HandlerKey put at `$FDFD`, I = `$FE`, IM 2, EI; BC = 0 and CALL `$B3B5` (inside the key slot reader at `$B3B1`: it reads the eight KeySlots into a bit mask at `$B3CE`). Nothing calls it (known only from the code).
+LDIR fills `$FDFF-$FF00` with `$FD`, then a JP Im2HandlerKey put at `$FDFD` (its word overwrites `$FDFF`), I = `$FE`, IM 2, EI: the vectors are `$FE00-$FF00`, all `$FDFD`. Then BC = 0 and CALL ReadControlMaskKeepDE `$B3B5` (inside the key slot reader ReadControlMask `$B3B2`: it reads the eight KeySlots into a bit mask at `$B3CE`). Nothing calls it (known only from the code).
 
 Witness: L1 0 ().
 

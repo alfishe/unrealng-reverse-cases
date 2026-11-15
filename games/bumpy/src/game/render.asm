@@ -1220,11 +1220,13 @@ Steam4:
 
 ; Run the next step of a worn platform's animation, if one is active
 ;
-; When $AA15 is set (copied from $AA14 by the landing handlers once the ball
-; has left): jumps to the step table $AB22 (WearTo3Steps $C53C, WearTo4Steps
-; $C544 or FallAwaySteps $C54C) entry $AB21 and advances $AB21. The frames are
-; XORed at $AB24 (the cell's address when the change started). Called by
-; MainLoop ($ACD5) and the move handlers ($CD80, $CD83, $CDA0, $CE8F).
+; When $AA15 is set (copied from $AA14 at step 5 of a side move, step 3 of the
+; up move or step 1 of a bounce in place, so a platform the ball keeps bouncing
+; on wears too): jumps to the step table $AB22 (WearTo3Steps $C53C,
+; WearTo4Steps $C544 or FallAwaySteps $C54C) entry $AB21 and advances $AB21.
+; The frames are XORed at $AB24 (the cell's address when the change started).
+; Called by MainLoop ($ACD5) and the move handlers ($CD80, $CD83, $CDA0,
+; $CE8F).
 ;
 ; Witness: L1 94743 (c1, exitbelow, fire, gameover, menu, rightspike,
 ; scoreloop, twoname, l x12, rzx00-rzx99).
@@ -1667,11 +1669,12 @@ XorFall8:
 
 ; The ball bounced on a type 2 platform: arm its change to 3
 ;
-; $AB24 = the cell's address $AB2D, $AA14 = 1 (pending until the ball leaves),
-; the steps WearTo3Steps $C53C from 0, the cell $AB1B = $AA44, the new type
-; $AB20 = 3. Called by the landing handlers ($C7C1, $C8C4, $CB0A, $CD23).
-; Platforms 2, 3 and 4 wear: each bounce takes them one step towards nothing.
-; Witness: 220 runs.
+; $AB24 = the cell's address $AB2D, $AA14 = 1 (pending until step 5 of a side
+; move, step 3 of the up move or step 1 of a bounce in place), the steps
+; WearTo3Steps $C53C from 0, the cell $AB1B = $AA44, the new type $AB20 = 3.
+; Called by step 0 of the bounce, the side moves and the up move ($C7C1, $C8C4,
+; $CB0A, $CD23). Platforms 2, 3 and 4 wear: each bounce or move from them takes
+; them one step towards nothing, even when the ball stays.
 ;
 ; Witness: L1 250 (menu, l x9, rzx x56).
 StartWearTo3:
@@ -1692,8 +1695,7 @@ StartWearTo3:
 
 ; The ball bounced on a type 3 platform: arm its change to 4
 ;
-; As StartWearTo3 with WearTo4Steps $C544 and the new type 4. Witness: 328
-; runs.
+; As StartWearTo3 with WearTo4Steps $C544 and the new type 4.
 ;
 ; Witness: L1 394 (menu, scoreloop, l x11, rzx x77).
 StartWearTo4:
@@ -1714,8 +1716,8 @@ StartWearTo4:
 
 ; The ball bounced on a type 4 platform: arm its fall (type 0, no platform)
 ;
-; As StartWearTo3 with FallAwaySteps $C54C and the new type 0. Witness: 672
-; runs.
+; As StartWearTo3 with FallAwaySteps $C54C and the new type 0; a ball still
+; bouncing on the cell falls through.
 ;
 ; Witness: L1 783 (scoreloop, l x11, rzx x87).
 StartFallAway:
@@ -1889,23 +1891,23 @@ StoreWallFrame:
 BrickBreakSteps:
   DEFW BrickCrumble1,BrickCrumble2,BrickCrumble3,BrickCrumble4
 
-; The steps of a type-2 platform turning into type 3 after the ball leaves it
+; The steps of a type-2 platform turning into type 3
 ;
 ; Set by $C3D5 ($AB22); $C1C3 writes the new type ($B8C2: $AA6B[$AB1B] = $AB20
-; = 3), the others redraw. Witness: the RZX, 220 starts.
+; = 3), the others redraw. Witness: StartWearTo3 L1 250.
 CrumbleSteps2:
   DEFW WearTo3Step1,WearTo3Step2,WearTo3Step3,WearTo3Step4
 
 ; The steps of a type-3 platform turning into type 4
 ;
-; Set by $C3F8 (328 starts); the new type $AB20 = 4.
+; Set by $C3F8 (StartWearTo4 L1 394); the new type $AB20 = 4.
 CrumbleSteps3:
   DEFW WearTo4Step1,WearTo4Step2,WearTo4Step3,WearTo4Step4
 
 ; The steps of a type-4 platform vanishing
 ;
-; Set by $C41B (672 starts); the new type $AB20 = 0, no platform; the last step
-; $C24C clears $AA14 and $AA15.
+; Set by $C41B (StartFallAway L1 783); the new type $AB20 = 0, no platform; the
+; last step $C24C clears $AA14 and $AA15.
 CrumbleSteps4:
   DEFW FallAwayStep1,FallAwayStep2,FallAwayStep3,FallAwayStep4,FallAwayStep5,FallAwayStep6,FallAwayStep7,FallAwayStep8,FallAwayStep9
 

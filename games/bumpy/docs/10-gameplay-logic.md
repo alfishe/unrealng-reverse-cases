@@ -192,12 +192,14 @@ What each check does, per state and step:
 ![The step checks](img/ball/steps.png)
 
 *Each move's check table. How to read: a row is a state, a column a step; a coloured box is a check that looks at the
-board (its job and its address), a grey one only moves. The landing comes after the last column. No recording: the
+board (its job and its address), a grey one only moves. "wear" arms a crumbling platform's change, "crumble"
+starts it; "bricks" is HitBrick, at all eight up steps. The landing comes after the last column. No recording: the
 check tables of `build/game.bin`. `python3 tools/fig_ball.py steps`.*
 
 The checks fall at fixed steps:
 
-- step 0: the landing sound and the wear of the platform left behind (`$C778`, `$C847`, `$CA8D`);
+- step 0: the landing sound, and a crumbling platform's change is armed (`$C778`, `$C847`, `$CA8D`, the up move's
+  `$CCD0`); it starts at step 5 of a side move, step 3 going up or step 1 of a bounce in place;
 - step 5 of a side move: a wall beside the ball turns it back ([doc 7](07-objects.md#74-the-walls-and-the-locks));
 - step 8 of a side move: BallCell changes by 1 (the ball is over the next cell);
 - step 9: the spring may be armed (10.4); on a side move, a drop of water puts out a fire ahead;
@@ -392,7 +394,9 @@ UpStep4 `$CD8A` looks at the platform of the cell above before the ball reaches 
 - spikes (12): UpSpikeDeath `$CDC6`, the burst;
 - any other platform (1-9): BallBumpCeiling.
 
-BallBumpCeiling moves the ball 2 lines up and back with a frame between, and sets state 4: the ball falls back.
+BallBumpCeiling moves the ball 2 lines up and back with a frame between, and sets state 4 with BallStep left at 4:
+the fall resumes at DownStep4 and runs 4 steps, DownStep3 (BallCell + 6) is skipped, so the ball lands back on the
+platform it left.
 UpStep5 `$CDD9` moves BallCell to the cell above; UpStep6 takes its object.
 Bricks in the ball's own cell are met by HitBrick at the up move's steps ([doc 7](07-objects.md#76-bricks-and-hammers)).
 
@@ -452,7 +456,7 @@ The ball climbs row after row through the gaps until a platform stops it.
 Then it falls back onto the last platform it passed.
 The player leaves the column with left or right at the end of a row, as in the worked example of 10.3.
 
-Witness: LoadSpring L1 2308, SpringStep6 1316, BallBumpCeiling 100.
+Witness: LoadSpring L1 2308, SpringStep6 1326, BallBumpCeiling 103.
 In all the recordings ChooseUpOrBounce `$B849` ran 990 times and kept the ball going up 986 times
 (`work/**/l1.json`): down was held at an up landing 4 times.
 
@@ -530,7 +534,7 @@ Doc 7 decodes every type; this table says when the ball feels it.
 | ---: | --- | --- |
 | 0, none | the landing | falls (10.5); on the bottom row drops out |
 | 1, plain | the landing | lands; the spring works |
-| 2, 3, 4, crumbling | step 0 of the next move | the platform wears a stage once the ball has left ([doc 7](07-objects.md#wear-types-2-3-and-4)); 4 falls away |
+| 2, 3, 4, crumbling | step 0 of the next move arms, step 5 (side), 3 (up) or 1 (bounce in place) starts | the platform wears a stage whether the ball stays or leaves ([doc 7](07-objects.md#wear-types-2-3-and-4)); 4 falls away, and a ball still bouncing on it falls through |
 | 5, stopper | the landing | BallStopped: waits for left, right or S |
 | 6, 7, conveyors | the landing | the next move is left or right, whatever the keys |
 | 8, 9, burning | step 9 or the fall's step 0, then the last step | water is spent and the platform becomes 1 or 5; without water the ball burns |
@@ -554,7 +558,7 @@ A platform's effect, the wear of a crumbling platform:
 
 ![A crumbling platform wears](img/routines/PlatformChangeStep.gif)
 
-*A type 2 platform becomes type 3 after the ball has left it. How to read: the code panel lights PlatformChangeStep and
+*A type 2 platform becomes type 3 after the ball has jumped away from it. How to read: the code panel lights PlatformChangeStep and
 one WearTo3 step a pass; the screen shows the platform XORed off and the cracks XORed on. `rzx/l01`, frames 484-495.
 `python3 R/kit/routine_anim.py --work work/docs/bmA/l01 --window 484:0-496:0 --listing build/game.lst
 --pc C19D-C43D --range A900-AB7F --pictures 60 --out docs/img/routines/PlatformChangeStep.gif`.*
@@ -702,7 +706,7 @@ step; LostStep5 calls SfxLifeLost and jumps to LoseLife. `rzx/l68`, frames 682-7
 --work work/docs/bmA/l68 --window 682:0-716:0 --listing build/game.lst --pc B20A-B2C1,BA93-BB04,F4CB-F4E1,F58C-F5BA
 --range A900-AB7F --pictures 60 --out docs/img/routines/BallFallOut.gif`.*
 
-Witness: BallBurst L1 126, BallFallOut L1 40, SelfDestruct L1 15, BallBurstStart L1 6.
+Witness: BallBurst L1 126, BallFallOut L1 40, SelfDestruct L1 15, BallBurstStart L1 7 (6 spike landings and the fire).
 
 The point: death is never a matter of time or chance; it is a fixed cell entered at a fixed step.
 
@@ -787,7 +791,7 @@ After the death the HUD shows 9 drops again, and 9 lives.
 *The burst after the fire. How to read: the burst picture sits on cell 31; the HUD still shows 0 water, before
 LoseLife. `fire`, frame 70.*
 
-Witness: LoseLife L1 38, 30 lives lost and 4 game overs (`gameover` and `twoname` two each).
+Witness: LoseLife L1 38, 34 lives lost and 4 game overs (`gameover` and `twoname` two each).
 The hand-over between players ran in `twoname` (`$BADF`, `$BAF1`).
 
 The point: a death costs a life and the tools spent on the level, never points, and gives the level back whole.
@@ -1034,9 +1038,11 @@ The point: a level is a puzzle with one fixed rule set; the counts of its parts 
 
 - RightFireDeath `$CCBD` and DownFireDeath `$CEF9`: L1 0; they mirror LeftFireDeath (RightSpikeDeath ran in
   `rightspike`).
-- SetStateDown `$B861`: no caller; a fall is always set by LandingCheck or BallBumpCeiling.
+- SetStateDown `$B861`: no caller; a fall is always set by LandingCheck, BallBumpCeiling or HitBrick (`$B907`).
 - A score past 65 535 and the wrap of the 16-bit word; the hall of fame would then compare the small number.
 - Lives, water, keys or hammers at 99, where the stores stop growing.
 - A second loop of the 100 levels beyond level 0's start.
 - The cheat mode's level choice at the level end and at S (`$B2C9`, `$BA80`): FirmwareStub5 is a stub, so the level
   it gives is not known.
+  It is dead code in any case: CheatMode `$ADDD` is written only at `$AB85` (cleared) and by CheatModeOn `$ADE0`,
+  which follows the RET of CheatModeSwitch `$ADDF` and is never executed, so the level choice never runs.

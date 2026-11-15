@@ -311,7 +311,7 @@ Either way the main loop does not run during an effect, so the pass that played 
 | --- | --- | --- |
 | about 1.2 frames | SfxLand, SfxWallBounce, SfxTimerTick | a pass of two frames instead of one |
 | 1.6-3 frames | SfxHit, SfxPickup, SfxLockA, SfxLockB, SfxWaterDrop, SfxBrickCrumble | a short stop |
-| 20 frames | the three deaths | the game frozen for 0.4 s while the ball bursts |
+| 20 frames | the three deaths | the game frozen for 0.4 s: spikes and fire play during the burst; SfxLifeLost plays after the ball has dropped out below (LostStep5), or at S, with no burst |
 | 38.6 frames | SfxExtraLife, SfxLevelEnd | the game frozen for 0.77 s |
 
 Worked example: the timer's count in `rec/l83`.
@@ -403,7 +403,7 @@ The rest of the AY code, all at `$F183-$F3C7`, is never called (known only from 
 | `$F19F` | WriteAyRegister | register A = C through ports `$FFFD` and `$BFFD`; register 7 masked with `$3F` so the AY's I/O ports stay inputs |
 | `$F1C8` | DelayAfterFrame | a `HALT` and a loop of 512 |
 | `$F1D5` | BuildLineTable | the 192 screen line addresses at `$F206` |
-| `$F343`, `$F388` | InstallIm2Key, InstallIm2Wait | IM 2 with a vector table at `$FDFF-$FEFF`, I = `$FE`, a `JP` at `$FDFD` |
+| `$F343`, `$F388` | InstallIm2Key, InstallIm2Wait | IM 2 with a vector table `$FE00-$FF00` filled with `$FD` (the `LDIR` fills `$FDFF-$FF00`, then the `JP` and its handler word overwrite `$FDFF`), I = `$FE`, so every vector reaches the `JP` at `$FDFD` |
 | `$F36B`, `$F3B0` | Im2HandlerKey, Im2HandlerWait | save all registers, call a hook, `RETI` |
 | `$F382`, `$F3C7` | Im2HookKey, Im2HookWait | a `RET`: the place where a per-frame music player would go |
 

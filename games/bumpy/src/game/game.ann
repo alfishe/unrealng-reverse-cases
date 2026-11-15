@@ -187,7 +187,7 @@ $AB7C c GameStart ; The code block's entry (USR 43900): DI, then GameRestart
 > The BASIC's RANDOMIZE USR 43900 lands here; it disables the interrupts for good (the game waits for frames with EI: HALT, WaitFrame $B6E4) and falls into GameRestart. Nothing jumps back here.
 > Witness: L1 1 (c1).
 $AB7D c GameRestart ; The menu, then a new game or the demo by the menu's choice $B3B1
-> Calls Menu $EF33, then clears the demo flag $ABA6 and the cheat-mode flag $ADDD. By $B3B1: 0 starts a one-player game ($ADDC = 1), 2 a two-player game ($ADDC = 2), 1 the demo ($ABA6 = 1, the demo input pointer $ABA4 = $D25A, one byte before the demo's moves at $D25B; the demo plays one player). Quitting a game (R in MainLoop, QuitToMenu $B7B2) and the end of the demo come back here.
+> Calls Menu $EF33, then clears the demo flag $ABA6 and the cheat-mode flag $ADDD. By MenuChoice $B3B1: 0 starts a one-player game ($ADDC = 1), 2 a two-player game ($ADDC = 2), any other value (Menu writes 4) the demo ($ABA6 = 1, the demo input pointer $ABA4 = $D25A, one byte before the demo's moves at $D25B; the demo plays one player). Quitting a game (R in MainLoop, QuitToMenu $B7B2) and the end of the demo come back here.
 > Witness: L1 7 (c1, gameover, menu, twoname).
 $AB80 c GameRestartChoice ; Back from the menu: start what $B3B1 chose
 > GameRestart's tail, where Menu returns. It is an entry of its own because the recordings that start inside the menu (work/stage1/probe/load-fast-nokemp/end.szx: menu, gameover, twoname) reach it by Menu's RET with no CALL seen. Clears DemoFlag $ABA6 and CheatMode $ADDD and branches on MenuChoice $B3B1 as GameRestart says.
@@ -205,7 +205,7 @@ $ABD3 FirstPlayer ; the current player $ADDB = 1
 $ABD8 c LifeStart ; The start of a level or of a new life: resets the ball, the timer and the player's working copy, builds the level, "ready?"
 > Entered from NewGame, from the level end (LevelEnd $B2C2 through $B3AE) and after a life lost (LoseLife $BA93). If the cheat mode $ADDD is on (never: its switch is gone, see CheatModeOn $ADE0) $BB7D refills the stores. ClearPlayArea $B4CE, then zeroes the ball state $AA00, BallStep $A9FF, SpringArmed $AA13, the animation flags $AA12, $AB33, $AB2B, $AA15, $AA14, $AA1D, the platform under the ball $AB1C and $A9FD; the timer $AB04 = 1000 ($03E8: the passes the level allows).
 > The players: the current player $ADDB is kept in $ADDE. With two players ($ADDC = 2) the code copies player 2's record ($AB10) to the working copy $AAFB and sets $ADDB = 2, then player 1's ($AB09) and $ADDB = 1, each time testing lives = $FA (the mark of a player out) with a JR Z to the very next line: the test does nothing (known only from the code). Then $ADDB = $ADDE again and the record of the current player is copied to $AAFB (7 bytes: score word, water, keys, hammers, level, lives), with the text to show: ReadyText $AD3B (one player), Player1ReadyText $AD48 or Player2ReadyText $AD84.
-> In a game: ClearPlayArea, BuildLevel $CF2E, PrintText $E667 of that text; in the demo BuildLevel only. Then water, keys and hammers are kept in $AB06-$AB08 (the stores at the level's start), $BB32 reads the platform under the ball, and D ($32) calls CheatModeSwitch $ADDF (a RET). A game then draws the HUD ($E58B), waits for all keys up (WaitRelease $B401) and for a key (WaitPressHeld $B6DD), and the key sets the first move (DecideMove $B7E4). Last, in both: ClearPlayArea and BuildLevel again (the text goes), the HUD and WaitFrame $B6E4; MainLoop follows.
+> In a game: ClearPlayArea, BuildLevel $CF2E, PrintText $E667 of that text; in the demo BuildLevel only. Then water, keys and hammers are kept in $AB06-$AB08 (the stores at the level's start), $BB32 reads the platform under the ball, and D ($32) calls CheatModeSwitch $ADDF (a RET). A game then draws the HUD ($E58B), waits for all keys up (WaitRelease $B401) and for a key (WaitPressHeld $B6DD), and the key sets the first move (ChooseNextState $B7E4). Last, in both: ClearPlayArea and BuildLevel again (the text goes), the HUD and WaitFrame $B6E4; MainLoop follows.
 > Witness: L1 62 (c1, exitbelow, fire, gameover, menu, rightspike, scoreloop, twoname, l51, l59, l96, l98, rzx x24).
 $AC19 ; two players: player 2's record to the working copy, $ADDB = 2
 $AC30 LifeStartPlayer1 ; player 1's record to the working copy, $ADDB = 1
@@ -214,7 +214,7 @@ $AC63 LifeStartPlayer2 ; player 2: record $AB10, text Player2ReadyText
 $AC69 LifeStartCopy ; the record to the working copy $AAFB
 $AC86 LifeStartDemo ; the demo: BuildLevel without the text
 $AC89 LifeStartStores ; keep water, keys and hammers in $AB06-$AB08
-$ACB0 LifeStartReady ; the HUD, wait for no key, then for a key; DecideMove
+$ACB0 LifeStartReady ; the HUD, wait for no key, then for a key; ChooseNextState
 $ACBC LifeStartGo ; the play area again without the text, the HUD, one frame
 
 @module mainloop ; The main loop, the state dispatcher and the keys
@@ -245,7 +245,7 @@ $ADE0 c CheatModeOn ; LD A,1: LD ($ADDD),A: RET: the cut-off body of the D key (
 
 @module ball ; The ball: the sprite routines, the move states, landing, the burst, falling out and the level end
 @about The ball is a CPC-style screen address $AA03 (the previous one in $AA05) and a sprite $AA01 (the round ball $67E8 or a rolling frame; player 2's sprites lie $280 higher). Each move state takes one step a frame from a table of address offsets: bounce in place (BallBounce, 16 steps, 18 lines up and back), left and right (16 steps: the same arc and 10 CPC bytes, 5 Spectrum bytes, sideways), up and down (8 steps of 4 lines: 32 lines, one cell). Before each step a per-step check from the state's handler table ($AE9B, $AF15, $AF8F, $B044, $B0FA: routines at $C778-$CECC) tests the cells the ball crosses (walls, platforms, objects) and continues in the state's move routine.
-@about At the end of a move LandingCheck $B09E decides: on a platform, DecideMove $B7E4 picks the next state from the platform and the keys; in the air the ball falls (state 4); with no platform on the bottom row it falls out of the screen (state 7). The S key ($31) kills the ball in any move state (Suicide $BA71). Death by the burst (state 6) or by falling out (state 7) ends in LoseLife $BA93.
+@about At the end of a move LandingCheck $B09E decides: on a platform, ChooseNextState $B7E4 picks the next state from the platform and the keys; in the air the ball falls (state 4); with no platform on the bottom row it falls out of the screen (state 7). The S key ($31) kills the ball in any move state (Suicide $BA71). Death by the burst (state 6) or by falling out (state 7) ends in LoseLife $BA93.
 
 $ADE6 c PlayerBallSprite ; HL = the sprite at HL for the current player: + $280 for player 2
 > Input HL a ball sprite (player 1's); output HL unchanged when CurrentPlayer $ADDB = 1, else HL + $280 (player 2's ball, a different pattern). Player 2's branch ran 763 times in twoname (player 2's turns).
@@ -295,11 +295,11 @@ $AF8F w RightChecks 8 ; State 2's 16 per-step checks (routines $CA8D-$CC9A)
 $AFAF w RightOffsets 8 ; State 2's 16 offsets: the arc and 10 CPC bytes to the right
 $AFCF c BallUp ; State 3: the spring's jump up one cell, 8 steps (the checks in UpChecks)
 > Witness: L1 19058 (c1, exitbelow, gameover, menu, scoreloop, twoname, l x12, rzx00-rzx77, rzx79-rzx99).
-$AFD6 c BallUpMove ; State 3's step: 4 lines up, S kills; after step 7 DecideMove
+$AFD6 c BallUpMove ; State 3's step: 4 lines up, S kills; after step 7 ChooseNextState
 $AFF3 BallUpMoveSkip
-> Round ball, UpOffsets $B054 (8 x 4 lines = 32 lines, one cell row). After step 7, BallStep = 0 and DecideMove $B7E4 picks the next state (the ball is on the platform above).
+> Round ball, UpOffsets $B054 (8 x 4 lines = 32 lines, one cell row). After step 7, BallStep = 0 and ChooseNextState $B7E4 picks the next state (the ball is on the platform above).
 > Witness: L1 18538 (c1, exitbelow, gameover, menu, scoreloop, twoname, l x12, rzx00-rzx77, rzx79-rzx99).
-$B004 BallUpEnd ; step 7 done: DecideMove
+$B004 BallUpEnd ; step 7 done: ChooseNextState
 $B00F c BallBumpCeiling ; The ball hits a platform from below: two lines up and back, then it falls (state 4)
 > Jumped to by the up checks ($CDAA, $CDC3) when the cell above is closed. Moves the ball 2 lines up ($F000 = minus $1000), redraws it, waits a frame ($B87E), moves it back ($1000) and sets BallState = 4 (down). 88 bumps in the recordings (its witness).
 > Witness: L1 103 (c1, gameover, menu, scoreloop, twoname, l10, l51, l68, l96, rzx x29).
@@ -311,8 +311,8 @@ $B06B c BallDownMove ; State 4's step: 4 lines down, S kills; after step 7 Landi
 $B088 BallDownMoveSkip
 > Witness: L1 19923 (c1, gameover, menu, scoreloop, twoname, l x12, rzx00-rzx99).
 $B099 BallDownEnd ; step 7 done
-$B09E c LandingCheck ; The end of a move: on a platform DecideMove, in the air fall, off the bottom row lost
-> $AA44 is the ball's cell (0-35, six columns by six rows; 30-35 the bottom row) and $AB1C the platform in it. A platform: DecideMove $B7E4. No platform above the bottom row: BallState = 4 (fall one cell); if the cell below (CellPlatforms $AA6B + cell + 6) holds bricks ($0A) DecideMove runs at once. No platform on the bottom row: BallState = 7 (lost below), BallStep = 0. Witness: state 7 started 8 times in the recordings ($B0E0).
+$B09E c LandingCheck ; The end of a move: on a platform ChooseNextState, in the air fall, off the bottom row lost
+> $AA44 is the ball's cell (0-35, six columns by six rows; 30-35 the bottom row) and $AB1C the platform in it. A platform: ChooseNextState $B7E4. No platform above the bottom row: BallState = 4 (fall one cell); if the cell below (CellPlatforms $AA6B + cell + 6) holds bricks ($0A) ChooseNextState runs at once. No platform on the bottom row: BallState = 7 (lost below), BallStep = 0. Witness: state 7 started 8 times in the recordings ($B0E0).
 > Witness: L1 6174 (c1, exitbelow, fire, gameover, menu, rightspike, scoreloop, twoname, l x12, rzx00-rzx99).
 $B0B4 LandingFall ; in the air: fall (state 4), bricks below decide at once
 $B0D1 LandingBottom ; on the bottom row
@@ -371,7 +371,7 @@ $B2A6 c LostStep5 ; Step 4: the last line off, the sound $F4CB, LoseLife
 > Witness: L1 8 (rzx x6).
 $B2B8 w LostSteps 5 ; State 7's five steps
 $B2C2 c LevelEnd ; State 8: the ball sinks into the exit, the timer counts into the score, the next level
-> Reached when the ball lands on the exit (platform $0B: DecideMove sets state 8). With CheatMode $ADDD the level would come from a routine's L (CALL $B754, a RET; then L reduced below 100 by steps of 97: known only from the code). Else NextLevel $B2D5.
+> Reached when the ball lands on the exit (platform $0B: ChooseNextState sets state 8). With CheatMode $ADDD the level would come from a routine's L (CALL $B754, a RET; then L reduced below 100 by steps of 97: known only from the code). Else NextLevel $B2D5.
 > Witness: L1 102 (exitbelow, menu, l x12, rzx x88).
 $B2C9 LevelEndCheat ; the cheat mode's level choice (never runs)
 $B2CD LevelEndCheatLoop ; reduce below 100
@@ -854,7 +854,7 @@ $C16D c Steam3 ; XOR steam frame 3 ($81DD, 6 bytes × 2 rows) at $AB29 + $2FB1
 $C185 c Steam4 ; XOR steam frame 4 ($81E9, 4 bytes × 3 rows) at $AB29 + $27B2
 > Witness: L1 110 (menu, l10, l36, l56, l59, rzx x28).
 $C19D c PlatformChangeStep ; Run the next step of a worn platform's animation, if one is active
-> When $AA15 is set (copied from $AA14 by the landing handlers once the ball has left): jumps to the step table $AB22 (WearTo3Steps $C53C, WearTo4Steps $C544 or FallAwaySteps $C54C) entry $AB21 and advances $AB21. The frames are XORed at $AB24 (the cell's address when the change started). Called by MainLoop ($ACD5) and the move handlers ($CD80, $CD83, $CDA0, $CE8F).
+> When $AA15 is set (copied from $AA14 at step 5 of a side move, step 3 of the up move or step 1 of a bounce in place, so a platform the ball keeps bouncing on wears too): jumps to the step table $AB22 (WearTo3Steps $C53C, WearTo4Steps $C544 or FallAwaySteps $C54C) entry $AB21 and advances $AB21. The frames are XORed at $AB24 (the cell's address when the change started). Called by MainLoop ($ACD5) and the move handlers ($CD80, $CD83, $CDA0, $CE8F).
 > Witness: L1 94743 (c1, exitbelow, fire, gameover, menu, rightspike, scoreloop, twoname, l x12, rzx00-rzx99).
 $C1C3 c WearTo3Step1 ; Type 2 becomes 3: write the cell, platform 2 off, crack 2a on
 > Witness: L1 250 (menu, l x9, rzx x56).
@@ -926,13 +926,13 @@ $C3A7 c XorFall7 ; XOR $7E48 (2 bytes × 5 rows) at $AB24 + 3 - $0800
 $C3BE c XorFall8 ; XOR $7E52 (2 bytes × 5 rows) at $AB24 + 3 - $0800
 > Witness: L1 1566 (scoreloop, l x11, rzx x87).
 $C3D5 c StartWearTo3 ; The ball bounced on a type 2 platform: arm its change to 3
-> $AB24 = the cell's address $AB2D, $AA14 = 1 (pending until the ball leaves), the steps WearTo3Steps $C53C from 0, the cell $AB1B = $AA44, the new type $AB20 = 3. Called by the landing handlers ($C7C1, $C8C4, $CB0A, $CD23). Platforms 2, 3 and 4 wear: each bounce takes them one step towards nothing. Witness: 220 runs.
+> $AB24 = the cell's address $AB2D, $AA14 = 1 (pending until step 5 of a side move, step 3 of the up move or step 1 of a bounce in place), the steps WearTo3Steps $C53C from 0, the cell $AB1B = $AA44, the new type $AB20 = 3. Called by step 0 of the bounce, the side moves and the up move ($C7C1, $C8C4, $CB0A, $CD23). Platforms 2, 3 and 4 wear: each bounce or move from them takes them one step towards nothing, even when the ball stays.
 > Witness: L1 250 (menu, l x9, rzx x56).
 $C3F8 c StartWearTo4 ; The ball bounced on a type 3 platform: arm its change to 4
-> As StartWearTo3 with WearTo4Steps $C544 and the new type 4. Witness: 328 runs.
+> As StartWearTo3 with WearTo4Steps $C544 and the new type 4.
 > Witness: L1 394 (menu, scoreloop, l x11, rzx x77).
 $C41B c StartFallAway ; The ball bounced on a type 4 platform: arm its fall (type 0, no platform)
-> As StartWearTo3 with FallAwaySteps $C54C and the new type 0. Witness: 672 runs.
+> As StartWearTo3 with FallAwaySteps $C54C and the new type 0; a ball still bouncing on the cell falls through.
 > Witness: L1 783 (scoreloop, l x11, rzx x87).
 $C43E c WallStep ; Run the next step of a lock's opening, if one is active
 > When $AA1D is set: jumps to the step table $AA1A (set by the wall handlers $C95D-$C971 and $CBA0-$CBB4 from the lock's type: LockSteps $C592 for 3, $C596 for 2, $C59A for 1) entry $AA1C and advances it. A key turns lock 3 into 2, 2 into 1, and 1 into an open wall, each with its sound. Called by MainLoop ($ACD8).
@@ -987,12 +987,12 @@ $C52A w SpringCurves 5 ; The spring-press records of platform types 1-5 (24 byte
 @about The animations below are lists of routines, one a step: a player calls entry N at its N-th call and stops when an entry clears its active flag.
 $C534 w BrickBreakSteps 4 ; The four steps of a brick wall breaking
 > $BE94 calls BrickBreakSteps[$AB34] once a frame while $AB33 is set: $BEBB, $BF19, $BF60, $BFA7 (1476 calls).
-$C53C w CrumbleSteps2 4 ; The steps of a type-2 platform turning into type 3 after the ball leaves it
-> Set by $C3D5 ($AB22); $C1C3 writes the new type ($B8C2: $AA6B[$AB1B] = $AB20 = 3), the others redraw. Witness: the RZX, 220 starts.
+$C53C w CrumbleSteps2 4 ; The steps of a type-2 platform turning into type 3
+> Set by $C3D5 ($AB22); $C1C3 writes the new type ($B8C2: $AA6B[$AB1B] = $AB20 = 3), the others redraw. Witness: StartWearTo3 L1 250.
 $C544 w CrumbleSteps3 4 ; The steps of a type-3 platform turning into type 4
-> Set by $C3F8 (328 starts); the new type $AB20 = 4.
+> Set by $C3F8 (StartWearTo4 L1 394); the new type $AB20 = 4.
 $C54C w CrumbleSteps4 9 ; The steps of a type-4 platform vanishing
-> Set by $C41B (672 starts); the new type $AB20 = 0, no platform; the last step $C24C clears $AA14 and $AA15.
+> Set by $C41B (StartFallAway L1 783); the new type $AB20 = 0, no platform; the last step $C24C clears $AA14 and $AA15.
 $C55E w FireOutLeft 8 ; The steps of the water putting out a fire, the ball moving left
 > LeftStep9 $C9CE starts it ($AB27, $AB26 = 0, $AB29 the cell's screen address, $AB2B = 1) when the ball reaches a burning platform (type 8 or 9) and holds a water drop.
 $C56E w FireOutRight 8 ; The same, the ball moving right
@@ -1725,7 +1725,7 @@ $F1DB BuildLineTableLoop
 $F206 b LineTableArea ; 35 bytes where BuildLineTable writes: a shifted copy of the code $F1E1-$F205
 $F229 s UnusedF229 ; 282 zeros
 $F343 c InstallIm2Key ; Install IM 2 with handler Im2HandlerKey, then call $B3B5 (never called)
-> The vector table $FDFF-$FEFF is filled with $FD, a JP Im2HandlerKey put at $FDFD, I = $FE, IM 2, EI; BC = 0 and CALL $B3B5 (inside the key slot reader at $B3B1: it reads the eight KeySlots into a bit mask at $B3CE). Nothing calls it (known only from the code).
+> LDIR fills $FDFF-$FF00 with $FD, then a JP Im2HandlerKey put at $FDFD (its word overwrites $FDFF), I = $FE, IM 2, EI: the vectors are $FE00-$FF00, all $FDFD. Then BC = 0 and CALL ReadControlMaskKeepDE $B3B5 (inside the key slot reader ReadControlMask $B3B2: it reads the eight KeySlots into a bit mask at $B3CE). Nothing calls it (known only from the code).
 > Witness: L1 0 ().
 $F36B c Im2HandlerKey ; The IM 2 handler of InstallIm2Key: save all, call Im2HookKey, RETI
 > Witness: L1 0 ().

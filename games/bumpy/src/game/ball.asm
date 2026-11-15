@@ -8,7 +8,7 @@
 ; per-step check from the state's handler table ($AE9B, $AF15, $AF8F, $B044, $B0FA: routines at $C778-$CECC) tests the
 ; cells the ball crosses (walls, platforms, objects) and continues in the state's move routine.
 ;
-; At the end of a move LandingCheck $B09E decides: on a platform, DecideMove $B7E4 picks the next state from the
+; At the end of a move LandingCheck $B09E decides: on a platform, ChooseNextState $B7E4 picks the next state from the
 ; platform and the keys; in the air the ball falls (state 4); with no platform on the bottom row it falls out of the
 ; screen (state 7). The S key ($31) kills the ball in any move state (Suicide $BA71). Death by the burst (state 6) or
 ; by falling out (state 7) ends in LoseLife $BA93.
@@ -303,11 +303,11 @@ BallUp:
   LD IX,UpChecks
   JP StepDispatch
 
-; State 3's step: 4 lines up, S kills; after step 7 DecideMove
+; State 3's step: 4 lines up, S kills; after step 7 ChooseNextState
 ;
 ; Round ball, UpOffsets $B054 (8 x 4 lines = 32 lines, one cell row). After
-; step 7, BallStep = 0 and DecideMove $B7E4 picks the next state (the ball is
-; on the platform above).
+; step 7, BallStep = 0 and ChooseNextState $B7E4 picks the next state (the ball
+; is on the platform above).
 ;
 ; Witness: L1 18538 (c1, exitbelow, gameover, menu, scoreloop, twoname, l x12,
 ; rzx00-rzx77, rzx79-rzx99).
@@ -332,7 +332,7 @@ BallUpMoveSkip:
   LD (BallStep),A
   JP MainLoop
 BallUpEnd:
-  LD A,$00                ; step 7 done: DecideMove
+  LD A,$00                ; step 7 done: ChooseNextState
   LD (BallStep),A
   CALL ChooseNextState
   JP MainLoop
@@ -414,15 +414,15 @@ BallDownEnd:
   LD A,$00                ; step 7 done
   LD (BallStep),A
 
-; The end of a move: on a platform DecideMove, in the air fall, off the bottom
-; row lost
+; The end of a move: on a platform ChooseNextState, in the air fall, off the
+; bottom row lost
 ;
 ; $AA44 is the ball's cell (0-35, six columns by six rows; 30-35 the bottom
-; row) and $AB1C the platform in it. A platform: DecideMove $B7E4. No platform
-; above the bottom row: BallState = 4 (fall one cell); if the cell below
-; (CellPlatforms $AA6B + cell + 6) holds bricks ($0A) DecideMove runs at once.
-; No platform on the bottom row: BallState = 7 (lost below), BallStep = 0.
-; Witness: state 7 started 8 times in the recordings ($B0E0).
+; row) and $AB1C the platform in it. A platform: ChooseNextState $B7E4. No
+; platform above the bottom row: BallState = 4 (fall one cell); if the cell
+; below (CellPlatforms $AA6B + cell + 6) holds bricks ($0A) ChooseNextState
+; runs at once. No platform on the bottom row: BallState = 7 (lost below),
+; BallStep = 0. Witness: state 7 started 8 times in the recordings ($B0E0).
 ;
 ; Witness: L1 6174 (c1, exitbelow, fire, gameover, menu, rightspike, scoreloop,
 ; twoname, l x12, rzx00-rzx99).
@@ -775,10 +775,10 @@ LostSteps:
 ; State 8: the ball sinks into the exit, the timer counts into the score, the
 ; next level
 ;
-; Reached when the ball lands on the exit (platform $0B: DecideMove sets state
-; 8). With CheatMode $ADDD the level would come from a routine's L (CALL $B754,
-; a RET; then L reduced below 100 by steps of 97: known only from the code).
-; Else NextLevel $B2D5.
+; Reached when the ball lands on the exit (platform $0B: ChooseNextState sets
+; state 8). With CheatMode $ADDD the level would come from a routine's L (CALL
+; $B754, a RET; then L reduced below 100 by steps of 97: known only from the
+; code). Else NextLevel $B2D5.
 ;
 ; Witness: L1 102 (exitbelow, menu, l x12, rzx x88).
 ;

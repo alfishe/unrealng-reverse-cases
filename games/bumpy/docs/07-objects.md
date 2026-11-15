@@ -259,9 +259,9 @@ CellPlatform `$AB1C` holds the ball's own; ReadCell `$BB32` reads it every pass.
 | ---: | --- | --- | --- |
 | 0 | none | the ball falls through | |
 | 1 | plain | a bounce | |
-| 2 | crumbling, new | a bounce, then wears | 3 once the ball leaves |
-| 3 | crumbling, cracked | a bounce, then wears | 4 once the ball leaves |
-| 4 | crumbling, last | a bounce, then falls away | 0 once the ball leaves |
+| 2 | crumbling, new | a bounce, then wears | 3 at the next move's step 5 (side), 3 (up) or 1 (bounce in place) |
+| 3 | crumbling, cracked | a bounce, then wears | 4, as type 2 |
+| 4 | crumbling, last | a bounce, then falls away | 0, as type 2; a ball still on it falls |
 | 5 | stopper | the ball stops and waits for a key (BallStopped) | |
 | 6 | conveyor left | the next move is left | |
 | 7 | conveyor right | the next move is right | |
@@ -279,9 +279,9 @@ The exit's cell can hold any type in the record (31 of them are empty, 5 are spi
 ```mermaid
 stateDiagram-v2
     [*] --> T2: record
-    T2 --> T3: bounce, the ball leaves (WearTo3, 4 steps)
-    T3 --> T4: bounce, the ball leaves (WearTo4, 4 steps)
-    T4 --> T0: bounce, the ball leaves (FallAway, 9 steps)
+    T2 --> T3: next move step 5, 3 or 1 (WearTo3, 4 steps)
+    T3 --> T4: next move step 5, 3 or 1 (WearTo4, 4 steps)
+    T4 --> T0: next move step 5, 3 or 1 (FallAway, 9 steps)
     [*] --> T8: record
     T8 --> T1: a water drop (FireOut, 8 or 9 steps)
     [*] --> T9: record
@@ -295,7 +295,14 @@ stateDiagram-v2
 
 ### Wear: types 2, 3 and 4
 
-A bounce on a crumbling platform arms its change; the change plays only once the ball has left the cell.
+Step 0 of any move from a crumbling platform arms its change (StartWearTo3, StartWearTo4 or StartFallAway).
+The change starts at step 5 of a side move, step 3 of the up move, or step 1 of a bounce in place, so a crumbling
+platform wears at bounce step 1 whether the ball stays or leaves.
+A ball that keeps bouncing in place wears it down and falls through once it is gone (BounceStep1 `$C7D3` copies
+`$AA14` into `$AA15` at once).
+In `work/stage2/rzx-states.tsv` 363 wear stages start during bounces in place, and 200 bounces end in a fall: on
+level 5 the ball lands on cell 10 (type 4) at frame 7686, the cell is type 0 at frame 7691 (bounce step 3), and at
+frame 7707 the state goes 0 → 4 on the same cell.
 
 ```asm
 StartWearTo3:
@@ -315,7 +322,7 @@ StartWearTo3:
   C3F7  RET
 PlatformChangeStep:
   C19D  AND A
-  C19E  LD A,(CrumbleActive)    ; $AA15, copied from $AA14 when the ball has left
+  C19E  LD A,(CrumbleActive)    ; $AA15, copied from $AA14 at side step 5, up step 3, bounce step 1
   C1A1  CP $00
   C1A3  RET Z
   C1A4  LD IX,(CrumbleSteps)
@@ -351,7 +358,7 @@ picture a pass. `rzx/l01`, frames 484-495. `python3 R/kit/routine_anim.py --work
 --window 484:0-496:0 --listing build/game.lst --pc C19D-C43D --range A900-AB7F --pictures 60
 --out docs/img/routines/PlatformChangeStep.gif`.*
 
-Witness: StartWearTo3 220 runs, StartWearTo4 328, StartFallAway 672 (the RZX and 9-11 stage 2 levels).
+Witness: StartWearTo3 [L1] 250 runs, StartWearTo4 [L1] 394, StartFallAway [L1] 783 (the RZX and 9-11 stage 2 levels).
 
 ### Fire: types 8 and 9
 

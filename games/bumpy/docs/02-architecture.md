@@ -31,7 +31,8 @@ A 48K Spectrum, nothing else.
 One 38 700-byte block at `$61A8-$F8D3` is loaded and entered at `$AB7C`.
 The game uses the beeper (port `$FE`), the keyboard and a Kempston stick on port `$DF` ([doc 5](05-controls.md)).
 There is no paging, no AY, no second screen: the game draws straight into `$4000`.
-The ROM serves the BASIC loader and the interrupt (IM 1, `$0038`).
+The ROM serves the BASIC loader and the interrupt (IM 1, `$0038`), and its bytes are the noise of three sound
+primitives (RomNoise reads `$04xx`, RumbleLow from `$0000`, RumbleHigh from `$1770`; [doc 9](09-sound.md)).
 
 | Part | Bytes | Where |
 | --- | ---: | --- |
@@ -61,12 +62,14 @@ What play changes, the entry image against play (`work/stage1/NOTES.md`):
   ByteColumn, PixelLine) and `$C774-$C777` (DivQuotient, DivRemainder), SpectrumColumn `$B52C`, the blitters'
   SpriteHeight `$E3E4`, the printer's state `$E714-$E716` (TextDouble, TextRow, TextColumn), the menu's MenuTimer
   `$EFED-$EFEE` and the colour bytes `$F015`, `$F025` inside its text;
-- three self-modified instructions: `$B3F5-$B3F6` (TestKeyBit's `BIT b,(IX+d)`, [doc 5](05-controls.md)), `$D01D` (the
-  displacement of `LD C,(IX+d)` that picks an object's ink), `$E30F` (the colour operand of PaintAttrs' `LD (HL),n`).
+- four self-modified instructions: `$B3F5-$B3F6` (TestKeyBit's `BIT b,(IX+d)`, [doc 5](05-controls.md)), `$D01D` (the
+  displacement of `LD C,(IX+d)` that picks an object's ink), `$E30F` (the colour operand of PaintAttrs' `LD (HL),n`), and `$F5A0`, the mask of RomRumble's `F59F AND n` (the
+  ROM-noise pitch), set by RumbleLow to `$F0` (`F595`) and by RumbleHigh to `$0E` (`F5B6`) before each rumble; it is
+  not in the level 0 diff, because no rumble has played by then.
 
 The pictures and the level records are never written: a level is copied into a buffer and changed there.
 
-The point: the code runs where `LD-BYTES` put it, and play writes only to the variables, to data bytes kept between routines and to three instructions.
+The point: the code runs where `LD-BYTES` put it, and play writes only to the variables, to data bytes kept between routines and to four instructions.
 
 ## 2.3 The module map
 
@@ -82,7 +85,7 @@ the order its authors wrote them.
 | setup | 10 | 387 | 382 | 2 | `$AB7C-$ACC7` | GameStart, NewGame, LifeStart, the cheat's stock |
 | mainloop | 26 | 375 | 180 | 5 | `$ACC8-$ADE5` | MainLoop, Dispatch, StateTable, WaitFrame, WaitKeyOrSecond, Delay |
 | ball | 138 | 4153 | 3452 | 8 | `$ADE6-$B3B0`, `$C778-$CF0B` | the nine states, the per-step checks, landing, ChooseNextState, the deaths |
-| menu | 44 | 2035 | 537 | 5 | `$B3B1-$B470`, `$EF33-$F182` | ReadControls, TestKey, the menu, the control sets, the demo moves, the logo |
+| menu | 44 | 2035 | 537 | 5 | `$B3B1-$B470`, `$EF33-$F182` | ReadControls, TestKeyBit, the menu, the control sets, the demo moves, the logo |
 | render | 192 | 7246 | 2913 | 10 | `$B471-$B6CA`, `$BBCD-$C4D4`, `$D076-$E0C3` | attributes, side panels, the CPC-to-Spectrum line table, the cells and their animations, the CPC panel picture |
 | hud | 18 | 476 | 453 | 4 | `$E58B-$E666` | DrawHud, the numbers, the timer, LoseLife |
 | hiscore | 18 | 867 | 525 | 3 | `$EC40-$EF32` | GameOver, the hall of fame, the name entry |
@@ -142,7 +145,7 @@ The names are game.ann's; [doc 7](07-objects.md) gives every one.
 | BallStep `$A9FF`, BallState `$AA00` | the ball's step and state ([doc 4](04-game-loop.md#46-the-state-dispatcher-ad0f-and-statetable-ad29)) | `work/stage2/rzx-states.tsv` |
 | LevelRecord `$AA20-$AA46` | the level's record: 36 cells, BallCell `$AA44`, PrizesLeft `$AA45`, ExitCell `$AA46` | every level start |
 | CellObjects `$AA47`, CellPlatforms `$AA6B`, CellWalls `$AA8F`, CellBurning `$AAB3`, BrickLayers `$AAD7` | the five 36-byte grids | BuildLevel `$CF2E` |
-| Score `$AAFB`, Water `$AAFD`, Keys `$AAFE`, Hammers `$AAFF`, Level `$AB00`, Lives `$AB01` | the current player's working copy, 7 bytes with `$AB02` | the HUD in every recording |
+| Score `$AAFB`, Water `$AAFD`, Keys `$AAFE`, Hammers `$AAFF`, Level `$AB00`, Lives `$AB01` | the current player's working copy, 7 bytes `$AAFB-$AB01` | the HUD in every recording |
 | Timer `$AB04` | 1000 at LifeStart, minus 1 a pass, held at 0 | `c1` 15 436-18 186 |
 | `$AB06-$AB08` | water, keys and hammers at the level's start | LoseLife `$BA93` |
 | Player1Record `$AB09`, Player2Record `$AB10` | the two players' records; lives `$FA` marks a player out | `twoname` |
@@ -213,10 +216,11 @@ because the ROM's RAM test and the load touch every byte).
 | `$A9FD-$AB7B` | w | vars | the variables (2.4) |
 | `$AB7C-$ADE5` | x | setup, mainloop | GameStart, LifeStart, MainLoop, StateTable, the READY? texts, the players |
 | `$ADE6-$B3B0` | x | ball | the ball's drawing, the nine states and their step tables |
-| `$B3B1-$B470` | x | menu | ReadControls, KeyRows, TestKey, Pause |
+| `$B3B1-$B470` | x | menu | ReadControls, KeyRows, TestKeyBit, Pause |
 | `$B471-$B6CA` | x / r | render | attributes, the side panels, LineAddress `$B515` and SpectrumLines `$B52D` |
-| `$B6CB-$BBCC` | x | mainloop, hud, hiscore, ball, objects | WaitFrame, GameOver, ChooseNextState, Delay, the objects, LoseLife |
+| `$B6CB-$BBCC` | x | mainloop, hud, hiscore, ball, objects, levels, setup | TestKey, WaitFrame, GameOver, ChooseNextState, Delay, the objects, LoseLife, CellScreenAddr and ReadCell `$BB05-$BB55`, CheatStock `$BB56`, PracticeStock `$BB7D`, InitPlayers `$BB96` |
 | `$BBCD-$C4D4` | x | render | the animated cells: crumbling, springs, bricks, fires, water, walls, the exit |
+| `$C4D5-$C4E1` | x | hiscore | GameOverDelay |
 | `$C4E2-$CF0B` | x | ball, render, objects | the per-step checks, the screen-address divide `$C71F`, the object inks |
 | `$CF0C-$D259` | x | render, levels | BuildLevel `$CF2E`, the cell drawers, the wall drawers |
 | `$D25A-$D2B3` | r | DemoMoves, DemoPad | the demo's moves |
@@ -277,7 +281,7 @@ The panel is the CPC game's status column: lives, score, water, keys, hammers, l
 | UnusedPicture61A8, UnusedPicture75A8, Unused8385 | `$61A8`, `$75A8`, `$8385` | 496, 480, 2231 | CPC pictures | no routine reads them (`src/res/leftovers`) |
 | LevelLeftover | `$E0C4` | 85 | small numbers | not read |
 | the effects' AY register images | `$F3CF`, `$F3E6`, ... `$F500` | 14 × 16 | AY registers R0-R13 and two zeros for each effect (src/res/sound/ay-images.csv) | each effect loads HL with them and calls a beeper primitive that ignores HL (doc 9) |
-| the firmware stubs | `$B744-$B754` | 17 | the CPC firmware calls (a border flash, a level choice) | each is a `RET` |
+| the firmware stubs | `$B747-$B754` (and three unread `$C9` at `$B744`, HudRowAttrsEnd) | 14 | the CPC firmware calls (a border flash, a level choice) | each is a `RET` |
 | DrawExitSign, ExitSign | `$D08E`, `$6698` | | the EXIT sign | never called |
 | PrintOnceUponATime | `$E7C6` | | "Erase Una Vez ..." (Spanish: the Proein heritage) | never called |
 | the AY skeleton | `$F183-$F3C7` | 581 | a 128K music driver's frame | never called (below) |
@@ -323,7 +327,7 @@ InstallIm2Key:
 ```
 
 ```text
-Random:            A = R XOR R XOR (the byte at an R-made address)
+Random:            H = R; L = R XOR H; A = R XOR (the byte at HL)
 WriteAyRegisters:  for r in 0..13: WriteAyRegister(r, the next byte at HL)
 WriteAyRegister:   register 7 masked to $3F; OUT ($FFFD) = r; OUT ($BFFD) = value
 DelayAfterFrame:   HALT, then 512 loops
@@ -351,7 +355,7 @@ So the 48K and the 128K play Bumpy alike, with the beeper only (known only from 
 Worked example: if InstallIm2Key ran, it would fill `$FDFF-$FF00` with `$FD` (258 bytes: `$FDFF` set first, then
 `LDIR` with BC = `$0101` from `$FDFF` to `$FE00`) and put `JP $F36B` at `$FDFD-$FDFF`, so `$FDFF` ends as the JP's high
 byte.
-An interrupt with any byte on the bus would read the vector at `$FE00`-`$FF00`, find `$FDFD`, and jump to the handler.
+An interrupt with any byte on the bus would read its vector word in `$FE00-$FF00` (I = `$FE`, the low byte from the bus), find `$FDFD`, and jump to the handler.
 That memory is above the game block, in the 1836 free bytes: the only use the game would ever have made of them.
 
 The point: the release is a port that kept the CPC program's data and a 128K frame without its music; 7903 bytes are
@@ -370,12 +374,13 @@ Where the T-states of a frame go, in play and in the menu:
 | sprites | 31.7 % | 8.5 % |
 | the `HALT` (idle) | 23.4 % | 55.7 % |
 | sound | 18.4 % | 6.3 % |
-| render | 11.2 % | |
+| render | 11.2 % | 4.9 % |
 | hud | 10.9 % | 9.1 % |
 | menu (the key reads) | 1.9 % | 11.2 % |
-| ROM (the IM 1 handler) | 0.97 % | |
-| ball | 0.63 % | |
-| mainloop | 0.62 % | |
+| ROM (the IM 1 handler) | 0.97 % | 1.2 % |
+| ball | 0.63 % | 0.57 % |
+| mainloop | 0.62 % | 2.0 % |
+| levels, objects, text, hiscore, setup | 0.26 % | 0.61 % |
 
 The game is three quarters busy in play.
 The blitters take a third of all time, and the beeper almost a fifth: a sound stops everything else.
@@ -413,14 +418,16 @@ flowchart LR
     C --> D["LOAD CODE 25000: $61A8-$F8D3"]
     D --> E["RANDOMIZE USR 43900: $AB7C"]
     E --> F["Menu $EF33"]
-    F -->|"0"| G["NewGame, LifeStart $ABD8: READY?"]
-    F -->|"3000 idle frames"| H["the demo, MenuChoice 4"]
-    H --> F
+    F -->|"0"| N["NewGame $ABA8"]
+    F -->|"3000 idle frames"| H["the demo, MenuChoice 4, DemoFlag 1"]
+    H --> N
+    N --> G["LifeStart $ABD8: READY? (none in the demo)"]
     G --> I["MainLoop $ACC8"]
     I -->|"last life lost"| J["GameOver $B755"]
     J -->|"score not below the 4th entry"| K["EnterHallOfFame $EC40"]
     K --> J
-    J -->|"two players, the other still in"| G
+    J -->|"two players, the other still in"| SW["SwitchToPlayer1/2, LoseLifeWait $BAF6"]
+    SW --> G
     J -->|"else"| F
     I -->|"R"| F
 ```

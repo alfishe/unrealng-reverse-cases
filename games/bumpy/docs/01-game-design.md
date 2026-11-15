@@ -82,7 +82,7 @@ frame under each).*
 | the demo | after 3000 idle frames (60 s) of the menu, every other time | the game plays level 10 by itself from a list of moves, with 2 of each store |
 | the hall of fame | the other time-outs of the menu, 750 frames (15 s); after a game that scored enough | BUMPY, four names and scores (PAP 16000, PEP 8000, PIP 4000, POP 1700 at power-on), HALL OF FAME |
 | READY? | the start of each life and each level | the level drawn, "ready?" over it; with two players "PLAYER 1" or "PLAYER 2" and "PLAYER n" down the right edge |
-| play | | the 6 × 6 cells between two yellow side panels, the HUD on the top row |
+| play | | the 6 × 6 cells between two yellow side panels, the HUD on the top row; with two players, "PLAYER n" stays down the right edge (column 31) |
 | the level end | the ball on the exit | the ball sinks into the exit, then the score counts up |
 | a life lost | a burst, a fall, a fire, or S | a pause of 50 frames, then up to a second or a key, then READY? on the same level |
 | the pause | H in play | the screen stays as it is until a key |
@@ -115,7 +115,7 @@ At the end of each bounce, at the landing, the game reads the controls and picks
 | --- | --- |
 | left | a jump one cell to the left (16 steps) |
 | right | a jump one cell to the right |
-| up or fire held at step 9 of a bounce or a side move, or at step 4 of a fall, with the ball's platform 1-5 | the spring: the landing starts an up move (8 steps); the ball rises on through gaps (and bricks, the exit) until left, right or down is held at the end of a rise, bumps back down under a platform 1-9 or at the top row, and bursts on spikes above |
+| up or fire held at step 9 of a bounce or a side move, or at step 4 of a fall, with the ball's platform 1-5 | the spring: the landing starts an up move (8 steps); the ball rises on through gaps and into the exit until left, right or down is held at the end of a rise; under bricks it knocks one layer off and falls back; it bumps back down under a platform 1-9 or at the top row, and bursts on spikes above |
 | down, held at the end of a rise | the rise turns into a bounce (on no platform the ball falls) |
 | nothing | another bounce on the spot |
 
@@ -132,7 +132,7 @@ stateDiagram-v2
     Left --> Bounce: lands
     Right --> Bounce: lands
     Up --> Up: no key, a gap above
-    Up --> Down: a platform above or the top row
+    Up --> Down: a platform above, the top row, or bricks above (one layer off)
     Up --> Bounce: down held
     Up --> Left: left held
     Up --> Right: right held
@@ -142,7 +142,7 @@ stateDiagram-v2
     Bounce --> Down: the platform gone
     Down --> Bounce: lands
     Down --> OutBelow: below the bottom row
-    Bounce --> Burst: spikes
+    Bounce --> Burst: spikes, or fire without water
     OutBelow --> [*]: a life lost
     Burst --> [*]: a life lost
 ```
@@ -189,7 +189,7 @@ Each cell has a platform (or none), maybe a wall on its right, and maybe an obje
 | crumbling (three stages) | it wears one stage at each bounce or when the ball leaves, then it is gone |
 | stopper | the ball stops dead and waits for left or right |
 | conveyor left, conveyor right | the ball is pushed a cell left or right |
-| on fire (plain or stopper) | a water drop puts the fire out; without water the ball burns and a life is lost |
+| on fire (plain or stopper) | a water drop puts the fire out (Water - 1, steam, then a plain platform: `rzx/l00` frames 164-171, [shot](img/play/rzx-l00-000172-fire-out.png)); without water the ball burns and a life is lost |
 | bricks | eight layers, knocked off one at a time from below; a hammer breaks into a whole brick |
 | spikes | the ball bursts: a life lost |
 | the exit | appears when the last prize is taken; landing on it ends the level |
@@ -352,7 +352,8 @@ What the 100 levels hold (counted from `src/res/levels/levels.txt`):
 | empty cells | 1419 | 94 |
 
 The early levels teach one thing at a time: level 0 has plain platforms and one fire, level 1 brings locks, bricks,
-crumbling platforms and conveyors, level 5 the first bottle, level 10 the first stopper.
+crumbling platforms and the right conveyor, level 5 the first bottle and the left conveyor, level 8 the burning
+stopper, level 10 the first stopper and the first spikes.
 The later ones combine everything.
 
 The first appearances, as the RZX player met them (each `rzx/lNN` replays the RZX from its own state at the level's
@@ -363,10 +364,13 @@ play start):
 | locks | 1 | `rzx/l01` frame 100; opened by frame 700 | [locks](img/play/l01-000100-locks.png), [open](img/play/l01-000700-locks-open.png) |
 | a hammer and bricks | 1 | `rzx/l01`: the hammer taken at frame 65 (Hammers 2 → 3), used at 150 (3 → 2); the ball, bouncing from cell 17 into cell 11 above, knocks the brick off layer by layer until it is gone at 334 | [frame 250](img/play/l01-000250-bricks.png) |
 | crumbling | 1 | `rzx/l01`: cell 13 wears from 2 to 3 at frame 495, under the ball | [frame 500](img/play/l01-000500-crumbling.png) |
-| conveyors | 1 | `rzx/l01`: the slanted piece at the bottom left, cell 30, platform 7 (push right); the ball is on it at frames 600-640 | [frame 100](img/play/l01-000100-locks.png) |
+| conveyors | 1 | `rzx/l01`: the slanted piece at the bottom left, cell 30, platform 7 (push right); the ball is on it at frames 590-640 | [frame 620](img/play/l01-000620-conveyor.png) |
 | the bottle's extra life | 5 | `rzx/l05`: Lives `$AB01` 2 → 3 at frame 759 | [before](img/play/l05-000740-bottle.png), [after](img/play/l05-000770-extra-life.png) |
 | the stopper | 10 | the demo's level, and the RZX's level 10 | [the demo](img/play/menu-001500-demo.png) |
-| fire, spikes, the fall, the exit | 0, 1, 68 | 1.5 | 1.5 |
+| a fire put out by water | 0 | `rzx/l00`: the ball moves left from cell 9 onto the fire of cell 8; at step 10 (frame 164) Water `$AAFD` 1 → 0, and by frame 171 the platform is plain (8 → 1), the steam on it | [frame 160, Water 1](img/play/rzx-l00-000160-water-before.png), [frame 172, the fire out](img/play/rzx-l00-000172-fire-out.png) |
+| fire, the exit | 0 | 1.5 | 1.5 |
+| spikes | 10 | the RZX's level 10; seen killing in `rzx/l68` (1.5) | 1.5 |
+| the fall | 68 | 1.5 | 1.5 |
 
 The one published map, by Pavero (2005) on Speccy Screenshot Maps
 ([maps.speccy.cz/map.php?id=Bumpy](http://maps.speccy.cz/map.php?id=Bumpy); the same picture is Spectrum Computing's

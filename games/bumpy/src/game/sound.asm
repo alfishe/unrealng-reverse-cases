@@ -152,10 +152,11 @@ UnusedF229:
 
 ; Install IM 2 with handler Im2HandlerKey, then call $B3B5 (never called)
 ;
-; The vector table $FDFF-$FEFF is filled with $FD, a JP Im2HandlerKey put at
-; $FDFD, I = $FE, IM 2, EI; BC = 0 and CALL $B3B5 (inside the key slot reader
-; at $B3B1: it reads the eight KeySlots into a bit mask at $B3CE). Nothing
-; calls it (known only from the code).
+; LDIR fills $FDFF-$FF00 with $FD, then a JP Im2HandlerKey put at $FDFD (its
+; word overwrites $FDFF), I = $FE, IM 2, EI: the vectors are $FE00-$FF00, all
+; $FDFD. Then BC = 0 and CALL ReadControlMaskKeepDE $B3B5 (inside the key slot
+; reader ReadControlMask $B3B2: it reads the eight KeySlots into a bit mask at
+; $B3CE). Nothing calls it (known only from the code).
 ;
 ; Witness: L1 0 ().
 InstallIm2Key:

@@ -24,11 +24,11 @@ GameStart:
 ; The menu, then a new game or the demo by the menu's choice $B3B1
 ;
 ; Calls Menu $EF33, then clears the demo flag $ABA6 and the cheat-mode flag
-; $ADDD. By $B3B1: 0 starts a one-player game ($ADDC = 1), 2 a two-player game
-; ($ADDC = 2), 1 the demo ($ABA6 = 1, the demo input pointer $ABA4 = $D25A, one
-; byte before the demo's moves at $D25B; the demo plays one player). Quitting a
-; game (R in MainLoop, QuitToMenu $B7B2) and the end of the demo come back
-; here.
+; $ADDD. By MenuChoice $B3B1: 0 starts a one-player game ($ADDC = 1), 2 a
+; two-player game ($ADDC = 2), any other value (Menu writes 4) the demo ($ABA6
+; = 1, the demo input pointer $ABA4 = $D25A, one byte before the demo's moves
+; at $D25B; the demo plays one player). Quitting a game (R in MainLoop,
+; QuitToMenu $B7B2) and the end of the demo come back here.
 ;
 ; Witness: L1 7 (c1, gameover, menu, twoname).
 GameRestart:
@@ -142,9 +142,9 @@ FirstPlayer:
 ; $AB06-$AB08 (the stores at the level's start), $BB32 reads the platform under
 ; the ball, and D ($32) calls CheatModeSwitch $ADDF (a RET). A game then draws
 ; the HUD ($E58B), waits for all keys up (WaitRelease $B401) and for a key
-; (WaitPressHeld $B6DD), and the key sets the first move (DecideMove $B7E4).
-; Last, in both: ClearPlayArea and BuildLevel again (the text goes), the HUD
-; and WaitFrame $B6E4; MainLoop follows.
+; (WaitPressHeld $B6DD), and the key sets the first move (ChooseNextState
+; $B7E4). Last, in both: ClearPlayArea and BuildLevel again (the text goes),
+; the HUD and WaitFrame $B6E4; MainLoop follows.
 ;
 ; Witness: L1 62 (c1, exitbelow, fire, gameover, menu, rightspike, scoreloop,
 ; twoname, l51, l59, l96, l98, rzx x24).
@@ -243,7 +243,7 @@ LifeStartStores:
   JR LifeStartGo
 LifeStartReady:
   CALL DrawHud            ; the HUD, wait for no key, then for a key;
-                          ; DecideMove
+                          ; ChooseNextState
   CALL WaitRelease
   CALL WaitPressHeld
   CALL ChooseNextState

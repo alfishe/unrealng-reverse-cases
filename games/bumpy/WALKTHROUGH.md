@@ -40,12 +40,12 @@ a 48K at power-on, `LOAD ""` typed, the original `BUMPY.TAP` at ROM speed, 18 18
 | 13 357 (T 19 678) | the first fetch of `$AB7C`, the entry (the image as loaded, [doc 2, 2.2](docs/02-architecture.md#22-the-images)) |
 | 13 782 | the menu ([shot](docs/img/play/c1-013782-menu.png)); 1 twice, 2 (keyboard), 0 (game) |
 | 14 018 | READY? ([shot](docs/img/play/c1-014018-ready.png)), the timer at 1000 |
-| 14 082 | play on level 0: O P Q A SPACE in turn for about 1000 frames (a drop at 14 162, a key at 14 990, [shot](docs/img/play/c1-015086-play.png)) |
+| 14 082 | play on level 0: O P Q A SPACE in turn for about 1000 frames (a water drop taken at 14 127, a key seen by frame 14 990, [shot](docs/img/play/c1-015086-play.png)) |
 | 15 436-18 186 | no key: the timer runs down to 0 and stays there; the ball keeps bouncing ([shot](docs/img/play/c1-018186-timer-zero.png)) |
 
 **Interrupts.** IM 1 all the time: the handler is the ROM's `$0038` (`$02BF`, the keyboard scan), which the game does
 not need (it reads the ports itself at `$B418`). An IM 2 setup exists at `$F343` and `$F388` (I = `$FE`, vectors at
-`$FDFD`) but no recording ever executes it (the L1 of every recording, [doc 2, 2.6](docs/02-architecture.md#26-the-memory-map)).
+`$FE00-$FF00`, JP at `$FDFD`) but no recording ever executes it (the L1 of every recording, [doc 2, 2.6](docs/02-architecture.md#26-the-memory-map)).
 Interrupts are off most of the time: the input routine `$B418` begins with `DI` and, with no stick moved (the low five
 bits of port `$DF` all 1), returns by `RET Z` at `$B431` before its `EI` at `$B434`. They come back on only at the
 waits, each an `EI: HALT`: the frame wait `$B6E9`, and `$B35A`, `$B7BE`, `$C4DF`. c1 takes 4534 interrupts in 18 186
@@ -78,8 +78,9 @@ frames (911 T an entry); `rzx/l00` 902 in 1097.
 140 254 T at the 95th percentile. The game runs at 50 passes a second most of the time and slows down when much is
 redrawn. The heaviest pass in play is at RZX frame 125 362 (level 83): 457 406 T of work, 7 frames. The other 116
 passes are not play: 16 of 40 frames (the pause when an extra life is given, at RZX frames 7801, 8798, ... 132 556),
-and the level ends, 114 to 1285 frames each, where the timer left is counted into the score a point a step (`$B35F`,
-an `EI: HALT` and the tick `$F4F9` a step).
+and the level ends, 114 to 1285 frames each, where, after a 15-frame pause (LevelEndPause `$B359`, the
+only `EI: HALT` there), the timer left is counted into the score without waiting for frames, one point and one tick
+`$F4F9` a pass of LevelEndTimer `$B35F` (about 1.3 frames a point).
 
 ## 2. Static pass over the medium
 
@@ -97,7 +98,7 @@ There are none: the code runs where `LD-BYTES` put it ([doc 3, 3.2](docs/03-buil
 ## 4. The medium from source
 
 `tools/build.sh` assembles the BASIC (`src/tape/basic.ann`), the loading screen (`src/screen/screen.ann`) and the game
-(`src/game/game.ann`, 15 module files, 60 resources in `src/res/`) and writes `build/BUMPY.TAP`, identical to
+(`src/game/game.ann`, 14 modules plus game.asm, 60 resources in `src/res/`) and writes `build/BUMPY.TAP`, identical to
 `orig/Bumpy.tap.zip`'s `BUMPY.TAP` byte for byte ([doc 3, 3.3](docs/03-build-and-load.md#33-the-source-build));
 `tools/res_formats.py check` converts each of the 44 editable resources back to its bytes (0 bad).
 

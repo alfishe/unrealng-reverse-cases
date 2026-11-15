@@ -35,13 +35,15 @@ Conventions:
 | Screen | Printed by | Text | Shot |
 | --- | --- | --- | --- |
 | the menu | Menu `$EF33` | MenuBackdropText `$F0E8`, MenuText `$EFEF` | [c1 frame 13 782](img/play/c1-013782-menu.png) |
-| a life starts | LifeStart `$ABD8` | ReadyText `$AD3B`, Player1ReadyText `$AD48`, Player2ReadyText `$AD84` | [twoname frame 200](img/play/twoname-000200-two-ready.png) |
+| a life starts | LifeStart `$ABD8` | ReadyText `$AD3B`, Player1ReadyText `$AD48`, Player2ReadyText `$AD84` | [c1 frame 14018](img/play/c1-014018-ready.png) (READY?); [twoname frame 200](img/play/twoname-000200-two-ready.png) (PLAYER 1 left in column 31) |
 | play | DrawHud `$E58B` | the HUD row: score, lives, water, keys, hammers, level | [rec/l83 frame 100](img/play/l83-000100-play.png) |
 | a level's end | LevelEnd `$B2C2` | the score on the HUD, one point at a time | [rec/l83 frame 650](img/play/l83-000650-count.png) |
 | the hall of fame | ShowHallOfFame `$ED1A` | HofTitleText `$EDEF`, the four records at HallOfFame `$EEB3` | [gameover frame 4618](img/play/gameover-004618-hall-of-fame.png) |
 
 The game has no "game over" text.
-After the last life the border flashes, and the hall of fame follows if the score is good enough (8.8).
+After the last life, a score good enough for the hall of fame flashes the border and opens name entry (8.8).
+A lower score gets only a short pause (GameOverPause `$B7A9`, 20 × GameOverDelay) before the menu: the flash is
+inside EnterHallOfFame `$EC40`, reached only through `CALL NC` at `$B777`.
 
 The point: every text but the HUD goes through PrintText, so the strings are data that carry their own colour and
 place.
@@ -299,7 +301,7 @@ that share its cells.
 | `$AD84` | Player2ReadyText | the same with "PLAYER 2" and "2" | LifeStart, player 2 |
 | `$ADBF` | BlankReadyText | the end byte alone | known only from the code: no instruction loads it |
 | `$E7CD` | OnceUponATimeText | `$1F 02 0A`, ATTR `$38`, single "Erase ", double "Una Vez ..." | PrintOnceUponATime `$E7C6`, which nothing calls |
-| `$EDEF` | HofTitleText | red bars of spaces (ATTR `$57`) at rows 1 and 3; a blue box (ATTR `$0F`) at rows 6-17; "B U M P Y" in yellow on red at row 2; "H A L L   O F   F A M E" at row 20 | ShowHallOfFame |
+| `$EDEF` | HofTitleText | all double height (`$02` first): red bars of spaces (ATTR `$57`) at rows 1-2 and 3-4; a blue box (ATTR `$0F`) at rows 6-18 (AT 6 to AT 17); "B U M P Y" in yellow on red at rows 2-3; "H A L L   O F   F A M E" at rows 20-21 | ShowHallOfFame |
 | `$EEB3` + 32n | the four records | AT row,10; ATTR `$0F`; double; name, " : ", five digits | PrintHallOfFame `$ED2D` |
 | `$EFEF` | MenuText | "0   GAME" (row 8), "1 ONE PLAYER" (11), "2 KEYBOARD" (14), "3 SINCLAIR" (17), "4 KEMPSTON" (20), all double; "VERSIONED BY J250 <SPAIN>" single at row 23 | Menu |
 | `$F063` | PlayersTexts | "ONE PLAYER" and "TWO PLAYERS", 16 bytes each | copied into MenuText (below) |
@@ -644,7 +646,8 @@ Player 1's score is POKEd to 2000 before his last life (the recording's script s
 2000 is not below POP's 1700, so EnterHallOfFame runs.
 2000 is below 16 000, 8000 and 4000, so the fourth record is overwritten with "... : 02000"
 ([shot](img/play/twoname-002300-name-start.png), the first letter already "@").
-Player 2 then scores 2100, which beats BUM's 2000 and none of the first three: ZAP overwrites BUM.
+Player 2's score is POKEd to 2100 (frame 3711, said in `record.json`) to force a second entry;
+it beats BUM's 2000 and none of the first three: ZAP overwrites BUM.
 The recording's last state holds "ZAP : 02100" at `$EF13`.
 No recording put a score into places 1-3, so the `LDDR` move is known only from the code.
 
