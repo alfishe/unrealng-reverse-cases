@@ -2,13 +2,15 @@
 ; objects.asm: The objects: the enemies, the pods, their moves, their shots, the explosions
 ;
 ; A room's objects are records of 24 bytes at ObjectTable $5E66 (ObjectCount $A092, masked by AND $1F to 31, but no
-; room holds more than 16: room 5; the 16 records reach $5FE5, and the stack's lowest mark $5FE2, in DrawRoomCell
-; before MakeObjects, overlaps their last 4 bytes, harmless because MakeObjects writes them afterwards): +0 X, +1 Y,
-; +2 direction (0 right), +3 falling, +4/+5 picture (or the swing gun's angle picture), +6 fall speed, +9 kind (bit 7:
-; a variant), +$0A/+$0B frame list, +$0C alive, +$0D/+$0E/+$0F size, +$10 speed, +$11/+$12 timers, +$13, +$14 hits
-; left (a bullet that brings it to 1 kills the object; the score comes from KillScores), +$15 a pod's extra, +$16/+$17
-; the picture base. UpdateObjects walks them: draw (DrawObject $BAD0), the kind's own behaviour, then the walk, fall
-; and jump common to the walkers, then the collision with Rex (ObjectHitsRex $D215).
+; room holds more than 16: room 5; the 16 records reach $5FE5; the stack's low mark in DrawRoomChar, $5FE2, before
+; MakeObjects, overlaps their last 4 bytes, harmless because MakeObjects writes them afterwards; a framed panel's
+; $5FDA reaches from record 16's alive byte on, in the recordings in rooms 18 and 28, whose lists hold fewer objects;
+; whether record 16 can be in use then is not checked: doc 2, 2.4): +0 X, +1 Y, +2 direction (0 right), +3 falling,
+; +4/+5 picture (or the swing gun's angle picture), +6 fall speed, +9 kind (bit 7: a variant), +$0A/+$0B frame list,
+; +$0C alive, +$0D/+$0E/+$0F size, +$10 speed, +$11/+$12 timers, +$13, +$14 hits left (a bullet that brings it to 1
+; kills the object; the score comes from KillScores), +$15 a pod's extra, +$16/+$17 the picture base. UpdateObjects
+; walks them: draw (DrawObject $BAD0), the kind's own behaviour, then the walk, fall and jump common to the walkers,
+; then the collision with Rex (ObjectHitsRex $D215).
 ;
 ; The kinds (the menu's roll call names ten of them): 0 foot man, 1 stomper, 2-7 walkers and people (4, 5, 6, 7 count
 ; as humans), 8 scanner, 9 swing gun (a turret that fires in 8 angles), 10 shooters (two shots at once), 11 launcher,

@@ -27,3 +27,4 @@
 +80 -
 +40 KR KF
 +300 -
++0 END  # frame 1553: the recording ended here (capture.json "frames"), at the last release

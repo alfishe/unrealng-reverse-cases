@@ -324,7 +324,8 @@ right (KR, frames 615-764) then moved Rex right.
 
 Witness: ChooseKempston L1 1 (p1-kempston), ChooseCursor L1 1 (p1-cursor), ChooseSinclair L1 1 (rzx-p1-00000),
 Confirm (c1, p1-*). Known only from the code: N at the confirm (MenuAgain); no recording pressed it. MenuAgain sits
-inside CellIndexMap `$DE9F`'s span, which play overwrites, so after the menu those bytes are data.
+inside CellIndexMap `$DE9F`'s span, which play overwrites, so after the menu those bytes are data; the listing keeps
+them as code (`@code` in the `.ann`), and so REX 2's ChooseKempston, ChooseCursor, MenuAgain, FontChar and DrawChar.
 
 The point: three of the four choices are tables written as code. CURSOR saves one load by reusing a leftover
 operand; its two port constants are written as numbers (`LD HL,$EFFE`, `LD HL,$F7FE`), not as buffer addresses.

@@ -36,7 +36,7 @@ read it:
 
 The point: in play, the 9530 bytes of the menu become the room's work space: the cell index, the cell grid, the
 attribute shadow and the back buffer. The level data is read only but for the few characters that rotate in place; the scenery cell list `$D962` grows over the menu code (up to `$DF12` in room 0); the records of bullets, drones and objects sit below
-the code, between the screen and the stack; the stack's box starts at its low mark `$5FE2`, 4 bytes into the last
+the code, between the screen and the stack; the stack's box starts at its low mark `$5FDA`, 12 bytes into the last
 object record (2.4). Command: `python3 tools/fig_memmap.py`.*
 
 The map of part 1, corrected by stage 2 (the stage-1 draft had room 0 "unused" and `$5B60` as one buffer):
@@ -48,7 +48,7 @@ The map of part 1, corrected by stage 2 (the stage-1 draft had room 0 "unused" a
 | `$5D22-$5E4D` | the enemies' bullets: 20 records of 15 bytes | MoveEnemyBullets `$B645` |
 | `$5E4E-$5E65` | the drones' table: 8 records of 3 bytes (the multiple weapon; the angle at +2) | InitDrones `$A628`, UpdateDrones `$A639` |
 | `$5E66-$5FE5` | the room's objects: 24-byte records; a room's list holds up to 16 (room 5), the count is 5 bits | UpdateObjects `$BA5C`; ReadExits `$C8EF` (`AND $1F`) |
-| `$5FE2-$5FFF` | the stack: the main loop at `SP` = `$6000`, the low mark `$5FE2` (4 bytes into the last object record; harmless, 2.4) | 2.4 |
+| `$5FDA-$5FFF` | the stack: the main loop at `SP` = `$6000`, the low mark `$5FDA` (12 bytes into the last object record, only while a framed panel is drawn; 2.4) | 2.4 |
 | `$6018-$60DF` | the development link stub (102 bytes) and its tail; from the menu on, ExplosionPicture `$6018-$60D7` | 2.5 |
 | `$60E0-$62DF` | Font: characters 32-95 | PrintChar |
 | `$62E0-$63DF` | CharFlags: the cell type of each room character | DrawRoomCell `$C80A` |
@@ -147,14 +147,22 @@ into it, [doc 5](05-controls.md)); the CODE text `$A88C`; DrawSprite's operands 
 buffers. In part 2, 9072 bytes, of the same kinds.
 
 **The stack.** The BASIC's `CLEAR` leaves it under the code: the main loop runs at `SP` = `$6000` in part 1 and
-`$6190` in part 2. The low mark comes from 20 million instructions after each of the RZX states at frames 5000,
-20 000, 30 000 and 60 000 (part 1) and 10 000 and 30 000 (part 2) (`work/stage1/stackdepth.py`,
-`work/stage1/stackdepth.txt`). It is `$5FE2`, 30 bytes under the loop (part 1, in `DrawRoomChar $C895`), and `$6172`,
-30 bytes (part 2, at `$C908`).
+`$6190` in part 2. The low mark is the lowest byte a `PUSH`, `CALL` or `RST` wrote in each recording's L1
+(`kit/merge_l1.py --stack 5C00-6017`, `work/stage1/stack-p1.txt`; part 2 `5C00-61A7`, `work/stage1/stack-p2.txt`).
+In part 1 it is `$5FDA`, 38 bytes under the loop, in three recordings (`rzx-p1-50000`, `p1-speedup`,
+`rzx-p1-56000`), whose deepest calls are a framed panel's (PanelBox, PanelRow, PanelLine and PrintChar at frames
+1699-1700 of the first two, room 18, and 740 of the third, room 28); `$5FDC` in four more, `$5FE2` in 34. `$5FE2`, 30
+bytes under the loop, is also the lowest `SP` of 20 million instructions with no input after each of the RZX states
+at frames 5000, 20 000, 30 000 and 60 000 (`work/stage1/stackdepth.py`, `work/stage1/stackdepth.txt`), in
+`DrawRoomChar $C895`: that simulation has no keys, so no panel opens. In part 2 it is `$6172`, 30 bytes (in 17 of
+the 21 RZX segments; at `$C908`).
 
-Worked example: a room of 16 objects (room 5) fills the records to `$5FE5`, and the stack's low mark is `$5FE2`. The
-two would overlap by 4 bytes, but the low mark is reached in DrawRoom, before MakeObjects writes the new room's
-records, so the overlap never hurts (known only from the code and the measured low mark).
+Worked example: a room of 16 objects (room 5) fills the records to `$5FE5`. DrawRoom's low mark `$5FE2` would overlap
+them by 4 bytes, but it is reached before MakeObjects writes the new room's records, so that overlap never hurts. A
+panel's `$5FDA` would overlap 12 bytes, from record 16's alive byte (+`$0C`, `$5FDA`) on; the three recordings reach
+it in rooms 18 and 28, whose lists hold 5 and 4 objects, and whether record 16 can be in use while a panel is drawn
+(room 5's list, or the spawners filling the free records) is not checked (known only from the code and the measured
+low marks).
 
 **The three routines that borrow `SP`.** Each saves `SP` in `Temp1 $A093` or `Temp2 $A095`, points it into a buffer,
 and gives it back:

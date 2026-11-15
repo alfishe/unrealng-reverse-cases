@@ -45,7 +45,7 @@ PLAY = [
     (0x5D22, 0x5E4D, "the enemies' bullets: 20 records of 15", BUF),
     (0x5E4E, 0x5E65, "the drones' table: 8 records of 3 bytes", BUF),
     (0x5E66, 0x5FE5, 'objects: up to 16 records of 24 bytes', BUF),
-    (0x5FE2, 0x5FFF, 'stack: SP $6000, low mark $5FE2', SYSTEM),
+    (0x5FDA, 0x5FFF, 'stack: SP $6000, low mark $5FDA', SYSTEM),
     (0x6018, 0x60D7, 'ExplosionPicture, over the stub', SPRITE),
     (0x60E0, 0x9479, 'the tables and sprites: read; a few characters rotated in place', DATA),
     (0x947A, 0xD961, 'code, variables, tables, as loaded', CODE),

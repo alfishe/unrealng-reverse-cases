@@ -33,10 +33,12 @@ INPUT_KEYS = {chr(c) for c in range(ord('A'), ord('Z') + 1)} | set('0123456789')
     {'ENTER', 'SPACE', 'CS', 'SS', 'KF', 'KL', 'KR', 'KU', 'KD'}
 
 
-def input_script(path):
+def input_script(path, allow=()):
     """(lines, problems) of an input script: lines [(frame, keys or None at END, the line's text)], keys a list with
-    the "+" chords split; problems ["path:N: ..."] for every word that is no key"""
+    the "+" chords split; problems ["path:N: ..."] for every word that is no key. allow: the first words of a case
+    wrapper's own lines (Rex's tools/capture.py: TAPE, POKE), skipped"""
     lines, problems, frame = [], [], 0
+    allow = {w.upper() for w in allow}
     for number, raw in enumerate(open(path), 1):
         text = raw.split('#', 1)[0].strip()
         if not text:
@@ -49,6 +51,8 @@ def input_script(path):
         if words == ['END']:
             lines.append((frame, None, text))
             break
+        if words and words[0].upper() in allow:
+            continue
         if words and words[0].upper() in ('TYPE', 'POKE', 'TAPE'):
             problems.append(f'{path}:{number}: {words[0]} lines are zx-reaper\'s (tools/zxrun.py): mm_session.py '
                             f'plays keys only')
@@ -67,10 +71,21 @@ def input_script(path):
     return lines, problems
 
 
+def missing_end(path, lines):
+    """a warning for an input script with no "FRAME END" line (it ends at its last event, frame N, silently: the
+    recording stops there, or the next script starts there), else None"""
+    if any(keys is None for _, keys, _ in lines):
+        return None
+    last = lines[-1][0] if lines else 0
+    return (f'WARNING: {path}: no "FRAME END" line: the script ends at its last event, frame {last} (add '
+            f'"N END" for a recording that goes on after it)')
+
+
 def capture_inputs(args):
     """re_session.py capture's arguments with its --inputs scripts checked (input_script): a word that is no key
     stops here with the line and the reason (SystemExit), not in the emulator's "Unknown key"; a script with "+"
-    chords ("W+O") is replaced by a copy with the chords split, in W/inputs/. Other commands go through unchanged.
+    chords ("W+O") is replaced by a copy with the chords split, in W/inputs/; a script with no END line is warned
+    about (missing_end). Other commands go through unchanged.
     kit/rs.py calls it; so does a case's own capture wrapper that imports re_session (it never sees rs.py)"""
     if not args or args[0] != 'capture' or '--inputs' not in args:
         return list(args)
@@ -81,6 +96,9 @@ def capture_inputs(args):
         path = out[k]
         lines, bad = input_script(path)
         problems += bad
+        warning = missing_end(path, lines)
+        if warning and not bad:
+            print(warning)
         if not bad and any(len(w.split('+')) > 1 for _, _, text in lines for w in text.split()[1:]):
             os.makedirs(os.path.join(work, 'inputs'), exist_ok=True)
             out[k] = os.path.join(work, 'inputs', os.path.basename(path))

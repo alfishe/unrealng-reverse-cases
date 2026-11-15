@@ -35,6 +35,8 @@ TitleMenu:
   LD HL,$4000
   LD BC,$1B00
   LDIR
+; This entry point is used by the routine at MenuAgain.
+l_DAEE:
   LD DE,$4000
   LD HL,TitleScreen
   LD BC,$1B00
@@ -426,12 +428,17 @@ ConfirmWait:
   JP Z,MenuAgain
   JP ConfirmWait
 
-; Code: JP $DAEE: RET: N at the confirm, back to the menu's text and wait
+; N at the confirm: back to the menu's text and wait (JP $DAEE)
 ;
-; Inside CellIndexMap's span, so the play reads it as data and the kit keeps it
-; as bytes; no recording pressed N (known only from the code).
+; Inside CellIndexMap's span: the play reads these bytes as data after the
+; menu; @code keeps the menu's code here as code. No recording pressed N (known
+; only from the code).
 MenuAgain:
-  DEFB $C3,$EE,$DA,$C9
+  JP l_DAEE
+
+; RET after MenuAgain's JP, never reached
+MenuAgainRet:
+  DEFB $C9
 
 ; DE = the font's character A ($5FE0 + 8A)
 ;

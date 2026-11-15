@@ -5,10 +5,17 @@ data are left out (their addresses would land on bank 0's at $C000), the frames 
 
     python3 kit/merge_l1.py OUT.json L1 [L1 ...] [--stack LO-HI]
 
---stack LO-HI (hex, both included) also prints, per build, the lowest byte written in that range: the stack's low
-mark when the range holds the stack and nothing else writes there (Switchblade's $5B00-$5BFF, reset to $5C00 each
-pass of its main loop; Myth's $FF00-$FFFF under its turbo loader). Give play windows, not loads, for that figure: a
-loader's writes in the range count too.
+--stack LO-HI (hex, both included) also prints, per build, two marks in that range:
+
+  lowest SP     the lowest byte a PUSH, CALL, RST or an interrupt wrote there (the L1's byte_use flag kStackWrite):
+                the lowest SP the build reached, the stack's low mark, whatever else lies in the range (Rex: $5FE0
+                over the object records at $5D00-$5FE5)
+  lowest write  the lowest byte a data write wrote there (the L1's per-byte writes, which do not count the stack's
+                own pushes): the low mark only where the stack is written as data too (LD SP,nn over a buffer read
+                back with POP) and nothing else writes in the range (Switchblade's $5B00-$5BFF, Myth's $FF00-$FFFF)
+
+The byte_use flags hold no frame: give play windows, not loads, for these figures (a loader's stack and writes in the
+range count too).
 """
 import argparse
 import json
@@ -36,11 +43,29 @@ def lowest_write(byte_counts, lo, hi):
     return None
 
 
+STACK_WRITE = 1 << 3  # byte_use flags: PUSH, CALL, RST, an interrupt (unreal-ng l1model.h use::kStackWrite)
+
+
+def lowest_stack_write(byte_use, lo, hi):
+    """the lowest address of lo..hi (64 K view of pages 5, 2, 0) a PUSH / CALL / RST / interrupt wrote, or None"""
+    low = None
+    for row in byte_use:
+        page, offset, length, flags = row[0], row[1], row[2], row[3]
+        base = BASES.get(page)
+        if base is None or not flags & STACK_WRITE:
+            continue
+        a, b = max(base + offset, lo), min(base + offset + length - 1, hi)
+        if a <= b and (low is None or a < low):
+            low = a
+    return low
+
+
 def main():
     p = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     p.add_argument('out', help='the merged l1.json')
     p.add_argument('l1', nargs='+', help='the L1 builds')
-    p.add_argument('--stack', type=stack_range, metavar='LO-HI', help='print the lowest byte each build wrote there')
+    p.add_argument('--stack', type=stack_range, metavar='LO-HI',
+                   help='print the lowest SP (stack write) and the lowest data write of each build there')
     args = p.parse_args()
     instr, pages, frames, first = {}, {}, 0, None
     for path in args.l1:
@@ -67,8 +92,10 @@ def main():
                 acc['last_frame'][i] = max(acc['last_frame'][i], c['last_frame'][i])
         line = f"{path} {d['replay']['frames']} frames"
         if args.stack:
+            sp = lowest_stack_write(d.get('byte_use', []), *args.stack)
             low = lowest_write(d['byte_counts'], *args.stack)
-            line += '; lowest write in $%04X-$%04X: %s' % (args.stack + (f'${low:04X}' if low is not None else None,))
+            line += '; in $%04X-$%04X lowest SP: %s, lowest write: %s' % (
+                args.stack + (f'${sp:04X}' if sp is not None else None, f'${low:04X}' if low is not None else None))
         print(line)
     doc = {'format': first.get('format'), 'version': first.get('version'),
            'replay': dict(first['replay'], frames=frames), 'instructions': list(instr.values()),

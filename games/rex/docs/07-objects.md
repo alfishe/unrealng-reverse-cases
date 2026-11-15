@@ -275,7 +275,7 @@ Witness: CharFlags is read by every mover (L1 counts of IsSolid and IsPassable i
 
 ObjectTable `$5E66` holds 16 records of 24 bytes (`$5E66-$5FE5`). A room uses ObjectCount of them. MakeObjects clears
 the 16 (`$180` bytes) on a room change; a list holds at most 16 objects. ObjectCount is 5 bits (`AND $1F` in
-ReadExits), but no room lists more than 16: records 17-31 would be the stack (`$5FE2-$5FFF`) and the code from `$6000`.
+ReadExits), but no room lists more than 16: records 17-31 would be the stack (`$5FDA-$5FFF`) and the code from `$6000`.
 The name ObjectTable is a label only in DEMO (`$5EF6`); in REX 1 it names the address in the comments.
 
 | Byte | Field | Values |

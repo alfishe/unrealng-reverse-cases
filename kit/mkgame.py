@@ -9,7 +9,8 @@ image's bytes: a case's game, or any other part of the medium (a loader, a menu,
                           [--page N ...] [--bank N] [--built NAME=PATH ...] [--save PATH] [--title TEXT] [--install]
     every form also takes --venv VENV --sjasmplus BIN (else $SKOOLKIT_VENV / $SJASMPLUS, kit/toolpaths.py) and
     --fix-witness (rewrite the stale "Witness: L1 N (builds)" lines of the .ann, which every run prints, and write
-    the source again from the rewritten .ann: with --install one run leaves the .ann and the .asm current)
+    the source again from the rewritten .ann: with --install one run leaves the .ann and the .asm current; then list
+    the code entries left at "L1 0 ()", which no build ran)
 
 The game: CASE/case.json (or --config) names the 64 K image, the range that is the game, the banks, the recordings
 (read_builds: work/<build>/l1.json whose instructions and data reads count; code_builds: whose instructions only;
@@ -328,6 +329,7 @@ BANK = re.compile(r'^@bank\s+' + HEX4 + r'\s+' + NAME + r'\s+(\w+)\s*(?:;\s*(.*)
 VAR = re.compile(r'^@var\s+' + HEX4 + r'\s+' + NAME + r'(?:\s+(\d+))?\s*(?:;\s*(.*))?$')
 ALIAS = re.compile(r'^@alias\s+' + NAME + r'\s+(\S+)\s*(?:;\s*(.*))?$')
 OVER = re.compile(r'^@over\s+' + HEX4 + r'\s*(?:;\s*(.*))?$')
+CODE_OVER = re.compile(r'^@code\s+' + HEX4 + r'(?:-\$([0-9A-Fa-f]{4}))?\s*;\s*(\S.*)$')
 BANK_SHORT = re.compile(r'^@bank\s+' + HEX4 + r'\s+(\w+)\s*(?:;\s*(.*))?$')
 NAMES_FROM = re.compile(r'^@names\s+(\w+)\s+(\S+)\s*(?:;.*)?$')
 PIECE = re.compile(r'^@piece\s+(\w+)\s*$')
@@ -395,6 +397,9 @@ class Annotations:
                                   cut there), every instruction operand $ADDR+1..$ADDR+N-1 written NAME+k
         @alias NAME EXPR ; c      NAME EQU EXPR, for a name that cannot be a label (the operand of a JP into code)
         @over $ADDR ; why         a branch target that holds other bytes when the branch runs: not followed
+        @code $LO[-$HI] ; why     code a recording also reads as data (a buffer laid over it after it ran, a checksum
+                                  over it): the walk does not stop at those reads there, so a c entry in LO..HI (HI
+                                  included) is code; the why is required
         @variant NAME $ADDR INSTRUCTION [; c]
                                   under NAME the instruction at ADDR is INSTRUCTION: IFDEF NAME, the line, ELSE, the
                                   original, ENDIF (sjasmplus -DNAME builds the variant); $ADDR-$END replaces the
@@ -424,6 +429,7 @@ class Annotations:
         self.vars = []  # (address, name, size, comment)
         self.aliases = []  # (name, expression, comment)
         self.over = set()  # branch targets not followed
+        self.code_over = []  # (lo, hi inclusive, why): code a recording also reads as data; the walk goes through
         self.names_from = {}  # bank: (the .ann of @names, {address: name})
         short_banks = []  # (address, bank, comment, where) of the @bank lines without a name
         own_labels = []  # (address, name, where) of the @equ lines inside the image: the .ann's own labels
@@ -488,6 +494,16 @@ class Annotations:
                 if not m:
                     sys.exit(f'{path}:{number}: cannot read: {line}')
                 self.aliases.append((m.group(1), m.group(2), m.group(3) or ''))
+                continue
+            if text.startswith('@code'):
+                m = CODE_OVER.match(text)
+                if not m:
+                    sys.exit(f'{path}:{number}: cannot read: {line} (@code $LO[-$HI] ; why: the why is required)')
+                lo = int(m.group(1), 16)
+                hi = int(m.group(2), 16) if m.group(2) else lo
+                if hi < lo:
+                    sys.exit(f'{path}:{number}: @code ${lo:04X}-${hi:04X}: HI under LO')
+                self.code_over.append((lo, hi, m.group(3).strip()))
                 continue
             if text.startswith('@over'):
                 m = OVER.match(text)
@@ -1503,6 +1519,12 @@ def generate(seg, mem, args, out, top):
                 starts.discard(b)
     if seg.no_entries:
         entries = set()
+    if ann.code_over:
+        # @code: the reads there are a buffer's laid over the code (or a checksum's): the walk goes through them
+        reads = list(reads)
+        for lo, hi, _ in ann.code_over:
+            for b in range(max(lo, LO), min(hi + 1, HI)):
+                reads[b] = 0
     code, targets, calls = walk(mem, starts, reads, [a for a, e in ann.entries.items() if e[0] == 'c'],
                                 ann.inline_data, ann.cut(), ann.inline_len)
     if seg.entries_in_code:
@@ -2171,7 +2193,7 @@ def check_witness(seg, skip=(), fix=False, mem=None):
             if alias not in known and alias != build_name(b):
                 former.setdefault(alias, build_name(b))
     lines = open(seg.ann).read().split('\n')
-    entry, stale = None, 0
+    entry, stale, unrun = None, 0, []
     for i, line in enumerate(lines):
         text = line.strip()
         if text.startswith('$'):
@@ -2212,6 +2234,8 @@ def check_witness(seg, skip=(), fix=False, mem=None):
                 return w.group(0)
             return 'Witness: L1 %d (%s)' % (n, names)
         lines[i] = WITNESS.sub(sub, line)
+        if fix and any(w.group(1) == '0' and not w.group(2).strip() for w in WITNESS.finditer(lines[i])):
+            unrun.append((i + 1, entry[0], entry[2] or ''))
     shared = {}
     for b, r in builds.items():
         for a in r.shared:
@@ -2224,6 +2248,11 @@ def check_witness(seg, skip=(), fix=False, mem=None):
                          ', '.join('$%04X' % a for a in sorted(where)[:6]), ', ...' if len(where) > 6 else ''))
     if fix and stale:
         open(seg.ann, 'w').write('\n'.join(lines))
+    if unrun:
+        # --fix-witness: the code entries whose witness line reads "L1 0 ()" after it, no build ran them
+        print('witness: %s: %d code entr%s at L1 0 () (no build ran %s): %s' % (
+            os.path.relpath(seg.ann, ROOT), len(unrun), 'y' if len(unrun) == 1 else 'ies',
+            'it' if len(unrun) == 1 else 'them', ', '.join('%d $%04X %s' % u for u in unrun)))
     return stale
 
 

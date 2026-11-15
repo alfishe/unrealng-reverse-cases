@@ -1,6 +1,6 @@
 # Rex (Martech Games, 1988)
 
-State: docs written, in review (2026-11-15): docs 01-10 by the writers, docs 11 and 12 generated, integrated; both
+State: complete (2026-11-15; two review rounds, kit gaps fixed): docs 01-10 by three writers, docs 11 and 12 generated, integrated; both
 tape sides build identical from the sources. 12 documents, 62 figures (PNG), 29 animations (GIF), 85 mermaid
 diagrams and 16 audio files (16 short WAV, the longest 4.6 s, no MP3; 1.7 MB), counted on 2026-11-15 with:
 

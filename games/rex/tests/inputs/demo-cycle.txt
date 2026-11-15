@@ -6,3 +6,4 @@
 +100 SPACE
 +6 -
 +200 -
++0 END  # frame 30312: the recording ended here (capture.json "frames"), at the last release

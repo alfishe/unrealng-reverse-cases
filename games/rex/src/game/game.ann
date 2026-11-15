@@ -788,7 +788,7 @@ $BA49 c ResetPower ; Weapon 0, PowerLevel 1, the bar's pointer, WeaponRank 0
 > Witness: L1 9 (c1, p1-code, p1-cursor, p1-define, p1-kempston, rzx-p1-00000, rzx-p1-64000).
 
 @module objects ; The objects: the enemies, the pods, their moves, their shots, the explosions
-@about A room's objects are records of 24 bytes at ObjectTable $5E66 (ObjectCount $A092, masked by AND $1F to 31, but no room holds more than 16: room 5; the 16 records reach $5FE5, and the stack's lowest mark $5FE2, in DrawRoomCell before MakeObjects, overlaps their last 4 bytes, harmless because MakeObjects writes them afterwards): +0 X, +1 Y, +2 direction (0 right), +3 falling, +4/+5 picture (or the swing gun's angle picture), +6 fall speed, +9 kind (bit 7: a variant), +$0A/+$0B frame list, +$0C alive, +$0D/+$0E/+$0F size, +$10 speed, +$11/+$12 timers, +$13, +$14 hits left (a bullet that brings it to 1 kills the object; the score comes from KillScores), +$15 a pod's extra, +$16/+$17 the picture base. UpdateObjects walks them: draw (DrawObject $BAD0), the kind's own behaviour, then the walk, fall and jump common to the walkers, then the collision with Rex (ObjectHitsRex $D215).
+@about A room's objects are records of 24 bytes at ObjectTable $5E66 (ObjectCount $A092, masked by AND $1F to 31, but no room holds more than 16: room 5; the 16 records reach $5FE5; the stack's low mark in DrawRoomChar, $5FE2, before MakeObjects, overlaps their last 4 bytes, harmless because MakeObjects writes them afterwards; a framed panel's $5FDA reaches from record 16's alive byte on, in the recordings in rooms 18 and 28, whose lists hold fewer objects; whether record 16 can be in use then is not checked: doc 2, 2.4): +0 X, +1 Y, +2 direction (0 right), +3 falling, +4/+5 picture (or the swing gun's angle picture), +6 fall speed, +9 kind (bit 7: a variant), +$0A/+$0B frame list, +$0C alive, +$0D/+$0E/+$0F size, +$10 speed, +$11/+$12 timers, +$13, +$14 hits left (a bullet that brings it to 1 kills the object; the score comes from KillScores), +$15 a pod's extra, +$16/+$17 the picture base. UpdateObjects walks them: draw (DrawObject $BAD0), the kind's own behaviour, then the walk, fall and jump common to the walkers, then the collision with Rex (ObjectHitsRex $D215).
 @about The kinds (the menu's roll call names ten of them): 0 foot man, 1 stomper, 2-7 walkers and people (4, 5, 6, 7 count as humans), 8 scanner, 9 swing gun (a turret that fires in 8 angles), 10 shooters (two shots at once), 11 launcher, 12 ramming pod, 13 mine layer (drops mines), 14 mine, 15 blob, 16 the big gun; $FE a power pod, $FD a bomb pod, $FC the bonus pod, $FF the points sign. A killed enemy explodes into six shards (BlowUp $BD6B, the border clicks) and may leave a pod.
 $BA5C c UpdateObjects ; Update every object of the room (falls into UpdateObject)
 > Witness: L1 18619 (c1, p1-code, p1-cursor, p1-define, p1-gameover, p1-kempston, p1-poke41241, p1-rooms238, p1-shots, p1-speedup, p1-room x5, rzx-p1- x32).
@@ -1345,8 +1345,10 @@ $DE9F CellIndexMap ; after the menu: each grid cell's index into SceneryCellList
 $DED2 c Confirm ; The confirm text; Y returns (the game starts), N goes back to the menu (MenuAgain)
 > Witness: L1 5 (c1, p1-cursor, p1-define, p1-kempston, rzx-p1-00000).
 $DED7 ConfirmWait ; Y or N
-$DEEC b MenuAgain 4 ; Code: JP $DAEE: RET: N at the confirm, back to the menu's text and wait
-> Inside CellIndexMap's span, so the play reads it as data and the kit keeps it as bytes; no recording pressed N (known only from the code).
+$DEEC c MenuAgain ; N at the confirm: back to the menu's text and wait (JP $DAEE)
+> Inside CellIndexMap's span: the play reads these bytes as data after the menu; @code keeps the menu's code here as code. No recording pressed N (known only from the code).
+@code $DEEC-$DEEF ; CellIndexMap $DE9F-$E4FE, cleared and filled by DrawRoom each room, lies over the menu's code: the play's reads there are the map's, after the menu ran this code
+$DEEF b MenuAgainRet 1 ; RET after MenuAgain's JP, never reached
 $DEF0 c FontChar ; DE = the font's character A ($5FE0 + 8A)
 > Witness: L1 10 (c1, p1-define).
 $DEFC c DrawChar ; 8 bytes from DE down the screen at HL

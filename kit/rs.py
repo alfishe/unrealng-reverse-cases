@@ -4,6 +4,7 @@ one path in this repository instead of a variable set on one machine.
 
     python3 kit/rs.py [--unreal U] capture|open|build|stages|interrupts|call|export|check|stop ...
     python3 kit/rs.py capture ... [--stop] [--expect STATE[@FRAME] ...] [--expect-ranges LO-HI[,LO-HI ...]]
+                                  [--tape-seek N]
 
 Everything after the optional --unreal goes to re_session.py unchanged, but for these, read here first (capture):
 
@@ -21,6 +22,12 @@ Everything after the optional --unreal goes to re_session.py unchanged, but for 
               both: a replay that does not reach that state (a frame off, the random seed) is told apart from a
               witness. Repeat for several frames. The results go to W/replay-check.json; any difference makes rs.py
               exit with status 3 once the capture's own files are written (and after --stop)
+  --tape-seek N  with --media (a tape): the head goes to block N (POST /tape/seek, the emulator's block index: a
+              TZX's text and info blocks count) as soon as the tape is inserted, before LOAD "" (or the 128 menu's
+              Tape Loader) runs, so a capture loads a later program of the tape (Rex: side 1 block 6, REX 2 alone),
+              with the fast LD-BYTES trap on or off. The seek's answer is printed and kept in W/capture.json
+              "tape_seek"; a case wrapper that replaces corpus.load gets it too when it ends with
+              rs.main(['capture', ...]) (the seek follows its load_software call)
 
 re_session.py's docstring (python3 kit/rs.py -h) is the reference for the rest. The cases' `$RS` (docs/case-files.md)
 is this script. The checkout is found as kit/toolpaths.py finds it: --unreal, $UNREAL_NG, the unreal-ng submodule, a
@@ -55,11 +62,23 @@ def kit_options(args):
     """(re_session.py's arguments, stop, [(state path, frame or None)], [(lo, hi exclusive)]): the kit's own capture
     options taken out"""
     out, stop, expect, ranges = [], False, [], '4000-FFFF'
+    kit_options.seek = None
     k = 0
     while k < len(args):
         a = args[k]
         if a == '--stop':
             stop = True
+        elif a == '--tape-seek' or a.startswith('--tape-seek='):
+            if '=' in a:
+                value = a.split('=', 1)[1]
+            else:
+                if k + 1 >= len(args):
+                    sys.exit('rs.py: --tape-seek needs a block number')
+                k += 1
+                value = args[k]
+            if not value.isdigit():
+                sys.exit(f'rs.py: --tape-seek {value}: a block number')
+            kit_options.seek = int(value)
         elif a in ('--expect', '--expect-ranges') or a.startswith(('--expect=', '--expect-ranges=')):
             if '=' in a:
                 a, value = a.split('=', 1)
@@ -104,9 +123,12 @@ def capture(args, script):
     """re_session.py's capture, imported rather than run as a script, so that the replay check can stop the scripts
     at a frame; the instance stopped afterwards when asked. Returns the exit status"""
     args, stop, expect, spans = kit_options(args)
+    seek = kit_options.seek
     work = args[args.index('--work') + 1] if '--work' in args[:-1] else None
     if (stop or expect) and not work:
         sys.exit('rs.py: --stop / --expect need capture --work W')
+    if seek is not None and not any(a == '--media' or a.startswith('--media=') for a in args):
+        sys.exit('rs.py: --tape-seek needs capture --media (a tape)')
     sys.path.insert(0, os.path.dirname(script))
     import corpus
     import re_session
@@ -145,8 +167,35 @@ def capture(args, script):
         total[0] = at + took
         return took
 
+    load = corpus.load
+
+    def load_seek(m, game, media, report, args):
+        # --tape-seek: the head to block N right after the tape is inserted, before the ROM's LOAD runs (the fast
+        # LD-BYTES trap would read the first program while LOAD "" is typed, before any play)
+        call = m.s.call
+
+        def call_seek(tool, params=None, ok=True):
+            r = call(tool, params, ok=ok)
+            if tool == 'load_software':
+                got = call('invoke_api', {'method': 'POST', 'path': '/api/v1/emulator/{id}/tape/seek',
+                                          'body': {'block': seek}}, ok=False)
+                text = (got.text or '').splitlines()[-1][:160] if got.text else ''
+                report['tape_seek'] = {'block': seek, 'answer': text}
+                print(f'rs.py: --tape-seek {seek}: {text}', flush=True)
+                if got.is_error or not text.startswith('Seeked'):
+                    sys.exit(f'rs.py: --tape-seek {seek} failed: {text}')
+            return r
+
+        m.s.call = call_seek
+        try:
+            return load(m, game, media, report, args)
+        finally:
+            del m.s.call
+
     corpus.run_frames = run_frames_checked
     re_session.play_script = play_script_checked
+    if seek is not None:
+        corpus.load = load_seek
     status = 0
     try:
         sys.argv = [script] + args
@@ -166,7 +215,7 @@ def capture(args, script):
             if any(r['differ'] != 0 for r in results):
                 status = 3
     finally:
-        corpus.run_frames, re_session.play_script = run_frames, play_script
+        corpus.run_frames, re_session.play_script, corpus.load = run_frames, play_script, load
         if stop and os.path.exists(os.path.join(work, 'session.json')):
             re_session.stop(type('Args', (), {'work': work})())
             print(f'rs.py: the instance of {work} stopped')

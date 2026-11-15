@@ -44,3 +44,4 @@
 +5 -
 +200 5 0
 +200 -
++0 END  # frame 2542: the recording ended here (capture.json "frames"), at the last release

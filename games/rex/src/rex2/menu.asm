@@ -35,6 +35,8 @@ MenuCode:
   LD BC,$1B00
   LDIR
   CALL EnterCode
+; This entry point is used by the routine at MenuAgain.
+l_DAF1:
   LD DE,$4000
   LD HL,TitleScreen
   LD BC,$1B00
@@ -408,15 +410,34 @@ CellIndexMap:
                                                                        ; the menu's
                                                                        ; texts
 
-; Code: key 2, Kempston: the readers on port $001F, ControlXor $FF; the confirm
+; 2, Kempston: the readers on port $001F, ControlXor $FF; the confirm
 ;
-; Built like ChooseSinclair. Inside CellIndexMap's span ($DE9F on), so the play
-; reads it as data and the kit keeps it as bytes.
+; Built like ChooseSinclair. Inside CellIndexMap's span ($DE9F on): the play
+; reads these bytes as data after the menu; @code keeps the menu's code here as
+; code. No part 2 recording chose 2 (known only from the code; REX 1's
+; ChooseKempston $DE20 ran in p1-kempston).
 ChooseKempston:
-  DEFB $21,$1F,$00,$22,$44,$A2,$3E,$67,$32,$46,$A2,$CD,$12,$A6,$3E,$5F
-  DEFB $32,$46,$A2,$CD,$5D,$A6,$3E,$57,$32,$46,$A2,$CD,$76,$A6,$3E,$47
-  DEFB $32,$46,$A2,$CD,$44,$A6,$3E,$4F,$32,$46,$A2,$CD,$2B,$A6,$3E,$FF
-  DEFB $32,$47,$A2,$DD,$21,$34,$E0,$C3,$93,$DF
+  LD HL,$001F
+  LD (DefinePort),HL
+  LD A,$67
+  LD (DefineBit),A
+  CALL SetFire
+  LD A,$5F
+  LD (DefineBit),A
+  CALL SetUp
+  LD A,$57
+  LD (DefineBit),A
+  CALL SetDown
+  LD A,$47
+  LD (DefineBit),A
+  CALL SetRight
+  LD A,$4F
+  LD (DefineBit),A
+  CALL SetLeft
+  LD A,$FF
+  LD (ControlXor),A
+  LD IX,MenuTexts+$006E
+  JP Confirm
 
 ; 4: Sinclair (port $EFFE, keys 6-0): fire bit 0, up 1, down 2, right 3, left
 ; 4; the confirm
@@ -445,16 +466,34 @@ ChooseSinclair:
   LD IX,MenuTexts+$0040
   JP Confirm
 
-; Code: key 3, Cursor: port $EFFE fire bit 0 (key 0), right 2 (8), up 3 (7),
-; down 4 (6); left $F7FE bit 4 (5); the confirm
+; 3, Cursor: port $EFFE fire bit 0 (key 0), right 2 (8), up 3 (7), down 4 (6);
+; left $F7FE bit 4 (5); the confirm
 ;
-; Inside CellIndexMap's span ($DE9F on), so the play reads it as data and the
-; kit keeps it as bytes.
+; Inside CellIndexMap's span ($DE9F on), code by @code. No part 2 recording
+; chose 3 (known only from the code; REX 1's ChooseCursor $DE99 ran in
+; p1-cursor).
 ChooseCursor:
-  DEFB $21,$FE,$EF,$22,$44,$A2,$3E,$47,$32,$46,$A2,$CD,$12,$A6,$3E,$57
-  DEFB $32,$46,$A2,$CD,$44,$A6,$3E,$5F,$32,$46,$A2,$CD,$5D,$A6,$3E,$67
-  DEFB $32,$46,$A2,$CD,$76,$A6,$21,$FE,$F7,$22,$44,$A2,$CD,$2B,$A6,$AF
-  DEFB $32,$47,$A2,$DD,$21,$1E,$E0,$C3,$93,$DF
+  LD HL,BufferPlayOrigin+$04FF
+  LD (DefinePort),HL
+  LD A,$47
+  LD (DefineBit),A
+  CALL SetFire
+  LD A,$57
+  LD (DefineBit),A
+  CALL SetRight
+  LD A,$5F
+  LD (DefineBit),A
+  CALL SetUp
+  LD A,$67
+  LD (DefineBit),A
+  CALL SetDown
+  LD HL,BufferPlayOrigin+$0CFF
+  LD (DefinePort),HL
+  CALL SetLeft
+  XOR A
+  LD (ControlXor),A
+  LD IX,MenuTexts+$0058
+  JP Confirm
 
 ; The confirm text; Y returns (the game starts), N goes back to the menu
 ; (MenuAgain)
@@ -476,24 +515,47 @@ ConfirmWait:
   JP Z,MenuAgain
   JP ConfirmWait
 
-; Code: JP $DAF1: RET: N at the confirm, back to the menu's text and wait
+; N at the confirm: back to the menu's text and wait (JP $DAF1)
 ;
-; As REX 1's MenuAgain $DEEC (src/game/menu.asm).
+; As REX 1's MenuAgain $DEEC (src/game/menu.asm). Inside CellIndexMap's span,
+; code by @code; no recording pressed N (known only from the code).
 MenuAgain:
-  DEFB $C3,$F1,$DA,$C9
+  JP l_DAF1
 
-; Code: DE = the font's character A ($6206 + 8A): LD L,A: LD H,0: ADD HL,HL
-; (x3): LD DE,$6206: ADD HL,DE: EX DE,HL: RET
+; RET after MenuAgain's JP, never reached
+MenuAgainRet:
+  DEFB $C9
+
+; DE = the font's character A ($6206 + 8A)
 ;
 ; Inside CellIndexMap's span ($DE9F-$E4FE, cleared and read by DrawRoom each
-; room), so the play reads it as data and the kit keeps it as bytes.
+; room), code by @code; DEFINE's key echo calls it, as REX 1's FontChar $DEF0,
+; and no part 2 recording chose DEFINE (known only from the code).
 FontChar:
-  DEFB $6F,$26,$00,$29,$29,$29,$11,$06,$62,$19,$EB,$C9
+  LD L,A
+  LD H,$00
+  ADD HL,HL
+  ADD HL,HL
+  ADD HL,HL
+  LD DE,DevLink+$005E
+  ADD HL,DE
+  EX DE,HL
+  RET
 
-; Code: 8 bytes from DE down the screen at HL: LD B,8: LD A,(DE): LD (HL),A:
-; INC DE: INC H: DJNZ: RET
+; 8 bytes from DE down the screen at HL
+;
+; As REX 1's DrawChar $DEFC. Inside CellIndexMap's span, code by @code; with
+; FontChar, DEFINE's key echo, which no part 2 recording chose (known only from
+; the code).
 DrawChar:
-  DEFB $06,$08,$1A,$77,$13,$24,$10,$FA,$C9
+  LD B,$08
+l_DFBF:
+  LD A,(DE)
+  LD (HL),A
+  INC DE
+  INC H
+  DJNZ l_DFBF
+  RET
 
 ; The menu's text records: SELECT, 1:DEFINE, 2:KEMPSTON, 3:CURSOR, 4:SINCLAIR;
 ; the confirms; DEFINE's PRESS, :UP, :DOWN, :LEFT, :RIGHT, :FIRE (twice, two

@@ -1489,22 +1489,25 @@ $DE04 ScanKeyTaken ; a key already chosen?
 $DE13 b DefineTaken 6 ; the characters of the keys chosen so far
 $DE19 b DefineKeys 16 ; Code: 1: DEFINE: PRESS a key for each of UP, DOWN, LEFT, RIGHT, FIRE (ScanKey, the setters), then the confirm
 > Part 1's DefineKeys moved by $C5: DefineTaken cleared, PRESS, then for each control ScanKey and its setter (SetUp $A65D, SetDown $A676, SetLeft $A62B, SetRight $A644, SetFire $A612), ControlXor 0 and the confirm. No part 2 recording chose DEFINE (known only from the code); the kit keeps it as bytes because recording c2 reads $DC2A-$DE45 once at frames 22596-22597 (the reader is not identified) and the rest lies in CellIndexMap's span.
-$DEE6 b ChooseKempston 16 ; Code: key 2, Kempston: the readers on port $001F, ControlXor $FF; the confirm
-> Built like ChooseSinclair. Inside CellIndexMap's span ($DE9F on), so the play reads it as data and the kit keeps it as bytes.
+$DEE6 c ChooseKempston ; 2, Kempston: the readers on port $001F, ControlXor $FF; the confirm
+> Built like ChooseSinclair. Inside CellIndexMap's span ($DE9F on): the play reads these bytes as data after the menu; @code keeps the menu's code here as code. No part 2 recording chose 2 (known only from the code; REX 1's ChooseKempston $DE20 ran in p1-kempston).
+@code $DEE6-$DFC5 ; CellIndexMap $DE9F-$E4FE, cleared and filled by DrawRoom each room, lies over the menu's code: the play's reads there are the map's, after the menu ran this code
 $DE9F CellIndexMap ; after the menu: each grid cell's index into SceneryCellList (DrawRoom), over this code and the menu's texts
 $DF20 c ChooseSinclair ; 4: Sinclair (port $EFFE, keys 6-0): fire bit 0, up 1, down 2, right 3, left 4; the confirm
 > Witness: L1 2 (c2, rzx-p2-00000).
-$DF59 b ChooseCursor 16 ; Code: key 3, Cursor: port $EFFE fire bit 0 (key 0), right 2 (8), up 3 (7), down 4 (6); left $F7FE bit 4 (5); the confirm
-> Inside CellIndexMap's span ($DE9F on), so the play reads it as data and the kit keeps it as bytes.
+$DF59 c ChooseCursor ; 3, Cursor: port $EFFE fire bit 0 (key 0), right 2 (8), up 3 (7), down 4 (6); left $F7FE bit 4 (5); the confirm
+> Inside CellIndexMap's span ($DE9F on), code by @code. No part 2 recording chose 3 (known only from the code; REX 1's ChooseCursor $DE99 ran in p1-cursor).
 $DF93 c Confirm ; The confirm text; Y returns (the game starts), N goes back to the menu (MenuAgain)
 > As REX 1's Confirm $DED2 (src/game/menu.asm).
 > Witness: L1 2 (c2, rzx-p2-00000).
 $DF98 ConfirmWait ; Y or N
-$DFAD b MenuAgain 4 ; Code: JP $DAF1: RET: N at the confirm, back to the menu's text and wait
-> As REX 1's MenuAgain $DEEC (src/game/menu.asm).
-$DFB1 b FontChar 12 ; Code: DE = the font's character A ($6206 + 8A): LD L,A: LD H,0: ADD HL,HL (x3): LD DE,$6206: ADD HL,DE: EX DE,HL: RET
-> Inside CellIndexMap's span ($DE9F-$E4FE, cleared and read by DrawRoom each room), so the play reads it as data and the kit keeps it as bytes.
-$DFBD b DrawChar 9 ; Code: 8 bytes from DE down the screen at HL: LD B,8: LD A,(DE): LD (HL),A: INC DE: INC H: DJNZ: RET
+$DFAD c MenuAgain ; N at the confirm: back to the menu's text and wait (JP $DAF1)
+> As REX 1's MenuAgain $DEEC (src/game/menu.asm). Inside CellIndexMap's span, code by @code; no recording pressed N (known only from the code).
+$DFB0 b MenuAgainRet 1 ; RET after MenuAgain's JP, never reached
+$DFB1 c FontChar ; DE = the font's character A ($6206 + 8A)
+> Inside CellIndexMap's span ($DE9F-$E4FE, cleared and read by DrawRoom each room), code by @code; DEFINE's key echo calls it, as REX 1's FontChar $DEF0, and no part 2 recording chose DEFINE (known only from the code).
+$DFBD c DrawChar ; 8 bytes from DE down the screen at HL
+> As REX 1's DrawChar $DEFC. Inside CellIndexMap's span, code by @code; with FontChar, DEFINE's key echo, which no part 2 recording chose (known only from the code).
 $DFC6 b MenuTexts 16 ; The menu's text records: SELECT, 1:DEFINE, 2:KEMPSTON, 3:CURSOR, 4:SINCLAIR; the confirms; DEFINE's PRESS, :UP, :DOWN, :LEFT, :RIGHT, :FIRE (twice, two colours)
 @res texts/rex2-menu.bin
 $E0C7 b MenuSpace 16 ; Zeros to the title screen: the room grid's space after the menu

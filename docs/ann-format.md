@@ -43,7 +43,7 @@ The parser reads the file line by line. Leading and trailing spaces are dropped.
 | empty | nothing |
 | `#` | a comment for the reader of the `.ann`. It is never written to the `.asm`. The older form of the part directives (`# @bank`, `# @var`, ...) is read behind it too (section 5.1) |
 | `@module`, `@about`, `@res`, `@isub`, `@inline`, `@equ`, `@variant` | a directive (section 2) |
-| `@const`, `@bank`, `@names`, `@var`, `@alias`, `@over`, `@piece` | a part directive (section 5.1) |
+| `@const`, `@bank`, `@names`, `@var`, `@alias`, `@over`, `@code`, `@piece` | a part directive (section 5.1) |
 | `>` | a description paragraph of the last entry |
 | `$ADDR` | an entry or an inner line (section 3) |
 | anything else | an error: `game.ann:N: cannot read: ...` |
@@ -98,7 +98,8 @@ When KIND is present the line opens an **entry**: a routine or a data block that
   docs 11 and 12, and the `summary` of a signature entry.
 - An address given twice as an entry fails.
 - A `c` entry is a **seed** of the code walk. The walk starts there even if no recording ran it, which is how a
-  handler reached only through a table becomes code.
+  handler reached only through a table becomes code. A seed over bytes a recording reads as data stops at the read
+  (the entry must stay `b`) unless an `@code` line covers them (section 5.1).
 - The kind must agree with the recordings: a `b` entry where a recording ran an instruction fails with
   `$XXXX is b, the recordings say code` (and the other way round).
 
@@ -221,8 +222,9 @@ python3 kit/mkgame.py [--case C] --image BIN --org ADDR --ann FILE --top NAME --
    entries), from `work/<build>/l1.json` of the builds `case.json` names: `read_builds` (their data reads count
    too) and `code_builds` (instructions only). No other recording is read; a named build that is missing is an
    error. Only pages listed in `bases` count. Then a static walk follows the branches the recordings did not take,
-   from the ran instructions and the `c` entries. The walk stops at bytes read as data, at a call to an `@inline`
-   routine, at an `@over` target, at a call to an `@bank` address, and where it would cut into a ran instruction.
+   from the ran instructions and the `c` entries. The walk stops at bytes read as data (not inside an `@code`
+   range), at a call to an `@inline` routine, at an `@over` target, at a call to an `@bank` address, and where it
+   would cut into a ran instruction.
 3. **Control file.** Writes `work/mkgame/game.ctl` (SkoolKit): one block per entry (yours, or one the code/data
    boundary, a CALL target or a recorded routine entry makes; not a routine root only a snapshot-started recording
    marks inside code that falls into it), the titles, the `D` descriptions, the data sub-blocks cut at the inner
@@ -295,6 +297,7 @@ These are directives of the kit's parser (`mkgame.Annotations`), in any `.ann`:
 | `@var` | `@var $ADDR NAME [N] [; comment]` | A variable inside the image's work space: a label in its data entry (the data line is cut there), and every instruction operand `ADDR+1..ADDR+N-1` written `NAME+k` |
 | `@alias` | `@alias NAME EXPR [; comment]` | `NAME EQU EXPR` for a name that cannot be a label (the operand of a `JP` into a handler: `@alias Handler ImJump+1`). The instructions name it through `@isub` |
 | `@over` | `@over $ADDR [; why]` | A branch target that holds other bytes when the branch runs (code loaded over the caller's strings): the walk does not follow it |
+| `@code` | `@code $LO[-$HI] ; why` (HI included; the why is required) | Code a recording also reads as data: a buffer laid over the code after it ran (Rex 2's CellIndexMap `$DE9F-$E4FE`, cleared and read by DrawRoom each room, over the menu's ChooseKempston, ChooseCursor, MenuAgain and FontChar), a checksum over code. The walk does not stop at the reads in LO..HI, so a `c` entry there is code though no recording ran it (without the line the read wins and the entry must stay `b`). Cover the code only, not data beside it: the walk follows the code's fall-through and branches in the range, and a `b` entry it reaches fails (`$XXXX is b, the recordings say code`). Doc 11 still lists the readers; say in the entry's description what reads it |
 | `@piece` | `@piece NAME` | The lines from here to the next `@piece` are the piece `NAME`. A part file's segment with `"piece": "NAME"` reads the lines before the first `@piece` (common to all pieces) and that piece's. An `@equ` of the common lines inside the piece's own range is dropped there (it is that piece's label) |
 
 The cases' first generators read `@bank`, `@var`, `@alias`, `@over` and `@piece` behind a `#` (`# @bank ...`);
@@ -466,7 +469,7 @@ commands, so a part file could not be checked to give the same sources.
 | `@res` after a code entry, or before any entry | `@res after no data entry` | put it under the data entry it belongs to (after its `>` lines) |
 | `@res` on an entry the walk made code, or an entry that ends early | `@res NAME on $XXXX, which is no data entry` | make it a `b` entry, check the kind against the recordings |
 | A label inside an `@res` entry that is not its own inner line | `... inside the resource ... has no address in it` | an inner line `$ADDR Name` inside the entry |
-| A kind that disagrees with the recordings | `game.ann: $XXXX is b, the recordings say code` | the recordings win. A real overlay (a buffer over code) goes in `case.json` `overlay` or a `read_builds` change, not a forced kind |
+| A kind that disagrees with the recordings | `game.ann: $XXXX is b, the recordings say code` | the recordings win. A real overlay (a buffer over code) goes in `case.json` `overlay` or a `read_builds` change, not a forced kind; code no recording ran that a buffer over it is read in: `@code $LO-$HI ; why` and the entry `c` (section 5.1) |
 | The same name on two addresses, or two names on one | `named twice` / `already a name` | one name an address, unique over the file |
 | `@module` before an unnamed entry | `module NAME starts at $XXXX, an entry with no name` | name the module's first entry |
 | `@isub` on an address that is not an instruction start | `@isub on no instruction` | the address of the instruction's first byte |

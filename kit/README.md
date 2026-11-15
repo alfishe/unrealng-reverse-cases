@@ -28,12 +28,13 @@ there with the line and the reason (`a.txt:12: "W,O" is no key: the keys are A-Z
 Kempston KF KL KR KU KD, keys held together separated by spaces ("W O") or joined by "+" ("W+O") ...`), not in the
 emulator's `Unknown key 'w,o'`; a chord `W+O` (zx-reaper's form, which `mm_session.py` does not take) goes over as a
 copy of the script in `W/inputs/` with the keys separated by spaces (`kitlib.capture_inputs`, `input_script`,
-`plain_input_script`; `input_vars.py` reads `W+O` as W and O too). The check is the kit's: a `python3 $RS capture`
+`plain_input_script`; `input_vars.py` reads `W+O` as W and O too); a script with no `N END` line is warned about
+(`WARNING: a.txt: no "FRAME END" line: the script ends at its last event, frame 2542 ...`: it stops there silently). The check is the kit's: a `python3 $RS capture`
 that runs unreal-ng's `re_session.py` itself (a `work/env.sh` that sets `$RS` to it) bypasses it, and a case's
 wrapper that imports `re_session` (one that replaces `corpus.load`, Deflektor's `tools/rs_capture.py`) gets it by
 ending with `rs.main(['capture', ...])` instead of `re_session.main()`.
 
-`capture` takes three options of the kit's own, which `rs.py` takes out before `re_session.py` sees the rest:
+`capture` takes four options of the kit's own, which `rs.py` takes out before `re_session.py` sees the rest:
 
 - `--stop`: the instance the capture launched is stopped when the capture is done (`re_session.py stop`). Without
   it the instance stays up, as `re_session.py` leaves it, for `build`, `call` and `export` on the live recording; a
@@ -50,6 +51,12 @@ ending with `rs.main(['capture', ...])` instead of `re_session.main()`.
   `LNN.txt` ending 50 frames after the next level's start, so `--expect L(N+1).szx@(END - 50)`; its level 19
   differs, level 20 is identical).
 - `--expect-ranges LO-HI[,LO-HI ...]`: the addresses compared (hex, inclusive; default `4000-FFFF`).
+- `--tape-seek N` (with `--media`, a tape): the head goes to block N (`POST /tape/seek`, the emulator's block index,
+  a TZX's text block counted) as soon as the tape is inserted, before `LOAD ""` or the 128 menu's Tape Loader runs,
+  so the capture loads a later program of the tape, with the fast LD-BYTES trap on or off (Rex: side 1
+  `--tape-seek 6` loads REX 2 alone, its image identical to `tools/parts.py`'s). The answer is printed and kept in
+  `W/capture.json` `tape_seek`; a case wrapper that replaces `corpus.load` gets it too when it ends with
+  `rs.main(['capture', ...])`.
 
 ```bash
 python3 ../../kit/rs.py capture --work work/stage2/rec/L20 --snapshot work/stage2/lv/L20.szx \
@@ -76,6 +83,9 @@ what the generator does with it, the part files); every file of a case and the c
 | `rs.py ARGS` | runs unreal-ng's `re_session.py` with ARGS (`open`, `build`, `stop`, ...; above); checks `capture --inputs` scripts and splits their `W+O` chords; `capture --stop` stops the instance after it, `capture --expect STATE[@FRAME]` checks that the replay reaches the live run's state |
 | `z80sim.py` (a module) | SkoolKit's simulator for a case's tools: `run(memory, start, stop, registers)` gives the memory after the run, `simulator(memory, registers)` one for several runs. `CSimulator` (SkoolKit's C one, about 50 times faster) works on its own copy of the memory: read and poke through `sim.memory`, never the bytearray passed in (`python3 kit/z80sim.py --self-test` shows it); the pure Python `Simulator` works in that bytearray itself. SkoolKit is found as `toolpaths.py` finds the venv |
 | `ann_names.py --case C [--ann F] [--names FILE] ADDR=Name ...` | names labels inside entries of `game.ann` (or F); `--names FILE` reads the pairs from a file, `ADDR=Name` a line or several on a line, `#` comments (a list of 101 names is one word as `$(cat names.txt)` in zsh) |
+| `input_lint.py [--allow TAPE,POKE] SCRIPT ...` | checks input scripts before a capture: every word a key, and an `N END` line (without one a script ends at its last event silently); `--allow` skips a case wrapper's own lines (Rex's `TAPE`, `POKE`); exits 1 on any problem (`rs.py capture` runs the same checks) |
+| `rzx_dump.py RZX --out OUT [--every N] [--mem-every N] [--snap F,...] [--no-dump] [--watch A,...] [--snap-on-change A] [--pc-log PC] [--stop FRAMES]` | an RZX played in SkoolKit's simulator, no instance: screens and 64 K samples (`OUT/screens.bin`, `mem.bin`, `index.json`), Z80 snapshots at frames or where a byte changed, the frames where watched bytes changed (`watch.json`), the frame and T-state of each port read at a PC (`pclog.json`: a pass's length), the keys each frame ended with (`inputs.json`); `--no-dump` drops only the screens and memory samples (watch, pc-log and snapshots still work) |
+| `rzx_match.py LOG FROM REC [--bytes N] [--attrs N] [--window F] [--room ADDR]` | how long a recording made from an RZX state keeps to the RZX: each saved screen against the RZX log's (a case's `rzx_log.py`: `screens.bin`, `mem.bin`, `log.json`); exact ("in step with the RZX up to frame N"), and by a tolerance: within N bytes (sprites a few pixels apart), N attribute bytes, the closest RZX screen within F frames, the same room (the game's room byte in the recording's `snapshots/` and the RZX's `mem.bin`, within F frames): "in step by the tolerance (...) up to frame N; K of M screens" |
 | `input_vars.py --work W --inputs S --start F` | the bytes that follow the held directions and fire over a scripted recording: a first guess at the player's coordinates (a 16-bit coordinate, or one that moves only now and then, scores low: confirm in the code that reads the controls) |
 | `refdocs.py --case C` | docs 11 and 12 from `game.ann`, the parts of `ref_parts` and the recordings (below); doc 12 links `docs/img/routines/<Label>.gif` and every `<Label>-<what>.gif` |
 | `check_docs.py --case C` | mermaid renders (every diagram in one `mmdc` run: one headless browser, not one a diagram; each on its own only when that run fails, to name the broken one), links and `#anchors` resolve (GitHub slugs), no `$` in prose, every figure in `docs/img` and its subfolders is linked; the resource READMEs (`src/res/README.md`, `src/res/**/README.md`) are read for their links too: a figure they link counts, a broken link of theirs is a problem |
@@ -122,7 +132,9 @@ its path, is that build's: printed as "renamed (witness_names): c1g is c1" and r
 back whatever the family's prefix, `load-l2-load-l5`, `sec-l2-s10-sec-l2-s12`), keeps a line that names a
 recording it did not load, prints each
 name it drops (`menu, search ran no instruction there`; an entry no build ran stays `L1 0 ()` with no such
-clause, so a data entry is not said to run no instruction), and writes the source again from the rewritten `.ann`, so
+clause, so a data entry is not said to run no instruction), lists the code entries left at `L1 0 ()` after it
+(`witness: src/rex2/rex2.ann: 24 code entries at L1 0 () (no build ran them): 128 $97D2 WaitFire, ...`: the line,
+the address, the name), and writes the source again from the rewritten `.ann`, so
 that with `--install` one run leaves the `.ann` and the `.asm` current
 ([ann-format.md 3.2](../docs/ann-format.md#32-a-description--text)). One L1 keeps one instruction an address (the
 last bytes run there, the runs of all): mkgame prints the witnessed entries whose bytes changed in the recording, and
@@ -270,7 +282,7 @@ yellow fading through red, trails dark.
 | `memanim.py` | memory over a longer stretch (a load, an unpack, a level set-up) | `memory_at` samples |
 | `screen_anim.py` | the screen over frames | `memory_at` samples |
 | `screen_shot.py` | the screen at named moments | `memory_at` |
-| `merge_l1.py OUT.json L1 ... [--stack LO-HI]` | several L1 builds summed into one for `heatmap.py` (pages 5, 2, 0; the frames summed); `--stack` prints each build's lowest write in that range, the stack's low mark (Switchblade `5B00-5BFF`, Myth `FF00-FFFF`) | `l1.json` |
+| `merge_l1.py OUT.json L1 ... [--stack LO-HI]` | several L1 builds summed into one for `heatmap.py` (pages 5, 2, 0; the frames summed); `--stack` prints each build's lowest SP in that range (the lowest byte a `PUSH`, `CALL`, `RST` or an interrupt wrote: the L1's `byte_use` stack-write flag; Rex `5C00-6017`: `$5FE2` to `$5FDA` over the object records) and its lowest data write (the low mark where the stack is also written as data, `LD SP` over a buffer: Switchblade `5B00-5BFF`, Myth `FF00-FFFF`); give play windows, a load's stack counts too | `l1.json` |
 | `heatmap.py` | executed / read / written per byte over a build; `--panels` (any of `executed,read,written,composite`), `--columns` (2), TrueType text that reads at 900 px | `l1.json` |
 | `fig_budget.py` | where the CPU time goes: each routine's (or module's) own T-states as a share of all the frames, coloured by module; several `.ann` parts (page, range), HALT and the ROM apart, a panel per state | `l1.json` |
 | `zxscreen.py` | a 6912-byte screen or a 64 K image to PNG | a file |

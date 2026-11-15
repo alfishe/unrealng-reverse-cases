@@ -28,6 +28,9 @@ BIN=$UNREAL_NG/cmake-build-agent-release/bin/unreal-qt.app/Contents/MacOS/unreal
    - Save the recording once (`work/c1/session.ttd`). For every later question, open it again:
      `python3 $RS open --work work/c1x --ttd work/c1/session.ttd --model 48K --port-base <yours> --binary $BIN`.
    - Use `--ranges 4000-FFFF` when there is code below `$5B00` or in the screen.
+   - A later program of the same tape (a part 2, a demo) loads alone with `python3 ../../kit/rs.py capture ...
+     --media ... --tape-seek N`: the head goes to block N before the tape plays (Rex: side 1 block 6, REX 2;
+     the emulator's block index counts a TZX's text blocks).
 
 2. **Note how the tape loaded.** Every frame number of a recording depends on it. In every document, write the
    recording's name and how it loaded next to each frame number.
@@ -43,7 +46,14 @@ BIN=$UNREAL_NG/cmake-build-agent-release/bin/unreal-qt.app/Contents/MacOS/unreal
 
 4. **Reach the game.** Random play and the demo reach only the first screens. To go further:
    - Write **input scripts** for each part of the game (mm_session format). End a long script with an explicit
-     `N END` line, or it stops early.
+     `N END` line, or it stops early (`kitlib.capture_inputs` warns when a script has no `END`).
+   - **Modal panels take a key; slow loops lose short taps.** A panel that waits for a key (INVALID CODE, PRESS
+     ANY KEY, a pause) eats the next key pressed: the script's next character goes to the panel, not to the field
+     after it (Rex's code screen lost the code's first digit twice). Give such a panel a key of its own (an extra
+     `ENTER` or `SPACE`) and then type. A game that reads the keys once a pass of a slow loop misses taps shorter
+     than a pass and taps whose gap is shorter than a pass: Rex's code entry lost most 8-frame taps with 22-frame
+     gaps and took every key with 30-frame holds and 40-frame gaps. Time the loop (a `--pc-log` of its key read,
+     `kit/rzx_dump.py`, or the L1's frames per pass) and hold each key for more than a pass.
    - Write **a bot** that reads the game's own records (position, objects, level) from memory each frame and
      steers from them. Patterns: `games/hate/tools/autopilot.py`, `games/nether-earth/tools/bot.py`,
      `games/zynaps-128/tools/play_bot.py`.

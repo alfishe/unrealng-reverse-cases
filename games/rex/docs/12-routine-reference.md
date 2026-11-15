@@ -39,7 +39,7 @@ own heading with its modules, its source, its annotations and its recordings.
 | [`rexmove`](#rexmove) | `$CFCC`-`$D1B8` | 14 of 16 |
 | [`collisions`](#collisions) | `$D1B9`-`$D5AD` | 12 of 13 |
 | [`sound`](#sound) | `$D5AE`-`$D857` | 9 of 11 |
-| [`menu`](#menu) | `$DAC0`-`$FFF9` | 17 of 23 |
+| [`menu`](#menu) | `$DAC0`-`$FFF9` | 18 of 24 |
 
 ## entry
 
@@ -2960,7 +2960,7 @@ Witness: L1 50898 (c1, p1-cursor, p1-define, p1-kempston, p1-rooms238, p1-speedu
 | Called from | `DrawBlockRow` |
 | Calls | `NextCellPtr` (falls into), `DrawRoomChar` |
 | Reads | `$62E0`-`$6CDF` (`CharFlags`, `CharGraphics`, `CharAttrs`); `$A01D`-`$A01F` (`RoomCellPtr`); `$A095` (`Temp2`); `$A0B9`-`$A0BA` (`RoomColumn`) |
-| Writes | `$A01D`-`$A01F` (`RoomCellPtr`); `$A095` (`Temp2`); `$A0B9`-`$A0BA` (`RoomColumn`); `$D962`-`$E19D` (`SceneryCellList`, `TitleMenu`, `RollCallRestart`, `RollCallText` and 19 more); `$E200`-`$E49D` (`RoomGridPlay+1`, `ExplosionPicture`); `$E560`-`$E7FD` (`AttrShadowPlay+1`); 1 more ranges |
+| Writes | `$A01D`-`$A01F` (`RoomCellPtr`); `$A095` (`Temp2`); `$A0B9`-`$A0BA` (`RoomColumn`); `$D962`-`$E19D` (`SceneryCellList`, `TitleMenu`, `RollCallRestart`, `RollCallText` and 20 more); `$E200`-`$E49D` (`RoomGridPlay+1`, `ExplosionPicture`); `$E560`-`$E7FD` (`AttrShadowPlay+1`); 1 more ranges |
 
 ### `NextCellPtr` (`$C87F`)
 
@@ -4439,6 +4439,16 @@ Witness: L1 5 (c1, p1-cursor, p1-define, p1-kempston, rzx-p1-00000).
 | Calls | `PrintBoxed` |
 | Ports in | `$7FFE`, `$DFFE` |
 
+### `MenuAgain` (`$DEEC`)
+
+**N at the confirm: back to the menu's text and wait (JP `$DAEE`)**
+
+Inside CellIndexMap's span: the play reads these bytes as data after the menu; @code keeps the menu's code here as code. No recording pressed N (known only from the code).
+
+| | |
+| --- | --- |
+| Runs | not reached in the recordings |
+
 ### `FontChar` (`$DEF0`)
 
 **DE = the font's character A (`$5FE0` + 8A)**
@@ -4606,7 +4616,7 @@ side 1 of the original at ROM speed on the 128K, the menu and play on level 1), 
 | [`rexmove`](#part-2-rex-2-rexmove) | `$CD44`-`$CF58` | 14 of 16 |
 | [`collisions`](#part-2-rex-2-collisions) | `$CF59`-`$D345` | 11 of 12 |
 | [`sound`](#part-2-rex-2-sound) | `$D346`-`$D608` | 9 of 11 |
-| [`menu`](#part-2-rex-2-menu) | `$DAC0`-`$FFF9` | 10 of 22 |
+| [`menu`](#part-2-rex-2-menu) | `$DAC0`-`$FFF9` | 15 of 23 |
 
 ### Part 2 (REX 2): entry
 
@@ -9072,6 +9082,19 @@ Witness: L1 35 (c2).
 | Writes | `$A244`-`$A246` (`DefinePort`, `DefineBit`) |
 | Ports in | `$7FFE`, `$BFFE`, `$DFFE`, `$EFFE`, `$F7FE`, `$FBFE`, `$FDFE`, `$FEFE` |
 
+#### `ChooseKempston` (`$DEE6`)
+
+**2, Kempston: the readers on port `$001F`, ControlXor `$FF`; the confirm**
+
+Built like ChooseSinclair. Inside CellIndexMap's span (`$DE9F` on): the play reads these bytes as data after the menu; @code keeps the menu's code here as code. No part 2 recording chose 2 (known only from the code; REX 1's ChooseKempston `$DE20` ran in p1-kempston).
+
+| | |
+| --- | --- |
+| Runs (c1: power-on, side 1 of the original at ROM speed on the 128K, the menu and play on level 1) | 47,314 runs of its first instruction (entered by a jump or by running on, no routine of its own in the L1), 1,935 t-states own (0.00 %) |
+| Called from | `CodeDelete`, `ScanKey`, `DefineTaken` |
+| Reads | `$6228`-`$6237` (`DevLink+128`); `$6258`-`$626F` (`DevLink+176`); `$6298`-`$629F` (`DevLink+240`) |
+| Writes | `$488F`-`$500F` (screen); `$510F` (screen); `$520F` (screen); `$530F` (screen); `$540F` (screen); `$550F` (screen); 2 more ranges |
+
 #### `ChooseSinclair` (`$DF20`)
 
 **4: Sinclair (port `$EFFE`, keys 6-0): fire bit 0, up 1, down 2, right 3, left 4; the confirm**
@@ -9086,6 +9109,16 @@ Witness: L1 2 (c2, rzx-p2-00000).
 | Writes | `$A244`-`$A247` (`DefinePort`, `DefineBit`, `ControlXor`) |
 | Ports in | `$7FFE`, `$DFFE` |
 
+#### `ChooseCursor` (`$DF59`)
+
+**3, Cursor: port `$EFFE` fire bit 0 (key 0), right 2 (8), up 3 (7), down 4 (6); left `$F7FE` bit 4 (5); the confirm**
+
+Inside CellIndexMap's span (`$DE9F` on), code by @code. No part 2 recording chose 3 (known only from the code; REX 1's ChooseCursor `$DE99` ran in p1-cursor).
+
+| | |
+| --- | --- |
+| Runs | not reached in the recordings |
+
 #### `Confirm` (`$DF93`)
 
 **The confirm text; Y returns (the game starts), N goes back to the menu (MenuAgain)**
@@ -9098,6 +9131,36 @@ Witness: L1 2 (c2, rzx-p2-00000).
 | --- | --- |
 | Runs | not reached in `stage1/c1`; in the other recordings 2 runs of its first instruction, entered by a jump (`stage1/c2` 1, `stage1/rec/rzx-p2-00000` 1) |
 | Calls | `PrintBoxed` |
+
+#### `MenuAgain` (`$DFAD`)
+
+**N at the confirm: back to the menu's text and wait (JP `$DAF1`)**
+
+As REX 1's MenuAgain `$DEEC` (src/game/menu.asm). Inside CellIndexMap's span, code by @code; no recording pressed N (known only from the code).
+
+| | |
+| --- | --- |
+| Runs | not reached in the recordings |
+
+#### `FontChar` (`$DFB1`)
+
+**DE = the font's character A (`$6206` + 8A)**
+
+Inside CellIndexMap's span (`$DE9F-$E4FE`, cleared and read by DrawRoom each room), code by @code; DEFINE's key echo calls it, as REX 1's FontChar `$DEF0`, and no part 2 recording chose DEFINE (known only from the code).
+
+| | |
+| --- | --- |
+| Runs | not reached in the recordings |
+
+#### `DrawChar` (`$DFBD`)
+
+**8 bytes from DE down the screen at HL**
+
+As REX 1's DrawChar `$DEFC`. Inside CellIndexMap's span, code by @code; with FontChar, DEFINE's key echo, which no part 2 recording chose (known only from the code).
+
+| | |
+| --- | --- |
+| Runs | not reached in the recordings |
 
 
 ## DEMO (`src/demo/demo.json`)

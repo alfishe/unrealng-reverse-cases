@@ -47,7 +47,7 @@ Each case is a full reverse of one game:
 | [Rick Dangerous](games/rick-dangerous/README.md) | Firebird (Core Design), 1989 | 48K / 128K, tape | complete 2026-11-14 | the flip-screen platform game: Rick through four levels, South America, Egypt, Schwarzendumpf castle and the missile base, with six bullets and six sticks of dynamite a life; Firebird's Bleepload, an enciphered turbo loader; AY music and effects on the 128K |
 | [Myth: History in the Making](games/myth/README.md) | System 3 Software (Neil Dodwell, Concept Animations), 1989 | 48K / 128K, tape | complete 2026-11-13 | a flip-screen action adventure across five ages, from the road to hell to the duel with Dameron; a multiload of five 33 KB stage blocks behind a Speedlock 7 loader; AY effects on the 128K |
 | [Bumpy](games/bumpy/README.md) | Loriciels (Spectrum conversion: Luis Jorge Garcia, J250), 1989 | 48K, tape | complete 2026-11-14 | a bouncing ball on the platforms of 100 single-screen levels of 6 x 6 cells, collecting objects against a timer; one ROM-speed block, beeper effects |
-| [Rex](games/rex/README.md) | Martech Games (The Light), 1988 | 48K / 128K, tape (two sides) | in progress | a run-and-gun platform shooter: Rex, an armoured dinosaur, through the caves of the Tower of Zenith in two parts loaded apart, the second opened by the code the first gives; standard ROM blocks |
+| [Rex](games/rex/README.md) | Martech Games (The Light), 1988 | 48K / 128K, tape (two sides) | complete 2026-11-15 | a run-and-gun platform shooter: Rex, an armoured dinosaur, through the caves of the Tower of Zenith in two parts loaded apart, the second opened by the code the first gives; standard ROM blocks |
 
 ### Software
 
