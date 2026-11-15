@@ -40,7 +40,9 @@ Three images (`work/stage1/images/`, `work/mkgame/`):
 | in play | the RZX dump's memory at frame 4000 (room 10) | the parked zone sets, the live zone and the buffers `$E000-$FDFF`, the IM 2 table, some 40 short spans of variables in `$9500-$CA3C`; no code changed |
 
 So the code is neither unpacked nor moved. The entry copies 1280 bytes `$F000` → `$5B00` and 256 bytes `$EE00` →
-`$6300`. That completes the first parked zone set where the loader stood, and frees `$EE00-$FDFF` for buffers.
+`$6300`. That completes the first parked zone set where the loader stood, and frees `$EE00-$FDFF` for buffers. After
+`IM 2` it clears attribute 0 of the four zone sets (`$EF00`, `$6300`, `$6C00`, `$7500`, `$9141-$914B`), runs
+KempstonTest and jumps to GameStart.
 
 The point: the program is one 40 KB block that runs where it loads. All the cleverness is in how it reuses the space
 the loader and the zone sets leave.
@@ -341,8 +343,9 @@ flowchart LR
     I -->|"not 0"| BP["BeeperTick $94C8"]
 ```
 
-The RZX segments run the beeper path on the 128K model: the RZX's memory has `$FFFE` = 1 (its player used a 48K, or
-a machine the test missed). Stage 2's `c48` runs the 48K model itself.
+The RZX segments run the beeper path on the 128K model: the RZX's memory has `$FFFE` = 1, a value this loader never
+writes (LoaderMain writes `$FF` at `$5E12` and 0 at `$5E3E`, nothing else). The RZX was made from another load of the
+game; any non-zero value takes the beeper path. Stage 2's `c48` runs the 48K model itself.
 
 ## 2.10 The leftovers and the code no recording ran
 

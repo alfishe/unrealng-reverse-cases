@@ -50,11 +50,12 @@ field; the list below gives its row, columns, routine and screen address.
 | the message line | 23, 1-11 | `$51E1-$51EB` | Scroller `$AF82` | every interrupt |
 
 Menu `$9723` puts the panel on the screen when fire starts a game: DrawGraphic of PlayPanel at row 18, the 192
-attributes from PanelAttrs to `$5A40`, then 10 spaces at row 23, column 1 to clear the message line.
+attributes from PanelAttrs to `$5A40`, then 10 spaces at row 23, columns 1-10 to clear the message line (its 11th column keeps the panel picture until the
+scroller shifts it out).
 
 The picture of figure 8.1 is the authors' own play screen (score 00012042). It is on the screen only at the first
-game's start, from the menu's DrawGraphic to the first pass: NewGame's DrawAllSlots (`$91C3`) redraws the slots
-and the first pass's DrawScore the score.
+game's start, from the menu's DrawGraphic to the first pass: NewGame's DrawAllSlots (`$91C3`) redraws the slots,
+the first pass's DrawScore the score and its DrawEnergyBar the bar (EnergyShown `$AEA7` is 0 as loaded, `$AEB2-$AEB4`).
 
 ```mermaid
 flowchart LR

@@ -47,8 +47,10 @@ compared block by block with the original and with the IBSA dump (`tools/media_c
   `2281f690ea020272d9552d3ce41169ed`, the 128K block md5 `a110a2b07a80945ddddaca724c9b5a02`. ZXDB's four POKEs
   (`$CC1E`, `$C315`, `$B220`, `$B3DD`) fit this build, and the ZXDB AY rip holds the 128K block byte for byte.
 - **Build B** (IBSA and Erbe): BASIC "VENOM" with `VAL` strings and `9999 SAVE "VENOM" LINE SIN PI: LOAD "MASTER"`;
-  the code differs from build A in 13 991 bytes from offset 3042 (`$6BE2`, a shift of the code after it), the 128K
-  block in 101 bytes from offset 3083.
+  the code differs from build A in 13 991 bytes from offset 3042 (`$6BE2`): bytes changed in place up to `$9221`, then
+  one inserted byte at `$9222`, build B's own machine flag read in place of `$FFFE`, and the code after it shifted by
+  1 to 17 bytes ([doc 3, 3.6](docs/03-build-and-load.md#36-the-releases-and-the-hacks)); the 128K block differs in
+  101 bytes from offset 3083.
 
 | Copy | What it is | How it differs from the original |
 | --- | --- | --- |

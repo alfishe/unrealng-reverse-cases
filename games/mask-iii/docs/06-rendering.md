@@ -68,7 +68,7 @@ That is why FlushDirty goes from one to the other with three `DEC H` and one add
 
 ```mermaid
 flowchart LR
-    M["RoomMaps $7600"] -->|DrawRoom| CM["character map $F080"]
+    M["Room0Map $7600"] -->|DrawRoom| CM["character map $F080"]
     B["Blocks $8500"] --> CM
     P["parked zones $5B00 / $6400 / $6D00"] <-->|SwapZone| Z["ZoneChars $E000, ZoneAttrs $EF00"]
     O["objects $A43F, frames $CD60.."] -->|DrawObject| S["sprite chars $E800, attrs $EE00"]
@@ -92,7 +92,7 @@ screen only ever receives whole cells.
 
 ## 6.2 The room from its map
 
-A room is 5 rows of 48 blocks: six screens of 8 x 5 blocks side by side. Room n's map is at RoomMaps `$7600` +
+A room is 5 rows of 48 blocks: six screens of 8 x 5 blocks side by side. Room n's map is at Room0Map `$7600` +
 240 x n. RoomScreen `$950D` holds 8 x screen, so it is the byte offset of the screen inside a map row. A block is
 4 x 4 character codes, 16 bytes at Blocks `$8500` + 16 x block.
 
@@ -400,7 +400,7 @@ Matt; the other modes go to FrameByMode `$A3E2` ([doc 7](07-objects.md)).
 SelectFrame(IX):
     if mode == 0: return
     if mode != 1: goto FrameByMode
-    if state in (8, 10, 12): frame = $D160          # jumping
+    if state in (8, 10, 12): frame = $D160          # standing, warping, materialising (MattJump picture)
     elif state == 4: frame = $D1E0                  # crouching
     elif state == 7: frame = $CDE0                  # run frame 1
     else:
@@ -793,7 +793,8 @@ D100-DFFF --pc A3A5-A3E1,92C6-92DF --pictures 40 --title "..." --out docs/img/ro
 
 How to read: the view is `$DF80` as 4 columns of 32 lines, the layout of a frame. The copy fills it column by
 column. The frame boundary falls inside the window: the interrupt cuts in at 18358:0 and its instructions show in the
-code pane.
+code pane. The window ends shortly after the interrupt of frame 18358; the pictures show the instructions of one
+Dissolve call around it, not a whole dissolve.
 
 Worked example: with C stepping by R each byte, the AND keeps on average half of the frame's pixels. With
 PENETRATOR, DissolveCount is 2: the second call works on the copy in `$DF80` (the first call pointed the object
@@ -824,7 +825,7 @@ the counter times the size given.
 | Zone | Copies (frame -> live, bytes) |
 | --- | --- |
 | 0 | `$E600` + 32 x c0 -> `$E300` (32); `$E210` + 32 x c1 -> `$E758` (32); `$E460` + 16 x c0 -> `$E4E0` (16) and `$E560` + 16 x c0 -> `$E5E0` (16) |
-| 1 | `$E400` + 32 x c0 -> `$E288` (16) and `$E500` + 32 x c0 -> `$E388` (16); `$E630` + 32 x c1 -> `$E600` (16) and `$E730` + 32 x c1 -> `$E700` (16); `$E788` + 16 x (the byte at `$CAC0` + c1) -> `$E508` (16), only when AnimLast `$CB41` is set, or when c1 is 5 and Random AND 7 is 0 (AnimLast then keeps c1) |
+| 1 | `$E400` + 32 x c0 -> `$E288` (16) and `$E410` + 32 x c0 -> `$E388` (16); `$E630` + 32 x c1 -> `$E600` (16) and `$E640` + 32 x c1 -> `$E700` (16) (HL runs on between the two `LDIR`s: the 32 source bytes of each pair are contiguous); `$E788` + 16 x (the byte at `$CAC0` + c1) -> `$E508` (16), only when AnimLast `$CB41` is set, or when c1 is 5 and Random AND 7 is 0 (AnimLast then keeps c1) |
 | 2 | `$E3A0` + 8 x (the byte at `$CAC7` + c1) -> `$E360` (8) |
 | 3 | `$E580` + 32 x c2 -> `$E700` (32) |
 

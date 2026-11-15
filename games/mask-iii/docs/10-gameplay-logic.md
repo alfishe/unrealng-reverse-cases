@@ -251,12 +251,13 @@ MattWalk (state 1):
     if down: y + 8, state 4
     if up:
         if JACKRABBIT in use: long jump (state 7)
-        unless at an edge: a solid head cell (or the two above it with PENETRATOR) stops the jump
+        unless at an edge: a solid cell above the head, or (without PENETRATOR) a solid cell ahead at the head,
+                           stops the jump
         v = -9 ($F7), state 5
-    if left:  unless at an edge: walls at the head, body and feet (PENETRATOR: only the feet) stop him;
+    if left:  unless at an edge: a wall at the head, body or legs stops him (PENETRATOR: none does);
               a wall at the feet only: state 2 (step up)
               x < $3B: LeftEdge, else x - 2
-    if right: the same to the right, x >= $B6: RightEdge, else x + 2
+    if right: the same, except that the head row is not tested (10.18), x >= $B6: RightEdge, else x + 2
 ```
 
 ```asm
@@ -347,8 +348,9 @@ MattJumpRise (state 5, the jump):
 
 MattFall (state 6, the fall):
     if JACKRABBIT in use: state 7 (long jump)
-    if dx: move x by dx unless a wall stops it (the edges change the screen)
-    if FloorCheck != 0: state 1; y = y AND $F8; return                           # landed
+    if dx: move x by dx unless a wall stops it
+    at a screen edge: LeftEdge / RightEdge, then the fall step twice this pass   # a CALL whose branch jumps into the step (10.18)
+    if FloorCheck != 0: state 1; y = y AND $F8; goto MattStep's fall-out test     # landed: the walk runs in the same pass
     y += v
     if v != 8 and (not moon or PassCounter AND 3 == 0): v += 1
 ```
@@ -387,7 +389,7 @@ flowchart TD
     HB -- "no" --> Y["y + v, x + dx"]
     Y --> J
     F --> FC{"floor under the feet?"}
-    FC -- "yes" --> LAND["state 1, y AND $F8"]
+    FC -- "yes" --> LAND["state 1, y AND $F8, then MattStep again from the fall-out test"]
     FC -- "no" --> YF["y + v, then v + 1 up to 8, on the moon 1 pass in 4"]
     YF --> FC
 ```
@@ -513,7 +515,7 @@ Witness: Teleport L1 4 (`rzx-00000`, `rzx-04000`, `rzx-12000`, `rzx-20000`); Pod
 ## 10.6 Energy and every source of damage
 
 Energy `$AEA6` is one byte, 255 at the start. The bar shows it ([doc 8](08-hud-and-text.md)). Nothing refills it
-except the HEALER (10.11). It falls in five ways; two more hazards kill outright through DeathFlag `$B2F8`.
+except the HEALER (10.11). It falls in five ways; three more hazards kill outright through DeathFlag `$B2F8`.
 
 | Source | Routine | Loss | When |
 | --- | --- | --- | --- |
@@ -533,7 +535,7 @@ passes while the HUD keeps running, then GameOver. DeathFlag skips the wait: Dea
 Damage(IX):       Energy = max(0, Energy - IX.damage)           # +$1E of the object
 LavaDrain:        if zone == 1: Energy = max(0, Energy - 2)
 TakeBlockItem:    unless PENETRATOR on:
-                      for each of the 4 BlockItems: if Matt overlaps it:
+                      for each of the BlockItems (at most three): if Matt overlaps it:
                           clear its 2 x 2 cells; map byte = $47; an explosion object rises from it
                           Energy = max(0, Energy - $19)
 DeadlyFloor:      unless CheatOn:
@@ -655,10 +657,10 @@ pick-ups of the screen (PickupRecords `$AF1B`). CheckPickups takes a pick-up wit
 
 ```text
 CheckPickups(record):
-    if record.kind == $FF: return                    # taken already
+    if record.x == $FF: return                       # taken already
     cell = (x - $36) / 4 + 4 RoomScreen
     if cell - record.cell >= 4: return
-    record.kind = $FF; set bit 7 of its PickupTable byte (taken)
+    record.x = $FF; set bit 7 of its PickupTable byte (taken)
     slot = CurrentSlot
     if slot.kind == 0: ShowMaskName(kind)           # the current slot, if empty
     else: slot = FindEmptySlot()                     # the first EMPTY slot, else the current one
@@ -1115,7 +1117,7 @@ GameOver `$BACC` serves all three ends (Death, state 9, EndPenetrator):
 - EffectStops = MachineFlag: on the 128K the AY effects stop;
 - TuneRequest = 2: the game-over tune on the 128K ([doc 9](09-sound.md));
 - SlowPrint MISSION TERMINATED at row 4, column 7: 70 HALTs, then 4 HALTs a character, then 100 HALTs;
-- the score against Hiscore `$9D16`, four BCD bytes from the top: a higher score is copied;
+- the score against Hiscore `$9D16`, four BCD bytes from the top: a score not lower than Hiscore is copied;
 - GameStart: the menu, then NewGame.
 
 NewGame `$915B` builds a fresh game but keeps some things:
@@ -1136,7 +1138,7 @@ Death:
 GameOver:
     EffectStops = MachineFlag; TuneRequest = 2
     SlowPrint "MISSION TERMINATED" at $0407
-    if Score > Hiscore (BCD, from the top byte): Hiscore = Score
+    if Score >= Hiscore (BCD, from the top byte): Hiscore = Score
     GameStart
 ```
 
@@ -1247,7 +1249,7 @@ it hurts, how it dies and what it pays. The numbers are the templates' (EnemyTem
 | boss | 14 | touch, its shot | 255 | 10 | 1000 | fires kind 15 |
 | boss shot | 15 | touch | 30 | 2 | 50 | |
 | kind 16 | 16 | touch, its shot (kind 11) | 255 | 5 | 8000 | spawned only by a POKE (`kind6`) |
-| kinds 18, 19 | 18, 19 | touch | 40-60 | 255 | 200-1000 | spawned only by a POKE (`door3`) |
+| kinds 18, 19 | 18, 19 | touch | 40-60 | 255 | 200-1000 | spawned only by a POKE (`door3`); invulnerable to shots (no hits test), the head can be lifted |
 
 The hazards of the map:
 
@@ -1672,6 +1674,7 @@ flowchart TD
     B4["a full hand loses the current mask"] --> S4["FindEmptySlot falls back to the current slot"]
     B5["a dead turret's shot, or one in slot+2, is harmless"] --> S5["KindTurretShot checks the slot before it"]
     B6["MaskEffect never called"] --> S6["ULTRA FLASH and MIRAGE do nothing"]
+    B7["a fall across a screen edge"] --> S7["the fall step runs twice that pass"]
 ```
 
 - **The turret never scores.** KindTurret calls Explode, which copies the explosion template (score 0) into the
@@ -1699,6 +1702,12 @@ flowchart TD
   warning; it is the only death with no warning and no sinking.
 - **The chaser's PENETRATOR tax.** KindChaser sets PenetratorCost to `$10` each pass while the PENETRATOR is on: with
   the chaser in the room, a PENETRATOR pass costs 10 or 11 charges (BCD).
+- **A fall across a screen edge falls twice.** MattFall calls JumpEdges (`$B879`); at a screen edge its branches jump
+  into the fall step `l_B8A7` (`$B889`, `$B88F`, `$B898`, `$B89E`) inside that call, and the step's `RET` returns to
+  `$B87C`, which runs `JP l_B8A7` again: y += v and v += 1 happen twice in that pass. `rzx-04000` frames 2696-2702: y
+  `$0F` v 3 -> y `$16` v 5 (3 + 4); `rzx-16000` 2511-2518: y `$1F` v 6 -> `$2C` v 8 (6 + 7); `rzx-32000` 2383-2390: y
+  `$12` v 4 -> `$1B` v 6 (4 + 5). The landing does not return either: `$B8DB JP l_B403` re-runs MattStep's tail (the
+  fall-out test, the facing, MattCell, MattWalk), so Matt lands and walks in the same pass.
 - **The fall out of the play area is unreachable in the run.** DeathFlag from y + `$30` at least `$A0` never fired;
   every DeathFlag death was a floor.
 
@@ -1762,7 +1771,7 @@ Witness: the sections above.
   - a long jump on the moon;
   - the fall out of the play area as a death;
   - enemy kinds 9 and 11;
-  - rooms 7, 9, 11 and 13, and room 1 beyond screen 1.
+  - rooms 9, 11 and 13; room 7 only in `door3` (a POKE recording, screen 0); room 1 beyond screen 1.
 - **The RZX segments start from the RZX's own states.** Each segment's first frame is a state of the RZX player, not
   the end of the previous segment: the score, the slots and the room jump between them (`run.png`).
 - **The passes are slow and uneven.** `c1` runs 2.15 frames a pass, `rzx-00000` 2.95 and `rzx-12000` 1.49 on average;

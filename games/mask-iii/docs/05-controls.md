@@ -283,8 +283,8 @@ on every turn, after the code compare. Key 1 on a machine with no Kempston inter
 
 MenuLoop does one `HALT` a turn, and the menu's interrupt (MenuInterrupt `$9899`) takes most of the frame. It recolours
 the logo line by line in time with the beam, draws the border bars and runs the colour scroll
-([doc 8](08-hud-and-text.md#87-the-menu-screen)). In `c1` the interrupt ran from about T 1890 to T 66 500 of a frame:
-about 64 600 of the 70 908 T. The main code gets the rest.
+([doc 8](08-hud-and-text.md#87-the-menu-screen)). In `c1` the interrupt takes 64 914 T an entry on average (`c1-menu`,
+[doc 4, 4.3](04-game-loop.md#43-the-interrupt-handler)), 91.5 % of the 70 908 T of a frame. The main code gets the rest.
 
 So a key in the menu is read once a frame, and printing is slow: DrawMenu took 17 frames in `c1` (18136:66749 to
 18153:68957), and ClearMenuArea 11.
@@ -508,7 +508,7 @@ flowchart LR
     K["keys or port $1F"] --> R["ReadControls $A13B"]
     R --> C["Controls $A138, ControlsLast $A139"]
     C --> M["MattStep $B3EB: walk, jump, crouch, pod"]
-    C --> F["FireMask $BCE0: kinds 1-4 while fire is held; 5-10 on a new press"]
+    C --> F["FireMask $BCE0: kinds 1-4 while fire is held; 5-10 on a new press with no shot in flight"]
     N["keys 1-4, port $F7FE"] --> MK["MaskKeys $B089: the slot"]
     MK --> S["CurrentSlot $AF51"]
     S --> F
@@ -525,7 +525,17 @@ MattWalk `$B460`, the walk state (1) of MattStep, takes the direction bits once 
 5. no direction: state 8, standing.
 
 FireMask `$BCE0` uses both bytes. Kinds 1-4 act while fire is held (Controls bit 4). Kinds 5-10 fire on a new press:
-bit 4 set in Controls and clear in ControlsLast. So holding fire shoots once.
+bit 4 set in Controls and clear in ControlsLast, and only when no shot of Matt's is in flight (MattShot `$A465` = 0,
+`$BD07-$BD0B`). So holding fire shoots once, and a press while the last shot still flies is lost, not queued.
+
+```z80
+  LD A,(ControlsLast)     ; $BD01
+  BIT 4,A
+  RET NZ                  ; fire was already down last pass
+  LD A,(MattShot)         ; $BD07
+  AND A
+  RET NZ                  ; a shot still in flight: the press is lost
+```
 
 ![Matt answering the keys in c1](img/play/keys.gif)
 
@@ -553,7 +563,7 @@ starts just after one call ends before the next one and is never seen.
 
 The point: there is no buffering. A key pressed and released between two ReadControls calls is lost. At 2-2.7 frames a
 pass, a tap shorter than about 50 ms can vanish. Fire for kinds 5-10 needs a release between shots: ControlsLast makes
-the edge.
+the edge, and the press must come after the last shot has ended (MattShot = 0).
 
 ## 5.7 The mask keys 1-4
 
@@ -647,7 +657,23 @@ The point: the slot keys bypass the control method and are read on every pass. T
 
 - pressing the key of an EMPTY slot still ends a running PENETRATOR, because EndPenetrator is called before the kind
   is checked;
-- holding a slot key sets PassCounter to 6 every pass, so the icon stays lit and does not blink while the key is down.
+- holding a slot key sets PassCounter to 6 every pass, so the icon stays lit and does not blink while the key is down;
+- on the moon a held slot key also freezes the jump's clock. PassCounter is the moon's jump timer too, and MaskKeys
+  (`$B0BD`) runs after MattStep in the pass, with MainLoop's `INC (HL)` (`$CC4D`) after it: MattStep reads 7 at every
+  pass. The rise (`$B7BC`: `AND 3` = 0 skips the step of v) then never skips, so the jump loses its slowdown, and the
+  fall (`$B8C5`: `AND 3` not 0 returns) never adds to v, so Matt keeps falling at the speed he had (read from the code;
+  no recording held 1-4 in a moon jump).
+
+```z80
+  ; MattJumpRise, on the moon (ZoneSlots = 2)
+  LD A,(PassCounter)      ; $B7BC: 7 while a slot key is held
+  AND $03                 ; 3
+  JR Z,l_B7D5             ; never taken: v steps every pass
+  ; MattFall, on the moon
+  LD A,(PassCounter)      ; $B8C5: 7
+  AND $03
+  RET NZ                  ; always: v never grows
+```
 
 ## 5.8 BREAK
 

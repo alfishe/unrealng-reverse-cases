@@ -46,10 +46,10 @@ The rules keep their state in fixed bytes spread over the code. These are the on
 | Objects | `$A43F` | Matt, his shot `$A465`, six enemies `$A48B`: 38 bytes each (7.6) |
 | ChaserState | `$C0D6` | the chaser: on, then its timer word |
 | EnemyKind | `$BFB0` | the screen's enemy kind, from the room table |
-| FloorRow | `$AC7F` | the first character row with a solid character |
+| FloorRow | `$AC7F` | 8 x the number of free character rows down column 0 of the shown map, to the first solid character (a pixel y) |
 | SpawnPoints | `$AC9C` | two map places of block `$61` (the risers) |
-| BlockItems | `$ACDA` | up to four block-`$1B` items: x, y, map address |
-| PickupRecords | `$AF1B` | the screen's two pick-ups: y, x, kind, char address, PickupTable address, first char |
+| BlockItems | `$ACDA` | up to three block-`$1B` items (four entries, the last always empty): x, y, map address |
+| PickupRecords | `$AF1B` | the screen's two pick-ups: y, x (`$FF` once taken), kind, map address, PickupTable address, first sprite character |
 | Score | `$AE41` | 8 BCD digits |
 | Energy | `$AEA6` | 255 full, 0 the end |
 | MaskSlots | `$AF2B` | 4 slots of 4 bytes: HUD column (the low byte of the icon's screen address), kind, BCD charges, level |
@@ -157,7 +157,7 @@ The room table RoomTable `$953B` has 16 records of 12 bytes (`src/res/tables/roo
 DrawRoom:
     if RoomNumber == 15 and RoomScreen == $28: Ending        # the last screen of the last room
     RoomRecord = RoomTable + 12 * RoomNumber
-    map = RoomMaps + 240 * RoomNumber + RoomScreen
+    map = Room0Map + 240 * RoomNumber + RoomScreen
     expand 8 x 5 blocks (7.3); SwapZone(RoomRecord[4])
     EnemyKind = RoomRecord[6 + RoomScreen / 8]
     MoonMasks; AnimatedCharList; FindLift; PlaceTurrets; FindSpawnPoints; FindBlockItems; FindFloorRow
@@ -220,7 +220,7 @@ RightEdge (L1 64) and Teleport (L1 4, `rzx-00000`, `rzx-04000`, `rzx-12000`, `rz
 
 ## 7.3 The map and the blocks: a room decoded
 
-RoomMaps `$7600` holds the 16 maps, 240 bytes each, row by row: 5 rows of 48 block numbers. A screen shows 8 block
+The room maps at Room0Map `$7600` hold the 16 maps, 240 bytes each, row by row: 5 rows of 48 block numbers. A screen shows 8 block
 columns, starting at column RoomScreen. A block is 4 x 4 characters, 16 character codes at Blocks `$8500` + 16 x
 block, row by row. There are 192 blocks (`$8500-$90FF`).
 
@@ -297,7 +297,7 @@ ground: blocks 1, 3 and 5, whose characters have bit 7 set in the attributes, so
 ![Room 0, screen 0 decoded from its record, its map and one block](img/objects/room-decode.png)
 
 How to read it: top, room 0's record. Left, the screen drawn from the data at 3x, with the block grid and each block's
-number in red; the top half of row 0 is hidden under the panel. Right, block `$06` taken apart: its 16 codes and its
+number in red; the top half of block row 0 (character rows 0-1) lies above the play window and is never shown. Right, block `$06` taken apart: its 16 codes and its
 picture. Yellow, the two pick-ups of the screen. Bottom, the map bytes of the five rows. Recording: none, the bytes of
 the build. Made by `python3 tools/fig_objects.py room-decode docs/img/objects/room-decode.png`.
 
@@ -415,8 +415,8 @@ DrawRoom searches the new screen for special blocks and characters. Each search 
 | PlacePickupsInScreen `$A9BE` | PickupTable records of this room whose x lies in the screen | PickupRecords `$AF1B` (two) | CheckPickups |
 | PlaceTurrets `$AC42` | block `$12` | objects 2 and 4 as turrets (kind 4), the next slot reserved (`$40`) | KindTurret |
 | FindSpawnPoints `$ACA0` | block `$61` | SpawnPoints `$AC9C` (two) | SpawnRiser |
-| FindBlockItems `$ACEA` | block `$1B` | BlockItems `$ACDA` (four) | TakeBlockItem |
-| FindFloorRow `$AC80` | the first solid character row | FloorRow `$AC7F` | the wave, the boss |
+| FindBlockItems `$ACEA` | block `$1B` | BlockItems `$ACDA` (at most three) | TakeBlockItem |
+| FindFloorRow `$AC80` | the first solid character row | FloorRow `$AC7F` | SpawnWalker, KindWave |
 | FindLift `$AA75` | character `$34`, zone 0 only | LiftPlace `$AA72` | AnimateLift |
 
 PickupTable `$950E` holds the 11 masks of the world, 4 bytes each: room, kind, x (in characters across the whole room,
@@ -431,8 +431,9 @@ PlacePickupsInScreen:
     for rec in PickupTable until $FF:
         if rec.room == RoomNumber and 0 <= rec.x - 4 * RoomScreen < 32:      # bit 7 set never matches
             PickupRecords[i] = (rec.y, rec.x, rec.kind, char address, &rec, first sprite char); draw the icon
-CheckPickups (each pass, for both records):
-    if the record is used and |Matt's column - rec.x| < 4:
+CheckPickups (state 4 with down held, for both records):
+    if the record is unused (rec.x != $FF) and 0 <= Matt's cell - rec.x < 4:     # no y test
+        rec.x = $FF
         rec.room |= $80; slot = CurrentSlot if it is EMPTY else FindEmptySlot()
         slot = (kind, 99 charges, MaskLevels[kind])          # FindEmptySlot falls back to CurrentSlot
 PlaceTurrets:
@@ -471,7 +472,7 @@ flowchart TD
     D --> S["FindSpawnPoints: block $61"]
     D --> B["FindBlockItems: block $1B"]
     D --> F["FindFloorRow, FindLift"]
-    P --> CP["CheckPickups each pass: Matt over the icon"]
+    P --> CP["CheckPickups when Matt crouches with down held"]
     CP --> SL["a slot: kind, 99 charges, level"]
     CP --> TK["PickupTable room byte bit 7: taken"]
     T --> KT["killed: block $2B in the map"]
@@ -570,7 +571,7 @@ Worked example: object 3 at `rzx-00000` frame 990 (`$A4B1`):
 - +0 = 1: a faller. x `$92`, y `$48`, 2 x 2 characters.
 - +`$14`/+`$15` = `33 00`: 33 points. +`$16`/+`$17` = `$D260`: SpriteFaller.
 - +`$1B`/+`$1C` = 0, 4: it falls 4 pixels a pass (SpawnFaller: dy = (x AND 3) + 2, here `$92` AND 3 = 2, so 4;
-  dx = Random AND 3, never 2, here 0).
+  dx = (Random AND 3) - 1, drawn again when it is 2: -1, 0 or +1; here 0).
 - +`$1E` = `$0A`: a touch costs 10 energy. +`$21` = 1: one hit kills it.
 - +`$20` = `$41`: bright blue, picked at random (the template's colour is `$FF`).
 
@@ -679,7 +680,7 @@ not 0) is left alone. For an empty slot Spawn reads EnemyKind, the screen's kind
 | 6 | SpawnKind6 `$C0F7` | 16 | once per screen, effect 10 |
 | 7 | SpawnRiser `$C116` | 12, riser | from a SpawnPoints place |
 | 8 | SpawnGuard `$C167` | 13, guard | |
-| 9 | SpawnBoss `$C18C` | 14, boss | |
+| 9 | SpawnBoss `$C19E` | 14, boss | |
 | 10 | SpawnKind10 `$C1F3` | 18 and 19, a group | |
 
 When nothing spawns, SpawnNothing marks the slot with the placeholder `$80` (2 x 2 at x 1, y 0) unless object 2 is the
@@ -868,7 +869,7 @@ ObjectJumps `$C326` gives 20 kinds:
 | Kind | Routine | What it does | Seen |
 | ---: | --- | --- | --- |
 | 0 | HangLoop `$9208` | an empty slot never reaches it (RunKind returns at 0) | |
-| 1 | KindFaller `$C375` | falls 2 to 5 a pass (dy = (x AND 3) + 2) and drifts right 0, 1 or 3 (dx = Random AND 3, never 2); a wall or the floor bursts it | `rzx-00000` 977 |
+| 1 | KindFaller `$C375` | falls 2 to 5 a pass (dy = (x AND 3) + 2) and drifts left, straight or right, 1 a pass (dx = (Random AND 3) - 1, never 2); a wall or the floor bursts it | `rzx-00000` 977 |
 | 2 | KindFlyer `$C3A6` | flies left 2 a pass, homes on Matt's height plus an offset; gone at x `$28` | `rzx-` |
 | 3 | KindExplosion `$C3F1` | 4 passes, then empty | every kill |
 | 4 | KindTurret `$C457` | bobs from the start (animation 3), up and down 16 passes each; fires kind 5 when Random AND `$53` = 0 into slot+1 (`$40`) or a free slot+2, then rises again for 6 passes; killed or touched: block `$2B`, its stem cleared, no score (7.11) | `rzx-12000` 1255 |
@@ -881,14 +882,59 @@ ObjectJumps `$C326` gives 20 kinds:
 | 11 | KindEleven `$C6F2` | kind 16's shot | never |
 | 12 | KindTwelve `$C73F` | the riser, from a block `$61` | `rzx-16000` 1142 |
 | 13 | KindThirteen `$C78A` | the guard: bobs (GuardBob `$C7F4`), ten LIFTER hits lift it, ten shots break it into parts | `rzx-00000` 1960, `rzx-24000` |
-| 14 | KindFourteen `$C81B` | the boss: fires kind 15 when Random AND `$25` = 0 | `rzx-24000` 479 |
+| 14 | KindFourteen `$C81B` | the boss (always slot 1): fires kind 15 into slot 0 when Random AND `$25` = 0 and slot 0 holds no shot | `rzx-24000` 479 |
 | 15 | KindFifteen `$C860` | the boss's shot | `rzx-24000` 507 |
 | 16 | KindSixteen `$C89B` | flies left 2 a pass with no stop, effect 10 as it passes x `$DC`; fires kind 11 when Random AND `$92` = 0 | `kind6` (a POKE) |
-| 17 | KindSeventeen `$C8FD` | ObjectGone: 25 passes of random small explosions where the object was | after the chaser, the boss |
-| 18, 19 | KindEighteen `$C922`, and 19 | SpawnKind10's group | never |
+| 17 | KindSeventeen `$C922` (set up by ObjectGone `$C8FD`) | 25 passes of random small explosions where the object was | after the chaser, the boss |
+| 18 | KindEighteen `$C980` | the head of SpawnKind10's group: bobs (8 passes down, 8 up) and moves left 1 a pass; shots never kill it, a LIFTER hit lifts it; a touch costs energy and it stays | `door3` (a POKE), 1478-1968 |
+| 19 | `l_C9B8` | the group's body: each takes the y the object before it had last pass, a chain one pass behind the head; moves left 1 a pass; the tail past x `$38` ends the whole group | `door3` (a POKE), 1478-1968 |
 
 The faller, the flyer, the wave and the riser burst when they touch Matt: Damage, then AwardScore, then Explode. A
 touch is a kill that costs energy. The chaser and the boss touch with damage 255 (Matt dies) and become kind 17.
+
+The group of kinds 18 and 19 (SpawnKind10 `$C1F3`, room 7 screens 2-3, run only with the `door3` POKE) is a chain of
+six objects: the head (kind 18, slot 0, x `$C0`, y `$50`) and five body parts (kind 19, slots 1-5, 6 pixels apart;
+the last one, the tail, has +`$1B` = `$FF`). Only the head moves on its own; each body part copies the y the object
+before it had a pass earlier, so the head's wave runs down the body.
+
+```text
+KindEighteen(IX):                     # the head, $C980
+    if IX.lifted (+$22): ObjectShot; IX.dx (+$1B) = -1; return     # no hits test: shots never kill it
+    IX.oldy (+$1C) = y
+    IX.count (+$11) += 1
+    IX.v (+$12) += 1 if IX.count & 8 else -1                         # 8 passes up, 8 down
+    y += IX.v; x -= 1
+    if TouchesMatt: Damage                                           # the head stays
+Kind19(IX):                           # a body part, l_C9B8
+    IX.oldy = y
+    y = (IX - $26).oldy                                              # IX-$0A: the record before, its +$1C
+    x -= 1
+    if TouchesMatt: Damage
+    if IX.tail (+$1B) != 0 and x < $38: all six slots = $80          # the whole group leaves at once
+```
+
+```text
+C9B8  DD 7E 04            l_C9B8: LD A,(IX+$04)           ; y
+C9BB  DD 77 1C                    LD (IX+$1C),A           ; kept for the next part
+C9BE  DD 7E F6                    LD A,(IX-$0A)           ; the record before: its +$1C
+C9C1  DD 77 04                    LD (IX+$04),A
+C9C4  DD 35 03                    DEC (IX+$03)            ; x - 1
+C9C7  CD D9 C2                    CALL TouchesMatt
+C9CA  CC CA C2                    CALL Z,Damage
+C9CD  DD 7E 1B                    LD A,(IX+$1B)           ; the tail?
+C9D0  A7                          AND A
+C9D1  C8                          RET Z
+C9D2  DD 7E 03                    LD A,(IX+$03)
+C9D5  FE 38                       CP $38
+C9D7  D0                          RET NC
+C9D8  DD 21 8B A4                 LD IX,Enemies           ; all six slots: the placeholder $80
+```
+
+Worked example: `door3` frame 1500 (`work/stage2/rec/door3/snapshots/001500`, Enemies `$A48B`). The head (slot 0) is at
+x `$B7`, y `$41`, its +`$1C` (last pass's y) `$40`. The body's y are `$40`, `$40`, `$41`, `$43`, `$46` and their
++`$1C` `$40`, `$41`, `$43`, `$46`, `$4A`: each part's y is the +`$1C` of the part before it, so the tail at x `$D5`
+shows the head's height five passes ago. At frame 1750 the group is at x `$63`-`$81`, the wave reversed (head y
+`$4D`, tail y `$40`).
 
 ```text
 KindTurret(IX):
@@ -1034,7 +1080,7 @@ KindEighteen L1 167 in `door3`).
   pass turns the used block items `$47` back into `$1B`.
 - **The touch pays.** A faller, flyer, wave or riser that touches Matt gives its score; so does the chaser (5000) and
   the boss (1000) whose touch kills: in `rzx-32000` at frame 657 the score went from 19 239 to 24 239 as Matt died.
-- **Rooms never visited** by any recording: 7, 9, 11, 13, and room 1 beyond screen 1. Their maps are drawn from the data
+- **Rooms never visited** by any recording: 9, 11 and 13; room 7 only in `door3` (a POKE recording, screen 0); room 1 beyond screen 1. Their maps are drawn from the data
   only (`tools/roommap.py`).
 - **A turret never scores.** KindTurret calls Explode, which copies the explosion template (score 0) into the record,
   and only then AwardScore. The six turret kills of the recordings (`rzx-00000` 1788, `rzx-04000` 1080, `rzx-12000`

@@ -63,8 +63,9 @@ from frame 15 021), 30 032 T an entry, 13.8 % of the CPU over the whole recordin
 4. calls `$AF82` when `$970D` is 0, and returns with `EI`.
 
 Callees in c1: `$9421`, `$946F`, `$C003` x7279; `$BB4C` x4031; `$AF82` x3955; `$9899` x3248; `$C000` x2; `$C00A` x1.
-In the RZX segments the beeper path runs instead: the RZX's memory has `$FFFE` = 1 (its player used a 48K or a
-machine the test missed), and `rs.py interrupts --work work/stage1/rec/rzx-16000` gives 3999 entries in 4000 frames,
+In the RZX segments the beeper path runs instead: the RZX's memory has `$FFFE` = 1, a value this loader never
+writes (LoaderMain writes `$FF` at `$5E12`, 0 at `$5E3E`): the RZX comes from another load, and any non-zero value takes
+the beeper path. `rs.py interrupts --work work/stage1/rec/rzx-16000` gives 3999 entries in 4000 frames,
 2600 T an entry, 3.7 % of the CPU, callees `$949F`, `$94C8`, `$AF82`, `$BB4C` each x3999. In play the AY player
 costs about 212 T a frame (`c1-play`, [doc 4, 4.3](docs/04-game-loop.md)); the whole-recording average of 30 032 T an
 entry is the menu's MenuInterrupt (64 914 T an entry). The beeper path costs 2600 T an interrupt.

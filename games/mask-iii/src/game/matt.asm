@@ -715,6 +715,11 @@ l_B879:
 
 ; The jump at the screen edges
 ;
+; At an edge the branches jump into the fall step $B8A7 inside MattFall's CALL;
+; its RET returns to $B87C, which runs the step again: the pass that crosses a
+; screen edge in the fall adds v to y and grows v twice (rzx-04000 frames
+; 2696-2702: y $0F v 3 -> y $16 v 5).
+;
 ; Witness: L1 719 (c1, cheat, door, door3, kind6, masks, play2, rzx- x9).
 JumpEdges:
   LD A,(Objects+$0003)

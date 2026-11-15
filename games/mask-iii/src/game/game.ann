@@ -11,7 +11,7 @@
 @equ $FFFF ImJr ; $18, the JR that sends the vector $FFFF to $FFF4
 @bank $C000 MusicStart 4 ; the AY player: start tune A-1 (src/music/music.ann)
 @bank $C003 MusicPlay 4 ; the AY player: one frame of the tune
-@bank $C006 MusicTune 4 ; the player's current tune, $FF when none
+@bank $C006 MusicTune 4 ; $FF while a tune runs from its start (MusicStart $C116), 0 when every channel has ended (MusicFrame $C12D / $C133) or MusicStop $C00B; the menu's interrupt restarts tune 1 when it is not $FF ($927E)
 @bank $C00A MusicStop 4 ; the player: silence
 @bank $C334 EffectChannelA 4 ; the player's effect block of channel A
 @bank $C346 EffectChannelB 4 ; the effect block of channel B
@@ -56,7 +56,7 @@ $6D00 b Zone3Chars 8 ; Zone 3's 256 characters, parked
 $7500 b Zone3Attrs 16 ; Zone 3's attributes
 @res charsets/zone3-attr.bin
 @module rooms ; The rooms: 16 maps of 48 x 5 blocks, the 192 blocks of 4 x 4 characters
-@about A room is a strip of six screens, 48 blocks across and 5 down, 240 bytes at RoomMaps $7600 + 240 x room, stored row by row. A screen shows 8 block columns (32 characters); RoomScreen $950D holds 8 x the screen, the map column of its left edge. DrawRoom $A89D expands the screen's 8 x 5 blocks through Blocks $8500 (16 character codes a block, 4 rows of 4) into the character map $F080. The room table RoomTable $953B gives the exits, the zone and one enemy kind a screen.
+@about A room is a strip of six screens, 48 blocks across and 5 down, 240 bytes at Room0Map $7600 + 240 x room, stored row by row. A screen shows 8 block columns (32 characters); RoomScreen $950D holds 8 x the screen, the map column of its left edge. DrawRoom $A89D expands the screen's 8 x 5 blocks through Blocks $8500 (16 character codes a block, 4 rows of 4) into the character map $F080. The room table RoomTable $953B gives the exits, the zone and one enemy kind a screen.
 @about The maps are also state: TakeBlockItem $B33D turns a taken item (block $1B) into block $47, KindTurret $C457 turns a dead turret's block $12 into $2B; NewGame $915B turns them back (every $2B into $12, every $47 into $1B). The resources are text grids (src/res/rooms/README.md); tools/roommap.py draws every room and the world map from them.
 $7600 b Room0Map 48 ; Room 0: the surface (zone 0), the start, the password doors
 @res rooms/room-00.bin
@@ -127,7 +127,7 @@ $9421 c StartEffects ; Interrupt, 128K: hand each waiting effect to the AY playe
 > Witness: L1 26094 (c1, cheat, door, door3, kind6, masks, play2).
 $946C b EffectStops ; Three flags: stop the effect of channel A, B, C at the next interrupt
 $946F c StopEffects ; Interrupt, 128K: silence each channel whose EffectStops flag is set (writes the player's block +6)
-> Channel C's test is inverted (RET NZ at $9491): it zeroes channel C's hold every interrupt while its flag is clear and does nothing when it is set. Inaudible: channel C's envelopes end by themselves (docs/09-sound.md, 9.9).
+> Channel C's test is inverted (RET NZ at $9493): it zeroes channel C's hold every interrupt while its flag is clear and does nothing when it is set. Inaudible: channel C's envelopes end by themselves (docs/09-sound.md, 9.9).
 > Witness: L1 26094 (c1, cheat, door, door3, kind6, masks, play2).
 $949F c StopBeeper ; Interrupt, 48K: the beeper's version of StopEffects
 > Witness: L1 37174 (rzx- x10).
@@ -286,7 +286,7 @@ $A853 ; the low byte is patched by $A80F to -(8 x h): a back step, nothing to do
 $A860 c BuildTables ; Build the dilate table $F700, the shift tables $F800-$FDFF and the bit-reverse table $F600
 > Witness: L1 21 (c1, cheat, door, door3, kind6, masks, play2, rzx- x8).
 @module rooms
-$A89A b MapPointer ; RoomMaps + 240 x room + RoomScreen: the screen's first block
+$A89A b MapPointer ; Room0Map + 240 x room + RoomScreen: the screen's first block
 $A89D c DrawRoom ; Draw the screen RoomScreen of room RoomNumber and set up its objects, pick-ups and message
 > Room 15 at screen 5 is the end: Ending $ADF6. Clears objects 2-7 (3-7 while the chaser lives), expands the 8 x 5 blocks into the character map, SwapZone, marks every cell dirty and flushes, sets EnemyKind $BFB0 from RoomTable byte 6 + screen, then MoonMasks $ADD2, AnimatedCharList $AB6B, FindLift $AA75, PlaceTurrets $AC42, FindSpawnPoints $ACA0, FindBlockItems $ACEA, FindFloorRow $AC80, PlacePickupsInScreen $A9BE, EffectStops+1 = $FF and RoomMessage $AD28. Before the blocks: a new room (RoomNumber not MapPointer+2) clears ChaserState, ShotOff $BD7F ends Matt's shot, and with ChaserState set only objects 3-7 are cleared (the chaser survives a screen change).
 > Witness: L1 87 (c1, cheat, door, door3, kind6, masks, play2, rzx- x9).
@@ -309,7 +309,7 @@ $AC2F c FindNextBlock ; The next one
 > Witness: L1 19 (door, rzx- x7).
 $AC42 c PlaceTurrets ; Every block $12 of the screen becomes a turret object (kind 4, template 2: animation 3, so it bobs at once), the next slot reserved ($40); the SUB $02 at $AC55 is dead (LD A,C follows), so y is the block's row
 > Witness: L1 86 (c1, cheat, door, door3, kind6, masks, play2, rzx- x9).
-$AC7F b FloorRow ; the first character row with a solid attribute
+$AC7F b FloorRow ; 8 x the number of free character rows down column 0 of the shown map to the first solid character (a pixel y); read by SpawnWalker and KindWave
 $AC80 c FindFloorRow ; FloorRow from the attributes (bit 7)
 > Witness: L1 86 (c1, cheat, door, door3, kind6, masks, play2, rzx- x9).
 $AC9C b SpawnPoints ; Two map places of block $61, where kind-12 enemies rise
@@ -317,7 +317,7 @@ $ACA0 c FindSpawnPoints ; Up to two blocks $61 into SpawnPoints
 > Witness: L1 86 (c1, cheat, door, door3, kind6, masks, play2, rzx- x9).
 $ACBC c PasswordPods ; Room 0's four door lamps at map $7628 (screen 5, top row): blocks $45/$46 shut, $1E/$1F lit for each password entered
 > Witness: L1 21 (c1, cheat, door, door3, kind6, masks, play2, rzx- x8).
-$ACDA b BlockItems ; Up to four block-$1B items of the screen (map address, place)
+$ACDA b BlockItems ; Up to three block-$1B items of the screen (map address, place): four entries, FindBlockItems stores at most three, the last stays empty
 $ACEA c FindBlockItems ; The block-$1B items into BlockItems
 > Witness: L1 86 (c1, cheat, door, door3, kind6, masks, play2, rzx- x9).
 @module objects ; The objects, the enemies, the score, the energy, the messages and the end
@@ -355,7 +355,7 @@ $AF0E MaskNameShown ; the mask name on the scroller
 $AF0F ScrollerLeft ; characters left to scroll
 $AF10 ScrollerPtr ; the next character
 $AF12 ScrollerShift ; the pixel step
-$AF1B PickupRecords ; two pick-up records of 8 bytes
+$AF1B PickupRecords ; two pick-up records of 8 bytes: y, x ($FF once taken), kind, map address, PickupTable address, first sprite character
 $AF2B MaskSlots ; four slots [screen column, kind, BCD charges, level]
 $AF3B MaskLevels ; the level a kind starts with, per kind 0-10
 $AF46 MaskColours ; the icon colour per kind
@@ -450,6 +450,7 @@ $B841 MattFall ; state 6: the fall, v up to 8; JACKRABBIT in the slot in use tur
 $B84F c MattJumpRet ; A RET no branch reaches, then the jump's shared steps
 > The RET at $B84F never ran (known only from the code); the steps from $B850 run in every jump (c1).
 $B87F c JumpEdges ; The jump at the screen edges
+> At an edge the branches jump into the fall step $B8A7 inside MattFall's CALL; its RET returns to $B87C, which runs the step again: the pass that crosses a screen edge in the fall adds v to y and grows v twice (rzx-04000 frames 2696-2702: y $0F v 3 -> y $16 v 5).
 > Witness: L1 719 (c1, cheat, door, door3, kind6, masks, play2, rzx- x9).
 $B8DE JackrabbitJump ; JACKRABBIT: the long jump, state 7
 $B8E7 MattLongJump ; state 7: a charge each 5 passes, $15 (15 BCD) on the moon
@@ -529,7 +530,7 @@ $BFCF c SpawnJump10 ; JP SpawnKind10 $C1F3 (room 7, screens 2 and 3)
 $BFD2 SpawnFlyer ; kind 1: a flyer from the right that homes on Matt's height (object kind 2)
 $BFF5 c SetupObject ; Copy the 12-byte template at HL into object IX
 > Witness: L1 634 (door, door3, kind6, rzx- x9).
-$C04B SpawnFaller ; kind 2: from the top (object kind 1); dy = (x AND 3) + 2 (2-5), dx = Random AND 3 but not 2 (0, 1 or 3: right or straight)
+$C04B SpawnFaller ; kind 2: from the top (object kind 1); dy = (x AND 3) + 2 (2-5), dx = (Random AND 3) - 1, drawn again when it is 2: -1, 0 or +1
 $C07E SpawnWave ; kind 3: a flyer on a wave (object kind 6), when Random AND $44 = 0 and Matt's x < $91
 $C0A6 SpawnWalker ; kind 4: once a screen, a walker on FloorRow (object kind 7)
 $C0D6 b ChaserState ; one chaser at a time, and its timer ($0300)
@@ -590,15 +591,17 @@ $C789 c KindThirteenRet ; A RET no branch reaches
 $C78A KindThirteen ; 13, the guard
 $C7F4 c GuardBob ; The guard's up and down
 > Witness: L1 270 (rzx-00000, rzx-24000).
-$C81B KindFourteen ; 14, the boss
+$C81B KindFourteen ; 14, the boss (always slot 1): fires kind 15 into slot 0 when Random AND $25 = 0 and slot 0 holds no shot
 $C860 KindFifteen ; 15
 $C89B c KindSixteen ; Kind 16 (SpawnKind6's object)
 > Run only in work/stage2/rec/kind6 (an EnemyKind POKE), frames 675-1891.
 > Witness: L1 488 (kind6).
 $C8FD ObjectGone ; the object leaves
-$C922 KindSeventeen ; 17
+$C922 KindSeventeen ; 17: 25 passes of small explosions where the object was (set up by ObjectGone)
 $C980 c KindEighteen ; Kinds 18 and 19 (SpawnKind10's group)
 > Run only in work/stage2/rec/door3 (an EnemyKind POKE), frames 1478-1968.
+> Kind 18 (the head) has no hits test, so shots never kill it; a LIFTER hit runs ObjectShot and sets +$1B = -1. Each pass it keeps its y in +$1C, bobs (+$12 grows for 8 passes and shrinks for 8, by bit 3 of +$11, and is added to y) and moves x - 1; a touch costs Damage and the head stays.
+> Kind 19 at $C9B8 (the body) keeps its y in +$1C, takes the y the record before it had last pass (IX-$0A, that record's +$1C) and moves x - 1: the group follows the head as a chain, one pass behind each. A touch costs Damage. When its +$1B is non-zero (the tail) and x < $38, all six slots become the placeholder $80: the whole group leaves at once.
 > Witness: L1 167 (door3).
 @module renderer
 $C9EA c Twinkle ; One line in each of 8 characters from $E710 (chars $E2-$E9; from $E728, chars $E5-$EC, in zone 3) set to $FF or 0 in turn (TwinkleSteps)

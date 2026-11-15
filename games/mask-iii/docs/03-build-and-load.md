@@ -47,6 +47,12 @@ instruction `$9100` runs at frame 15 019, T 60 034, entered from the loader's `J
 --work work/stage1/c1 --frame 15019 --t 60034 --out work/stage1/images/entry`) holds blocks 5 and 6 byte for byte at
 `$4000` and `$6000`, block 7 byte for byte at `$C000` of RAM 4, and `$FFFE` = 0 (the 128K flag, 3.3).
 
+In `c1` the blocks follow each other with no pause. From the loader's start to the game's entry are 13 925 frames,
+278.4 s; blocks 5-7 alone take 37.04 + 218.85 + 23.24 = 279.13 s, and with the pauses after blocks 4, 5 and 6
+(7.425 + 8.282 + 9.149 s) 304.0 s. So the emulator did not play the TZX's pauses as silence, and the loader joined
+block 5's pilot about 0.7 s late (why the pauses were skipped was not checked). A real tape takes about 25 s longer
+than `c1`.
+
 ## 3.2 The BASIC
 
 One line, its numbers stored in the ROM's five-byte form:
@@ -139,6 +145,11 @@ So `$FFFE` = 0, and at the game's entry RAM 4 holds block 7 byte for byte.
 
 On a 48K (`c48`) the port `$7FFD` does nothing. The read gives the `$2A` back and the test stops at once, `$FFFE`
 left `$FF`. The `$2A` lands in plain RAM, which the game's load overwrites.
+
+A gap, known only from the code: the first compare (`$5E29` `CP $2A`) cannot tell a 48K from a 128K whose RAM 4
+already holds `$2A` at `$C000`. Such a 128K loads as a 48K, without the music, and plays the beeper. After a reset
+the 128K ROM is expected to leave the RAM pages cleared (not checked here), so this needs a tape loaded after other
+software put `$2A` there; one byte in 256 values makes it rare.
 
 ```mermaid
 flowchart TD
@@ -264,13 +275,21 @@ releases). Only the standard Spectrum releases count here. There are two builds 
 | --- | --- | --- |
 | Releases | Gremlin's original; the Space Ace compilation (1989); the 128K crack "Venom SB"; the hacked loaders | IBSA and Erbe "Serie Leyenda" (Spain); the 48K TAP |
 | BASIC | "MASK3", `CLEAR 24570: LOAD ""CODE: RANDOMIZE USR 65280` | "VENOM", with `VAL` strings and `9999 SAVE "VENOM" LINE SIN PI: LOAD "MASTER"` |
-| The code block | md5 `2281f690...` | 13 991 bytes differ from offset 3042 (`$6BE2`): the code after it is shifted by 1 to 17 bytes |
+| The code block | md5 `2281f690...` | 13 991 bytes differ from offset 3042 (`$6BE2`): a few changed in place, then from `$9222` the code is shifted by 1 to 17 bytes |
 | The 128K block | md5 `a110a2b0...` | 101 bytes differ from offset 3083 |
 | ZXDB's POKEs | fit | do not fit (3.7) |
 
-Build B is a reassembly, not a moved copy. The shift against build A varies along the block: 0 up to `$6BE2`, 1 byte
-at `$A000`, 17 at `$B220` (`$B231` in build B), 15 at `$C315` (`$C324`, with changed bytes around it). Matched with
-`work/docs/mxA/buildB-code.bin`, the Erbe TZX's block 6. The first difference at `$6BE2` is inside zone 2's parked character set.
+Build B is a reassembly, not a moved copy. Matched with `work/docs/mxA/buildB-code.bin` (the Erbe TZX's block 6) in
+16-byte windows, the shift against build A is 0 up to `$9221`: the 50 differences before it are bytes changed in
+place, in zone 2's parked character set (`$6BE2-$6BFA`), a few bytes of the maps and blocks (`$7B14`, `$7BE3`,
+`$8363-$8394`, `$897D-$897E`) and changed operands in GameEntry and NewGame (`$913A-$9206`). At `$9222` build B
+inserts one byte before the interrupt's variables (A: `C9 | 00 FF 00 00 | F5`, B: `C9 | 00 00 FF 00 00 | F5`), and it
+is build B's machine flag: the four places build A reads `LD A,($FFFE)` (`$9247`, `$93F2`, `$98BE`, `$BACC`) read
+`LD A,($9222)` in build B (`3A 22 92` at `$9248`, `$93F3`, `$98BF`, `$BADD`). No instruction of build B's code block
+writes `$9222` (0 in the block, the AY path), so build B does not use `$FFFE` at all; which part of build B's tape
+sets the byte was not traced.
+From `$9222` the shift is 1 byte at `$A000`, 17 at `$B220` (`$B231` in build B) and 15 at `$C315` (`$C324`, with
+changed bytes around it).
 
 The hacks keep build A's code byte for byte. They change the loader or the BASIC:
 
@@ -290,9 +309,9 @@ ZXDB's `.pok` file (`work/candidates/zxdb/`) and the 48K TAP's `POKES/MASK3.POK`
 
 | Name | POKE | Address | Was | Becomes | What it does |
 | --- | --- | --- | --- | --- | --- |
-| Immunity | 52254,175 | `$CC1E` | `AND A` after `LD A,(DeathFlag)` | `XOR A` | `JP NZ,Death` is never taken: the deadly floor never kills |
+| Immunity | 52254,175 | `$CC1E` | `AND A` after `LD A,(DeathFlag)` | `XOR A` | `JP NZ,Death` is never taken: no DeathFlag death (the deadly floors, the moon's floor, the fall out of the play area); the energy, PENETRATOR's Explosion and the enemies still kill |
 | No enemies | 49941,201 | `$C315` | RunKind: `LD A,(IX+$00)` | `RET` | no enemy moves or collides |
-| Infinite ammo | 45600,0 | `$B220` | `SUB C` in UseCharge | `NOP` | the charges never go down |
+| Infinite ammo | 45600,0 | `$B220` | `SUB C` in UseCharge | `NOP` | the count keeps 99 for most masks, but the `DAA` works on the caller's flags: JACKRABBIT loses its slot (see below) |
 | Waterproof | 45803,201 | `$B2EB` | `JR NC` in RestoreOnePickup | `RET` | see below |
 | Lives (1) | 46045,58 | `$B3DD` | `LD (Energy),A` in TakeBlockItem | `LD A,(Energy)` | a block item costs nothing while the energy is 25 or more; below 25 it sets the energy to 0 (see below) |
 | Lives (2) | 47778,179 | `$BAA2` | `LD (Energy),A` in LavaDrain | `OR E`, then `AND (HL)`, `XOR (HL)` | a head bump in zone 1 costs nothing |
@@ -329,7 +348,38 @@ Three findings come out of the table, known only from the code:
   XOR A
   LD (Energy),A           ; $B3E2: below 25, the energy becomes 0
 ```
-- "Lives (4)" is a second infinite-ammo POKE: UseCharge returns before it takes a charge, as with the cheat.
+- "Immunity" removes every death that goes through DeathFlag `$B2F8`. Its writers are DeadlyFloor (`$B31E`,
+  `$B328`), MoonFloor (`$B339`), the fall out of the play area (`$B403-$B40E`) and NewGame (`$91ED`, the reset); its
+  only reader is MainLoop `$CC1B`. What a fall below the play area does with the POKE (y keeps growing) was not
+  traced. The energy running out, PENETRATOR's Explosion inside a wall and the enemies still kill (read from the code).
+- "Infinite ammo" is not clean. With `NOP` in place of `SUB C`, the `DAA` at `$B222` works on the flags the caller
+  left: UseCharge's `EX AF,AF'` pair (`$B210`, `$B216`) hands them through unchanged, and `LD` and `POP` do not touch
+  them. FireMask's last flag-setting instruction is `CP $06` at `$BD11` on the kind. Kinds 6-10 (LIFTER, BLASTER,
+  BACKLASH, LAVA SHOT, STREAMER) leave N set, H and C clear: `DAA` keeps `$99`. JACKRABBIT, kind 5, leaves N, H and C
+  set (`5 - 6`): `DAA` makes `$99` into `$33` with carry, `RET NC` (`$B228`) is not taken, `$B229` and `$B22D` clear
+  the charges and the kind, and the carry comes back through `EX AF,AF'` (`$B236`), so FireMask returns without a
+  shot (`$BD1B`): the first JACKRABBIT shot empties the slot. The long jump (MattLongJump `$B8E7`) does the same in zones 0 and 1: its
+  `CP $02` on the live zone, ZoneSlots `$A194` (`$B905`), leaves H and C set there. PENETRATOR's `ADD A,(HL)` (`$BE2B`) leaves no flag, so it
+  keeps 99. HEALER (`JP UseCharge`, `$BDCE`) hands on the flags of `ADD A,$02` on the energy: when the energy's low
+  digit is `$E` or `$F`, H is set and `DAA` turns `$99` into `$9F`, and a later use can then empty the slot. All of it
+  is read from the code, not run.
+
+```z80
+  ; FireMask, JACKRABBIT (kind 5), with the POKE
+  LD A,(IX+$01)           ; $BD0E: A = 5
+  CP $06                  ; $BD11: 5 - 6: N, H, C set
+  ...
+  LD A,(IY+$02)           ; $B21D: $99
+  NOP                     ; $B220: was SUB C
+  DAA                     ; $B222: N, H, C: $99 - $66 = $33, carry
+  LD (IY+$02),A
+  JR Z,l_B22D             ; not zero
+  RET NC                  ; carry: falls through
+  LD (IY+$02),$00         ; $B229: no charges
+  LD (IY+$01),$00         ; $B22D: EMPTY
+```
+
+- "Lives (4)" is the clean infinite-ammo POKE: UseCharge returns before it takes a charge, as with the cheat.
 - The three "crashes" POKEs break the sprite drawing and the menu's HISCORE print (PrintBcd `$AF6B`, whose only
   caller is `$9D35` in the menu; the score in play is drawn by DrawScore `$AE60`); the third calls into the ROM.
 

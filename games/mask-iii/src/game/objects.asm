@@ -317,8 +317,10 @@ ScrollerShift:
   DEFB $00,$00,$00,$00,$00,$00,$00,$00 ; the pixel step
   DEFB $00
 PickupRecords:
-  DEFB $00,$00,$00,$00,$00,$00,$00,$00 ; two pick-up records of 8 bytes
-  DEFB $00,$00,$00,$00,$00,$00,$00,$00
+  DEFB $00,$00,$00,$00,$00,$00,$00,$00 ; two pick-up records of 8 bytes: y, x
+  DEFB $00,$00,$00,$00,$00,$00,$00,$00 ; ($FF once taken), kind, map address,
+                                       ; PickupTable address, first sprite
+                                       ; character
 MaskSlots:
   DEFB $61,$00,$00,$00,$64,$00,$00,$00 ; four slots [screen column, kind, BCD
   DEFB $67,$00,$00,$00,$6A,$00,$00,$00 ; charges, level]
@@ -1579,8 +1581,8 @@ l_C038:
 ; Used by the routine at l_BFB7.
 SpawnFaller:
   LD (IX+$00),$01         ; kind 2: from the top (object kind 1); dy = (x AND
-                          ; 3) + 2 (2-5), dx = Random AND 3 but not 2 (0, 1 or
-                          ; 3: right or straight)
+                          ; 3) + 2 (2-5), dx = (Random AND 3) - 1, drawn again
+                          ; when it is 2: -1, 0 or +1
   LD HL,EnemyTemplates
   CALL SetupObject
   LD (IX+$04),$E0
@@ -2756,7 +2758,9 @@ l_C80B:
 ;
 ; Used by the routine at l_C350.
 KindFourteen:
-  LD A,(IX+$21)           ; 14, the boss
+  LD A,(IX+$21)           ; 14, the boss (always slot 1): fires kind 15 into
+                          ; slot 0 when Random AND $25 = 0 and slot 0 holds no
+                          ; shot
   AND A
   JR Z,l_C856
   CALL Random
@@ -2888,7 +2892,8 @@ ObjectGone:
 ;
 ; Used by the routine at l_C359.
 KindSeventeen:
-  DEC (IX+$10)            ; 17
+  DEC (IX+$10)            ; 17: 25 passes of small explosions where the object
+                          ; was (set up by ObjectGone)
   JR NZ,l_C92C
   LD (IX+$00),$00
   RET
@@ -2937,6 +2942,17 @@ l_C97D:
 ; Kinds 18 and 19 (SpawnKind10's group)
 ;
 ; Run only in work/stage2/rec/door3 (an EnemyKind POKE), frames 1478-1968.
+;
+; Kind 18 (the head) has no hits test, so shots never kill it; a LIFTER hit
+; runs ObjectShot and sets +$1B = -1. Each pass it keeps its y in +$1C, bobs
+; (+$12 grows for 8 passes and shrinks for 8, by bit 3 of +$11, and is added to
+; y) and moves x - 1; a touch costs Damage and the head stays.
+;
+; Kind 19 at $C9B8 (the body) keeps its y in +$1C, takes the y the record
+; before it had last pass (IX-$0A, that record's +$1C) and moves x - 1: the
+; group follows the head as a chain, one pass behind each. A touch costs
+; Damage. When its +$1B is non-zero (the tail) and x < $38, all six slots
+; become the placeholder $80: the whole group leaves at once.
 ;
 ; Witness: L1 167 (door3).
 KindEighteen:

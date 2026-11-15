@@ -34,7 +34,7 @@ A sample of frame N is the memory at the start of frame N. A trace shows an inst
 
 ## 9.1 The two sound paths and their cost
 
-Interrupt `$9226` runs once a frame (IM 2, [doc 4](04-game-loop.md)). After the frame counter and the border it reads
+Interrupt `$9226` runs once a frame (IM 2, [doc 4](04-game-loop.md)). After the frame counter, the border and the cheat check (or the menu's interrupt) it reads
 MachineFlag `$FFFE`. The loader leaves 0 there on a 128K and `$FF` on a 48K ([doc 3](03-build-and-load.md)). The flag
 picks one of two paths:
 
@@ -662,7 +662,8 @@ simulator runs BeeperTick from the build. Made by `python3 tools/fig_sound.py fi
 
 ![BeeperTick in rzx-00000: the explosion's first bursts](img/routines/BeeperTick.gif)
 
-How to read it: the bytes `$94A8-$94AF` (BeeperState, the pitch word, the record pointer) as hex, and the code.
+How to read it: the bytes `$94A8-$94AF` as hex: the end of StopBeeper's code, then BeeperState `$94AB`, the pitch word and the
+record pointer, and the code.
 PlayEffect stored the explosion's record `$9388` in the main loop at 995:22948; the GIF is the next interrupt's
 StopBeeper and BeeperTick, 996:2200-6700, its first bursts, 60 pictures. Made from the kept trace of frames 995-997:
 `python3 tools/trace_cut.py work/docs/mxC/rzx-00000/traces/995_0-997_0.uatr --from 996:2200 --to 996:6700 --out
@@ -729,7 +730,7 @@ Witness: 9.1 (the flag and the paths), 9.7 (the beeper), [doc 3](03-build-and-lo
 ## 9.9 Notes, quirks and what is known only from the code
 
 - **StopEffects tests channel C the wrong way round.** For A and B it zeroes the hold when the flag is set. For C the
-  test is `RET NZ` (`$9491`): it zeroes channel C's hold every interrupt while the flag is clear, and does nothing when
+  test is `RET NZ` (`$9493`): it zeroes channel C's hold every interrupt while the flag is clear, and does nothing when
   it is set. Channel C carries the death and the explosions. The simulator ran every tune and every effect with the
   test fixed (`python3 tools/fig_sound.py chanc`). No effect changes. Tune 2 differs in 72 frames' registers and tune 3
   in 97, but the audible part (the channels with a volume above 0) of no frame changes. The bug is inaudible, by the case's

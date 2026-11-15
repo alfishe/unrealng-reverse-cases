@@ -37,7 +37,7 @@ Each term once, here; the documents use these names and no others.
 | IM 2 vector trick | the `$FF` table at `$FE00`, the `JR` at `$FFFF` that reads its offset from ROM `$0000`, and the `JP $9226` at `$FFF4` |
 | LavaDrain | `$BA93`: 2 energy per head bump in zone 1 |
 | level | a slot's byte +3: the power of its shot, from MaskLevels `$AF3B` |
-| LIFTER | mask 6: a shot that lifts in one hit the kinds that test +`$22` (faller, flyer, walker, riser, wave, the shots), the guard after ten hits, never the turret, the chaser or the boss (kind 10), 8 charges a shot; door 3 gives one (WarpBonus `$BA21`) |
+| LIFTER | mask 6: a shot that lifts in one hit the kinds that test +`$22` (faller, flyer, walker, riser, wave, the shots), the guard after ten hits, never the turret, the chaser or the boss; a lifted object becomes kind 10; 8 charges a shot; door 3 gives one (WarpBonus `$BA21`) |
 | live zone | the zone set at ZoneChars `$E000` / ZoneAttrs `$EF00` that the renderer reads |
 | long jump | state 7, the JACKRABBIT's flight: up rises 4 a pass, a charge each 5 passes |
 | MachineFlag | `$FFFE`, 0 on a 128K: the loader's answer, read by the interrupt |
@@ -45,7 +45,7 @@ Each term once, here; the documents use these names and no others.
 | materialisation | states 11 and 12 at a new game: effect 9, then 50 passes of the dissolve |
 | message line | row 23, columns 1-11, scrolled one pixel an interrupt by the Scroller `$AF82` |
 | parked zone | a zone set waiting at `$5B00`, `$6400` or `$6D00`; SwapZone `$A198` exchanges it with the live one |
-| pass | one run of the main loop `$CC03-$CC59`; 2.4 to 5.4 frames in the recordings |
+| pass | one run of the main loop `$CC03-$CC59`; about 1.5 to 5.4 frames in the recordings (`c1` about 2.4) |
 | password door | one of four doors in room 0, screen 5, lit by a password typed at the menu |
 | PENETRATOR | mask 1: held, Matt walks through walls and nothing touches him; ending it inside a wall kills (Explosion `$BB78`) |
 | pod | the booth at a room's end that sends Matt to another room (Teleport `$B6B3`) |

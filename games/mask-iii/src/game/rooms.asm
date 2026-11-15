@@ -1,7 +1,7 @@
 ; --------------------------------------------------------------------------------------------------------------------
 ; rooms.asm: The rooms: 16 maps of 48 x 5 blocks, the 192 blocks of 4 x 4 characters
 ;
-; A room is a strip of six screens, 48 blocks across and 5 down, 240 bytes at RoomMaps $7600 + 240 x room, stored row
+; A room is a strip of six screens, 48 blocks across and 5 down, 240 bytes at Room0Map $7600 + 240 x room, stored row
 ; by row. A screen shows 8 block columns (32 characters); RoomScreen $950D holds 8 x the screen, the map column of its
 ; left edge. DrawRoom $A89D expands the screen's 8 x 5 blocks through Blocks $8500 (16 character codes a block, 4 rows
 ; of 4) into the character map $F080. The room table RoomTable $953B gives the exits, the zone and one enemy kind a
@@ -197,7 +197,7 @@ MenuColourCount:
 
   ORG $A89A
 
-; RoomMaps + 240 x room + RoomScreen: the screen's first block
+; Room0Map + 240 x room + RoomScreen: the screen's first block
 MapPointer:
   DEFB $00,$00,$00
 
@@ -733,7 +733,8 @@ l_AC51:
   LD IX,Enemies+$004C
   JR l_AC51
 
-; the first character row with a solid attribute
+; 8 x the number of free character rows down column 0 of the shown map to the
+; first solid character (a pixel y); read by SpawnWalker and KindWave
 FloorRow:
   DEFB $00
 
@@ -808,7 +809,8 @@ l_ACD7:
   DJNZ l_ACC4
   RET
 
-; Up to four block-$1B items of the screen (map address, place)
+; Up to three block-$1B items of the screen (map address, place): four entries,
+; FindBlockItems stores at most three, the last stays empty
 BlockItems:
   DEFB $00,$00,$00,$00,$00,$00,$00,$00
   DEFB $00,$00,$00,$00,$00,$00,$00,$00

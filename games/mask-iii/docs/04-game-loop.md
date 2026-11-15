@@ -13,7 +13,9 @@ The recordings it rests on ([WALKTHROUGH 6.0](../WALKTHROUGH.md#60-the-recording
 
 - `c1`: power-on on the 128K, the original tape at ROM speed, the menu, then play in room 0;
 - `rec/rzx-04000` and `rec/rzx-16000`: two segments of the ZXDB RZX run, replayed from the RZX's own state; they run
-  the beeper path (the RZX's memory has `$FFFE` = 1);
+  the beeper path (the RZX's memory has `$FFFE` = 1, a value this loader never writes: the RZX comes from another
+  load, [doc 2, 2.9](02-architecture.md#29-48k-and-128k)); each segment stays in step with the RZX only
+  500-4000 frames ([WALKTHROUGH 6.0](../WALKTHROUGH.md#60-the-recordings)), then plays the RZX's keys on a drifted game;
 - `rec/rzx-28000`: a segment with a death and a new game;
 - stage 2's `c48`: the tape on the 48K model.
 
@@ -31,7 +33,8 @@ The commands are in [`work/docs/mxA-NOTES.md`](../work/docs/mxA-NOTES.md).
 ## 4.1 The program as a state machine
 
 MASK III has one main loop and no frame lock. The loader hands over to GameEntry `$9100` once. GameEntry builds the
-IM 2 table and falls into GameStart `$CBF9`. GameStart is the hub: every way out of a game comes back to it.
+IM 2 table, clears attribute 0 of the four zone sets, tests for a Kempston and jumps to GameStart `$CBF9`. GameStart is
+the hub: every way out of a game comes back to it.
 
 GameStart resets the stack, enables interrupts, runs the menu, then sets up a new game. Then it falls through into
 MainLoop `$CC03`. The main loop never returns. It leaves in one of five ways:
@@ -90,7 +93,8 @@ The witness is c1. The loader arrives at frame 1094 T 37 200. GameEntry runs at 
 interrupt goes through the `JR` at frame 15 021. The menu is on screen by frame 15 100 (the last picture of
 `load-c1.gif`; the menu screenshot is of frame 17 750), and the first game starts at
 about frame 18 300 (WALKTHROUGH 1). In `rec/rzx-28000` Matt dies, MISSION TERMINATED is printed and a new game
-starts, all inside one 4000-frame segment.
+starts, all inside one 4000-frame segment; that segment stays in step with the RZX only to frame 500, so the death
+and the new game are the replay's on a drifted game, not the original player's.
 
 The point: there is no game-state variable to dispatch on. The state is where the program counter is. A game ends
 by jumping back to the top with a fresh stack.
@@ -125,6 +129,16 @@ GameEntry:
   LD HL,Interrupt
   LD (ImJump+1),HL        ;        $9226
   IM 2
+  XOR A                   ; $9141: attribute 0 of each zone set = 0
+  LD (ZoneAttrs),A        ; $EF00, the live set
+  LD (Zone1AttrsLeftover),A ; $6300
+  LD (Zone2Attrs),A       ; $6C00
+  LD (Zone3Attrs),A       ; $7500
+  CALL KempstonTest       ; $914E
+  JP NZ,GameStart         ; $9151: no Kempston, the keyboard stays
+  XOR A
+  LD (ControlMethod),A    ; $9155: 0, the Kempston
+  JP GameStart            ; $9158
 ```
 
 The vector table is `$FE00-$FF00`, all `$FF`. Any bus byte `b` makes the CPU read the word at `$FE00 + b`. That word
@@ -193,6 +207,7 @@ Interrupt:
         if StopRequest: MusicStop();          StopRequest = 0
         StopEffects(); StartEffects(); MusicPlay()
         if NotInPlay and MusicTune != $FF: MusicStart(0)   ; the menu tune loops
+                                              ; MusicTune $C006: $FF while a tune runs, 0 once it ended
         page RAM 0 ($7FFD = $10)
     else:                                     ; 48K
         StopBeeper(); BeeperTick()
@@ -463,8 +478,8 @@ Measured in the trace `r04/traces/460_0-474_0.uatr` (`work/docs/mxA/passes.py` a
 | Teleport `$B6B3` | 463:29 384 | | |
 | DrawRoom `$A89D` | 463:29 548 | 584 482 | 8.24 |
 | the map expansion: 8 x 5 blocks into the character map | 463:29 702 | 19 949 | 0.28 |
-| SwapZone `$A198`, `DI` at 463:49 673 to `EI` at 466:4220 | 463:49 651 | 167 307 | 2.36 |
-| the copy after the swap | | 12 127 | 0.17 |
+| SwapZone `$A198`, from its first instruction to its `RET` at 466:4234 (`DI` at 463:49 673, `EI` at 466:4220: 167 271 T) | 463:49 651 | 167 307 | 2.36 |
+| the copy after the swap | 466:4234 | 12 127 | 0.17 |
 | FlushDirty `$A1F0`: every cell of the window | 466:16 361 | about 260 674 | 3.68 |
 | AnimatedCharList `$AB6B` | 469:66 882 | 75 067 | 1.06 |
 | FindLift `$AA75` | 471:2672 | 28 005 | 0.39 |
@@ -529,9 +544,11 @@ The attribute loop is shorter: `LD C,(HL)`, `EX DE,HL`, `LD B,(HL)`, `LD (HL),C`
 `INC E`, `JR NZ`: 56 T a byte.
 
 Worked example: 2048 bytes at 72 T and 256 at 56 T are 147 456 + 14 336 = 161 792 T. The trace measures 167 307 T
-from the `DI` at 463:49 673 to the `EI` at 466:4220; the other 5515 T are the slot search, the set-up and the
-ULA's waits on the parked set, which lies in contended memory (`$6D00`, zone 3). That is 2.36 frames with interrupts
-off.
+from SwapZone's first instruction (463:49 651) to its `RET` (466:4234); of them, 161 792 are the two loops and the
+other 5515 T are the slot search, the set-up and the ULA's waits on the parked set, which lies in contended memory
+(`$6D00`, zone 3). Interrupts are off for 3 x 70 908 + 4220 - 49 673 = 167 271 T, from the `DI` at 463:49 673 to the
+`EI` at 466:4220: 2.36 frames. The copy after the swap starts at 466:4234 and reaches FlushDirty's 466:16 361 after
+12 127 T.
 
 The witness is `kit/rs.py interrupts` over the r04 window: frames 464, 465 and 466 have no interrupt entry. The ULA
 holds its interrupt request for only about 32 T (36 T on the 128K); a request that finds interrupts disabled is lost. So the frame counter, the
@@ -541,7 +558,8 @@ music and the BREAK test all skip three frames.
 
 DrawRoom marks every cell of the play window dirty. FlushDirty `$A1F0` scans the dirty map `$F3C0-$F5FF` from
 `$F5FF` down and copies each marked cell to the screen ([doc 6](06-rendering.md)). So the new room appears on screen
-from the bottom up, over 3.7 frames, and the old room's top stays visible until about frame 470.
+from the bottom up, over 3.7 frames, and the old room's top stays visible until FlushDirty ends at 469:64 311: the
+room is whole at the end of frame 469.
 
 ![DrawRoom: room 1 built after the pod from room 10](img/routines/DrawRoom-heaviest.gif)
 
@@ -555,7 +573,8 @@ The screen as a player sees it, one picture a frame:
 ![The room change from room 10 to room 1, frame by frame](img/play/room-change-10-1.gif)
 
 *`room-change-10-1.gif`: `rec/rzx-04000` frames 452-482, one frame a picture. Room 10 stays still through 465 while
-the zone is swapped; from 466 room 1 grows from the bottom; by 471 it is whole. `kit/screen_anim.py --work
+the zone is swapped. Each picture is the screen at T 0 of its frame (not at its end, as elsewhere in these documents):
+room 10 through 466, room 1 growing in 467-469 (FlushDirty writes from 466:16 361), whole in 470. `kit/screen_anim.py --work
 work/docs/mxA/r04 --from 452 --to 482 --step 1 --scale 2`.*
 
 ![The room change against the beam, rzx-04000 frames 465-468](img/loop/beam-roomchange.png)
@@ -568,7 +587,7 @@ work/docs/mxA/r04 --from 452 --to 482 --step 1 --scale 2`.*
 flowchart LR
     F463["463: the map expansion, then DI"] --> F464["464-465: SwapZone, no interrupt"]
     F464 --> F466["466: EI at T 4220, FlushDirty starts at the bottom"]
-    F466 --> F469["466-469: FlushDirty climbs the window"]
+    F466 --> F469["466-469: FlushDirty climbs the window, done at 469:64 311"]
     F469 --> F470["469-470: AnimatedCharList"]
     F470 --> F471["471: FindLift, the objects, RoomMessage; DrawRoom returns"]
     F471 --> F473["473: the next pass"]

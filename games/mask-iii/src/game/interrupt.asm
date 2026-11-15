@@ -251,7 +251,7 @@ EffectStops:
 ; Interrupt, 128K: silence each channel whose EffectStops flag is set (writes
 ; the player's block +6)
 ;
-; Channel C's test is inverted (RET NZ at $9491): it zeroes channel C's hold
+; Channel C's test is inverted (RET NZ at $9493): it zeroes channel C's hold
 ; every interrupt while its flag is clear and does nothing when it is set.
 ; Inaudible: channel C's envelopes end by themselves (docs/09-sound.md, 9.9).
 ;

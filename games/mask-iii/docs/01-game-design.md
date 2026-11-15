@@ -17,7 +17,12 @@ The recordings it rests on ([WALKTHROUGH 6.0](../WALKTHROUGH.md#60-the-recording
 
 - `c1`: power-on on the 128K, the original tape at ROM speed, the menu, DEFINE KEYS, play in room 0;
 - the RZX segments `rec/rzx-00000` .. `rec/rzx-36000`: another player's complete run (ZXDB), replayed from the RZX's
-  own state every 4000 frames; together they reach every room and the ending;
+  own state every 4000 frames; together they reach every room and the ending. Each segment stays in step with the
+  RZX only 500-4000 frames ([WALKTHROUGH 6.0](../WALKTHROUGH.md#60-the-recordings)), then plays the RZX's keys on a
+  drifted game: the deaths, MISSION TERMINATED, the new games and the menus with HISCORE 00019090 in `rzx-08000`,
+  `rzx-28000` and `rzx-32000` are the replay's, not the original player's. Hiscore `$9D16` is written only by GameOver
+  (`$BAF3-$BAFC`), and each segment starts again from the RZX's own state, where the player had not died: so
+  `rzx-36000`'s menu shows 00000000;
 - stage 2's `play2` (the four passwords typed, the doors lit, the end by POKEs) and `door` (a password door taken,
   the flags set by a POKE in the menu, said in its script).
 
@@ -102,10 +107,10 @@ The play screen has two parts. The play window is character rows 0-17, redrawn f
 
 | Part | Where | What it shows | Drawn by |
 | --- | --- | --- | --- |
-| MASK | left, rows 18-20 | the four slots: each a mask icon and its charges; the slot in use blinks | DrawAllSlots `$AFFA`, DrawCurrentSlot `$AF53` |
+| MASK | left, rows 18-21: the label on 18, the icons on 19-20, the charges on 21 | the four slots: each a mask icon and its charges; the slot in use blinks | DrawAllSlots `$AFFA`, DrawCurrentSlot `$AF53` |
 | ENERGY | middle | 8 cells; 255 is full, each cell 32 units, partial cells drawn | DrawEnergyBar `$AEA8` |
 | SCORE | right | 8 BCD digits | DrawScore `$AE60` |
-| INFO | left, row 23 | the message line: a mask's name, a password, "CODE BROKEN" | Scroller `$AF82`, in the interrupt |
+| INFO | left: the label on row 22, the line on row 23 | the message line: a mask's name, a password, "CODE BROKEN" | Scroller `$AF82`, in the interrupt |
 | the title | right, rows 21-23 | MASK III | the panel picture PlayPanel `$F600` |
 
 The menu draws the panel from PlayPanel `$F600` at every start (`$981C`). At the first start that is the picture
@@ -419,8 +424,10 @@ After MISSION TERMINATED, GameOver compares the score with Hiscore `$9D16` byte 
 is equal or greater, it is copied. The menu shows the high score.
 
 The ending does not update the high score: Ending `$ADF6` jumps to GameStart without the comparison. `rec/rzx-36000`
-finishes the game with 31 004 points, and its menu shows HISCORE 00000000. The witness of the comparison is
-`rec/rzx-28000`: MISSION TERMINATED at frame 750, HISCORE 00019090 at frame 3250.
+finishes the game with 31 004 points, and its menu shows HISCORE 00000000 (the segment starts from the RZX's own state,
+where no GameOver had run). The witness of the comparison is `rec/rzx-28000`: MISSION TERMINATED at frame 750,
+HISCORE 00019090 at frame 3250. That death is the replay's, after the segment drifted from the RZX at frame 500, not
+the original player's.
 
 ### The cheat
 

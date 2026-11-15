@@ -17,7 +17,7 @@ ImJr           EQU $FFFF  ; $18, the JR that sends the vector $FFFF to $FFF4
 ; Addresses in other RAM banks (@bank)
 MusicStart     EQU $C000  ; bank 4: the AY player: start tune A-1 (src/music/music.ann)
 MusicPlay      EQU $C003  ; bank 4: the AY player: one frame of the tune
-MusicTune      EQU $C006  ; bank 4: the player's current tune, $FF when none
+MusicTune      EQU $C006  ; bank 4: $FF while a tune runs from its start (MusicStart $C116), 0 when every channel has ended (MusicFrame $C12D / $C133) or MusicStop $C00B; the menu's interrupt restarts tune 1 when it is not $FF ($927E)
 MusicStop      EQU $C00A  ; bank 4: the player: silence
 EffectChannelA EQU $C334  ; bank 4: the player's effect block of channel A
 EffectChannelB EQU $C346  ; bank 4: the effect block of channel B

@@ -52,13 +52,13 @@ Written by `kit/refdocs.py`.
 | `$9710` | `HudSaved` (`NotInPlay`+3) | 1 | `$FF` as loaded: the first Menu skips SaveHud (PlayPanel `$F600` still holds the loaded panel); Menu then sets 0, so every later Menu copies the screen's panel back to `$F600` (BuildTables overwrote it) | `Menu` | `Menu` |
 | `$9711` | `MenuColours` (`NotInPlay`+4) | 16 | 16 colours for the menu's lit icon and bars | `MenuInterrupt` | - |
 | `$9721` | `MenuColourCount` (`NotInPlay`+20) | 2 | the colour cycle's step | `MenuInterrupt` | `MenuInterrupt` |
-| `$A89A` | `MapPointer` | 3 | RoomMaps + 240 x room + RoomScreen: the screen's first block | `DrawRoom`, `FindBlock` | `DrawRoom`, `NewGame` |
+| `$A89A` | `MapPointer` | 3 | Room0Map + 240 x room + RoomScreen: the screen's first block | `DrawRoom`, `FindBlock` | `DrawRoom`, `NewGame` |
 | `$AA72` | `LiftPlace` | 3 | The zone-0 lift's map address and direction (AnimateLift `$CA3D`) | `AnimateLift` | `FindLift`, `AnimateLift` (`stage1/rec/rzx-00000`) |
 | `$AAA1` | `AnimatedCells` | 202 | The dirty-map addresses of the screen's animated characters, `$FF`xx at the end | `AnimatedCharList`, `MarkAnimated` | `AnimatedCharList` |
 | `$ABB5` | `AnimatedChars` | 72 | The animated character codes of each zone, 0-terminated, and the four list pointers at `$ABF5` | `AnimatedCharList`, `FindNextBlock` (`stage1/rec/rzx-00000`) | `FindBlock` |
-| `$AC7F` | `FloorRow` | 1 | the first character row with a solid attribute | `KindWave` (`stage1/rec/rzx-12000`), `SpawnWalker` (`stage1/rec/rzx-00000`) | `FindFloorRow` |
+| `$AC7F` | `FloorRow` | 1 | 8 x the number of free character rows down column 0 of the shown map to the first solid character (a pixel y); read by SpawnWalker and KindWave | `KindWave` (`stage1/rec/rzx-12000`), `SpawnWalker` (`stage1/rec/rzx-00000`) | `FindFloorRow` |
 | `$AC9C` | `SpawnPoints` | 4 | Two map places of block `$61`, where kind-12 enemies rise | `SpawnRiser` (`stage1/rec/rzx-16000`) | `FindSpawnPoints` |
-| `$ACDA` | `BlockItems` | 16 | Up to four block-`$1B` items of the screen (map address, place) | `TakeBlockItem` | `FindBlockItems`, `TakeBlockItem` (`stage1/rec/rzx-20000`) |
+| `$ACDA` | `BlockItems` | 16 | Up to three block-`$1B` items of the screen (map address, place): four entries, FindBlockItems stores at most three, the last stays empty | `TakeBlockItem` | `FindBlockItems`, `TakeBlockItem` (`stage1/rec/rzx-20000`) |
 
 ## entry
 
@@ -143,7 +143,7 @@ Written by `kit/refdocs.py`.
 | `$AF0F` | `ScrollerLeft` (`EnergyParts`+11) | 1 | characters left to scroll | `Scroller`, `ScrollerNextChar` | `Menu`, `Scroller`, `ScrollerNextChar`, `l_B0EA`, `MenuLoop` (`stage1/rec/rzx-00000`) +2 |
 | `$AF10` | `ScrollerPtr` (`EnergyParts`+12) | 2 | the next character | `ScrollerNextChar` | `Scroller`, `ScrollerNextChar`, `l_B0EA`, `ShowMaskName` (`stage1/rec/rzx-16000`), `ShowMessage` (`stage2/rec/play2`) |
 | `$AF12` | `ScrollerShift` (`EnergyParts`+14) | 9 | the pixel step | `Scroller`, `l_B0EA`, `ShowMaskName` (`stage1/rec/rzx-16000`), `ShowMessage` (`stage2/rec/play2`) | `Menu`, `Scroller`, `ScrollerNextChar`, `l_B0EA`, `MenuLoop` (`stage1/rec/rzx-00000`) +2 |
-| `$AF1B` | `PickupRecords` (`EnergyParts`+23) | 16 | two pick-up records of 8 bytes | `CheckPickups`, `PlaceOnePickup`, `PlacePickup`, `RestoreOnePickup` | `CheckPickups`, `PlacePickup` |
+| `$AF1B` | `PickupRecords` (`EnergyParts`+23) | 16 | two pick-up records of 8 bytes: y, x (`$FF` once taken), kind, map address, PickupTable address, first sprite character | `CheckPickups`, `PlaceOnePickup`, `PlacePickup`, `RestoreOnePickup` | `CheckPickups`, `PlacePickup` |
 | `$AF2B` | `MaskSlots` (`EnergyParts`+39) | 16 | four slots [screen column, kind, BCD charges, level] | `CheckPickups`, `DrawCurrentSlot`, `FireMask`, `MaskKeys`, `MattFall` +10 | `CheckPickups`, `NewGame`, `UseCharge`, `DrawObject` (`stage2/rec/cheat`), `DrawObjects` (`stage2/rec/masks`) +1 |
 | `$AF3B` | `MaskLevels` (`EnergyParts`+55) | 11 | the level a kind starts with, per kind 0-10 | `CheckPickups` | - |
 | `$AF46` | `MaskColours` (`EnergyParts`+66) | 11 | the icon colour per kind | `DrawIcon`, `PlacePickup` | - |

@@ -363,7 +363,7 @@ Witness: L1 26094 (c1, cheat, door, door3, kind6, masks, play2).
 
 **Interrupt, 128K: silence each channel whose EffectStops flag is set (writes the player's block +6)**
 
-Channel C's test is inverted (RET NZ at `$9491`): it zeroes channel C's hold every interrupt while its flag is clear and does nothing when it is set. Inaudible: channel C's envelopes end by themselves (docs/09-sound.md, 9.9).
+Channel C's test is inverted (RET NZ at `$9493`): it zeroes channel C's hold every interrupt while its flag is clear and does nothing when it is set. Inaudible: channel C's envelopes end by themselves (docs/09-sound.md, 9.9).
 
 Witness: L1 26094 (c1, cheat, door, door3, kind6, masks, play2).
 
@@ -2692,6 +2692,10 @@ Witness: L1 488 (kind6).
 
 Run only in work/stage2/rec/door3 (an EnemyKind POKE), frames 1478-1968.
 
+Kind 18 (the head) has no hits test, so shots never kill it; a LIFTER hit runs ObjectShot and sets +`$1B` = -1. Each pass it keeps its y in +`$1C`, bobs (+`$12` grows for 8 passes and shrinks for 8, by bit 3 of +`$11`, and is added to y) and moves x - 1; a touch costs Damage and the head stays.
+
+Kind 19 at `$C9B8` (the body) keeps its y in +`$1C`, takes the y the record before it had last pass (IX-`$0A`, that record's +`$1C`) and moves x - 1: the group follows the head as a chain, one pass behind each. A touch costs Damage. When its +`$1B` is non-zero (the tail) and x < `$38`, all six slots become the placeholder `$80`: the whole group leaves at once.
+
 Witness: L1 167 (door3).
 
 | | |
@@ -3111,6 +3115,8 @@ The RET at `$B84F` never ran (known only from the code); the steps from `$B850` 
 ### `JumpEdges` (`$B87F`)
 
 **The jump at the screen edges**
+
+At an edge the branches jump into the fall step `$B8A7` inside MattFall's CALL; its RET returns to `$B87C`, which runs the step again: the pass that crosses a screen edge in the fall adds v to y and grows v twice (rzx-04000 frames 2696-2702: y `$0F` v 3 -> y `$16` v 5).
 
 Witness: L1 719 (c1, cheat, door, door3, kind6, masks, play2, rzx- x9).
 
