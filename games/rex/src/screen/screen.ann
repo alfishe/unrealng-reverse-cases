@@ -10,14 +10,14 @@ $4000 b LoadingScreenRex1 32 ; REX 1's loading screen: 6144 bytes of pixels, 768
 
 @piece rex2
 @module screen-rex2 ; REX 2's loading screen
-@about Side 1 block 10: REX 1's picture with 142 bytes changed from offset 2147 (docs/03-build-and-load.md 3.1), saved as Bytes "ds", start 40000, loaded at $4000.
+@about Side 1 block 10: REX 1's picture with 141 bytes changed, the first at $4862 (offset 2146; 142 bytes of the tape block, checksum included) (docs/03-build-and-load.md 3.1), saved as Bytes "ds", start 40000, loaded at $4000.
 $4000 b LoadingScreenRex2 32 ; REX 2's loading screen: 6144 bytes of pixels, 768 of attributes
 > Witness: c2 loads it at $4000 (work/stage1/c2/screens).
 @res screens/rex2.bin
 
 @piece demo
 @module screen-demo ; DEMO's loading screen
-@about Side 2 block 4: REX 2's picture with 97 bytes changed, saved as Bytes "ds", start 40000, loaded at $4000.
+@about Side 2 block 4: REX 2's picture with 96 bytes changed (97 of the tape block), saved as Bytes "ds", start 40000, loaded at $4000.
 $4000 b LoadingScreenDemo 32 ; DEMO's loading screen: 6144 bytes of pixels, 768 of attributes
 > Witness: d1 loads it at $4000 (work/stage1/d1/screens).
 @res screens/demo.bin

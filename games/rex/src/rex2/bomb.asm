@@ -14,8 +14,8 @@ SmartBombFree:
   RET NZ
   JP SmartBombStart
 
-; SPACE: one smart bomb from Bombs $A266 (none left, nothing): the flash on
-; $A1C9, the HUD, the timer 14, and the 20 enemy bullets marked (state 2)
+; SPACE: one smart bomb from Bombs $A205 (none left, nothing): the HUD,
+; SmartBombOn $A1C9 = 1, 14 steps, and the 20 enemy bullets marked (state 2)
 ;
 ; Changed from REX 1's SmartBomb $9751 (src/game/bomb.asm).
 ;
@@ -41,18 +41,19 @@ SmartBombStart:
   LD HL,$5D28
   LD B,$14
 MarkLoop:
-  LD A,(HL)               ; the next object
+  LD A,(HL)               ; the next enemy bullet's live byte
   OR A
   JP Z,MarkNext
   LD (HL),$02
 MarkNext:
-  LD DE,$000F             ; the next record
+  LD DE,$000F             ; the next enemy bullet record
   ADD HL,DE
   DJNZ MarkLoop
   RET
 
-; One step of a running smart bomb: kill the next marked object, flash the
-; screen
+; One step of a running smart bomb: KillObject on the next object record (not
+; kinds $FE, $FD, $FC, $90; neither the alive byte nor kind $FF tested);
+; CopyAttrs after the last of 14 steps; records of 27 bytes
 ;
 ; As REX 1's SmartBombStep $9786 (src/game/bomb.asm).
 ;

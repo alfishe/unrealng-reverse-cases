@@ -30,6 +30,17 @@ FONT = 0x5FE0
 CHAR_FLAGS, CHAR_GFX, CHAR_ATTRS, BLOCK_DEFS, ROOM_MAPS = 0x62E0, 0x63E0, 0x6BE0, 0x6CE0, 0x75E0
 BACK_BUFFER, ATTR_SHADOW, ROOM_GRID = 0xEB00, 0xE4FF, 0xE19F
 MIRROR = 0xAD5D
+# Sheets no recording drew, from build/game.bin: (address, width, height, frames, (how, why))
+CODE_ONLY = [
+    (0x816A, 3, 24, 1, ('DeathAnimation $9AC5: shard n at +72 n',
+                        'from the code: n is 1-8, never 0')),
+    (0x8872, 2, 16, 4, ('PodFrame0-3 $BF43-$BF55, the pod timer 5-2',
+                        'from the code: a pod about to vanish')),
+    (0x8A42, 1, 4, 6, ('BeamByte $B852: 4 bytes, 32 apart',
+                       'from the code: the laser fired left')),
+    (0x8F4A, 1, 4, 6, ('BeamByte $B852: 4 bytes, 32 apart',
+                       'from the code: the laser fired right')),
+]
 
 
 def ink(attr):
@@ -387,6 +398,15 @@ def cmd_sheet(args):
         per_row = max(1, (WIDTH - lw - 12) // (w * 8 * sc + 6))
         lines = (count + per_row - 1) // per_row
         plan.append((addr, name, r, w, h, count, per_row, max(70, lines * (h * sc + 15) + 8), end))
+    # Drawn from the code, no recording: the pictures not drawn by DrawSprite in the 46 traces that have no figure
+    # elsewhere (the HUD icons are figure 8.4)
+    for addr, w, h, count, note in CODE_ONLY:
+        r = {'n': 0, 'callers': set(), 'sizes': {(w, h): 0}, 'lists': set(), 'mirror': False, 'fixed': False,
+             'note': note, 'first': 'code'}
+        per_row = max(1, (WIDTH - lw - 12) // (w * 8 * sc + 6))
+        lines = (count + per_row - 1) // per_row
+        name = next(n for a, n in labels if a == addr)
+        plan.append((addr, name, r, w, h, count, per_row, max(70, lines * (h * sc + 15) + 8), addr + count * w * h))
     pic = Image.new('RGB', (WIDTH, 60 + sum(p[7] for p in plan) + 80), K.BACKGROUND)
     d = ImageDraw.Draw(pic)
     fs, f = K.font(11), K.font(13)
@@ -400,8 +420,12 @@ def cmd_sheet(args):
         if r['fixed']:
             how = (how + ', ' if how else '') + 'fixed frame'
         d.text((12, y + 31), how + (', mirrored' if r['mirror'] else ''), fill=K.DIM, font=fs)
-        d.text((12, y + 45), 'by ' + ', '.join(sorted(r['callers'])) + f'; {r["n"]} calls', fill=(80, 210, 120),
-               font=fs)
+        if 'note' in r:
+            d.text((12, y + 31), r['note'][0], fill=K.DIM, font=fs)
+            d.text((12, y + 45), r['note'][1], fill=(230, 160, 60), font=fs)
+        else:
+            d.text((12, y + 45), 'by ' + ', '.join(sorted(r['callers'])) + f'; {r["n"]} calls', fill=(80, 210, 120),
+                   font=fs)
         for i in range(count):
             o = i * w * h
             px = lw + (i % per_row) * (w * 8 * sc + 6)
@@ -411,8 +435,11 @@ def cmd_sheet(args):
             draw_bytes(pic, px, py + 13, mem[src:src + w * h], w, sc)
         y += hh
         d.line([12, y - 4, WIDTH - 12, y - 4], fill=(40, 40, 50))
-    d.text((12, y + 4), f'{len(plan)} sheets from {sum(p[2]["n"] for p in plan)} calls in 22 recordings; frames cut at '
-           'the most used size, at most 32 shown.', fill=K.DIM, font=f)
+    seen = [p for p in plan if 'note' not in p[2]]
+    d.text((12, y + 4), f'{len(seen)} sheets from {sum(p[2]["n"] for p in plan)} calls in 22 recordings; frames cut at the most used size, at most 32 shown.', fill=K.DIM, font=f)
+    d.text((12, y + 22), f'Then {len(plan) - len(seen)} sheets no recording drew (orange), from build/game.bin.',
+           fill=(230, 160, 60), font=f)
+    y += 18
     if odd:
         d.text((12, y + 22), 'Calls with a picture outside the sprite area: ' + ', '.join(
             sorted({f'${p:04X} {w}x{h}' for p, w, h, _ in odd})), fill=(230, 90, 80), font=f)

@@ -214,8 +214,9 @@ SwingGunFire:
 ;
 ; Used by the routine at UpdateObject.
 RamTurn:
-  LD A,(IX+$11)           ; The ramming pod's turn: the turning pictures, then
-                          ; kind 7 again
+  LD A,(IX+$11)           ; The hit foot man's turn (kind 6, from DrawObject):
+                          ; the turning frames (FramesTurn) at count +$11 = 4,
+                          ; kind 7 at 0
   CP $04
   JP NZ,RamTurnCount
   LD HL,FramesTurn
@@ -1022,7 +1023,8 @@ BlockedRight:
 l_CADF:
   LD (IX+$02),$01
 
-; Kinds 6 and 7 off the edge die; 3, 4, 5 stop
+; Kinds 6 and 7 off the edge die (KillObject); 3, 4, 5 vanish (ObjectGone:
+; alive 0, no score)
 ;
 ; As REX 1's WalkOff $C47A (src/game/objects.asm).
 ;

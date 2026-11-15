@@ -319,7 +319,7 @@ BufferToScreen:
   LD HL,BufferPlayOrigin
   LD BC,$13B0
 BufferLine:
-  POP DE                  ; each line: 16 words through the stack
+  POP DE                  ; each line: its screen address from ScreenLines
   INC DE
   INC HL
   LDI

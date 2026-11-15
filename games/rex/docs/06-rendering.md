@@ -332,7 +332,7 @@ Worked example: room 0, block row 3, block 6. The map byte is at `$75E0 + 70 x 0
 Its 9 characters are at `$6CE0 + 9 x 8 = $6D28`: `00 00 00 / F9 00 00 / 9C 00 00`. IX for the block is
 `$EB00 + 3 x $300 + 3 x 6 = $F412`. The middle row's first character `$F9` goes to `$F412 + $100 = $F512`:
 
-- attribute `$05` (cyan on black) to the shadow at `$E6B2` (= `$59B2` on the screen: row 13, column 19);
+- attribute `$05` (cyan on black) to the shadow at `$E6B2` (= `$59B3` on the screen: row 13, column 19; CopyAttrs `$C8BF` copies `$E55F` to `$5860`, `$8CFF` lower);
 - type 0 to the grid at `$E352`;
 - entry 219 of SceneryCellList: buffer `$F512`, picture `$6BA8` (= `$63E0 + 8 x $F9`); CellIndexMap holds 219 for the
   cell;
@@ -341,7 +341,7 @@ Its 9 characters are at `$6CE0 + 9 x 8 = $6D28`: `00 00 00 / F9 00 00 / 9C 00 00
 Character `$9C` (attribute `$04`, green) is entry 220, buffer `$F612`, picture `$68C0`, line 112. The six zeros are not
 listed; their shadow bytes hold CharAttrs + 0 = `$47`. Memory of `p1-cursor` at frame 1006 confirms every value:
 entries 219 and 220 hold `12 F5 A8 6B` and `12 F6 C0 68`, the shadow `05 47 47` at `$E6B2`, the screen's attributes the
-same at `$59B2`.
+same at `$59B3` (`c1` `screens/001500.scr` too).
 
 ![Room 0, block row 3, block 6 from the map byte to the pixels](img/render/build-block.png)
 
@@ -467,7 +467,7 @@ the cell wins: the sprite disappears behind it. That is the game's only masking.
 because they are drawn last, not because of a mask. Blank cells (character 0) are not listed, so the sprites show on
 them.
 
-The list costs 364 x 306 T = 1.57 frames a pass in room 0: the biggest single cost of a pass (6.2). It also makes the
+The list costs 364 x 306 T = 1.57 frames a pass in room 0 by the instructions, 1.60 measured with the loop (6.2): the biggest single cost of a pass (6.2). It also makes the
 animated characters work for free: DrawAnimCells copies from CharGraphics each time, so a character changed in place
 changes on screen in every cell that uses it (6.5).
 
@@ -929,7 +929,8 @@ flowchart LR
 
 ![Every sprite sheet DrawSprite drew](img/render/sprites.png)
 
-*Figure 6.8: the 28 sprite sheets DrawSprite `$B258` drew in 22 recordings, each with its size, its frame list or
+*Figure 6.8: the 28 sprite sheets DrawSprite `$B258` drew in 22 recordings, then (orange) four sheets drawn from the
+code that no recording shows (SpriteRexDeath, SpritePowerPod, SpriteLaserA, SpriteLaserB; 6.12), each with its size, its frame list or
 "fixed frame", whether it was drawn mirrored, its caller and its call count. Recordings `rzx-p1-00000` to
 `rzx-p1-64000` (17 segments, frames 600-605 and 1600-1605), `p1-room14/24/26/27/30`, `p1-code` and `p1-cursor`
 (frames 400-405 and 900-905). Commands: `python3 work/docs/rxB/collect_sprites.py` (the calls, into
@@ -956,7 +957,8 @@ What the sheets show:
 - The pods (SpritePodA `$86F2`, SpritePodB `$87B2`) and the swing gun (`$8EAA`) are fixed-frame animations of 6 and 5
   frames.
 
-Labels in `build/game.lst` whose pictures no recording drew are in [the notes](#612-known-only-from-the-code).
+Labels in `build/game.lst` whose pictures no recording drew are named in [the notes](#612-known-only-from-the-code);
+the four without a figure elsewhere close figure 6.8.
 
 The point: the sprites are stored once per pixel phase, not once per frame, and only right-facing. Rex costs 2 x 192
 bytes; the shield 336. The animation of the enemies is in their own code, which swaps the fixed frame each pass.
@@ -986,7 +988,7 @@ MoveShots picks the drawing by the record's type, IX+`$0B` & `$7F`:
 | 0, 1, 3 (gun) | DrawShotByte `$B893` | one byte: Rex's `$B7` right, `$ED` left; an enemy's `$97` right, `$E9` left |
 | 4 (spray dot) | DrawShotDot `$B867` | 4 lines from 2 lines up: Rex's `10 1C 38 08`, an enemy's `00 10 28 10` |
 | 6 (spark) | MoveSparkShot `$B920` | random masks |
-| 7 (beam, the laser) | BeamByte `$B852` | the beam's bytes, 32 apart |
+| 7 (beam, the laser) | BeamByte `$B852` | 4 bytes, 32 apart, from SpriteLaserA `$8A42` (leftwards) or SpriteLaserB `$8F4A` (rightwards) + the frame of BeamPath (figure 6.8) |
 | state 2, 3 | ShotFlash1 `$B7BD`, ShotFlash2 `$B7D8` | the hit flash |
 | stopped by a wall | ShotStopped `$B794` | `$10` |
 
@@ -1174,7 +1176,7 @@ A28A  ED 73 93 A0  BufferToScreen: LD (Temp1),SP
 A28E  31 0D AC                     LD SP,ScreenLines
 A291  21 FF EA                     LD HL,BufferPlayOrigin
 A294  01 B0 13                     LD BC,$13B0
-A297  D1           BufferLine:     POP DE                  ; each line: 16 words through the stack
+A297  D1           BufferLine:     POP DE                  ; each line: its screen address from ScreenLines
 A298  13                           INC DE
 A299  23                           INC HL
 A29A  ED A0                        LDI
@@ -1255,5 +1257,13 @@ line keeps the address arithmetic of every writer to a shift and an add; the 2 b
   nor the bonus starts it.
 - **ClearBuffer's off-by-one** (6.6): `$FFFF` is never cleared and `$EAFF` is. Neither byte is on the screen.
 - **DrawRoom's attribute loop** (6.3) is dead in effect: BuildRoom zeroes its result before CopyAttrs.
-- **Unseen sprite labels.** The sprite area `$7F72-$947A` has labels no recording drew: the sheets of figure 6.8 are
-  those seen.
+- **Unseen sprite labels.** The sprite area `$7F72-$947A` has six labels DrawSprite never drew in the 46 traces:
+  - SpriteRexDeath `$816A`: the base of Rex's death shards (DeathAnimation `$9AC5`, `$9AE1`: frame n at
+    `$816A` + 72 n). A shard's frame runs 1-8 (0 means no shard), so the shards draw `$81B2-$83F1`, SpritePoints'
+    eight frames; the 72 bytes at `$816A` itself are never drawn. No death falls in the 46 windows. Figure 6.8 shows
+    them from the code.
+  - SpritePowerPod `$8872`: the power pod's last four frames (PodFrame0-3 `$BF43-$BF55`, the pod's timer 5-2); figure 6.8 shows them
+    from the code.
+  - SpriteLaserA `$8A42` and SpriteLaserB `$8F4A`: the laser beam, copied 4 bytes at a time by BeamByte `$B852`, not
+    by DrawSprite (6.10). Figure 6.8 shows their six frames from the code.
+  - SpriteHudIcons `$8C0A` and SpriteHudIcons2 `$8CAA`: the HUD's icons, drawn by DrawCharBlock (doc 8, figure 8.4).

@@ -4,7 +4,7 @@ What this covers: every record Rex keeps about a room and the things in it.
 
 - The room is three tables: the exits record (RoomExits `$B133`), the block map (RoomMaps) and the object list
   (RoomObjectLists).
-- The things in a room are up to 31 object records of 24 bytes at ObjectTable `$5E66`.
+- The things in a room are up to 16 object records of 24 bytes at `$5E66-$5FE5` (ObjectTable).
 - Rex's bullets are 30 records of 15 bytes at `$5B60`; the enemies' bullets are 20 records at `$5D22`.
 - The game variables are one block at `$A012-$A0C3` (Variables).
 - The cells of the room grid have types (CharFlags), which the movers and the collisions read.
@@ -273,8 +273,10 @@ Witness: CharFlags is read by every mover (L1 counts of IsSolid and IsPassable i
 
 ## 7.4 The object record, 24 bytes
 
-ObjectTable `$5E66` holds 31 records of 24 bytes (`$5E66-$614D`). A room uses ObjectCount of them. MakeObjects clears
-the first 16 (`$180` bytes) on a room change; a list holds at most 16 objects.
+ObjectTable `$5E66` holds 16 records of 24 bytes (`$5E66-$5FE5`). A room uses ObjectCount of them. MakeObjects clears
+the 16 (`$180` bytes) on a room change; a list holds at most 16 objects. ObjectCount is 5 bits (`AND $1F` in
+ReadExits), but no room lists more than 16: records 17-31 would be the stack (`$5FE2-$5FFF`) and the code from `$6000`.
+The name ObjectTable is a label only in DEMO (`$5EF6`); in REX 1 it names the address in the comments.
 
 | Byte | Field | Values |
 | --- | --- | --- |
@@ -284,7 +286,7 @@ the first 16 (`$180` bytes) on a room change; a list holds at most 16 objects.
 | +3 | jump or explosion step | a walker's jump flag; BlowUp counts its pictures here |
 | +4, +5 | picture, or the jump step pointer, or a flyer's dX and dY | by kind |
 | +6 | fall speed | 0 not falling |
-| +9 | kind | 0-20, `$FC-$FF` (7.5); bit 7 a variant |
+| +9 | kind | 0-20, `$FC-$FF` (7.5); bit 7 a foot man's jump state, the big gun's mark |
 | +`$0A`, +`$0B` | frame list | the shift frames used by DrawObject |
 | +`$0C` | alive | 0 a free record |
 | +`$0D` | explosion passes left | 8 when killed |
@@ -372,8 +374,8 @@ Witness: MakeObjects in the `c1` trace of TTD frame 16 957; the samples of frame
 | 2, 3 | | 100 | | walkers |
 | 4 | | 200 | | a walker; a person |
 | 5 | | 300 | | a walker; a person; its death ends the scripted spawn |
-| 6 | | 100 | 2 | the "hit" state of a foot man (7.8): bullets do not hurt it while it is kind 6; a person |
-| 7 | | 100 | | a walker; a person |
+| 6 | | 100 | 2 | the hit foot man (7.8): 6 passes (each bullet renews them), bullets take no hits; then kind 7; a person. A list's kind 6 becomes the standing gunman `$80` (InitKind6), not this |
+| 7 | | 100 | 2 | the foot man after his hit state: the next bullet kills him; stays at walls, dies off ledges; a person |
 | 8 | SCANNER | 600 | 16 | stalks Rex: rises and sinks to his height, walks his way |
 | 9 | SWING GUN | 600 | 10 | a turret: eight angle pictures, a shot in its angle at random |
 | 10 | SHOOTERS | 500 | | two shots at once, right and left, every few passes |
@@ -395,10 +397,14 @@ points (7.9). They agree with the roll call's ten names (`src/res/texts/rex1-rol
 +`$14` byte where the samples show it. The six persons (0, 4, 5, 6, 7, 12) add one to HumansKilled `$A089` when
 killed; the game over panel prints it.
 
-Bit 7 of the kind marks a variant. For a foot man UpdateObject `$BA97` reads it: a variant (`$80`) fires at Random
-`$F0` and over (1 pass in 16), a plain one at `$FE` and over (1 in 128), and neither while +`$12` = 2. A big gun is
-always a variant (`$90`). Other kinds (the scanner, the ramming pod) set and clear the bit as a state flag of their
-own.
+Bit 7 of a foot man is his SpriteKind6 state, not a variant. SetHop `$C556` sets it for a jump (with +`$12` = 1 and
++`$11` = 16-31) and JumperTimer `$C5B6` clears it (`RES 7` at `$C5D2`). MakeObject masks bit 7 off the list's kind (`AND $7F`),
+but a list's kind 6 is not the hit state: InitKind6 `$CC5B` stores `$80` with +`$11` = `$C8`, which JumperTimer
+never counts down (`CP $C8 / RET Z`), so this standing gunman keeps bit 7 for good. UpdateObject `$BA97` reads it: while
+it is set (`$80`) the foot man fires at Random `$F0` and over (1 pass in 16), else at `$FE` and over (1 in 128), and
+neither while +`$12` = 2. KillObject counts people by the whole kind byte (`$985C-$9876`), so a foot man killed while
+jumping, or the standing gunman, adds nothing to HumansKilled (he still scores KillScores[0]). A big gun is always
+`$90`. Other kinds (the scanner, the ramming pod) set and clear the bit as a state flag of their own.
 
 **The point**: ten names on the menu, seventeen kinds in the code; the unnamed walkers 2-7 are the people and the
 helpers of the scripted rooms.
@@ -439,8 +445,8 @@ points sign. Made by `python3 ../../kit/routine_anim.py --work work/docs/rxC/r04
 ### The walkers (kinds 0-7)
 
 A walker moves by its speed each pass. WalkRight and WalkLeft test the cell ahead: a solid cell turns it. Kinds 6 and
-7 stay instead of turning. At an edge of the room a kind 0 dies; the others turn. Walking off a ledge, kinds 6 and 7
-die and kinds 3, 4 and 5 stop. The markers steer it: `$0E` makes it hop, `$0F` drop, `$10` and `$11` jump right or
+7 stay instead of turning. At an edge of the room a kind 0 vanishes (ObjectGone `$C497`: alive 0, no score); the others turn. Walking off a
+ledge, kinds 6 and 7 die (KillObject) and kinds 3, 4 and 5 vanish (ObjectGone). The markers steer it: `$0E` makes it hop, `$0F` drop, `$10` and `$11` jump right or
 left. At random a walker jumps instead of a step (MaybeJumpRight, MaybeJumpLeft). A kind 0 may become a jumper for a
 while (MaybeJumper, SpriteJumper `$91B2`). A walker with no ground starts to fall (StartFall, JumpSteps `$D0D8`).
 Below line `$B8` a faller dies; a person counts in HumansKilled.
@@ -458,8 +464,11 @@ stateDiagram-v2
     Fall --> Walk: ground
     Fall --> Dead: below line $B8
     Walk --> Dead: kind 0 at the edge
-    Walk --> Hit: a foot man shot in the front
-    Hit --> Exploding: the last hit
+    Walk --> Hit: a foot man shot in the front (kind 6)
+    Hit --> Hit: a bullet, the 6 passes again (HitObjectHard)
+    Hit --> Walk7: +$11 runs out (RamTurn), kind 7
+    Walk7 --> Exploding: the next bullet
+    Walk7 --> Exploding: off a ledge
     Walk --> Exploding: the last hit
     Exploding --> [*]
     Dead --> [*]
@@ -505,7 +514,7 @@ one each way).
 ```mermaid
 stateDiagram-v2
     [*] --> Wait
-    Wait --> Fire: its timer ends, or Random at least $F0 for a variant
+    Wait --> Fire: its timer ends, or Random at least $F0 with kind bit 7 set (the big gun)
     Fire --> Wait: a shot in a free enemy bullet record
     Wait --> Exploding: the last hit
 ```
@@ -946,9 +955,13 @@ Witness: Random runs in every pass that spawns, fires or blows up (L1 in `src/ga
 - SmartBombMark marks no objects: it sets the live byte (+6) of the 20 enemy bullet records at `$5D22` to 2,
   which stops every enemy shot. The objects are killed one a pass by
   SmartBombStep from `$5E66` (doc 10.11).
-- SmartBombStep calls KillObject for 16 records without testing their alive byte. A record cleared by MakeObjects
-  has Y 0, which KillObject refuses. Known only from the code: no recording shows a smart bomb in a room with a dead
-  record that kept its Y.
+- SmartBombStep calls KillObject for 16 records and tests neither the alive byte nor kind `$FF` (only `$FE`, `$FD`,
+  `$FC`, `$90`). A record cleared by MakeObjects has Y 0, which KillObject refuses. But a record that died in this
+  room keeps its Y and kind: a spent explosion (BlowUpEnd `$BE2E`: kind `$FF`, alive 0) scores KillScores[15] = 200
+  again; a walker that vanished (ObjectGone `$C497`: kind 0 at the left edge, 3, 4, 5 off a ledge) scores again, and
+  kinds 0, 4 and 5 add a HumansKilled (KillHuman does not test Dying, so the free bomb of a death counts people too).
+  An object still exploding is killed again: 200 points, its explosion restarted at 8. Known only from the code: no
+  recording shows a smart bomb in a room with such a record.
 - SetSpawnTop .. SetSpawnLeft set the spawn sides to `$FF`.
 - Rooms 14, 24, 26 and 27 are on the map, but no route of the RZX runs enters them; only the POKE recordings
   `p1-room14`, `p1-room24`, `p1-room26` and `p1-room27` reach them (WALKTHROUGH, stage 2 NOTES).

@@ -48,18 +48,19 @@ SmartBombMark:
   LD HL,$5D5D
   LD B,$14
 MarkLoop:
-  LD A,(HL)               ; the next object
+  LD A,(HL)               ; the next enemy bullet's live byte
   OR A
   JP Z,MarkNext
   LD (HL),$02
 MarkNext:
-  LD DE,$000F             ; the next record
+  LD DE,$000F             ; the next enemy bullet record
   ADD HL,DE
   DJNZ MarkLoop
   RET
 
-; One step of a running smart bomb: kill the next marked object, flash the
-; screen
+; One step of a running smart bomb: KillObject on the next object record (not
+; kinds $FE, $FD, $FC, $90; neither the alive byte nor kind $FF tested);
+; CopyAttrs after the last step; records of 23 bytes
 ;
 ; As REX 1's SmartBombStep $9786 (src/game/bomb.asm).
 ;

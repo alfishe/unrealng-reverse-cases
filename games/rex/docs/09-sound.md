@@ -342,7 +342,7 @@ on the same channel B (232 Hz). The trace of `rzx-p1-04000` frame 1528 has Start
 19 330 (SfxBigPod): the second replaces the first before any SoundStep runs. A big pod is heard an octave below a
 small one, and the small pod's sound never plays for it.
 
-**The point**: fourteen effects, three on noise channels and eleven tones on one channel; most last a fraction of a
+**The point**: fourteen effects, six noise effects on two channels (A, C) and eight tones on one (B); most last a fraction of a
 second, the materialise sweeps take four and a half.
 
 Witness: the StartSfx calls in the traces named in the table; the L1 counts quoted for the rest.

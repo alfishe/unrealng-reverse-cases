@@ -922,8 +922,10 @@ Worked example: TutorScript0 starts `11 EF 01 EF 01 ...`. The first count is `$1
 Then `$EF` (bit 4 low: left) for one pass with count 1, many times: Rex walks left for 10 passes. Then `ED 01` (left
 and up, bit 1 low too) three times: a jump to the left.
 
-A script plays until its room's end (TutorNextRoom) or a death. It ends with zero counts as padding: a count of 0
-would hold nothing for 255 passes.
+A script plays until its room's end (TutorNextRoom) or a death. Scripts 0, 1 and 2 end with zero counts as
+padding (a count of 0 would hold nothing for 255 passes). TutorScript4 has none: its last byte `$BAC2` is an input
+(`$EF`) whose count would be ClearBuffer's first opcode (`$ED` at `$BAC3`, 237 passes of left, then code read as
+inputs), so room 4 must end by its 1004th pass; it does in `demo-cycle`.
 
 **SPACE** is DEMO's only key (`$7FFE` bit 0, read at `$8C47`). DemoPause `$9FAD` silences the sound, waits for SPACE
 up, then for SPACE down, then goes on. Witness: `demo-cycle` SPACE at 30000 and 30106; DemoPause L1 1. Its two

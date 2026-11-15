@@ -122,7 +122,9 @@ SpriteRex:
   ; $80F2 Rex walking (DrawRex $96A7)
   INCBIN "res/sprites/rex1.bin",$0180,120
 SpriteRexDeath:
-  ; $816A Rex's death (DeathAnimation $9AC5)
+  ; $816A the base of Rex's death shards (DeathAnimation $9AC5: frame n at
+  ;   +72 n, n 1-8, so SpritePoints' frames; these 72 bytes are never
+  ;   drawn)
   INCBIN "res/sprites/rex1.bin",$01F8,72
 SpritePoints:
   ; $81B2 the points sign a kill leaves (ShowPoints $97FD)
@@ -140,7 +142,7 @@ SpriteHitFlash:
   ; $8632 an object hit (HitObject $D3C2, HitObjectHard $D41F)
   INCBIN "res/sprites/rex1.bin",$06C0,96
 SpriteRamTurn:
-  ; $8692 the ramming pod turning (RamTurn $BD44)
+  ; $8692 the hit foot man turning (RamTurn $BD44)
   INCBIN "res/sprites/rex1.bin",$0720,96
 SpritePodA:
   ; $86F2 a pod left by an explosion ($BDED)
@@ -157,7 +159,8 @@ SpriteShield:
   ;   (DrawShield $9726)
   INCBIN "res/sprites/rex1.bin",$0980,336
 SpriteLaserA:
-  ; $8A42 a long bullet ($B849)
+  ; $8A42 the laser beam fired left: 6 frames of 4 bytes, copied by
+  ;   BeamByte $B852 ($B849)
   INCBIN "res/sprites/rex1.bin",$0AD0,24
 SpriteScanner:
   ; $8A5A kind 8 (scanner) ($C3B0, $C3D2)
@@ -193,7 +196,8 @@ SpriteSwingGun:
   ; $8EAA kind 9 (swing gun), its angles (SwingGunFrames $BECB)
   INCBIN "res/sprites/rex1.bin",$0F38,160
 SpriteLaserB:
-  ; $8F4A a long bullet ($B83F)
+  ; $8F4A the laser beam fired right: 6 frames of 4 bytes, copied by
+  ;   BeamByte $B852 ($B83F)
   INCBIN "res/sprites/rex1.bin",$0FD8,24
 SpriteRexJump:
   ; $8F62 Rex jumping or falling, off a lift (DrawRex $96C4)

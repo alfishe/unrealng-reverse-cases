@@ -35,7 +35,7 @@ read it:
   menu, cyan the buffers and records.
 
 The point: in play, the 9530 bytes of the menu become the room's work space: the cell index, the cell grid, the
-attribute shadow and the back buffer. The level data stays read only; the records of bullets, drones and objects sit below
+attribute shadow and the back buffer. The level data is read only but for the few characters that rotate in place; the scenery cell list `$D962` grows over the menu code (up to `$DF12` in room 0); the records of bullets, drones and objects sit below
 the code, between the screen and the stack; the stack's box starts at its low mark `$5FE2`, 4 bytes into the last
 object record (2.4). Command: `python3 tools/fig_memmap.py`.*
 
@@ -59,8 +59,9 @@ The map of part 1, corrected by stage 2 (the stage-1 draft had room 0 "unused" a
 | `$7F72-$9479` | the sprites, pre-shifted ([the sheet](img/sprites/part1-sheet.png), [doc 6](06-rendering.md)) | DrawSprite `$B258` |
 | `$947A-$A011` | code: the entry, the waits, the main loop `$9583-$967A`, the score, the death | `c1` entered at 13 701 |
 | `$A012-$A0C3` | the variables: score `$A03E`, lives `$A063`, bombs `$A06C`, shield `$A04D`, power `$A014`, room `$A0B8`, Rex `$A0B6`/`$A0B7`, the restart point `$A059-$A05B`, the exits `$A08D-$A090`, the sweep `$A067` | [doc 7](07-objects.md) |
-| `$A0C4-$DABF` | code and tables: HUD, text, rooms, render, objects, weapons, collisions, sound, panels; ScreenLines `$AC0D`, MirrorTable `$AD5D`, RoomExits `$B133`, SceneryCellList `$D962` | the listings |
-| `$DAC0-$DE9E` | the menu's code (TitleMenu, DEFINE, the roll call); dead in play | `c1` |
+| `$A0C4-$D961` | code and tables: HUD, text, rooms, render, objects, weapons, collisions, sound, panels; ScreenLines `$AC0D`, MirrorTable `$AD5D`, RoomExits `$B133` | the listings |
+| `$D962-$DF12` | SceneryCellList in play (up to 364 x 4 bytes + `$FF`, rewritten by every DrawRoom), over the zeros at `$D962` and the menu code; it overruns CellIndexMap by up to 116 bytes ([doc 6, 6.4](06-rendering.md#64-the-cell-list-and-drawanimcells)) | `p1-cursor` frame 1006 |
+| `$DAC0-$E4FE` (as loaded) | the menu: code to `$DF04` (TitleMenu, DEFINE, the roll call), MenuTexts `$DF05`, KeyPorts `$E0E0`, RollCallPictures `$E0F0`, ExplosionPicture `$E336` (the title data follows from `$E4FF`); dead after the menu, reused from `$DE9F` up | `c1` |
 | `$DE9F-$E19E` | CellIndexMap: for each room cell, its entry in SceneryCellList | DrawRoom `$C74C` |
 | `$E19F-$E4FE` | RoomGrid: the cell type of each cell (play from `$E1FF`) | DrawRoomCell `$C7FC` |
 | `$E4FF-$E7FE` | the attribute shadow (play from `$E55F`); the title screen's data before, cleared at the entry `$9485` | CopyAttrs |

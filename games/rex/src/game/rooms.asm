@@ -810,7 +810,9 @@ InitKind0:
   LD DE,Sprites
   RET
 
-; Kind 6
+; List kind 6: the standing gunman, kind $80 (bit 7 kept: +$11 = $C8, which
+; JumperTimer never counts), the fixed picture SpriteKind6, hits 2; a front hit
+; makes it kind 6
 ;
 ; Witness: L1 45 (p1-speedup, p1-room14, p1-room26, p1-room27, p1-room30,
 ; rzx-p1- x14).

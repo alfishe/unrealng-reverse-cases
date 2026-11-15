@@ -93,7 +93,7 @@ MenuLoop:
 ; RollCallText
 ;
 ; TitleMenu's loop falls in here when the next sprite record is the list's $FF.
-; Run by menu-rollcall (the menu left alone for 5300 frames, every enemy shown
+; Run by menu-rollcall (the menu left alone for 5310 frames, every enemy shown
 ; once). c1 also reads these bytes as data in play (frames 18550-20469; the
 ; reader is not identified).
 ;
@@ -116,7 +116,7 @@ RollCallText:
 
 ; The names from the first again (IX = RollCallTexts), then RollCallNext
 ;
-; Reached at the list's end. Run by menu-rollcall (the menu left alone for 5300
+; Reached at the list's end. Run by menu-rollcall (the menu left alone for 5310
 ; frames).
 ;
 ; Witness: L1 1 (menu-rollcall).

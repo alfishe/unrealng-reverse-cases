@@ -60,18 +60,18 @@ $7F72 b Sprites 16 ; The sprites, pre-shifted: each label is a picture set its o
 @res sprites/rex1.bin
 $8032 SpriteStomper ; kind 1 (stomper)
 $80F2 SpriteRex ; Rex walking (DrawRex $96A7)
-$816A SpriteRexDeath ; Rex's death (DeathAnimation $9AC5)
+$816A SpriteRexDeath ; the base of Rex's death shards (DeathAnimation $9AC5: frame n at +72 n, n 1-8, so SpritePoints' frames; these 72 bytes are never drawn)
 $81B2 SpritePoints ; the points sign a kill leaves (ShowPoints $97FD)
 $83F2 SpriteKind5 ; kind 5
 $84B2 SpriteKind3 ; kind 3
 $8572 SpriteKind4 ; kind 4
 $8632 SpriteHitFlash ; an object hit (HitObject $D3C2, HitObjectHard $D41F)
-$8692 SpriteRamTurn ; the ramming pod turning (RamTurn $BD44)
+$8692 SpriteRamTurn ; the hit foot man turning (RamTurn $BD44)
 $86F2 SpritePodA ; a pod left by an explosion ($BDED)
 $87B2 SpritePodB ; a pod left by an explosion ($BE18)
 $8872 SpritePowerPod ; the power pod's four frames ($8872, $8892, $88B2, $88D2: AnimatePod $BED3)
 $88F2 SpriteShield ; the shield bubble round Rex, 4 x 21, through ShiftFrames2 (DrawShield $9726)
-$8A42 SpriteLaserA ; a long bullet ($B849)
+$8A42 SpriteLaserA ; the laser beam fired left: 6 frames of 4 bytes, copied by BeamByte $B852 ($B849)
 $8A5A SpriteScanner ; kind 8 (scanner) ($C3B0, $C3D2)
 $8B5A SpriteScanner2 ; kind 8's start picture (InitKind8 $CCBF)
 $8C0A SpriteHudIcons ; the HUD's weapon and bomb icons (DrawHudIcons $A1E2)
@@ -83,7 +83,7 @@ $8E4A SpriteKind11 ; kind 11 (launcher)
 $8E6A SpriteKind10 ; kind 10 (shooters)
 $8E8A SpriteKind6 ; kind 6
 $8EAA SpriteSwingGun ; kind 9 (swing gun), its angles (SwingGunFrames $BECB)
-$8F4A SpriteLaserB ; a long bullet ($B83F)
+$8F4A SpriteLaserB ; the laser beam fired right: 6 frames of 4 bytes, copied by BeamByte $B852 ($B83F)
 $8F62 SpriteRexJump ; Rex jumping or falling, off a lift (DrawRex $96C4)
 $9022 SpriteKind15 ; kind 15 (blob)
 $90A2 SpriteKind13 ; kind 13 (mine layer)
@@ -135,7 +135,7 @@ $970A DrawRexShield ; the shield on: drain it, the bubble's X
 $9726 DrawShield ; the bubble, 4 x 21 from two lines above Rex
 
 @module bomb ; The smart bomb
-@about SPACE fires a smart bomb (Bombs $A06C, 3 at the start, more from bomb pods): SmartBomb takes one, SmartBombMark marks every object of the room, and SmartBombStep kills them one a pass over 16 steps ($A02F) while the screen flashes. A life lost fires one for free (SmartBombFree $9749 from RexDies $9BDA), so the room is empty when Rex comes back.
+@about SPACE fires a smart bomb (Bombs $A06C, 3 at the start, more from bomb pods): SmartBomb takes one, SmartBombMark stops every enemy bullet, and SmartBombStep kills the object records one a pass over 16 steps ($A02F); there is no screen flash of its own (each kill flashes its cells, CopyAttrs restores the colours at the end). A life lost fires one for free (SmartBombFree $9749 from RexDies $9BDA), so the room is empty when Rex comes back.
 $9749 c SmartBombFree ; A smart bomb that costs nothing (Rex's death): unless one is running, mark the room's objects
 > Witness: L1 42 (c1, p1-cursor, p1-define, p1-gameover, p1-kempston, p1-room24, p1-room30, rzx-p1- x18).
 $9751 c SmartBomb ; SPACE: one smart bomb from Bombs $A06C (none left, nothing), the HUD updated, the room's objects marked
@@ -143,10 +143,10 @@ $9751 c SmartBomb ; SPACE: one smart bomb from Bombs $A06C (none left, nothing),
 $9763 c SmartBombMark ; Start the smart bomb: SmartBombOn $A030 = 1, 16 steps, SmartBombPtr $5E66; every enemy bullet stopped (the live byte +6 of the 20 records from $5D22 set to 2)
 > Writes the object pointers from ObjectTable $5E66 (ObjectCount $A092 records of 24 bytes) into the list at $5D28.
 > Witness: L1 50 (c1, p1-cursor, p1-define, p1-gameover, p1-kempston, p1-room24, p1-room30, rzx-p1- x22).
-$9778 MarkLoop ; the next object
-$977F MarkNext ; the next record
-$9786 c SmartBombStep ; One step of a running smart bomb: kill the next marked object, flash the screen
-> Every pass; returns at once while SmartBombOn $A030 is 0. Each step KillObject $981F on the next object and CopyAttrs $C8BF; after 16 steps the bomb ends.
+$9778 MarkLoop ; the next enemy bullet's live byte
+$977F MarkNext ; the next enemy bullet record
+$9786 c SmartBombStep ; One step of a running smart bomb: KillObject on the next object record (not kinds $FE, $FD, $FC, $90; neither the alive byte nor kind $FF tested); CopyAttrs after the last step
+> Every pass; returns at once while SmartBombOn $A030 is 0. Each step KillObject $981F on the next record; after 16 steps the bomb ends with CopyAttrs $C8BF. A record that died in this room keeps its Y and kind, so it is killed and scored again (a spent explosion: KillScores[15], 200).
 > Witness: L1 18501 (c1, p1-code, p1-cursor, p1-define, p1-gameover, p1-kempston, p1-poke41241, p1-rooms238, p1-shots, p1-speedup, p1-room x5, rzx-p1- x32).
 $97A9 BombNextObject ; the next marked object
 
@@ -458,7 +458,7 @@ $A24C b HudTexts 16 ; The HUD's texts: a row of "#", the figures 0000000:99:3, t
 @res texts/rex1-hud.bin
 $A28A c BufferToScreen ; Copy the back buffer's 168 play lines to the screen through ScreenLines $AC0D (the stack as the pointer)
 > Witness: L1 18698 (c1, p1-code, p1-cursor, p1-define, p1-gameover, p1-kempston, p1-poke41241, p1-rooms238, p1-shots, p1-speedup, p1-room x5, rzx-p1- x32).
-$A297 BufferLine ; each line: 16 words through the stack
+$A297 BufferLine ; each line: its screen address from ScreenLines
 $A2DF c PrintTextHL ; Print the text record at HL (PrintText)
 > Witness: L1 142 (c1, menu-rollcall, p1-code, p1-cursor, p1-define, p1-gameover, p1-kempston, p1-speedup, rzx-p1- x7).
 $A2E9 c PrintChar ; Print character A at column Temp2, line Temp3 (pixels) from Font $60E0 through ScreenLineTable $ABDD
@@ -684,7 +684,7 @@ $B40C c FireDouble ; Double fire's second shot
 $B41D c FireLaser ; The laser's beam
 > Witness: L1 183 (p1-shots, p1-room24, rzx-p1- x6).
 $B436 b SprayDirections 4 ; The spray's 8 directions: [dX word][dY][..], read by FireSpray and by the mine layer's burst (MineBurst $C03A)
-$B456 c FireSpray ; The spray: 8 shots in the 8 directions of SprayDirections, as many as the power level allows
+$B456 c FireSpray ; The spray: at power 1-3 a fan of 3, 5 or 7 shots ahead (SprayShot); at power 4 the four directions, at 5 all eight (SprayDirections)
 > Witness: L1 1010 (p1-code, p1-shots, p1-speedup, p1-room30, rzx-p1- x17).
 $B46D SprayLoop ; each of the 8 directions
 $B47D SprayShot ; the shot
@@ -831,7 +831,7 @@ $BCDD c SwingGun ; Kind 9, the swing gun: its angle picture (SwingGunFrames $BEC
 > Witness: L1 10296 (c1, p1-cursor, p1-kempston, p1-rooms238, p1-speedup, p1-room26, p1-room27, p1-room30, rzx-p1- x22).
 $BD02 SwingGunFire
 $BD2A SwingGunTurn
-$BD44 c RamTurn ; The ramming pod's turn: the turning pictures, then kind 7 again
+$BD44 c RamTurn ; The hit foot man's turn (kind 6, from DrawObject): the turning picture at count +$11 = 4, kind 7 at 0
 > Witness: L1 394 (p1-speedup, p1-room30, rzx-p1- x18).
 $BD5E RamTurnCount
 $BD6B c BlowUp ; An object explodes: the six shards drawn (DrawShard), the attribute flash; at the end it leaves a pod or the points
@@ -931,7 +931,7 @@ $C469 c BlockedRight ; Blocked: kinds 6 and 7 stay, the others turn
 > Witness: L1 290 (p1-code, p1-rooms238, p1-shots, p1-speedup, p1-room14, p1-room24, p1-room30, rzx-p1- x28).
 $C472 c TurnAround ; Direction ^ 1
 > Witness: L1 295 (p1-code, p1-poke41241, p1-rooms238, p1-shots, p1-speedup, p1-room14, p1-room24, p1-room30, rzx-p1- x28).
-$C47A c WalkOff ; Kinds 6 and 7 off the edge die; 3, 4, 5 stop
+$C47A c WalkOff ; Kinds 6 and 7 off the edge die (KillObject); 3, 4, 5 vanish (ObjectGone: alive 0, no score)
 > Witness: L1 511 (p1-code, p1-gameover, p1-poke41241, p1-rooms238, p1-shots, p1-speedup, p1-room14, p1-room24, p1-room26, p1-room30, rzx-p1- x29).
 $C497 c ObjectGone ; The object is dead (alive = 0)
 > Witness: L1 27 (rzx-p1- x8).
@@ -1051,7 +1051,7 @@ $CB8B c MakeObject ; Make an object of kind A at IX: the common sizes, then the 
 > Witness: L1 638 (c1, p1-cursor, p1-define, p1-gameover, p1-kempston, p1-rooms238, p1-shots, p1-speedup, p1-room x5, rzx-p1- x31).
 $CC48 c InitKind0 ; Foot man: SpriteFootMan $7F72, ShiftFrames
 > Witness: L1 212 (c1, p1-rooms238, p1-speedup, p1-room x5, rzx-p1- x28).
-$CC5B c InitKind6 ; Kind 6
+$CC5B c InitKind6 ; List kind 6: the standing gunman, kind $80 (bit 7 kept: +$11 = $C8, which JumperTimer never counts), the fixed picture SpriteKind6, hits 2; a front hit makes it kind 6
 > Witness: L1 45 (p1-speedup, p1-room14, p1-room26, p1-room27, p1-room30, rzx-p1- x14).
 $CC83 c InitKind1 ; Stomper
 > Witness: L1 43 (p1-rooms238, p1-room24, p1-room30, rzx-p1- x14).
@@ -1301,12 +1301,12 @@ $DAC0 c TitleMenu ; The title and menu: the title on, the menu text, the roll ca
 $DB11 MenuLoop ; the menu's wait: keys 1-4, the roll call
 @isub $DB00 LD HL,RollCallSprites-12
 $DB6E c RollCallRestart ; The roll call from its first sprite again (HL = RollCallSprites), then RollCallText
-> TitleMenu's loop falls in here when the next sprite record is the list's $FF. Run by menu-rollcall (the menu left alone for 5300 frames, every enemy shown once). c1 also reads these bytes as data in play (frames 18550-20469; the reader is not identified).
+> TitleMenu's loop falls in here when the next sprite record is the list's $FF. Run by menu-rollcall (the menu left alone for 5310 frames, every enemy shown once). c1 also reads these bytes as data in play (frames 18550-20469; the reader is not identified).
 > Witness: L1 1 (menu-rollcall).
 $DB71 c RollCallText ; The next enemy's name and score (2 text records), the next record; at the list's end RollCallTextStart
 > Witness: L1 14 (c1, menu-rollcall).
 $DB85 c RollCallTextStart ; The names from the first again (IX = RollCallTexts), then RollCallNext
-> Reached at the list's end. Run by menu-rollcall (the menu left alone for 5300 frames).
+> Reached at the list's end. Run by menu-rollcall (the menu left alone for 5310 frames).
 > Witness: L1 1 (menu-rollcall).
 $DB89 c RollCallNext ; Keep the text pointer, back to the menu loop
 > Witness: L1 14 (c1, menu-rollcall).

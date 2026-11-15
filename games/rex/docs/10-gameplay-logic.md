@@ -103,8 +103,8 @@ flowchart TD
     M -- "an exit" --> B
 ```
 
-Worked example: room 0 of `c1` after the first death. The HUD sweep moves one cell a pass. Its position went from 1
-to 11 and back to 1 between TTD frames 16 746 and 16 843: 24 passes in 97 frames, 4.0 frames a pass in a room with
+Worked example: room 0 of `c1` after the first death. The HUD sweep moves one cell a pass. Its position (SweepPos
+`$A064`) went from 1 up to 12, back down to 0 and up to 1 between TTD frames 16 746 and 16 843: 24 passes in 97 frames, 4.0 frames a pass in a room with
 few objects.
 
 ![A jump in room 1: Rex rises, glides and falls](img/play/c1-jump.gif)
@@ -372,7 +372,7 @@ with energy left. ShieldEnergy runs from 0 to 99 and starts at 99.
 
 While the shield is on, DrawRex draws the bubble and calls ShieldDrain. ShieldDrain counts ShieldDrainRate down from
 4: one unit goes every 4 passes. A hit drains faster: ShieldDrainFast sets the rate to 1, so the amount in L goes at
-once. An enemy bullet on the shield costs 1. An object that touches the shield dies and costs its hits left x 4
+once. An enemy bullet on the shield costs 5 (`LD L,$05` at `$D200`). An object that touches the shield dies and costs its hits left x 4
 (doc 7.8). With no energy left the shield goes off.
 
 The recharger is a pair of type 8 cells. Standing on it with the shield off gives one unit a pass, up to 99, with
@@ -862,7 +862,8 @@ becomes 2 (the stopping flash).
 
 SmartBombStep then runs once a pass for 16 passes. Each pass it kills the next object record (KillObject) and moves to
 the next one. It skips the pods (`$FE`, `$FD`, `$FC`) and kind `$90`. It does not test whether the record is alive.
-At the end it puts the room's colours back (CopyAttrs). The screen flash is FadeStep.
+At the end it puts the room's colours back (CopyAttrs). There is no screen flash of its own: each kill flashes its own cells (FlashCells, doc 6.11), and
+CopyAttrs puts the room's colours back at the end.
 
 A death fires a free smart bomb (SmartBombFree from RexDies): the room is cleared for the restart. Its kills score
 nothing, since Rex is dying (10.10).
@@ -929,7 +930,7 @@ crackle of its explosion is in doc 9.6.
 
 ![The smart bomb in room 1](img/play/c1-smart-bomb.gif)
 
-How to read it: one picture every 2 frames. Recording `c1`, TTD frames 17 340-17 400. The screen flashes, the launcher
+How to read it: one picture every 2 frames. Recording `c1`, TTD frames 17 340-17 400. The launcher's cells flash and it
 explodes into the points sign, the walkers die one a pass. Made by `python3 ../../kit/screen_anim.py --work
 work/docs/rxC/c1 --from 17340 --to 17400 --step 2 --delay 70 docs/img/play/c1-smart-bomb.gif`.
 
@@ -1050,7 +1051,7 @@ HudSweep (each pass):
             if SweepCount == 0:
                 SweepCount = 5; SweepWidth -= 1
                 if SweepWidth == 0: RexDies()
-                else: the cell at SweepWidth red
+                else: the cell at SweepWidth green ($04)
 ResetSweep: SweepWidth = 12; SweepCount = 5
 ```
 
@@ -1098,8 +1099,8 @@ room at frame 16 938, and room 1 started again at width 12. A full sweep in one 
 
 ![Part 1 later in the RZX run, with the HUD](img/play/rzx-p1-31000-play.png)
 
-How to read it: RZX frame 31 000 of part 1; the HUD's top row holds the sweep light and, on its right, the cells
-already lost.
+How to read it: RZX frame 31 000 of part 1; row 1 of the HUD, under the score, holds the sweep light (yellow); a
+lost cell would show green at its right end.
 
 **The point**: each room has a time limit of about a minute, shown as a shrinking light, reset by any exit or death.
 
@@ -1112,7 +1113,7 @@ Doc 7.5 lists the seventeen kinds and doc 7.6 their state machines. As rules of 
 
 | Group | Kinds | Threat | How it dies |
 | --- | --- | --- | --- |
-| walkers and people | 0-7, 12 | a touch | 1-2 hits; a foot man shot in the front turns into kind 6, the hit state, which bullets do not hurt (doc 7.8) |
+| walkers and people | 0-7, 12 | a touch | 1-2 hits; a foot man shot in the front turns into kind 6 for 6 passes (each bullet renews them, none takes a hit), then kind 7, which the next bullet kills (doc 7.5) |
 | stalkers | 8 scanner, 15 blob | a touch; the scanner follows Rex's height | 16 hits; a hit pauses the scanner 4 passes |
 | guns | 9 swing gun, 10 shooters, 11 launcher, 16 big gun | enemy bullets (20 at `$5D22`), the launcher's climbing shot, the big gun's volleys | 8-10 hits, a big pod; the big gun weapon x 50 + 16 hits, two kills of 1000 points, then a ramming pod (doc 7.9) |
 | mines | 13 mine layer, 14 mine | a touch; the mines drift | the layer 1000 points; a mine scores nothing |
@@ -1128,7 +1129,7 @@ each pass, for each live object (ObjectHitsRex):
         else: RexDies()
     each of Rex's bullets inside its box: hits - 1, KillObject at 1
 each pass, EnemyBulletsHitRex:
-    each enemy bullet inside Rex's box: ShieldOn: ShieldDrainFast(1), the bullet ends; else RexDies()
+    each enemy bullet inside Rex's box: ShieldOn: ShieldDrainFast(5), the bullet ends; else RexDies()
 ```
 
 ```asm
@@ -1148,7 +1149,7 @@ flowchart TD
     K -- "sweep at its end" --> D
     S -- yes --> KO["object killed, shield minus hits x 4"]
     S -- no --> D
-    S2 -- yes --> B["bullet ends, shield minus 1"]
+    S2 -- yes --> B["bullet ends, shield minus 5"]
     S2 -- no --> D
 ```
 
@@ -1261,8 +1262,10 @@ Part 2 is the same engine with its own rooms and graphics. The rules differ in t
 - cell type 4 is the boss, the big squidgy thing (10.17);
 - the start state comes from the access code (10.15).
 
-The weapon stations, the bomb pod, the bonus roulette and SPEED UP are still in the code. No recording of part 2
-reaches them: GiveLaser, GiveSpray, TakeBombPod, BonusRoulette and SpeedUpTick have L1 0.
+No REX 2 room has a station: `src/res/tables/rex2-char-flags.csv` has no character of types `$0A-$0D` (REX 1:
+characters 232-239), so GiveLaser and GiveSpray are dead code there. The bomb pod, the bonus roulette and SPEED UP can
+still come from a kill (BlowUp's random pods), but no recording of part 2 shows one: TakeBombPod, BonusRoulette and
+SpeedUpTick have L1 0.
 
 ```text
 REX 2 RexWalk / RexJump / RexFall:
@@ -1482,9 +1485,13 @@ Witness: the sections above.
   chain of jumps. No sample was taken on a lift.
 - WalkRightKey's labels: the 2-pixel path is the normal walk, the 4-pixel path the SPEED UP one; SpeedUpTick counts
   the 200 passes only while a walk key is held (`p1-speedup`, SpeedUpTick L1 200).
-- SmartBombStep does not test the alive byte: it calls KillObject on empty records too. A record cleared by
-  MakeObjects has Y 0, and KillObject refuses Y under `$10`, so an empty record does nothing. It skips the pods and
-  the big gun (`$90`). Known only from the code.
+- SmartBombStep tests neither the alive byte nor kind `$FF`: it calls KillObject on all 16 records but the pods and
+  the big gun (`$90`). A record cleared by MakeObjects has Y 0, and KillObject refuses Y under `$10`. But a record
+  that died in this room keeps its Y and kind: a spent explosion (BlowUpEnd `$BE2E`: kind `$FF`, alive 0) scores
+  KillScores[`$FF` AND `$0F`] = KillScores[15] = 200 again, and a walker that vanished (ObjectGone `$C497`: kind 0 at
+  the left edge, kinds 3, 4, 5 off a ledge) its score again, plus a HumansKilled for kinds 0, 4 and 5 (KillHuman does
+  not test Dying, so the free bomb of a death counts people too while AddScore scores nothing). An object still
+  exploding is killed again: 200 points and its explosion restarted. Known only from the code.
 - ExitLeft places Rex at X `$E8`, not `$E0`.
 - BestWeapon reads WeaponIcon `$A04F` as the gun's "held" flag; it is 1 in every sample.
 - The access code checksum is written units, tens, hundreds into places 13, 15, 14.
@@ -1528,6 +1535,6 @@ The deaths refilled a shield that was already full.
 How to read it: the screenshot `c1-001500` (TTD frame 16 500), room 0 with the shield figure 99 in the HUD.
 
 **The point**: what the code can do and what the recordings showed differ: the lift and part 2's pods were read from
-the code only.
+the code only, and part 2's stations are dead code (no REX 2 room has one).
 
 Witness: `src/game/cells.asm` (OnLadder), `src/game/rexmove.asm`, `src/game/bomb.asm`; the `c1` samples.

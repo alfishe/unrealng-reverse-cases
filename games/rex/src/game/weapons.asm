@@ -174,8 +174,8 @@ SprayDirections:
   DEFB $FF,$FF,$F8,$08
   DEFB $FF,$FF,$F8,$F8
 
-; The spray: 8 shots in the 8 directions of SprayDirections, as many as the
-; power level allows
+; The spray: at power 1-3 a fan of 3, 5 or 7 shots ahead (SprayShot); at power
+; 4 the four directions, at 5 all eight (SprayDirections)
 ;
 ; Witness: L1 1010 (p1-code, p1-shots, p1-speedup, p1-room30, rzx-p1- x17).
 FireSpray:

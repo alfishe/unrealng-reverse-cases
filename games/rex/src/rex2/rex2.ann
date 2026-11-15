@@ -38,7 +38,7 @@ $8198 b Sprites 16 ; The sprites, pre-shifted: each label is a picture set its o
 > $8198 is kind 0's picture (a walker, InitKind0 $CC05) and UpdateObject's default.
 @res sprites/rex2.bin
 $8258 SpriteHitFlash ; an object hit (HitObject, HitObjectHard)
-$82B8 SpriteRamTurn ; the turning picture (RamTurn $C032)
+$82B8 SpriteRamTurn ; the hit foot man turning (RamTurn $C032)
 $8318 SpriteKind6 ; kind 6 and the hop (InitKind6 $CC18, StartHop $C5BE)
 $8338 SpriteJumper ; a walker turned jumper (MakeJumper $C60D)
 $8358 SpriteRex ; Rex walking (DrawRex)
@@ -104,13 +104,13 @@ $970E DrawShield ; the bubble, 4 x 21 from two lines above Rex
 $9731 c SmartBombFree ; A smart bomb that costs nothing (Rex's death): unless one is running, mark the room's objects
 > As REX 1's SmartBombFree $9749 (src/game/bomb.asm).
 > Witness: L1 36 (c2, p2-room20, rzx-p2- x14).
-$9739 c SmartBomb ; SPACE: one smart bomb from Bombs $A266 (none left, nothing): the flash on $A1C9, the HUD, the timer 14, and the 20 enemy bullets marked (state 2)
+$9739 c SmartBomb ; SPACE: one smart bomb from Bombs $A205 (none left, nothing): the HUD, SmartBombOn $A1C9 = 1, 14 steps, and the 20 enemy bullets marked (state 2)
 > Changed from REX 1's SmartBomb $9751 (src/game/bomb.asm).
 > Witness: L1 2 (rzx-p2-28000).
 $974B SmartBombStart ; SmartBombOn $A1C9 = 1
-$9760 MarkLoop ; the next object
-$9767 MarkNext ; the next record
-$976E c SmartBombStep ; One step of a running smart bomb: kill the next marked object, flash the screen
+$9760 MarkLoop ; the next enemy bullet's live byte
+$9767 MarkNext ; the next enemy bullet record
+$976E c SmartBombStep ; One step of a running smart bomb: KillObject on the next object record (not kinds $FE, $FD, $FC, $90; neither the alive byte nor kind $FF tested); CopyAttrs after the last of 14 steps; records of 27 bytes
 > As REX 1's SmartBombStep $9786 (src/game/bomb.asm).
 > Witness: L1 10426 (c2, p2-room20, rzx-p2- x21).
 $9791 BombNextObject ; the next marked object
@@ -491,7 +491,7 @@ $A3F4 b HudTexts 16 ; The HUD's texts: a row of "#", the figures 0000000:99:3, t
 $A432 c BufferToScreen ; Copy the back buffer's 168 play lines to the screen through ScreenLines $ACCA (the stack as the pointer)
 > As REX 1's BufferToScreen $A28A (src/game/hud.asm).
 > Witness: L1 10900 (c2, p2-room20, rzx-p2- x21).
-$A43F BufferLine ; each line: 16 words through the stack
+$A43F BufferLine ; each line: its screen address from ScreenLines
 $A487 c PrintTextHL ; Print the text record at HL (PrintText)
 > As REX 1's PrintTextHL $A2DF (src/game/hud.asm).
 > Witness: L1 92 (c2, rzx-p2-00000, rzx-p2-40000).
@@ -741,7 +741,7 @@ $B463 c FireLaser ; The laser's beam
 > Witness: L1 74 (c2, rzx-p2-00000, rzx-p2-02000, rzx-p2-04000).
 $B47C b SprayDirections 4 ; The spray's 8 directions: [dX word][dY][..], read by FireSpray (and by part 1's mine layer burst, a leftover in ObjectMoveCode $C30A)
 > As REX 1's SprayDirections $B436 (src/game/weapons.asm).
-$B49C c FireSpray ; The spray: 8 shots in the 8 directions of SprayDirections, as many as the power level allows
+$B49C c FireSpray ; The spray: at power 1-3 a fan of 3, 5 or 7 shots ahead (SprayShot); at power 4 the four directions, at 5 all eight (SprayDirections)
 > As REX 1's FireSpray $B456 (src/game/weapons.asm).
 > Witness: L1 623 (rzx-p2- x15).
 $B4B3 SprayLoop ; each of the 8 directions
@@ -992,7 +992,7 @@ $C000 c Kind9Close ; Kind 9 closes, a frame a pass, then rests
 > Witness: L1 534 (c2, rzx-p2- x8).
 $C01F c Kind9Rest ; Kind 9 at rest: 1 in 25 it opens
 > Witness: L1 2413 (c2, rzx-p2- x9).
-$C032 c RamTurn ; The ramming pod's turn: the turning pictures, then kind 7 again
+$C032 c RamTurn ; The hit foot man's turn (kind 6, from DrawObject): the turning picture at count +$11 = 4, kind 7 at 0
 > As REX 1's RamTurn $BD44 (src/game/objects.asm).
 > Witness: L1 86 (rzx-p2- x8).
 $C04C RamTurnCount ; 
@@ -1064,7 +1064,7 @@ $C4C6 c BlockedRight ; Blocked: kinds 6 and 7 stay, the others turn
 $C4CF c TurnAround ; Direction ^ 1
 > As REX 1's TurnAround $C472 (src/game/objects.asm).
 > Witness: L1 63 (rzx-p2- x15).
-$C4D7 c WalkOff ; Kinds 6 and 7 off the edge die; 3, 4, 5 stop
+$C4D7 c WalkOff ; Kinds 6 and 7 off the edge die (KillObject); 3, 4, 5 vanish (ObjectGone: alive 0, no score)
 > Changed from REX 1's WalkOff $C47A (src/game/objects.asm).
 > Witness: L1 114 (c2, rzx-p2- x16).
 $C4F4 ObjectGone ; The object is dead (alive = 0)

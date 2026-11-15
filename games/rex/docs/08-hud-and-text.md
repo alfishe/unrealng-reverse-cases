@@ -19,7 +19,7 @@ The recordings it rests on (WALKTHROUGH 6.0; all on the 128K):
 | `p1-cursor` | `work/stage1/probe/128K/loaded.szx` (the menu), CURSOR | the HUD at frame 1006; the start panels (frames 335-336) |
 | `rzx-p1-24000` | another player's RZX run, one segment | a kill: +1000 points (frame 668), the HUD's writers |
 | `p1-gameover` | `at012000.szx`, Lives 0, HumansKilled 37, SweepWidth 2 (stage 2) | the game over panel (frame 500) |
-| `p1-code` | stage 2, room 31 with the exit to room 99 | the CODE panel (CodePanel at frame 707, the screen at 800) |
+| `p1-code` | stage 2, from the RZX state at frame 63 000 (`at063000.szx`), POKEs: infinite lives, room 31's four exits (`$B1ED-$B1F0`) = 99 (WALKTHROUGH) | the CODE panel (CodePanel at frame 707, the screen at 800) |
 | `c1` | power-on, REX 1 from the tape | the menu and the roll call ([doc 5](05-controls.md)) |
 
 Conventions:
@@ -624,10 +624,11 @@ The point: the sweep is a room timer drawn with attributes alone. Its pixels (`#
 
 Row 2 of the HUD shows "100 200 300 ... 900" (the red pictures of the font, 8.2), on black ink: invisible until lit.
 
-- HitObject `$D3C2` handles a hit. With the laser (Weapon 2) it kills at once; with the spray (Weapon 4) it scores
+- HitObject `$D3C2` handles the hit that brings a foot man (kind 0) to 1 hit from the front: he becomes kind 6, the
+  hit foot man (doc 7.5). With the laser (Weapon 2) it kills at once; with the spray (Weapon 4) it scores
   nothing here. With the other weapons it sets ComboCount `$A03B` to 9, ComboTimer `$A03C` to 2, KillFlashPtr
   `$A039` to `$5843` (row 2, column 3: the "100") and adds 1 (100 points).
-- HitObjectHard `$D41F` (each further hit on an armoured object) adds ComboTimer points (2, 3, ...), adds 1 to
+- HitObjectHard `$D41F` (each further bullet on the hit foot man, kind 6; BulletHitKind `$D35B` calls it for kind 6 only) adds ComboTimer points (2, 3, ...), adds 1 to
   ComboTimer, and moves KillFlashPtr 3 columns on: "200", "300", ... ComboCount stops it after 8.
 - KillFlashFade `$9992`, every pass, takes 1 off each of the 30 attributes `$5840-$585D` that are not 0, then writes
   `$07` (white) into the two cells at KillFlashPtr.
@@ -682,14 +683,14 @@ flowchart TD
 
 ![The combo row pass by pass](img/hud/combo.png)
 
-*Figure 8.6: row 2 of the HUD, columns 3-29, over 20 passes: hits on passes 1, 3, 5 and 7, the kill on pass 9.
+*Figure 8.6: row 2 of the HUD, columns 3-29, over 20 passes: bullets on passes 1, 3, 5 and 7, then KillObject parks the pointer on pass 9.
 Simulated from KillFlashFade's code and the font of `build/game.bin`. Command: `python3 tools/fig_hud.py combo --out
 docs/img/hud/combo.png`.*
 
 How to read: one row a pass. Each value is white when lit, then steps down the colours to black, one a pass. After
 the kill the pointer rests off screen and the last value fades too.
 
-Worked example: an armoured object takes four hits with the gun. The first scores 100 and lights "100"
+Worked example: a foot man shot in the front with the gun, then three more bullets while he flashes. The first scores 100 and lights "100"
 (`$5843-$5844`). The second scores 200 and lights "200" (`$5846-$5847`). The third and fourth score 300 and 400. In
 all, 1000 points. The latest value stays white; each earlier one loses one step of ink a pass, down to black.
 
@@ -700,8 +701,8 @@ Known only from the code:
 
 - With KillFlashPtr at rest, KillFlashFade writes `$07` into `$E9FF` and `$EA00` every pass, outside the screen. The
   two bytes are below the back buffer and nothing reads them ([doc 6](06-rendering.md), 6.10).
-- The source calls FadeStep "the screen flash of a smart bomb or a bonus". Only TakePowerPod starts it, and it covers
-  only HUD rows 0-1.
+- FadeStep is no screen flash of a smart bomb or a bonus: FadeStepIndex is written only at `$954D` (NewGame, `$FF`),
+  in FadeStep itself and at `$D47D` (TakePowerPod), and it covers only HUD rows 0-1.
 
 The point: the combo row is a score display without digits: the pictures are fixed, and a pointer into the attribute
 row says which one is lit.

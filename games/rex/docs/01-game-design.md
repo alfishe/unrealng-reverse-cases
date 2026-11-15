@@ -11,7 +11,7 @@ The recordings it rests on ([WALKTHROUGH 6.0](../WALKTHROUGH.md#60-the-recording
 - the RZX segments `rzx-p1-NNNNN` and `rzx-p2-NNNNN` (another player's runs, replayed as our own);
 - stage 2's `p1-code`, `p1-gameover`, `p1-room14/24/26/27/30`, `p2-room20`;
 - two short recordings made for this document: `p1-rooms238` (rooms 2, 3 and 8, with POKEs) and `menu-rollcall`
-  (the menu left alone for 5300 frames).
+  (the menu left alone for 5310 frames).
 
 ## 1.1 The premise and the three parts
 
@@ -218,7 +218,7 @@ Down switches the shield on and off. While it is on, shots and enemies do not ki
 every 4 passes (99 units: 2 + 4 x 99, about 400 passes, 35 s at 4.4 frames a pass). Hits drain it too: 5 units an
 enemy shot, the object's hits left x 4 for an enemy touched (which dies), 20 for the roulette's SHIELD LOSS. Below 0 the
 shield goes off. The recharger cell (`$08`) gives a unit
-a pass while Rex stands on it. Witness: `p1-define` (the shield drains), the RZX runs.
+a pass while Rex stands on it with the shield off, up to 99. Witness: `p1-define` (the shield drains), the RZX runs.
 
 ### The sweep: the room's time limit
 
@@ -234,14 +234,18 @@ Rex).
 | the gun | at the start | one shot ahead |
 | double fire | the station in room 1 | two shots |
 | laser | the station in room 6 | one long beam |
-| multiple | the station in room 23 | Rex's shot and one from each drone that follows him |
-| spray | the station in room 11 | 8 shots in a fan |
+| multiple | the station in room 23 | Rex's shot and one from each of the power + 3 drones that follow him |
+| spray | the station in room 11 | a fan of 3, 5 or 7 shots at power 1-3, four directions at 4, all eight at 5 |
 
-- The weapon power (`PowerLevel $A014`, 1-5) sets how many shots may be in the air. Firing uses it up; the power pods
-  the enemies leave raise it. The power bar shows it in colours from pink (low) to white (high), as DEMO says.
-- At the lowest level the weapon falls back to the best one held.
-- A station gives its weapon once a game and stops the game with its panel until fire (the long passes of
-  [doc 4, 4.7](04-game-loop.md#47-the-long-passes-the-weapon-stations)).
+- Power has steps (`PowerLevel $A014`, 1-5) inside a rank (`WeaponRank`, 0-4): a sixth step moves one rank up. The
+  power pods the enemies leave raise it; a death and ENERGY LOSS take it down, and a lost rank brings the weaker
+  weapon back. The power bar shows it in colours from pink (low) to white (high), as DEMO says
+  ([doc 10, 10.7](10-gameplay-logic.md#107-power-levels-ranks-and-the-stations)).
+- The weapon in hand is the best one held whose number (gun 0, double fire 1, laser 2, multiple 3, spray 4) the rank
+  reaches (BestWeapon `$B9D7`).
+- The gun and the double fire may have power x 4 bullets in the air; the other weapons use 29 of the 30 records.
+- A station gives the right to its weapon once a game and stops the game with its panel until fire (the long passes
+  of [doc 4, 4.7](04-game-loop.md#47-the-long-passes-the-weapon-stations)).
 - REX 2 has no stations: the code says which weapons Rex owns; StartWeapon `$BAC6` always puts the laser in his hands
   at power level 3 and rank 2.
 
@@ -268,9 +272,43 @@ SpeedUpPhase 200 at frame 1740 down to 0 at 2740, Rex walking 4 pixels a pass me
 ### The score
 
 Each enemy scores its kind's entry of `KillScores $994E` times 100. The score is held in hundreds and shown with
-two zeros added. The full table is in 1.6. People killed (the foot man, the four "person" walkers and the ramming
-pod) are counted in `HumansKilled $A089` and printed at game over. REX 2 counts every kill but kind 0 as BIO GROWTHS
+two zeros added. The full table is in 1.6. People killed (kinds 0, 4, 5, 6, 7 and the ramming pod 12; not the
+standing gunman `$80`) are counted in `HumansKilled $A089` and printed at game over. REX 2 counts every kill but kind 0 as BIO GROWTHS
 KILLED, starting from the score the code carries (in hundreds, `94E7`), not from 0.
+
+A foot man (or the standing gunman) shot in the front on his last hit is not killed: he flashes (kind 6) for 6
+passes, and every further bullet while he flashes renews the flash and scores 200, 300, ... 900 (8 more, lit one
+cell further along the combo row each): up to 4500 points with the first hit's 100, not with the laser (it kills) or
+the spray (no score). Left alone he becomes kind 7, which one bullet kills for another 100 (HitObject,
+HitObjectHard; [doc 7, 7.8](07-objects.md#78-collisions)).
+
+```text
+HitObject (foot man, last hit, shot in the front):
+    if weapon == laser: KillObject; return
+    kind = 6; timer = 6; hits = 2; picture = SpriteHitFlash
+    if weapon == spray: return
+    ComboCount = 9; ComboTimer = 2; KillFlashPtr = $5843; score += 1      # hundreds
+HitObjectHard (a bullet on kind 6):
+    if weapon == spray: return
+    kind = 6; timer = 6; hits = 2                                         # the flash renewed
+    ComboCount -= 1; if ComboCount == 0: return
+    score += ComboTimer; ComboTimer += 1; KillFlashPtr += 3              # 2, 3, ... 9 hundreds
+RamTurn (each pass of kind 6): timer -= 1; if timer == 0: kind = 7
+```
+
+```mermaid
+flowchart LR
+    F["foot man or gunman, last hit, front"] -->|"+100"| K6["kind 6: flashes 6 passes"]
+    K6 -->|"bullet: +200 ... +900, flash renewed"| K6
+    K6 -->|"6 passes unhit"| K7["kind 7"]
+    K7 -->|"one bullet: +100, a person"| X["killed"]
+```
+
+Worked example: Rex with the gun shoots a foot man in the front. The last hit scores 100 and makes him kind 6; nine
+more bullets in quick succession score 200, 300, 400, 500, 600, 700, 800, 900 and then nothing (ComboCount reached
+0): 4500 in all. He stops flashing 6 passes after the last bullet, walks on as kind 7, and the next bullet kills him
+for 100 and one HUMANS KILLED. Witness: HitObjectHard runs 90 times in L1 (`p1-speedup`, `p1-room30`, 13 RZX
+segments).
 
 ### Difficulty
 
@@ -286,15 +324,19 @@ REX 2 brings new enemies (kinds 1-5 and 9 are its own) and the boss.
 *The ten enemies the menu introduces, in its order, each with its kind (the object kind in the code) and the frame
 of `menu-rollcall` it was taken at. How to read it: the box is the menu's top left corner, twice the size. The point:
 the menu names only ten of REX 1's 17 kinds; the walkers and the people are left out. Command: `python3
-tools/fig_rollcall.py` (from `work/docs/rxA/rec/menu-rollcall`, the menu left alone for 5300 frames).*
+tools/fig_rollcall.py` (from `work/docs/rxA/rec/menu-rollcall`, the menu left alone for 5310 frames).*
 
 | Kind | Name (roll call) | Points | A person | How it moves and fights |
 | ---: | --- | ---: | --- | --- |
 | 0 | FOOT MAN | 100 | yes | walks and falls with the common walker code |
 | 1 | STOMPER | 200 | | walks (the common walker code) |
-| 2, 3 | walkers | 100 | | walk; 3 stops at an edge |
-| 4, 5 | walkers, people | 200, 300 | yes | walk; stop at an edge |
-| 6, 7 | walkers, people | 100 | yes | walk; die off an edge |
+| 0 + bit 7 (`$80`, list kind 6) | gunman | 100 | | stands and fires 1 pass in 16; a front hit makes it kind 6 |
+| 2 | (unused in REX 1) | 100 | | no list, spawn or script makes it |
+| 3 | | 100 | | the scripted spawn's walker (15 hits); stops at a ledge |
+| 4 | | 200 | yes | scripted spawn; walks, fires both ways 1 pass in 16 (5 hits) |
+| 5 | | 300 | yes | scripted spawn, the first; fires ahead 1 pass in 16 (15 hits); its death ends the script |
+| 6 | | 100 | yes | a foot man shot in the front: flashes for 6 passes, bullets do not hurt it (they score the combo, 1.5), then kind 7 |
+| 7 | | 100 | yes | the foot man after the hit; dies off a ledge, one bullet kills it |
 | 8 | SCANNER | 600 | | stalks Rex: rises and sinks to his height, walks his way |
 | 9 | SWING GUN | 600 | | a turret that fires in 8 angles |
 | 10 | SHOOTERS | 500 | | two shots at once, right and left |
@@ -307,7 +349,7 @@ tools/fig_rollcall.py` (from `work/docs/rxA/rec/menu-rollcall`, the menu left al
 
 *REX 1's kinds, from `src/game/objects.asm` and `src/res/tables/rex1-kill-scores.csv`. How to read it: "a person"
 marks the kinds counted as HUMANS KILLED. The point: the score rewards the turrets, the launcher and the mine
-layer; the people are cheap. Each kind's code and pictures are in [doc 7](07-objects.md)
+layer; the people score little as kills, but a front hit starts the combo (1.5), the richest score in the game. Each kind's code and pictures are in [doc 7](07-objects.md)
 and [doc 10](10-gameplay-logic.md).*
 
 REX 2's scores (`rex2-kill-scores.csv`): kind 0 200, 1 300, 2 500, 3 300 (it takes ten hits), 4 600, 5-7 100, 8 600,

@@ -37,18 +37,18 @@ own heading with its modules, its source, its annotations and its recordings.
 | `$7F72` | `Sprites` | 192 of 5384 | The sprites, pre-shifted: each label is a picture set its owner draws through a frame list. `$7F72` is the foot man (kind 0) and UpdateObject's default picture. The labels below name the other owners. | `CopyFrame`, `DrawCharBlock`, `DrawSprite`, `MoveShots`, `DrawMirrored` (`stage1/rec/rzx-p1-22000`) +1 | - |
 | `$8032` | `SpriteStomper` (`Sprites`+192) | 192 | kind 1 (stomper) | `DrawMirrored` (`stage1/rec/rzx-p1-56000`), `DrawSprite` (`stage1/rec/rzx-p1-04000`) | - |
 | `$80F2` | `SpriteRex` (`Sprites`+384) | 120 | Rex walking (DrawRex `$96A7`) | `DrawSprite`, `DrawMirrored` (`stage1/rec/rzx-p1-22000`) | - |
-| `$816A` | `SpriteRexDeath` (`Sprites`+504) | 72 | Rex's death (DeathAnimation `$9AC5`) | `DrawSprite`, `DrawMirrored` (`stage1/rec/rzx-p1-22000`) | - |
+| `$816A` | `SpriteRexDeath` (`Sprites`+504) | 72 | the base of Rex's death shards (DeathAnimation `$9AC5`: frame n at +72 n, n 1-8, so SpritePoints' frames; these 72 bytes are never drawn) | `DrawSprite`, `DrawMirrored` (`stage1/rec/rzx-p1-22000`) | - |
 | `$81B2` | `SpritePoints` (`Sprites`+576) | 576 | the points sign a kill leaves (ShowPoints `$97FD`) | `DrawSprite`, `DrawMirrored` (`stage1/rec/rzx-p1-56000`) | - |
 | `$83F2` | `SpriteKind5` (`Sprites`+1152) | 192 | kind 5 | `DrawSprite` | - |
 | `$84B2` | `SpriteKind3` (`Sprites`+1344) | 192 | kind 3 | `DrawSprite` | - |
 | `$8572` | `SpriteKind4` (`Sprites`+1536) | 192 | kind 4 | `DrawSprite` | - |
 | `$8632` | `SpriteHitFlash` (`Sprites`+1728) | 96 | an object hit (HitObject `$D3C2`, HitObjectHard `$D41F`) | `DrawMirrored` (`stage1/rec/rzx-p1-56000`), `DrawSprite` (`stage1/rec/rzx-p1-02000`) | - |
-| `$8692` | `SpriteRamTurn` (`Sprites`+1824) | 96 | the ramming pod turning (RamTurn `$BD44`) | `DrawMirrored` (`stage1/rec/rzx-p1-56000`), `DrawSprite` (`stage1/rec/rzx-p1-02000`) | - |
+| `$8692` | `SpriteRamTurn` (`Sprites`+1824) | 96 | the hit foot man turning (RamTurn `$BD44`) | `DrawMirrored` (`stage1/rec/rzx-p1-56000`), `DrawSprite` (`stage1/rec/rzx-p1-02000`) | - |
 | `$86F2` | `SpritePodA` (`Sprites`+1920) | 192 | a pod left by an explosion (`$BDED`) | `DrawSprite`, `DrawMirrored` (`stage1/rec/rzx-p1-56000`) | - |
 | `$87B2` | `SpritePodB` (`Sprites`+2112) | 192 | a pod left by an explosion (`$BE18`) | `DrawSprite`, `DrawMirrored` (`stage1/rec/rzx-p1-56000`) | - |
 | `$8872` | `SpritePowerPod` (`Sprites`+2304) | 128 | the power pod's four frames (`$8872`, `$8892`, `$88B2`, `$88D2`: AnimatePod `$BED3`) | `DrawMirrored` (`stage1/rec/rzx-p1-56000`), `DrawSprite` (`stage1/rec/rzx-p1-00000`) | - |
 | `$88F2` | `SpriteShield` (`Sprites`+2432) | 336 | the shield bubble round Rex, 4 x 21, through ShiftFrames2 (DrawShield `$9726`) | `DrawMirrored` (`stage1/rec/rzx-p1-22000`), `DrawSprite` (`stage1/rec/rzx-p1-00000`) | - |
-| `$8A42` | `SpriteLaserA` (`Sprites`+2768) | 24 | a long bullet (`$B849`) | `MoveShots`, `DrawSprite` (`stage1/rec/rzx-p1-18000`), `MoveBeam` (`stage1/rec/rzx-p1-00000`) | - |
+| `$8A42` | `SpriteLaserA` (`Sprites`+2768) | 24 | the laser beam fired left: 6 frames of 4 bytes, copied by BeamByte `$B852` (`$B849`) | `MoveShots`, `DrawSprite` (`stage1/rec/rzx-p1-18000`), `MoveBeam` (`stage1/rec/rzx-p1-00000`) | - |
 | `$8A5A` | `SpriteScanner` (`Sprites`+2792) | 256 | kind 8 (scanner) (`$C3B0`, `$C3D2`) | `DrawSprite` (`stage1/rec/rzx-p1-04000`) | - |
 | `$8B5A` | `SpriteScanner2` (`Sprites`+3048) | 176 | kind 8's start picture (InitKind8 `$CCBF`) | `DrawSprite` (`stage1/rec/rzx-p1-04000`) | - |
 | `$8C0A` | `SpriteHudIcons` (`Sprites`+3224) | 160 | the HUD's weapon and bomb icons (DrawHudIcons `$A1E2`) | `DrawCharBlock` | - |
@@ -60,7 +60,7 @@ own heading with its modules, its source, its annotations and its recordings.
 | `$8E6A` | `SpriteKind10` (`Sprites`+3832) | 32 | kind 10 (shooters) | `DrawSprite`, `DrawCharBlock` (`docs/rxA/rec/menu-rollcall`) | - |
 | `$8E8A` | `SpriteKind6` (`Sprites`+3864) | 32 | kind 6 | `DrawMirrored` (`stage1/rec/rzx-p1-58000`), `DrawSprite` (`stage1/rec/rzx-p1-02000`) | - |
 | `$8EAA` | `SpriteSwingGun` (`Sprites`+3896) | 160 | kind 9 (swing gun), its angles (SwingGunFrames `$BECB`) | `DrawSprite`, `DrawCharBlock` (`docs/rxA/rec/menu-rollcall`), `DrawMirrored` (`stage1/rec/rzx-p1-58000`) | - |
-| `$8F4A` | `SpriteLaserB` (`Sprites`+4056) | 24 | a long bullet (`$B83F`) | `MoveShots`, `DrawMirrored` (`stage1/rec/rzx-p1-58000`), `DrawSprite` (`stage1/rec/rzx-p1-02000`), `MoveBeam` (`stage1/rec/rzx-p1-00000`) | - |
+| `$8F4A` | `SpriteLaserB` (`Sprites`+4056) | 24 | the laser beam fired right: 6 frames of 4 bytes, copied by BeamByte `$B852` (`$B83F`) | `MoveShots`, `DrawMirrored` (`stage1/rec/rzx-p1-58000`), `DrawSprite` (`stage1/rec/rzx-p1-02000`), `MoveBeam` (`stage1/rec/rzx-p1-00000`) | - |
 | `$8F62` | `SpriteRexJump` (`Sprites`+4080) | 192 | Rex jumping or falling, off a lift (DrawRex `$96C4`) | `DrawSprite`, `DrawMirrored` (`stage1/rec/rzx-p1-22000`) | - |
 | `$9022` | `SpriteKind15` (`Sprites`+4272) | 128 | kind 15 (blob) | `DrawSprite` (`stage1/rec/rzx-p1-04000`) | - |
 | `$90A2` | `SpriteKind13` (`Sprites`+4400) | 144 | kind 13 (mine layer) | `DrawSprite` (`stage1/rec/rzx-p1-18000`) | - |
@@ -508,7 +508,7 @@ Rex, Martech Games 1988 (The Light): part 2 (REX 2), `$61A8-$FFF9` as the ROM lo
 | `$7806` | `RoomMaps` | 2450 | The room maps: 7 rows of 10 block codes each (70 bytes a room); room n at `$7806` + 70n; 35 slots, rooms 0-25 used. The slots 26-34 (`$8040-$8197`, 630 bytes) are a leftover: no exit leads to them (RoomExits holds 26 rooms) and they are REX 1's rooms 26-34 with 44-69 of each room's 70 codes the same (work/stage2/NOTES.md); drawn with part 2's blocks they look like part 1's late rooms (tools/room_maps.py). | `ClearBuffer`, `DrawRoom` (`stage1/c2`) | - |
 | `$8198` | `Sprites` | 192 of 4824 | The sprites, pre-shifted: each label is a picture set its owner draws through a frame list. `$8198` is kind 0's picture (a walker, InitKind0 `$CC05`) and UpdateObject's default. | `ClearBuffer`, `SetupShot`, `ToDigits`, `AnimateCells2` (`stage1/rec/rzx-p2-04000`), `CopyFrame` (`stage1/c2`) +3 | - |
 | `$8258` | `SpriteHitFlash` (`Sprites`+192) | 96 | an object hit (HitObject, HitObjectHard) | `ClearBuffer`, `DrawSprite` (`stage1/rec/rzx-p2-10000`) | - |
-| `$82B8` | `SpriteRamTurn` (`Sprites`+288) | 96 | the turning picture (RamTurn `$C032`) | `ClearBuffer`, `DrawSprite` (`stage1/rec/rzx-p2-10000`) | - |
+| `$82B8` | `SpriteRamTurn` (`Sprites`+288) | 96 | the hit foot man turning (RamTurn `$C032`) | `ClearBuffer`, `DrawSprite` (`stage1/rec/rzx-p2-10000`) | - |
 | `$8318` | `SpriteKind6` (`Sprites`+384) | 32 | kind 6 and the hop (InitKind6 `$CC18`, StartHop `$C5BE`) | `ClearBuffer`, `DrawSprite` (`stage1/c2`) | - |
 | `$8338` | `SpriteJumper` (`Sprites`+416) | 32 | a walker turned jumper (MakeJumper `$C60D`) | `ClearBuffer`, `DrawSprite` (`stage1/c2`) | - |
 | `$8358` | `SpriteRex` (`Sprites`+448) | 192 | Rex walking (DrawRex) | `ClearBuffer`, `DrawSprite` (`stage1/c2`) | - |

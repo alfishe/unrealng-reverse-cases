@@ -28,7 +28,7 @@ file is a TZX text block, "Created with Ramsoft MakeTZX".
 | 7 | 19 | `$00` | Program header "REX 2", length 151, LINE 1 | | 5.09 s | 1017 ms |
 | 8 | 153 | `$FF` | the BASIC of REX 2 | the BASIC area | 2.77 s | 4404 ms |
 | 9 | 19 | `$00` | Bytes header "ds", length 6912, start 40000 | | 5.09 s | 1017 ms |
-| 10 | 6914 | `$FF` | the loading screen of REX 2 (142 bytes differ from REX 1's, from offset 2147) | `$4000` | 33.54 s | 5147 ms |
+| 10 | 6914 | `$FF` | the loading screen of REX 2 (141 bytes of the screen differ from REX 1's, the first at `$4862`; 142 of the block, checksum included) | `$4000` | 33.54 s | 5147 ms |
 | 11 | 19 | `$00` | Bytes header "ds", length 40530, start 25000 (`$61A8`) | | 5.09 s | 1015 ms |
 | 12 | 40 532 | `$FF` | the code of REX 2 | `$61A8-$FFF9` | 214.80 s | 42 693 ms |
 
@@ -42,7 +42,7 @@ Side 1 plays 535.47 s, 26 816 frames of 69 888 T, without its pauses (90.9 s of 
 | 1 | 19 | `$00` | Program header "DEMO", length 150, LINE 1 | | 5.08 s | 1016 ms |
 | 2 | 152 | `$FF` | the BASIC of DEMO | the BASIC area | 2.77 s | 3804 ms |
 | 3 | 19 | `$00` | Bytes header "ds", length 6912, start 40000 | | 5.09 s | 1015 ms |
-| 4 | 6914 | `$FF` | the loading screen of DEMO (97 bytes differ from REX 2's) | `$4000` | 33.52 s | 3960 ms |
+| 4 | 6914 | `$FF` | the loading screen of DEMO (96 bytes of the screen differ from REX 2's; 97 of the block) | `$4000` | 33.52 s | 3960 ms |
 | 5 | 19 | `$00` | Bytes header "ds", length 40530, start 25000 (`$61A8`) | | 5.09 s | 1011 ms |
 | 6 | 40 532 | `$FF` | the code of DEMO: REX 2's layout (the same length and address), 34 535 bytes different from REX 2's code; byte for byte the Your Sinclair covertape demo (ZXDB `RexDemo.tap`) | `$61A8-$FFF9` | 207.89 s | 0 |
 
@@ -243,7 +243,7 @@ The ZXDB POKE file (`Rex (1988)(Martech Games).pok`, `work/candidates/pok/`), ea
 | 38157,0 | [Pt1] Got all weapons | `$950D` | `XOR A` in NewGame, before the four `LD (HasDoubleFire),A`... | `NOP`: A keeps 1 (from `LD A,$01` before), so all four weapons are held |
 | 46661,201 | [Pt1] No gun shots | `$B645` | MoveEnemyBullets' first byte | `RET`: the enemies' shots never move |
 | 51576,201 | [Pt1] No extra enemy soldiers fire | `$C978` | SpawnScripted's first byte | `RET`: no scripted spawn |
-| 38416,58; 46372,62; 46373,20 | [Pt1] Rapid fire | `$9610`; `$B524` | `JP Z,MainRexKeys`; `SLA A` in SlotsByPower | `LD A,(nn)`: the fire latch is always cleared, so holding fire repeats; `LD A,20`: 21 shot slots whatever the power |
+| 38416,58; 46372,62; 46373,20 | [Pt1] Rapid fire | `$9610`; `$B524` | `JP Z,MainRexKeys`; `SLA A` in SlotsByPower | `LD A,(nn)`: the fire latch is always cleared, so holding fire repeats; `LD A,20`: the gun and double fire search 20 shot records whatever the power (other weapons 29 as before) |
 | 53242,58; 53214,58 | [Pt1] Speed up | `$CFFA`; `$CFDE` | `JP Z,WalkLeftNormal`, `JP Z,WalkRightNormal` | `LD A,(nn)`: the jump is never taken, so the 4-pixel step (with SpeedUpTick) always runs |
 | 40303,0 | [Pt2] Infinite Lives | `$9D6F` | `DEC A` in LifeLost | as part 1 |
 | 38721,0 | [Pt2] Infinite Smarts | `$9741` | `DEC A` in SmartBomb | as part 1 |

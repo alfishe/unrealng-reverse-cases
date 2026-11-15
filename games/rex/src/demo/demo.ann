@@ -225,9 +225,9 @@ $8DAE DrainRank ;
 $8DBB c SmartBombMark ; Start the smart bomb: SmartBombOn $5EB9 = 1, 16 steps, the object pointer at the table's start; every enemy bullet stopped (live byte set to 2)
 > As REX 1's SmartBombMark $9763 (src/game/bomb.asm).
 > Witness: L1 10 (d1, demo-cycle).
-$8DD0 MarkLoop ; the next object
-$8DD7 MarkNext ; the next record
-$8DDE c SmartBombStep ; One step of a running smart bomb: kill the next marked object, flash the screen
+$8DD0 MarkLoop ; the next enemy bullet's live byte
+$8DD7 MarkNext ; the next enemy bullet record
+$8DDE c SmartBombStep ; One step of a running smart bomb: KillObject on the next object record (not kinds $FE, $FD, $FC, $90; neither the alive byte nor kind $FF tested); CopyAttrs after the last step; records of 23 bytes
 > As REX 1's SmartBombStep $9786 (src/game/bomb.asm).
 > Witness: L1 6752 (d1, demo-cycle).
 $8E01 BombNextObject ; the next marked object
@@ -514,7 +514,7 @@ $9D41 b HudTexts 16 ; The HUD's texts: a row of "#", the figures 0000000:99:3, t
 $9D7F c BufferToScreen ; Copy the back buffer's 168 play lines to the screen through ScreenLines $ACBE (the stack as the pointer)
 > As REX 1's BufferToScreen $A28A (src/game/hud.asm).
 > Witness: L1 6797 (d1, demo-cycle).
-$9D8C BufferLine ; each line: 16 words through the stack
+$9D8C BufferLine ; each line: its screen address from ScreenLines
 $9DD4 c PrintTextHL ; Print the text record at HL (PrintText)
 > As REX 1's PrintTextHL $A2DF (src/game/hud.asm).
 > Witness: L1 220 (d1, demo-cycle).
@@ -905,7 +905,7 @@ $C422 c SwingGun ; Kind 9, the swing gun: its picture by angle (SwingGunFrames),
 > Changed from REX 1's SwingGun $BCDD (src/game/objects.asm).
 > Witness: L1 2726 (d1, demo-cycle).
 $C438 SwingGunFire ; 
-$C473 RamTurn ; The ramming pod's turn: the turning pictures, then kind 7 again
+$C473 RamTurn ; The hit foot man's turn (kind 6, from DrawObject): the turning frames (FramesTurn) at count +$11 = 4, kind 7 at 0
 $C484 RamTurnCount ; 
 $C49A c BlowUp ; An exploding object (kind $FF): the six shards (ShardPaths $A332-$A382, DrawShard), the flash, the picture stepped; at the end the cells back and maybe a pod: a power pod $FE (SpritePodPower; a big one SpritePodBig), a bomb pod $FD or the bonus pod $FC
 > Witness: L1 504 (d1, demo-cycle).
@@ -995,7 +995,7 @@ $CA71 c WalkRight ; A walker's step right: a solid cell ahead turns it; off the 
 $CA97 WalkRightStore ; 
 $CABE WalkRightFloor ; the floor ahead
 $CAD6 BlockedRight ; Blocked: kinds 6 and 7 stay, the others turn
-$CAE3 c WalkOff ; Kinds 6 and 7 off the edge die; 3, 4, 5 stop
+$CAE3 c WalkOff ; Kinds 6 and 7 off the edge die (KillObject); 3, 4, 5 vanish (ObjectGone: alive 0, no score)
 > As REX 1's WalkOff $C47A (src/game/objects.asm).
 > Witness: L1 235 (d1, demo-cycle).
 $CB05 c WalkLeft ; A walker's step left (as WalkRight)

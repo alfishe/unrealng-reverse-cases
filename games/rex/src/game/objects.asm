@@ -405,7 +405,8 @@ SwingGunTurn:
   LD (IX+$11),$00
   JP ObjectCollide
 
-; The ramming pod's turn: the turning pictures, then kind 7 again
+; The hit foot man's turn (kind 6, from DrawObject): the turning picture at
+; count +$11 = 4, kind 7 at 0
 ;
 ; Witness: L1 394 (p1-speedup, p1-room30, rzx-p1- x18).
 RamTurn:
@@ -1344,7 +1345,8 @@ TurnAround:
   XOR $01
   LD (IX+$02),A
 
-; Kinds 6 and 7 off the edge die; 3, 4, 5 stop
+; Kinds 6 and 7 off the edge die (KillObject); 3, 4, 5 vanish (ObjectGone:
+; alive 0, no score)
 ;
 ; Witness: L1 511 (p1-code, p1-gameover, p1-poke41241, p1-rooms238, p1-shots,
 ; p1-speedup, p1-room14, p1-room24, p1-room26, p1-room30, rzx-p1- x29).

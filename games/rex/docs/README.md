@@ -34,11 +34,11 @@ Each term once, here; the documents use these names and no others.
 | origin | the base a buffer writer adds `32 x Y + X / 8` to (ShotBufferOrigin `$E7FF`, SparkleBufferOrigin `$E89F`, SpriteBufferOrigin `$E8FF`, ObjectBufferOrigin `$E9FF`, BufferPlayOrigin `$EAFF`); not a buffer (doc 6) |
 | pass | one run of the main loop from MainPass `$9586` (REX 2 `$9588`), about 4.4 frames in part 1; no interrupt paces it, and every speed and timer counts passes (doc 4) |
 | pod | an object Rex takes: `$FE` power (the big one gives two gains), `$FD` a smart bomb, `$FC` the bonus roulette (doc 10) |
-| power count | PowerCount `$A018`, the progress inside a power level: +38 a pod, a level up at 120; -1 a special shot; a drain that would go below 0 drops one level and leaves the count as it was (a death drains 50 twice: 0-2 levels) (doc 10) |
+| power count | PowerCount `$A018`, the progress inside a power level: +38 a pod, a level up at 120; -1 a special shot; a drain that goes below 0 adds 50 back and drops one level (a shot from 0 leaves 49; a death's 50 leaves the count as it was, twice: 0-2 levels) (doc 10) |
 | power level | PowerLevel `$A014`, 1-5 inside a rank; a sixth level moves up a rank (GainRank) and starts again at 1; at the top rank it stays 5 (no part ever stores 6); the power bar's end colour is the level + 2, 3-7 (docs 8, 10) |
 | pre-shifted copy | one of the 2, 4 or 8 stored versions of a sprite, picked by X & 7 through a frame list (ShiftFrames `$AE5D` and the like; doc 6) |
 | rank | WeaponRank `$A06E`, 0-4: how far up the five weapons the power reaches; BestWeapon picks the best weapon held up to it (doc 10) |
-| reader | one of the five 12-byte routines `$A46A-$A4E6` whose port and `BIT` opcode the menu or DEFINE writes (doc 5) |
+| reader | one of the five 12-byte routines at `$A477-$A4E5` (each after its 13-byte setter, `$A46A-$A4E6` in all) whose port and `BIT` opcode the menu or DEFINE writes (doc 5) |
 | recharger | a pair of type 8 cells: +1 shield a pass while the shield is off, up to 99 (doc 10) |
 | restart marker | a pair of type 7 cells: Rex's restart point is saved there when RexX AND 7 = 2 (SaveRestart; doc 10) |
 | scenery cell list | SceneryCellList `$D962`, every visible scenery cell of the room as (buffer address, picture address); DrawRoom fills it, DrawAnimCells redraws it every pass over the sprites (doc 6) |

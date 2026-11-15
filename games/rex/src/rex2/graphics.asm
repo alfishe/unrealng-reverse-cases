@@ -114,7 +114,7 @@ SpriteHitFlash:
   ; $8258 an object hit (HitObject, HitObjectHard)
   INCBIN "res/sprites/rex2.bin",$00C0,96
 SpriteRamTurn:
-  ; $82B8 the turning picture (RamTurn $C032)
+  ; $82B8 the hit foot man turning (RamTurn $C032)
   INCBIN "res/sprites/rex2.bin",$0120,96
 SpriteKind6:
   ; $8318 kind 6 and the hop (InitKind6 $CC18, StartHop $C5BE)

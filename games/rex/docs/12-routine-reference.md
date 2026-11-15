@@ -252,9 +252,9 @@ Witness: L1 50 (c1, p1-cursor, p1-define, p1-gameover, p1-kempston, p1-room24, p
 
 ### `SmartBombStep` (`$9786`)
 
-**One step of a running smart bomb: kill the next marked object, flash the screen**
+**One step of a running smart bomb: KillObject on the next object record (not kinds `$FE`, `$FD`, `$FC`, `$90`; neither the alive byte nor kind `$FF` tested); CopyAttrs after the last step**
 
-Every pass; returns at once while SmartBombOn `$A030` is 0. Each step KillObject `$981F` on the next object and CopyAttrs `$C8BF`; after 16 steps the bomb ends.
+Every pass; returns at once while SmartBombOn `$A030` is 0. Each step KillObject `$981F` on the next record; after 16 steps the bomb ends with CopyAttrs `$C8BF`. A record that died in this room keeps its Y and kind, so it is killed and scored again (a spent explosion: KillScores[15], 200).
 
 Witness: L1 18501 (c1, p1-code, p1-cursor, p1-define, p1-gameover, p1-kempston, p1-poke41241, p1-rooms238, p1-shots, p1-speedup, p1-room x5, rzx-p1- x32).
 
@@ -1462,7 +1462,7 @@ Witness: L1 183 (p1-shots, p1-room24, rzx-p1- x6).
 
 ### `FireSpray` (`$B456`)
 
-**The spray: 8 shots in the 8 directions of SprayDirections, as many as the power level allows**
+**The spray: at power 1-3 a fan of 3, 5 or 7 shots ahead (SprayShot); at power 4 the four directions, at 5 all eight (SprayDirections)**
 
 Witness: L1 1010 (p1-code, p1-shots, p1-speedup, p1-room30, rzx-p1- x17).
 
@@ -2324,7 +2324,7 @@ Witness: L1 10296 (c1, p1-cursor, p1-kempston, p1-rooms238, p1-speedup, p1-room2
 
 ### `RamTurn` (`$BD44`)
 
-**The ramming pod's turn: the turning pictures, then kind 7 again**
+**The hit foot man's turn (kind 6, from DrawObject): the turning picture at count +`$11` = 4, kind 7 at 0**
 
 Witness: L1 394 (p1-speedup, p1-room30, rzx-p1- x18).
 
@@ -2703,7 +2703,7 @@ Witness: L1 295 (p1-code, p1-poke41241, p1-rooms238, p1-shots, p1-speedup, p1-ro
 
 ### `WalkOff` (`$C47A`)
 
-**Kinds 6 and 7 off the edge die; 3, 4, 5 stop**
+**Kinds 6 and 7 off the edge die (KillObject); 3, 4, 5 vanish (ObjectGone: alive 0, no score)**
 
 Witness: L1 511 (p1-code, p1-gameover, p1-poke41241, p1-rooms238, p1-shots, p1-speedup, p1-room14, p1-room24, p1-room26, p1-room30, rzx-p1- x29).
 
@@ -3278,7 +3278,7 @@ Witness: L1 212 (c1, p1-rooms238, p1-speedup, p1-room x5, rzx-p1- x28).
 
 ### `InitKind6` (`$CC5B`)
 
-**Kind 6**
+**List kind 6: the standing gunman, kind `$80` (bit 7 kept: +`$11` = `$C8`, which JumperTimer never counts), the fixed picture SpriteKind6, hits 2; a front hit makes it kind 6**
 
 Witness: L1 45 (p1-speedup, p1-room14, p1-room26, p1-room27, p1-room30, rzx-p1- x14).
 
@@ -4275,7 +4275,7 @@ Witness: L1 1 (c1).
 
 **The roll call from its first sprite again (HL = RollCallSprites), then RollCallText**
 
-TitleMenu's loop falls in here when the next sprite record is the list's `$FF`. Run by menu-rollcall (the menu left alone for 5300 frames, every enemy shown once). c1 also reads these bytes as data in play (frames 18550-20469; the reader is not identified).
+TitleMenu's loop falls in here when the next sprite record is the list's `$FF`. Run by menu-rollcall (the menu left alone for 5310 frames, every enemy shown once). c1 also reads these bytes as data in play (frames 18550-20469; the reader is not identified).
 
 Witness: L1 1 (menu-rollcall).
 
@@ -4299,7 +4299,7 @@ Witness: L1 14 (c1, menu-rollcall).
 
 **The names from the first again (IX = RollCallTexts), then RollCallNext**
 
-Reached at the list's end. Run by menu-rollcall (the menu left alone for 5300 frames).
+Reached at the list's end. Run by menu-rollcall (the menu left alone for 5310 frames).
 
 Witness: L1 1 (menu-rollcall).
 
@@ -4801,7 +4801,7 @@ Witness: L1 36 (c2, p2-room20, rzx-p2- x14).
 
 #### `SmartBomb` (`$9739`)
 
-**SPACE: one smart bomb from Bombs `$A266` (none left, nothing): the flash on `$A1C9`, the HUD, the timer 14, and the 20 enemy bullets marked (state 2)**
+**SPACE: one smart bomb from Bombs `$A205` (none left, nothing): the HUD, SmartBombOn `$A1C9` = 1, 14 steps, and the 20 enemy bullets marked (state 2)**
 
 Changed from REX 1's SmartBomb `$9751` (src/game/bomb.asm).
 
@@ -4818,7 +4818,7 @@ Witness: L1 2 (rzx-p2-28000).
 
 #### `SmartBombStep` (`$976E`)
 
-**One step of a running smart bomb: kill the next marked object, flash the screen**
+**One step of a running smart bomb: KillObject on the next object record (not kinds `$FE`, `$FD`, `$FC`, `$90`; neither the alive byte nor kind `$FF` tested); CopyAttrs after the last of 14 steps; records of 27 bytes**
 
 As REX 1's SmartBombStep `$9786` (src/game/bomb.asm).
 
@@ -6196,7 +6196,7 @@ Witness: L1 74 (c2, rzx-p2-00000, rzx-p2-02000, rzx-p2-04000).
 
 #### `FireSpray` (`$B49C`)
 
-**The spray: 8 shots in the 8 directions of SprayDirections, as many as the power level allows**
+**The spray: at power 1-3 a fan of 3, 5 or 7 shots ahead (SprayShot); at power 4 the four directions, at 5 all eight (SprayDirections)**
 
 As REX 1's FireSpray `$B456` (src/game/weapons.asm).
 
@@ -7426,7 +7426,7 @@ Witness: L1 2413 (c2, rzx-p2- x9).
 
 #### `RamTurn` (`$C032`)
 
-**The ramming pod's turn: the turning pictures, then kind 7 again**
+**The hit foot man's turn (kind 6, from DrawObject): the turning picture at count +`$11` = 4, kind 7 at 0**
 
 As REX 1's RamTurn `$BD44` (src/game/objects.asm).
 
@@ -7664,7 +7664,7 @@ Witness: L1 63 (rzx-p2- x15).
 
 #### `WalkOff` (`$C4D7`)
 
-**Kinds 6 and 7 off the edge die; 3, 4, 5 stop**
+**Kinds 6 and 7 off the edge die (KillObject); 3, 4, 5 vanish (ObjectGone: alive 0, no score)**
 
 Changed from REX 1's WalkOff `$C47A` (src/game/objects.asm).
 
@@ -9309,7 +9309,7 @@ Witness: L1 10 (d1, demo-cycle).
 
 #### `SmartBombStep` (`$8DDE`)
 
-**One step of a running smart bomb: kill the next marked object, flash the screen**
+**One step of a running smart bomb: KillObject on the next object record (not kinds `$FE`, `$FD`, `$FC`, `$90`; neither the alive byte nor kind `$FF` tested); CopyAttrs after the last step; records of 23 bytes**
 
 As REX 1's SmartBombStep `$9786` (src/game/bomb.asm).
 
@@ -12028,7 +12028,7 @@ Witness: L1 3549 (d1, demo-cycle).
 
 #### `WalkOff` (`$CAE3`)
 
-**Kinds 6 and 7 off the edge die; 3, 4, 5 stop**
+**Kinds 6 and 7 off the edge die (KillObject); 3, 4, 5 vanish (ObjectGone: alive 0, no score)**
 
 As REX 1's WalkOff `$C47A` (src/game/objects.asm).
 

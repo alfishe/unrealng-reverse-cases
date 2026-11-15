@@ -350,8 +350,8 @@ B33D  RET
 ```
 
 Worked example, room 5 in `rzx-p1-08000` (memory at frame 1161): the list at `$D962` holds 362 cells before its
-`$FF`. Room 5 has 362 non-empty cells, so the list is the whole scenery, not only its animated part. The name
-`SceneryCellList` says less than the list holds (sent to the lead). The scenery is drawn again every pass because
+`$FF`. Room 5 has 362 non-empty cells, so the list is the whole scenery, not only its animated part. So the list is
+the whole scenery (hence its name SceneryCellList; the routine kept its old name DrawAnimCells). The scenery is drawn again every pass because
 `ClearBuffer` wiped it in the pass before.
 
 ```mermaid
@@ -370,7 +370,8 @@ never shows a half-drawn sprite, but it can show half a copy (4.5). Witness: `rz
 ## 4.5 What a pass costs
 
 Stage 1 cut the two RZX runs into passes (SkoolKit on the RZX). Part 1 averages 4.40 frames over 14 044 short
-passes: 3367 of 3 frames, 8839 of 4, 1775 of 5 and 60 of 6. Part 2's short passes average 4.13 frames. Our L1s of
+passes (under 20 frames); to the nearest whole frame 275 last 3 frames, 8139 4, 5114 5, 512 6 and 4 7 (recounted from
+`work/stage1/rzx-pass/p1/pclog.json`; stage 1's notes give the counts rounded down). Part 2's short passes average 4.13 frames. Our L1s of
 the replayed segments agree: `rzx-p1-*` runs 14 137 passes in 64 813 frames (4.58 a pass, room builds included);
 `rzx-p2-*` runs 9795 in 41 776 (4.27).
 
@@ -411,9 +412,10 @@ T, 4.03 frames. The next passes start at 1165:60804, 1169:63684 and 1173:67208, 
 - the red steps are the lines `BufferToScreen` (`BufferLine`) writes, at the T it writes them;
 - the coloured bar on top of each panel is the routine running (the key under the figure).
 
-The point: there is no sync. The copy starts near 1163:63000 and ends near 1165:17000, about 1.4 frames. In frame
-1164 it crosses the beam near line 100. Its 3949 writes before the beam show in that frame, its 1955 after it do not:
-the frame shows the new picture above and the old one below. Tearing can show on any frame; it is a pixel or two,
+The point: there is no sync. The copy starts near 1163:63000 and ends near 1165:17000, about 1.4 frames. Over the
+five frames BufferLine makes 5904 screen writes (this pass's 5040 and the end of the previous pass's copy in frame
+1161); 3949 of them land before the beam reaches their line. In frame 1164 the copy crosses the beam near line 100:
+the lines above it show the new picture, those below the old. Tearing can show on any frame; it is a pixel or two,
 because a pass moves things that little. Command: `python3 ../../kit/beam_timeline.py --work work/docs/rxA/p1-08000
 --window 1161:0-1166:0 --listing build/game.lst --machine 128k --frames 5 --title 'One pass against the beam:
 rzx-p1-08000 frames 1161-1165, room 5, no frame sync' --out docs/img/loop/beam-pass-p1.png`.*
@@ -641,12 +643,14 @@ each pass (only when no fade runs):
         if rounds == 0:
             rounds = 5; width -= 1
             if width == 0: rex_dies()
-            else: grey the cell at width
+            else: paint the cell at width $04 (green)
 ```
 
 Worked example: from width 12 a room lasts 5 x 2 x (12 + 11 + ... + 1) = 780 passes, about 3400 frames or 69 s at
-4.4 frames a pass. `p1-gameover` starts with width 2. After at most 30 passes the width drops to 1; 10 passes later
-it would drop to 0, and Rex dies. The GAME OVER panel shows at frame 500.
+4.4 frames a pass. `p1-gameover` starts with width 2. A round trip at width W takes 2W passes, so after at most 20
+passes (4 a round trip, 5 rounds) the width drops to 1; 10 passes later it would drop to 0, and Rex dies. This holds
+when the marker is at most at cell 2 as the POKE lands; a marker beyond a poked width moving up never matches it
+until SweepPos wraps through 255, painting `$46`/`$06` at `$582B` + pos into the play attributes on the way. The GAME OVER panel shows at frame 500.
 
 ## 4.9 Known only from the code
 
