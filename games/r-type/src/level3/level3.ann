@@ -1,0 +1,111 @@
+# The annotations of level 3 (13074 bytes loaded at $C4AE by LoadLevel): the source of src/level3/*.asm (kit/mkgame.py).
+# The game addresses the level uses are named from src/game/game.ann (@equ). Movers: the entries of the two mover tables
+# (LevelMoves, LevelMoves2) MoveEnemies jumps to; each comes back to the game at MoveStore, MoveDraw, MoveDrawA, MoveNext or MoveDone.
+@equ $7A83 MetaColumn
+@equ $7A84 MapColumn
+@equ $7A89 FrameCounter
+@equ $7A9C DrawTag
+@equ $7AA1 ShipColumn
+@equ $7AA2 ShipRow
+@equ $7AC1 Carriers 8
+@equ $7ACF Scratch 8
+@equ $7DF9 LevelVars 7
+@equ $8CFD DrawSprite 104
+@equ $8D65 DrawSpriteMirrored 110
+@equ $8E85 LevelObject 7
+@equ $8EA2 CellMark 32
+@equ $8FCB SlotFlags 18
+@equ $9168 MoveStore 6
+@equ $916E MoveDraw
+@equ $9195 MoveNext 16
+@equ $91A5 MoveScript 12
+@equ $91B1 MoveDone 43
+@equ $A599 EnemyDies 12
+@equ $C0E4 GetCell 21
+@equ $C19C BossDestroyed 68
+@equ $C225 StartWaveAt 26
+@equ $C23F AddScore 31
+@equ $C3D1 MoveByBits 20
+
+@module level3data ; Level 3
+@about The level's body: the header the game reads at $C4AE, the sprites, the object table, the metatiles, the map, the wave script, the enemy kinds and their movement scripts, the two mover tables and the movers.
+$C4AE b L3Header ; The level header: restart point, checkpoints and the pointers the game reads
+> Restart column $00, restart wave $0000; checkpoint columns $00, $FF, $FF with wave entries $E856, $EA31, $EA31; objects $DD8E, map $E716, kinds $ED50, movers $F0A6 and $F0C6.
+$C4AF L3RestartWave ; the wave entry a life restarts at (the game keeps its live copy here)
+$C4B1 L3Checks ; three checkpoint columns (CheckRestart)
+$C4B4 L3WaveStarts ; the wave entries of the start and the checkpoints
+$C4BA L3Pointers ; objects, map, kinds, movers 1, movers 2
+$C4C4 b L3Spare ; zeros up to the sprites
+$C4E0 b L3Sprites 9 ; The level's sprites: cells of 9 bytes (attribute, 8 pixel bytes) the object table points at
+@res levels/level3/sprites.bin
+$DD8E b L3Objects 4 ; The level's object table: width, height, the cells' address (LevelObject)
+@res levels/level3/objects.bin
+$DF36 b L3Metatiles 9 ; The metatiles, 144 bytes each (4 x 4 cells of 9 bytes), numbered down from the map: metatile n at $E716 - 144 x (n + 1) (MetatileAddress); 14 of them
+@res levels/level3/metatiles.bin
+$E716 b L3Map 5 ; The map: 5 bytes a block column (64 columns), each byte a metatile (bits 0-5) and its drawer (bits 6-7)
+@res levels/level3/map.bin
+$E856 b L3Waves ; The wave script: entries (scroll position, kind, script) RunWaves starts; then the enemies' movement scripts
+$ED50 b L3Kinds ; The enemy kinds StartWave reads (LevelKinds)
+$F0A6 w L3MoversA ; The first mover of each kind (16 words, LevelMoves)
+$F0C6 w L3MoversB ; The second mover of each kind (16 words, LevelMoves2)
+$F0E6 c L3MoverA0 ; Mover A0
+> Witness: L1 0 (none).
+$F0EC c L3MoverA1 ; Mover A1
+> Witness: L1 840 (l3).
+$F0FA c L3MoverA2 ; Mover A2
+> Witness: L1 230 (l3).
+$F0FF c L3MoverA3 ; Mover A3
+> Witness: L1 2832 (l3).
+$F13A c L3MoverA4 ; Mover A4
+> Witness: L1 1509 (l3).
+$F15D c L3MoverA5 ; Mover A5
+> Witness: L1 2332 (l3).
+$F187 c L3MoverA6 ; Mover A6
+> Witness: L1 5545 (l3).
+$F1A8 c L3MoverA7 ; Mover A7
+> Witness: L1 7371 (l3).
+$F379 c L3MoverA8 ; Mover A8
+> Witness: L1 3332 (l3).
+$F3F4 c L3MoverA9 ; Mover A9
+> Witness: L1 11328 (l3).
+$F47B c L3MoverA10 ; Mover A10
+> Witness: L1 1968 (l3).
+$F55A c L3MoverA11 ; Mover A11
+> Witness: L1 7026 (l3).
+$F5EF c L3MoverA12 ; Mover A12, A13, A14
+> Witness: L1 2358 (l3).
+$F60B c L3MoverA15 ; Mover A15
+> Witness: L1 2904 (l3).
+$F66E c L3MoverB0 ; Mover B0
+> Witness: L1 13422 (l3).
+$F671 c L3MoverB1 ; Mover B1
+> Witness: L1 3393 (l3).
+$F67C c L3MoverB2 ; Mover B2
+> Witness: L1 27488 (l3).
+$F683 c L3MoverB3 ; Mover B3
+> Witness: L1 10898 (l3).
+$F685 c L3MoverB4 ; Mover B4
+> Witness: L1 2000 (l3).
+$F687 c L3MoverB5 ; Mover B5
+> Witness: L1 2988 (l3).
+$F689 c L3MoverB6 ; Mover B6
+> Witness: L1 4277 (l3).
+$F68B c L3MoverB7 ; Mover B7
+> No recording ran it: known only from the code.
+$F68F c L3MoverB8 ; Mover B8
+> No recording ran it: known only from the code.
+$F693 c L3MoverB10 ; Mover B10, B11
+> Witness: L1 144 (l3).
+$F697 c L3MoverB9 ; Mover B9, B12
+> Witness: L1 19 (l3).
+$F69B c L3MoverB13 ; Mover B13
+> Witness: L1 67 (l3).
+$F69F c L3MoverB14 ; Mover B14
+> No recording ran it: known only from the code.
+$F6A3 c L3MoverB15 ; Mover B15
+> No recording ran it: known only from the code.
+$F6D6 c L3SecondMoverLess2 ; A = the slot's second mover number (high nibble of IY+5) less 2
+> Witness: L1 17721 (l3).
+$F6E2 c L3SlotBusy ; Return while the slot is free; else drop the return and go on at Mover B1 (Mover B15 calls it)
+> Witness: L1 230 (l3).
+$F6ED b L3Tail ; Bytes after the movers: mover code no recording ran (JR Z / JP $F3AE ...) and the records the movers use at $F752-$F760 (read in the level 3 recording)

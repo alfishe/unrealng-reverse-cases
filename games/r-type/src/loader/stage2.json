@@ -1,0 +1,48 @@
+{
+  "about": "The SpeedLock reader's second stage $FEE8-$FFCF (tape block 7, 232 bytes)",
+  "image_cmd": [
+    "sh",
+    "-c",
+    "test -f work/parts/level8-c4ae.bin || $SKOOLKIT_VENV/bin/python tools/parts.py"
+  ],
+  "image": "work/parts/stage2-fee8.bin",
+  "org": "FEE8",
+  "ann": "src/loader/stage2.ann",
+  "top": "stage2",
+  "bin": "stage2.bin",
+  "dest": "src/loader",
+  "device": "ZXSPECTRUM48",
+  "mode": "blocks",
+  "pages": [
+    5,
+    2,
+    0
+  ],
+  "same_bytes": true,
+  "header": [
+    "; R-Type, Electric Dreams Software 1988: the SpeedLock reader's second stage at $FEE8-$FFCF, tape block 7."
+  ],
+  "l1": [
+    {
+      "path": "work/stage2/c1/load/l1.json",
+      "lo": "FEE8",
+      "hi": "FFD0",
+      "reads": false
+    }
+  ],
+  "data_entries": "stop",
+  "work": "work/stage2/mkstage2",
+  "ref_builds": [
+    [
+      "stage1/c1",
+      "c1: a 48K from power-on, the whole load at signal speed (SpeedLock 7, level 1), the menu, play on level 1"
+    ]
+  ],
+  "other_builds": [],
+  "witness_skip": [
+    "stage1/c1"
+  ],
+  "witness_builds": [
+    "stage2/c1/load"
+  ]
+}

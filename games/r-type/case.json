@@ -8,6 +8,68 @@
   "lo": "7000",
   "hi": "10000",
   "device": "ZXSPECTRUM48",
+  "ref_parts": [
+    [
+      "src/tape/basic.json",
+      "The tape BASIC and the copy of the decryption chain"
+    ],
+    [
+      "src/loader/chain.json",
+      "The decryption chain and the SpeedLock 7 loader"
+    ],
+    [
+      "src/loader/stage2.json",
+      "The second stage"
+    ],
+    [
+      "src/loader/table2.json",
+      "The second stage's table"
+    ],
+    [
+      "src/loader/decipher.json",
+      "The decipher block"
+    ],
+    [
+      "src/loader/stage2end.json",
+      "The second stage's end"
+    ],
+    [
+      "src/loader/tail.json",
+      "The loader's tail: the move to the game and the jump to the entry"
+    ],
+    [
+      "src/level1/level1.json",
+      "Level 1 (side 2)"
+    ],
+    [
+      "src/level2/level2.json",
+      "Level 2 (side 2)"
+    ],
+    [
+      "src/level3/level3.json",
+      "Level 3 (side 2)"
+    ],
+    [
+      "src/level4/level4.json",
+      "Level 4 (side 2)"
+    ],
+    [
+      "src/level5/level5.json",
+      "Level 5 (side 2)"
+    ],
+    [
+      "src/level6/level6.json",
+      "Level 6 (side 2)"
+    ],
+    [
+      "src/level7/level7.json",
+      "Level 7 (side 2)"
+    ],
+    [
+      "src/level8/level8.json",
+      "Level 8 (side 2)"
+    ]
+  ],
   "bases": {
     "5": "4000",
     "2": "8000",
@@ -44,5 +106,16 @@
   ],
   "ref_load_end": {
     "stage1/c1": 11700
-  }
+  },
+  "overwritten": [
+    [
+      "C4AE",
+      "F87C"
+    ],
+    [
+      "F87C",
+      "FEE8",
+      "stage1/c1"
+    ]
+  ]
 }

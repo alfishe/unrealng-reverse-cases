@@ -1,0 +1,150 @@
+# The decryption chain and the SpeedLock 7 reader in their plain view ($EC00-$FEE7): the source of src/loader/chain*.asm
+# (kit/mkgame.py). tools/speedlock7.py masters the plain view back into the tape bytes.
+
+@module chain ; The decryption chain and the SpeedLock 7 reader
+@about The BASIC copies 4840 enciphered bytes to $EC00 and RETs there (CopyChain). Each layer of the chain first wipes the 100 bytes behind it with LDDR, then deciphers the rest of the chain in place with R (set to $45 at the start, so its count is part of the key) and its own constants: ADD / SUB / XOR with a running byte, or keyed by its own address (a CALL whose callee POPs the return address into IX and mixes IXH and IXL into each byte, then leaves through JP (IX) whose $DD,$E9 bytes the next layer leaves as data). tools/speedlock7.py follows the 119 rewrites; this view holds every layer as it runs.
+@about The last layer leaves the SpeedLock 7 reader at $FB7E: it checks the ROM ($0000 must be $F3), silences the interface ports, clears the RAM and the screen, then loads the second stage (TZX block 7) to $FEE8 with its own edge timing and a 7-pulse sync pattern.
+$EC00 c ChainStart ; The first layer: R = $45, wipe behind, decipher $12B4 bytes keyed by the CALL's return address
+> Witness: L1 1 (c1).
+$EC18 c LayerKeyed01 ; A keyed layer: POP IX (its return address) + 28, then each byte = ((R XOR IXH) - byte) XOR IXL
+> Witness: L1 1 (c1).
+$EC6F b LayerExit01 ; $DD,$E9: the JP (IX) the keyed layer leaves through, as the next layer leaves it (deciphered after it ran)
+$EC71 c Layer02 ; The next layers: wipe the 100 bytes behind, decipher the rest with R and a running byte
+> Witness: L1 1 (c1).
+$ECA7 c LayerKeyed03 ; A keyed layer: POP IX (its return address) + 28, then each byte = ((R XOR IXH) - byte) XOR IXL
+> Witness: L1 1 (c1).
+$ECDC b LayerExit03 ; $DD,$E9: the JP (IX) the keyed layer leaves through, as the next layer leaves it (deciphered after it ran)
+$ECDE c Layer04 ; The next layers: wipe the 100 bytes behind, decipher the rest with R and a running byte
+> Witness: L1 1 (c1).
+$ED13 c LayerKeyed05 ; A keyed layer: POP IX (its return address) + 28, then each byte = ((R XOR IXH) - byte) XOR IXL
+> Witness: L1 1 (c1).
+$ED54 c LayerKeyed06 ; A keyed layer: POP IX (its return address) + 28, then each byte = ((R XOR IXH) - byte) XOR IXL
+> Witness: L1 1 (c1).
+$EDAD b LayerExit06 ; $DD,$E9: the JP (IX) the keyed layer leaves through, as the next layer leaves it (deciphered after it ran)
+$EDAF c Layer07 ; The next layers: wipe the 100 bytes behind, decipher the rest with R and a running byte
+> Witness: L1 1 (c1).
+$EE1D b LayerExit07 ; $DD,$E9: the JP (IX) the keyed layer leaves through, as the next layer leaves it (deciphered after it ran)
+$EE1F c Layer08 ; The next layers: wipe the 100 bytes behind, decipher the rest with R and a running byte
+> Witness: L1 1 (c1).
+$EEC5 b LayerExit08 ; $DD,$E9: the JP (IX) the keyed layer leaves through, as the next layer leaves it (deciphered after it ran)
+$EEC7 c Layer09 ; The next layers: wipe the 100 bytes behind, decipher the rest with R and a running byte
+> Witness: L1 1 (c1).
+$EEDB c LayerKeyed10 ; A keyed layer: POP IX (its return address) + 28, then each byte = ((R XOR IXH) - byte) XOR IXL
+> Witness: L1 1 (c1).
+$EF10 b LayerExit10 ; $DD,$E9: the JP (IX) the keyed layer leaves through, as the next layer leaves it (deciphered after it ran)
+$EF12 c Layer11 ; The next layers: wipe the 100 bytes behind, decipher the rest with R and a running byte
+> Witness: L1 1 (c1).
+$EF4A b LayerExit11 ; $DD,$E9: the JP (IX) the keyed layer leaves through, as the next layer leaves it (deciphered after it ran)
+$EF4C c Layer12 ; The next layers: wipe the 100 bytes behind, decipher the rest with R and a running byte
+> Witness: L1 1 (c1).
+$EF60 c LayerKeyed13 ; A keyed layer: POP IX (its return address) + 28, then each byte = ((R XOR IXH) - byte) XOR IXL
+> Witness: L1 1 (c1).
+$EFB3 c LayerKeyed14 ; A keyed layer: POP IX (its return address) + 28, then each byte = ((R XOR IXH) - byte) XOR IXL
+> Witness: L1 1 (c1).
+$F004 c LayerKeyed15 ; A keyed layer: POP IX (its return address) + 28, then each byte = ((R XOR IXH) - byte) XOR IXL
+> Witness: L1 1 (c1).
+$F08A b LayerExit15 ; $DD,$E9: the JP (IX) the keyed layer leaves through, as the next layer leaves it (deciphered after it ran)
+$F08C c Layer16 ; The next layers: wipe the 100 bytes behind, decipher the rest with R and a running byte
+> Witness: L1 1 (c1).
+$F106 b LayerExit16 ; $DD,$E9: the JP (IX) the keyed layer leaves through, as the next layer leaves it (deciphered after it ran)
+$F108 c Layer17 ; The next layers: wipe the 100 bytes behind, decipher the rest with R and a running byte
+> Witness: L1 1 (c1).
+$F132 b LayerExit17 ; $DD,$E9: the JP (IX) the keyed layer leaves through, as the next layer leaves it (deciphered after it ran)
+$F134 c Layer18 ; The next layers: wipe the 100 bytes behind, decipher the rest with R and a running byte
+> Witness: L1 1 (c1).
+$F148 c LayerKeyed19 ; A keyed layer: POP IX (its return address) + 28, then each byte = ((R XOR IXH) - byte) XOR IXL
+> Witness: L1 1 (c1).
+$F19A c LayerKeyed20 ; A keyed layer: POP IX (its return address) + 28, then each byte = ((R XOR IXH) - byte) XOR IXL
+> Witness: L1 1 (c1).
+$F1EC c LayerKeyed21 ; A keyed layer: POP IX (its return address) + 28, then each byte = ((R XOR IXH) - byte) XOR IXL
+> Witness: L1 1 (c1).
+$F270 c LayerKeyed22 ; A keyed layer: POP IX (its return address) + 28, then each byte = ((R XOR IXH) - byte) XOR IXL
+> Witness: L1 1 (c1).
+$F31F b LayerExit22 ; $DD,$E9: the JP (IX) the keyed layer leaves through, as the next layer leaves it (deciphered after it ran)
+$F321 c Layer23 ; The next layers: wipe the 100 bytes behind, decipher the rest with R and a running byte
+> Witness: L1 1 (c1).
+$F367 c LayerKeyed24 ; A keyed layer: POP IX (its return address) + 28, then each byte = ((R XOR IXH) - byte) XOR IXL
+> Witness: L1 1 (c1).
+$F3BE b LayerExit24 ; $DD,$E9: the JP (IX) the keyed layer leaves through, as the next layer leaves it (deciphered after it ran)
+$F3C0 c Layer25 ; The next layers: wipe the 100 bytes behind, decipher the rest with R and a running byte
+> Witness: L1 1 (c1).
+$F3F6 c LayerKeyed26 ; A keyed layer: POP IX (its return address) + 28, then each byte = ((R XOR IXH) - byte) XOR IXL
+> Witness: L1 1 (c1).
+$F43C b LayerExit26 ; $DD,$E9: the JP (IX) the keyed layer leaves through, as the next layer leaves it (deciphered after it ran)
+$F43E c Layer27 ; The next layers: wipe the 100 bytes behind, decipher the rest with R and a running byte
+> Witness: L1 1 (c1).
+$F473 c LayerKeyed28 ; A keyed layer: POP IX (its return address) + 28, then each byte = ((R XOR IXH) - byte) XOR IXL
+> Witness: L1 1 (c1).
+$F4E3 c LayerKeyed29 ; A keyed layer: POP IX (its return address) + 28, then each byte = ((R XOR IXH) - byte) XOR IXL
+> Witness: L1 1 (c1).
+$F518 b LayerExit29 ; $DD,$E9: the JP (IX) the keyed layer leaves through, as the next layer leaves it (deciphered after it ran)
+$F51A c Layer30 ; The next layers: wipe the 100 bytes behind, decipher the rest with R and a running byte
+> Witness: L1 1 (c1).
+$F551 c LayerKeyed31 ; A keyed layer: POP IX (its return address) + 28, then each byte = ((R XOR IXH) - byte) XOR IXL
+> Witness: L1 1 (c1).
+$F586 b LayerExit31 ; $DD,$E9: the JP (IX) the keyed layer leaves through, as the next layer leaves it (deciphered after it ran)
+$F588 c Layer32 ; The next layers: wipe the 100 bytes behind, decipher the rest with R and a running byte
+> Witness: L1 1 (c1).
+$F6CF c LayerKeyed33 ; A keyed layer: POP IX (its return address) + 28, then each byte = ((R XOR IXH) - byte) XOR IXL
+> Witness: L1 1 (c1).
+$F753 b LayerExit33 ; $DD,$E9: the JP (IX) the keyed layer leaves through, as the next layer leaves it (deciphered after it ran)
+$F755 c Layer34 ; The next layers: wipe the 100 bytes behind, decipher the rest with R and a running byte
+> Witness: L1 1 (c1).
+$F7CF c LayerKeyed35 ; A keyed layer: POP IX (its return address) + 28, then each byte = ((R XOR IXH) - byte) XOR IXL
+> Witness: L1 1 (c1).
+$F820 c LayerKeyed36 ; A keyed layer: POP IX (its return address) + 28, then each byte = ((R XOR IXH) - byte) XOR IXL
+> Witness: L1 1 (c1).
+$F885 c LayerKeyed37 ; A keyed layer: POP IX (its return address) + 28, then each byte = ((R XOR IXH) - byte) XOR IXL
+> Witness: L1 1 (c1).
+$F8CB b LayerExit37 ; $DD,$E9: the JP (IX) the keyed layer leaves through, as the next layer leaves it (deciphered after it ran)
+$F8CD c Layer38 ; The next layers: wipe the 100 bytes behind, decipher the rest with R and a running byte
+> Witness: L1 1 (c1).
+$F94D b LayerExit38 ; $DD,$E9: the JP (IX) the keyed layer leaves through, as the next layer leaves it (deciphered after it ran)
+$F94F c Layer39 ; The next layers: wipe the 100 bytes behind, decipher the rest with R and a running byte
+> Witness: L1 1 (c1).
+$F99A b LayerExit39 ; $DD,$E9: the JP (IX) the keyed layer leaves through, as the next layer leaves it (deciphered after it ran)
+$F99C c Layer40 ; The next layers: wipe the 100 bytes behind, decipher the rest with R and a running byte
+> Witness: L1 1 (c1).
+$F9B0 c LayerKeyed41 ; A keyed layer: POP IX (its return address) + 28, then each byte = ((R XOR IXH) - byte) XOR IXL
+> Witness: L1 1 (c1).
+$FA01 c LayerKeyed42 ; A keyed layer: POP IX (its return address) + 28, then each byte = ((R XOR IXH) - byte) XOR IXL
+> Witness: L1 1 (c1).
+$FA36 b LayerExit42 ; $DD,$E9: the JP (IX) the keyed layer leaves through, as the next layer leaves it (deciphered after it ran)
+$FA38 c Layer43 ; The next layers: wipe the 100 bytes behind, decipher the rest with R and a running byte
+> Witness: L1 1 (c1).
+$FAD4 c LayerKeyed44 ; A keyed layer: POP IX (its return address) + 28, then each byte = ((R XOR IXH) - byte) XOR IXL
+> Witness: L1 1 (c1).
+$FB2B b LayerExit44 ; $DD,$E9: the JP (IX) the keyed layer leaves through, as the next layer leaves it (deciphered after it ran)
+$FB2D c Layer45 ; The next layers: wipe the 100 bytes behind, decipher the rest with R and a running byte
+> Witness: L1 1 (c1).
+$FB62 c LayerKeyed46 ; A keyed layer: POP IX (its return address) + 28, then each byte = ((R XOR IXH) - byte) XOR IXL
+> Witness: L1 1 (c1).
+$FB7E SL7Start ; the reader: the ROM check ($0000 = $F3), the ports $1F, $7B, $BB, $7F, the RAM cleared
+$FBCB c SL7WipeTrap ; Zero memory upward from $FBD7 for ever: the end of a failed check
+> No recording ran it: known only from the code (the load passed every check).
+$FBD7 c SL7Reveal ; The per-bit hook: while $82FF is set, LDI 12 bytes from $8000 to the attributes a step (the screen revealed as it loads)
+> Witness: L1 57161 (c1).
+$FCD1 b SL7Bytes ; four bytes $90, $98, $80, $90 between the routines
+$FCD5 c SL7Edge2 ; Wait for two edges
+> Witness: L1 282 (c1).
+$FCD9 c SL7Edge1 ; Wait for one edge after the standard delay
+> Witness: L1 3292 (c1).
+$FCDB c SL7EdgeDelay ; Delay A, then wait for an edge on EAR counting B; carry when found, the border striped
+> Witness: L1 2521777 (c1).
+$FCF6 c SL7LoadBlock ; Load DE bytes to IX: the pilot, the sync and the 7-pulse pattern of SL7Pattern, then the bytes through the store hook
+> Witness: L1 2 (c1).
+$FDB3 b SL7StoreHook ; The byte store stage 2 points the reader at ($FDB1 = $FDB3): LD A,$C1 / XOR L / ADD A,$11 / LD (IX+0),A ...; bytes in this view (known only from the code)
+$FDC7 c SL7Blocks ; Walk the block table at IY: 5-byte records (address, length, the $7FFD bank or 0), each block loaded with SL7LoadBlock's bit loop
+> Witness: L1 7 (c1).
+$FE2A c SL7ReadBit ; Read one bit into L (the edge time against $DB)
+> Witness: L1 147 (c1).
+$FE40 c SL7LoadStage2 ; Load the next stage, then sample the EAR line 255 times into $9000 and check it unless $006D holds $28
+> Witness: L1 1 (c1).
+$FE5B c SL7CountEdges ; Count the EAR changes in 255 loops into E
+> Witness: L1 255 (c1).
+$FE77 c SL7CheckSamples ; Sum two runs of 50 samples; a bad pair sets SL7Pattern's flag byte
+> Witness: L1 1 (c1).
+$FEB3 b SL7Pattern ; The flag byte (non-zero: a failed check, the reader wipes memory) and the 7 sync pulse limits (pairs)
+$FEC2 c SL7BlockEnd ; After a block: border black; a bad block wipes memory (SL7WipeTrap)
+> Witness: L1 1 (c1).
+$FECD SL7Main ; SP = $FFFF, the screen cleared, the second stage (232 bytes) loaded to $FEE8

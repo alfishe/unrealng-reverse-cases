@@ -1,0 +1,22 @@
+# The SpeedLock pieces loaded over the reader late in the load: the source of src/loader/{decipher,stage2end,table2,tail}*.asm
+# (kit/mkgame.py; one .ann for the four part files).
+@equ $FBCB SL7WipeTrap
+@equ $FEB3 SL7Pattern
+@equ $85FD GameEntry ; the game's entry (src/game: Entry)
+
+@module decipher ; Decipher (TZX block 29)
+@about The last piece the countdown loader runs: it undoes the XOR over the whole game and hands over to the tail.
+$FE40 c Decipher ; XOR $92 over $7000-$C4AD (21678 bytes), then JP Tail
+> Witness: L1 1 (c1).
+$FE53 b DecipherLeftover ; The rest of the block: an older copy of the second stage's code (the store hook setup, the stack and IM settings), never run
+@module stage2end ; Stage2End (TZX block 31)
+@about The second stage's new end, loaded over $FEFC once the game's blocks are in.
+$FEFC c Stage2End ; Wipe memory if a check failed; IY = $5C3A, IM 1, HL' = $2758, border 0, R = 0, I = $3F, SP = $6FFD, JP Decipher
+> Witness: L1 1 (c1).
+@module table2 ; The second block table (TZX block 23)
+$FF49 b BlockTable2 5 ; The block table SL7Blocks walks for the game: 5-byte records (address, length, the $7FFD bank or 0)
+@module tail ; The tail (TZX blocks 33 and 35)
+@about Run by Decipher: it puts the BASIC registers back, moves the game's top part into place and enters the game.
+$61A8 c Tail ; HL' = $2758, SP = $6FFE, IY = $5C3A; LDDR $C53C-$E7CD to $DD10-$FFA1; OUT ($7FFD),$30 (128K paging locked, the 48K ROM); JP GameEntry
+> Witness: L1 1 (c1).
+$61C9 b TailLeftover ; Bytes after the tail (the start of the second stage's code: XOR A / LD ($82FF),A / LD IX,$4000 ...), never run

@@ -1,0 +1,74 @@
+# The annotations of level 6 (8849 bytes loaded at $C4AE by LoadLevel): the source of src/level6/*.asm (kit/mkgame.py).
+# The game addresses the level uses are named from src/game/game.ann (@equ). Movers: the entries of the two mover tables
+# (LevelMoves, LevelMoves2) MoveEnemies jumps to; each comes back to the game at MoveStore, MoveDraw, MoveDrawA, MoveNext or MoveDone.
+@equ $7A89 FrameCounter
+@equ $7A9C DrawTag
+@equ $7AC1 Carriers 8
+@equ $7ACF Scratch 8
+@equ $8501 EnemySlots 252
+@equ $8CFD DrawSprite 104
+@equ $8D65 DrawSpriteMirrored 110
+@equ $8E85 LevelObject 7
+@equ $9168 MoveStore 6
+@equ $916E MoveDraw
+@equ $9195 MoveNext 16
+@equ $91A5 MoveScript 12
+@equ $91B1 MoveDone 43
+
+@module level6data ; Level 6
+@about The level's body: the header the game reads at $C4AE, the sprites, the object table, the metatiles, the map, the wave script, the enemy kinds and their movement scripts, the two mover tables and the movers.
+$C4AE b L6Header ; The level header: restart point, checkpoints and the pointers the game reads
+> Restart column $00, restart wave $DADD; checkpoint columns $00, $27, $FF with wave entries $DADD, $DBFA, $DD26; objects $CC33, map $D9A7, kinds $E362, movers $E612 and $E620.
+$C4AF L6RestartWave ; the wave entry a life restarts at (the game keeps its live copy here)
+$C4B1 L6Checks ; three checkpoint columns (CheckRestart)
+$C4B4 L6WaveStarts ; the wave entries of the start and the checkpoints
+$C4BA L6Pointers ; objects, map, kinds, movers 1, movers 2
+$C4C4 b L6Spare ; zeros up to the sprites
+$C4E0 b L6Sprites 9 ; The level's sprites: cells of 9 bytes (attribute, 8 pixel bytes) the object table points at
+@res levels/level6/sprites.bin
+$CC33 b L6Objects 4 ; The level's object table: width, height, the cells' address (LevelObject)
+@res levels/level6/objects.bin
+$CCB7 b L6Metatiles 9 ; The metatiles, 144 bytes each (4 x 4 cells of 9 bytes), numbered down from the map: metatile n at $D9A7 - 144 x (n + 1) (MetatileAddress); 23 of them
+@res levels/level6/metatiles.bin
+$D9A7 b L6Map 5 ; The map: 5 bytes a block column (62 columns), each byte a metatile (bits 0-5) and its drawer (bits 6-7)
+@res levels/level6/map.bin
+$DADD b L6Waves ; The wave script: entries (scroll position, kind, script) RunWaves starts; then the enemies' movement scripts
+$E362 b L6Kinds ; The enemy kinds StartWave reads (LevelKinds)
+$E612 w L6MoversA ; The first mover of each kind (7 words, LevelMoves)
+$E620 w L6MoversB ; The second mover of each kind (16 words, LevelMoves2)
+$E640 c L6MoverA0 ; Mover A0
+> Witness: L1 0 (none).
+$E646 c L6MoverA1 ; Mover A1
+> No recording ran it: known only from the code.
+$E654 c L6MoverA2 ; Mover A2
+> Witness: L1 195 (l6).
+$E659 c L6MoverA3 ; Mover A3
+> Witness: L1 2292 (l6).
+$E689 c L6MoverA4 ; Mover A4
+> Witness: L1 161 (l6).
+$E6B2 c L6MoverA5 ; Mover A5
+> Witness: L1 1 (l6).
+$E6CB c L6MoverA6 ; Mover A6
+> Witness: L1 733 (l6).
+$E6D9 c L6MoverB0 ; Mover B0
+> Witness: L1 8998 (l6).
+$E6DC c L6MoverB1 ; Mover B1
+> Witness: L1 195 (l6).
+$E6E7 c L6MoverB2 ; Mover B2, B3
+> No recording ran it: known only from the code.
+$E6E9 c L6MoverB4 ; Mover B4, B5, B6, B7
+> No recording ran it: known only from the code.
+$E6ED c L6MoverB8 ; Mover B8
+> No recording ran it: known only from the code.
+$E6F1 c L6MoverB10 ; Mover B10, B11
+> Witness: L1 97 (l6).
+$E6F5 c L6MoverB9 ; Mover B9, B12
+> Witness: L1 87 (l6).
+$E6F9 c L6MoverB13 ; Mover B13
+> No recording ran it: known only from the code.
+$E6FD c L6MoverB14 ; Mover B14
+> No recording ran it: known only from the code.
+$E701 c L6MoverB15 ; Mover B15
+> Witness: L1 11 (l6).
+$E734 c L6SlotBusy ; Return while the slot is free; else drop the return and go on at Mover B1 (Mover B15 calls it)
+> Witness: L1 195 (l6).

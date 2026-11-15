@@ -1,0 +1,98 @@
+# The original tape (orig/R-Type.tzx.zip, R-Type.tzx), block by block: tools/mktape.py writes it from this list and
+# the files tools/build.sh makes; the build compares the result with the original byte for byte. The format is in
+# tools/mktape.py; docs/03-build-and-load.md 3.1 has the blocks.
+#
+# The SpeedLock reader (src/loader/chain.asm, $FB7E-$FEE7, and its second stage src/loader/stage2.asm,
+# $FEE8-$FFCF) reads the `sl` blocks. In group 2 each is preceded by a mark `07 FF 00` (5 bits of the last byte) at
+# zero 875 T / one 1750 T, and read at zero 714 T / one 1428 T. Where each block of group 2 goes is the reader's
+# table at $FF49 (5 bytes a row: the address, the length less one, the $7FFD value; src/loader/stage2.asm), first
+# the one in block 7, then the one block 23 loads over it.
+version 1 10
+archive
+info 0 R-Type
+info 1 Electric Dreams Software / Activision Inc
+info 2 Bob Pape, \rMark A. Jones.
+info 3 1988
+info 4 English
+info 5 Arcade: Shoot-em-up
+info 6 \xA39.99
+info 7 Speedlock 7
+info 8 Original Release
+info 255 TZXed by Andrew Barker
+archive-end
+header 957 program R-TYPE basic.bin 0
+rom 6711 basic.bin
+group Speedlock 7 Block 1
+tone 2165 1530
+pulses 714,714,714,714,1428,1428,2147,2147,2147,2147,2147,2147,1428,1428,714,714
+pure 714 1428 6 0 hex:E8
+# the reader's second stage at $FEE8-$FFCF (src/loader/stage2.asm), 232 bytes and the check byte
+sl 714 1428 8 1689 $FEE8 stage2.bin check
+group-end
+group Speedlock 7 Block 2
+tone 2165 1525
+pulses 714,714,714,714,1428,1428,2147,2147,2147,2147,2147,2147,1428,1428,714,714
+pure 714 1428 6 0 hex:E8
+# the loading screen: the bitmap straight to $4000, the attributes to $8000 (copied to $5800 while the blocks load)
+sl 714 1428 8 0 $4000 res/screens/loading.scr:0:1800
+pure 875 1750 5 0 hex:07FF00
+sl 714 1428 8 0 $8000 res/screens/loading.scr:1800:1B00
+pure 875 1750 5 0 hex:07FF00
+# the game's code $9710-$C4AD, XORed with $92 (Decipher $FE40 takes it off at the end of the load)
+sl 714 1428 8 0 $9710 game.bin@7000:9710:C4AE^92
+pure 875 1750 5 0 hex:07FF00
+# the key of the body store: LD A,$86 at $FD7F (was LD A,$C1)
+sl 714 1428 8 0 $FD7F hex:3E86
+pure 875 1750 5 0 hex:07FF00
+# the key of the last-byte store: LD A,$86 / XOR L / ADD A, at $FDB3 (was LD A,$C1)
+sl 714 1428 8 0 $FDB3 hex:3E86ADC6
+pure 875 1750 5 0 hex:07FF00
+# the reader's table again, 55 bytes over $FF49 (src/loader/stage2.asm's second table)
+sl 714 1428 8 0 $FF49 table2.bin
+pure 875 1750 5 0 hex:07FF00
+# the game's code $7000-$970F, XORed with $92
+sl 714 1428 8 0 $7000 game.bin@7000:7000:9710^92
+pure 875 1750 5 0 hex:07FF00
+# the game's top $DD18-$FFA0, loaded at $C544 and moved up by the tail
+sl 714 1428 8 0 $C544 game.bin@7000:DD18:FFA1
+pure 875 1750 5 0 hex:07FF00
+sl 714 1428 8 0 $FE40 decipher.bin
+pure 875 1750 5 0 hex:07FF00
+sl 714 1428 8 0 $FEFC stage2end.bin
+pure 875 1750 5 0 hex:07FF00
+sl 714 1428 8 0 $61A8 tail.bin:0:21
+pure 875 1750 5 0 hex:07FF00
+sl 714 1428 8 999 $61C9 tail.bin:21:2F check
+group-end
+stop
+text Level 1
+turbo 2165 714 714 583 1166 3251 8 1946 $E6 level-header:1:level1.bin
+turbo 2165 714 714 583 1166 3251 8 5796 $E6 level1.bin
+stop
+text Level 2
+turbo 2165 714 714 583 1166 3251 8 1946 $E6 level-header:2:level2.bin
+turbo 2165 714 714 583 1166 3251 8 4528 $E6 level2.bin
+stop
+text Level 3
+turbo 2165 714 714 583 1166 3251 8 1946 $E6 level-header:3:level3.bin
+turbo 2165 714 714 583 1166 3251 8 6128 $E6 level3.bin
+stop
+text Level 4
+turbo 2165 714 714 583 1166 3251 8 1947 $E6 level-header:4:level4.bin
+turbo 2165 714 714 583 1166 3251 8 5534 $E6 level4.bin
+stop
+text Level 5
+turbo 2165 714 714 583 1166 3251 8 1947 $E6 level-header:5:level5.bin
+turbo 2165 714 714 583 1166 3251 8 5763 $E6 level5.bin
+stop
+text Level 6
+turbo 2165 714 714 583 1166 3251 8 1947 $E6 level-header:6:level6.bin
+turbo 2165 714 714 583 1166 3251 8 5527 $E6 level6.bin
+stop
+text Level 7
+turbo 2165 714 714 583 1166 3251 8 1947 $E6 level-header:7:level7.bin
+turbo 2165 714 714 583 1166 3251 8 7177 $E6 level7.bin
+stop
+text Level 8
+turbo 2165 714 714 583 1166 3251 8 1945 $E6 level-header:8:level8.bin
+turbo 2165 714 714 583 1166 3251 8 7 $E6 level8.bin

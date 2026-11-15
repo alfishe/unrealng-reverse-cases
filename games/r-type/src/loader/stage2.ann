@@ -1,0 +1,14 @@
+# The SpeedLock reader's second stage $FEE8-$FFCF (TZX block 7): the source of src/loader/stage2*.asm (kit/mkgame.py).
+@equ $FB7E SL7Start
+@equ $FBCB SL7WipeTrap
+@equ $FCF6 SL7LoadBlock
+@equ $FDB1 SL7StorePtr 2 ; the store hook's address in the reader's bit loop
+@equ $FDB3 SL7StoreHook
+@equ $FEB3 SL7Pattern
+
+@module stage2 ; The second stage
+@about Loaded to $FEE8 by SL7Main. It loads the loading screen (6143 bytes to $4000 through the deciphering store hook), wipes memory when a check failed, sets IM 2 and jumps to the countdown loader at $7530 (loaded with the screen's blocks).
+$FEE8 c Stage2Start ; Load the screen with the store hook, check the flag, IM 2, SP = $752F, JP $7530
+> Witness: L1 1 (c1).
+$FF17 b Stage2Data ; Zeros, the first block table at $FF4A (5-byte records: address, length, the $7FFD bank) and the countdown digits 0-9 (8 bytes each from $FF60)
+@res loader/stage2-data.bin

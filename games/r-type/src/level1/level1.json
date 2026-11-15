@@ -1,0 +1,80 @@
+{
+  "about": "Level 1: the body LoadLevel $FE03 reads to $C4AE (13228 bytes)",
+  "image_cmd": [
+    "sh",
+    "-c",
+    "test -f work/parts/level8-c4ae.bin || $SKOOLKIT_VENV/bin/python tools/parts.py"
+  ],
+  "image": "work/parts/level1-c4ae.bin",
+  "org": "C4AE",
+  "ann": "src/level1/level1.ann",
+  "top": "level1",
+  "bin": "level1.bin",
+  "dest": "src/level1",
+  "device": "ZXSPECTRUM48",
+  "mode": "blocks",
+  "same_bytes": true,
+  "pages": [
+    5,
+    2,
+    0
+  ],
+  "header": [
+    "; R-Type, Electric Dreams Software 1988: level 1, 13228 bytes loaded at $C4AE by LoadLevel $FE03 (tape TZX block 40)."
+  ],
+  "l1": [
+    {
+      "path": "work/stage1/rec/l1/l1.json",
+      "lo": "C4AE",
+      "hi": "F85A"
+    },
+    {
+      "path": "work/stage1/c1/l1.json",
+      "lo": "C4AE",
+      "hi": "F85A"
+    },
+    {
+      "path": "work/stage1/rec/gameover/l1.json",
+      "lo": "C4AE",
+      "hi": "F85A"
+    },
+    {
+      "path": "work/stage1/rec/continue/l1.json",
+      "lo": "C4AE",
+      "hi": "F85A"
+    },
+    {
+      "path": "work/stage1/rec/hiscore/l1.json",
+      "lo": "C4AE",
+      "hi": "F85A"
+    },
+    {
+      "path": "work/stage1/rec/hiscore-typed/l1.json",
+      "lo": "C4AE",
+      "hi": "F85A"
+    },
+    {
+      "path": "work/stage1/rec/ctl-kempston/l1.json",
+      "lo": "C4AE",
+      "hi": "F85A"
+    },
+    {
+      "path": "work/stage1/rec/ctl-if2/l1.json",
+      "lo": "C4AE",
+      "hi": "F85A"
+    },
+    {
+      "path": "work/stage1/rec/ctl-sinclair/l1.json",
+      "lo": "C4AE",
+      "hi": "F85A"
+    }
+  ],
+  "work": "work/stage2/mklevel1",
+  "ref_builds": [
+    [
+      "stage1/rec/l1",
+      "l1: level 1 played from its load to the next search (the immortality POKE $91F2)"
+    ]
+  ],
+  "other_builds": []
+}

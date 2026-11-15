@@ -1,0 +1,91 @@
+# The annotations of level 2 (12856 bytes loaded at $C4AE by LoadLevel): the source of src/level2/*.asm (kit/mkgame.py).
+# The game addresses the level uses are named from src/game/game.ann (@equ). Movers: the entries of the two mover tables
+# (LevelMoves, LevelMoves2) MoveEnemies jumps to; each comes back to the game at MoveStore, MoveDraw, MoveDrawA, MoveNext or MoveDone.
+@equ $7A89 FrameCounter
+@equ $7A9C DrawTag
+@equ $7AC1 Carriers 8
+@equ $7DF9 LevelVars 7
+@equ $8386 EnemyShots 84
+@equ $8EA2 CellMark 32
+@equ $9168 MoveStore 6
+@equ $916E MoveDraw
+@equ $916F MoveDrawA 38
+@equ $9195 MoveNext 16
+@equ $91A5 MoveScript 12
+@equ $91B1 MoveDone 43
+@equ $C19C BossDestroyed 68
+@equ $C20B ClearCells 26
+@equ $C23F AddScore 31
+@equ $C3E5 SoftCellsOn 9
+@equ $C3EE SoftCellsOff 7
+@equ $C3F9 ClearCellsTag 21
+
+@module level2data ; Level 2
+@about The level's body: the header the game reads at $C4AE, the sprites, the object table, the metatiles, the map, the wave script, the enemy kinds and their movement scripts, the two mover tables and the movers.
+$C4AE b L2Header ; The level header: restart point, checkpoints and the pointers the game reads
+> Restart column $00, restart wave $0000; checkpoint columns $06, $2B, $FF with wave entries $E8B1, $EA55, $EE60; objects $D372, map $E762, kinds $F197, movers $F4BF and $F4D3.
+$C4AF L2RestartWave ; the wave entry a life restarts at (the game keeps its live copy here)
+$C4B1 L2Checks ; three checkpoint columns (CheckRestart)
+$C4B4 L2WaveStarts ; the wave entries of the start and the checkpoints
+$C4BA L2Pointers ; objects, map, kinds, movers 1, movers 2
+$C4C4 b L2Spare ; zeros up to the sprites
+$C4E0 b L2Sprites 9 ; The level's sprites: cells of 9 bytes (attribute, 8 pixel bytes) the object table points at
+@res levels/level2/sprites.bin
+$D372 b L2Objects 4 ; The level's object table: width, height, the cells' address (LevelObject)
+@res levels/level2/objects.bin
+$D442 b L2Metatiles 9 ; The metatiles, 144 bytes each (4 x 4 cells of 9 bytes), numbered down from the map: metatile n at $E762 - 144 x (n + 1) (MetatileAddress); 34 of them
+@res levels/level2/metatiles.bin
+$E762 b L2Map 5 ; The map: 5 bytes a block column (67 columns), each byte a metatile (bits 0-5) and its drawer (bits 6-7)
+@res levels/level2/map.bin
+$E8B1 b L2Waves ; The wave script: entries (scroll position, kind, script) RunWaves starts; then the enemies' movement scripts
+$F197 b L2Kinds ; The enemy kinds StartWave reads (LevelKinds)
+$F4BF w L2MoversA ; The first mover of each kind (10 words, LevelMoves)
+$F4D3 w L2MoversB ; The second mover of each kind (16 words, LevelMoves2)
+$F4F3 c L2MoverA0 ; Mover A0
+> Witness: L1 0 (none).
+$F4F9 c L2MoverA1 ; Mover A1
+> No recording ran it: known only from the code.
+$F507 c L2MoverA2 ; Mover A2
+> Witness: L1 36 (l2).
+$F50C c L2MoverA3 ; Mover A3
+> Witness: L1 1239 (l2).
+$F524 c L2MoverA4 ; Mover A4
+> Witness: L1 795 (l2).
+$F52B c L2MoverA5 ; Mover A5
+> Witness: L1 10335 (l2).
+$F54F c L2MoverA6 ; Mover A6
+> Witness: L1 795 (l2).
+$F566 c L2MoverA7 ; Mover A7
+> Witness: L1 1056 (l2).
+$F5BC c L2MoverA8 ; Mover A8
+> Witness: L1 288 (l2).
+$F611 c L2MoverA9 ; Mover A9
+> Witness: L1 544 (l2).
+$F622 c L2MoverB0 ; Mover B0
+> Witness: L1 14919 (l2).
+$F625 c L2MoverB1 ; Mover B1
+> Witness: L1 2164 (l2).
+$F630 c L2MoverB2 ; Mover B2
+> Witness: L1 1056 (l2).
+$F636 c L2MoverB3 ; Mover B3
+> Witness: L1 1239 (l2).
+$F646 c L2MoverB4 ; Mover B4
+> Witness: L1 832 (l2).
+$F64C c L2MoverB5 ; Mover B5, B6, B7
+> No recording ran it: known only from the code.
+$F650 c L2MoverB8 ; Mover B8
+> No recording ran it: known only from the code.
+$F654 c L2MoverB10 ; Mover B10, B11
+> Witness: L1 17 (l2).
+$F658 c L2MoverB9 ; Mover B9, B12
+> Witness: L1 12 (l2).
+$F65C c L2MoverB13 ; Mover B13
+> No recording ran it: known only from the code.
+$F660 c L2MoverB14 ; Mover B14
+> Witness: L1 7 (l2).
+$F664 c L2MoverB15 ; Mover B15
+> No recording ran it: known only from the code.
+$F697 c L2ShotBurst ; Fire eight enemy shots from the slot's position, kinds $21, $22, $24, $28, $25, $26, $29, $2A (the eight directions)
+> Witness: L1 228 (l2).
+$F6DB c L2SlotBusy ; Return while the slot is free; else drop the return and go on at Mover B1 (Mover B15 calls it)
+> Witness: L1 36 (l2).

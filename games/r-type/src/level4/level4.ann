@@ -1,0 +1,124 @@
+# The annotations of level 4 (12998 bytes loaded at $C4AE by LoadLevel): the source of src/level4/*.asm (kit/mkgame.py).
+# The game addresses the level uses are named from src/game/game.ann (@equ). Movers: the entries of the two mover tables
+# (LevelMoves, LevelMoves2) MoveEnemies jumps to; each comes back to the game at MoveStore, MoveDraw, MoveDrawA, MoveNext or MoveDone.
+@equ $71D0 ScoreDirty
+@equ $7A84 MapColumn
+@equ $7A89 FrameCounter
+@equ $7A9C DrawTag
+@equ $7AA1 ShipColumn
+@equ $7AA2 ShipRow
+@equ $7AC1 Carriers 8
+@equ $7ACF Scratch 8
+@equ $7DF9 LevelVars 7
+@equ $8501 EnemySlots 252
+@equ $8A40 SetDrawLimitA 13
+@equ $8CFD DrawSprite 104
+@equ $8E85 LevelObject 7
+@equ $8E8C GameObject 6
+@equ $8EA2 CellMark 32
+@equ $9168 MoveStore 6
+@equ $916E MoveDraw
+@equ $9195 MoveNext 16
+@equ $91A5 MoveScript 12
+@equ $91B1 MoveDone 43
+@equ $99FE DrawGame 8
+@equ $9A06 DrawGameFlipped 8
+@equ $9A0E DrawGameMirrored 8
+@equ $9A16 DrawGameBoth 8
+@equ $9A1E DrawPrepare 8
+@equ $A495 ProcessHits 15
+@equ $A599 EnemyDies 12
+@equ $C0E4 GetCell 21
+@equ $C225 StartWaveAt 26
+@equ $C23F AddScore 31
+@equ $C3E5 SoftCellsOn 9
+@equ $C3EE SoftCellsOff 7
+@equ $C3F9 ClearCellsTag 21
+
+@module level4data ; Level 4
+@about The level's body: the header the game reads at $C4AE, the sprites, the object table, the metatiles, the map, the wave script, the enemy kinds and their movement scripts, the two mover tables and the movers.
+$C4AE b L4Header ; The level header: restart point, checkpoints and the pointers the game reads
+> Restart column $00, restart wave $0000; checkpoint columns $00, $29, $FF with wave entries $E693, $E80F, $EABC; objects $DB15, map $E521, kinds $EF8A, movers $F2AE and $F2CE.
+$C4AF L4RestartWave ; the wave entry a life restarts at (the game keeps its live copy here)
+$C4B1 L4Checks ; three checkpoint columns (CheckRestart)
+$C4B4 L4WaveStarts ; the wave entries of the start and the checkpoints
+$C4BA L4Pointers ; objects, map, kinds, movers 1, movers 2
+$C4C4 b L4Spare ; zeros up to the sprites
+$C4E0 b L4Sprites 9 ; The level's sprites: cells of 9 bytes (attribute, 8 pixel bytes) the object table points at
+@res levels/level4/sprites.bin
+$DB15 b L4Objects 4 ; The level's object table: width, height, the cells' address (LevelObject)
+@res levels/level4/objects.bin
+$DCB1 b L4Metatiles 9 ; The metatiles, 144 bytes each (4 x 4 cells of 9 bytes), numbered down from the map: metatile n at $E521 - 144 x (n + 1) (MetatileAddress); 15 of them
+@res levels/level4/metatiles.bin
+$E521 b L4Map 5 ; The map: 5 bytes a block column (74 columns), each byte a metatile (bits 0-5) and its drawer (bits 6-7)
+@res levels/level4/map.bin
+$E693 b L4Waves ; The wave script: entries (scroll position, kind, script) RunWaves starts; then the enemies' movement scripts
+$EF8A b L4Kinds ; The enemy kinds StartWave reads (LevelKinds)
+$F2AE w L4MoversA ; The first mover of each kind (16 words, LevelMoves)
+$F2CE w L4MoversB ; The second mover of each kind (16 words, LevelMoves2)
+$F2EE c L4MoverA0 ; Mover A0
+> Witness: L1 0 (none).
+$F2F4 c L4MoverA1 ; Mover A1
+> Witness: L1 273 (l4).
+$F302 c L4MoverA2 ; Mover A2
+> Witness: L1 558 (l4).
+$F307 c L4MoverA3 ; Mover A3
+> Witness: L1 59 (l4).
+$F325 c L4MoverA4 ; Mover A4
+> Witness: L1 22 (l4).
+$F32A c L4MoverA5 ; Mover A5
+> No recording ran it: known only from the code.
+$F32F c L4MoverA6 ; Mover A6
+> Witness: L1 369 (l4).
+$F45D c L4MoverA7 ; Mover A7
+> Witness: L1 40 (l4).
+$F478 c L4MoverA8 ; Mover A8
+> Witness: L1 30 (l4).
+$F482 c L4MoverA9 ; Mover A9, A10
+> Witness: L1 1161 (l4).
+$F4ED c L4MoverA11 ; Mover A11
+> Witness: L1 1161 (l4).
+$F5BB c L4MoverA12 ; Mover A12
+> Witness: L1 1313 (l4).
+$F60C c L4MoverA13 ; Mover A13
+> Witness: L1 216 (l4).
+$F6A7 c L4MoverA14 ; Mover A14
+> Witness: L1 182 (l4).
+$F6E5 c L4MoverA15 ; Mover A15
+> Witness: L1 130 (l4).
+$F6FB c L4MoverB0 ; Mover B0
+> Witness: L1 730 (l4).
+$F6FE c L4MoverB1 ; Mover B1
+> Witness: L1 4645 (l4).
+$F709 c L4MoverB2 ; Mover B2
+> Witness: L1 81 (l4).
+$F714 c L4MoverB3 ; Mover B3
+> Witness: L1 2319 (l4).
+$F71A c L4MoverB4 ; Mover B4
+> Witness: L1 689 (l4).
+$F71C c L4MoverB5 ; Mover B5
+> Witness: L1 1143 (l4).
+$F71E c L4MoverB6 ; Mover B6, B7
+> Witness: L1 5 (l4).
+$F722 c L4MoverB8 ; Mover B8
+> Witness: L1 39 (l4).
+$F726 c L4MoverB10 ; Mover B10, B11
+> Witness: L1 284 (l4).
+$F72A c L4MoverB9 ; Mover B9, B12
+> Witness: L1 17 (l4).
+$F72E c L4MoverB13 ; Mover B13
+> Witness: L1 194 (l4).
+$F732 c L4MoverB14 ; Mover B14
+> Witness: L1 12 (l4).
+$F736 c L4MoverB15 ; Mover B15
+> Witness: L1 7 (l4).
+$F393 c L4OnField ; Return while row B < 20 and column C is 1-30; else drop the return and go to the slot's end
+> Witness: L1 439 (l4).
+$F3A3 c L4ClearPair ; Zero the bytes at DE + $300 and DE + $2FF (the cell and its left neighbour, three pages up)
+> Witness: L1 302 (l4).
+$F466 c L4SoftDraw ; Keep DrawTag, AF', DE and BC on the stack, DrawTag 0, SoftCellsOn, then back to the caller
+> Witness: L1 439 (l4).
+$F4EA b L4SpawnA ; A wave record (kind $1E) the movers fill and pass to StartWaveAt
+$F6E2 b L4SpawnB ; A wave record the movers fill and pass to StartWaveAt
+$F769 c L4SlotBusy ; Return while the slot is free; else drop the return and go on at Mover B1 (Mover B15 calls it)
+> Witness: L1 558 (l4).

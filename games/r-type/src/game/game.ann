@@ -1,14 +1,863 @@
-# The annotations of the game image: the single source of truth for src/game/*.asm (kit/mkgame.py).
-# The format is in kit/mkgame.py, class Annotations. One line an entry:
-#
-#   @module NAME ; title            the entries from here on go to NAME.asm, the title heads the file
-#   @about a paragraph              the module file's header text, one paragraph a line
-#   $ADDR c Name ; title            a routine
-#   > a description line
-#   $ADDR b Name ; title            data (w words, t text, s space; "b Name 8" rows of 8)
-#   @res graphics/NAME.bin          the entry is a resource: src/res/..., INCBIN
-#   $ADDR Name ; comment            a label and comment inside an entry: on an instruction, or on the data line
-#                                   that starts at ADDR (a data entry's rows are cut there)
-#   @isub $ADDR LD HL,-6            the instruction written so
-#   @equ $ADDR Name [N] ; comment    a variable past the image: an EQU, its operands by name
-#   @inline $ADDR                   a routine that reads its data after the CALL
+# The annotations of the game image $7000-$FFFF at the entry $85FD: the single source of truth for src/game/*.asm
+# (kit/mkgame.py; the format is in kit/mkgame.py, class Annotations). Witness lines: "Witness: L1 N (builds)" counts the
+# runs of the entry's first instruction in the recordings of case.json (kit/mkgame.py --fix-witness).
+# Coordinates: the play field is 20 character rows of 32 columns; the code passes a position as BC = row (B), column (C).
+@equ $5B64 EntryCopy 414 ; 414 bytes copied from EntryCopySource at the entry
+@equ $5D00 BitReverse 256 ; each byte with its bits reversed, built at the entry: the mirrored metatiles and sprites, the cursor keys
+@equ $5E00 ColumnBuffer 180 ; the column the scroll brings in at the right: 20 cells of 9 bytes, cut by the metatile drawers
+@equ $5EB4 ShipShots 48 ; the ship's shots, 3 bytes each (kind, column, row): MoveShipShots
+@equ $5F00 MissileA 52 ; homing missile record A
+@equ $5F34 MissileB 52 ; homing missile record B
+@equ $5F68 MissileC 52 ; homing missile record C
+@equ $5FC1 Explosions 60 ; the explosions, 3 bytes each (frame and kind, column, row): DrawExplosions
+@isub $85FE LD HL,$FFFE
+@isub $BF55 LD DE,$FF2F
+
+@module texts ; Texts and small tables in the pixel shadow's spare halves
+@about The pixel shadow (the play field drawn off screen) is laid out like the screen at $6000-$77FF; the play field is 20 character rows, so in its third third only the first 128 bytes of each 256-byte pixel line are used ($7000-$707F, $7100-$717F, ... $7700-$777F) and the game keeps its texts, small tables and some code in the other halves. A text ends at the byte with bit 7 set (PrintText $C081, PrintTextNormal $C084).
+$7000 b ShadowLine0 ; The pixel shadow, third third, pixel line 0 (128 bytes)
+> Written and read by the sprite drawers (DrawSprite and its three variants) and copied to the screen by ScrollRows. Zeros at the entry.
+$7080 t KeyPromptText ; "PRESS A KEY FOR " and the six key names DefineKeys prints
+$7090 KeyNameLeft ; "LEFT"
+$7094 KeyNameRight ; "RIGHT"
+$7099 KeyNameUp ; "UP"
+$709E KeyNameDown ; "DOWN"
+$70A2 KeyNameFire ; "FIRE"
+$70A6 KeyNameDetach ; "DETACH"
+$70AC t PilotStandByText ; "PILOT STAND BY $": printed after a life is lost
+@res texts/pilot-stand-by.bin
+$70BD t MissionOverText ; "MISSION OVER $": printed when the last life is gone
+@res texts/mission-over.bin
+$70CB t ContinueText ; "C O N T I N U E" over the countdown
+@res texts/continue.bin
+$70DA t BeamMeterFull ; '@': a full step of the BEAM meter
+$70DB t BeamMeterStep ; '>': the step being filled
+$70DC b ScoreAwards 2 ; The score awards: 10 pairs (place, digit) AwardScore hands to AddScore
+@res tables/score-awards.bin
+> Indexed by the low nibble of an enemy kind's byte 2 less 1: place 3 with the digits 1-9, then place 4 with 1 (100-900 and 1000 points; known only from the code and the score in the level recordings).
+$70F0 b ShadowLine0Tail ; zeros up to the next shadow line
+$7100 b ShadowLine1 ; The pixel shadow, third third, pixel line 1
+$7180 t HiScoreLabel ; "HI SCORE" on the HUD
+@res texts/hi-score.bin
+$7188 t BeamLabel ; "BEAM-" on the HUD
+@res texts/beam.bin
+$718D t LifeChar ; '%': the ship icon DrawLives repeats once a life
+$718E t BlankChar ; a space: DrawLives' end
+$718F t LevelText ; "R TYPE LEVEL 0 ": the digit is the level LoadLevel searches for
+$719C LevelDigit ; the level's ASCII digit
+$719E t LoadedOkText ; "LOADED OK"
+@res texts/loaded-ok.bin
+$71A7 t StopTapeText ; "STOP TAPE"
+@res texts/stop-tape.bin
+$71B0 t StartTapeText ; "START TAPE"
+@res texts/start-tape.bin
+$71BA t LoadingText ; "LOADING"
+@res texts/loading.bin
+$71C1 b CarrierFrames ; the eight characters of a pick-up carrier's animation (k l m n o n m l), NextCarrierFrame
+$71C9 t ScoreText ; the score: six ASCII digits and the space that ends the text
+> AddScore adds into it digit by digit; PrintScore prints it; InsertHiScore compares it with the table.
+$71D0 b ScoreDirty ; scratch flags of the score and the name entry
+$71D1 FirstPlay ; 0 before the first play: StartPlay gives the fly-in once
+$71D2 NameLetter ; the letter the name entry is on
+$71D3 NamePos ; the place in the name being typed
+$71D4 ForceShotsA ; the reflect laser's shot pairs, 3 bytes a shot (in ClearList: 12 bytes)
+$71DA ForceShotsB ; the second pair
+$71E0 HitCellCount ; the soft cells ($FA) gathered this frame, the index into HitCells
+$71E1 HitCells ; the (column, row) of each soft cell gathered
+$7200 b ShadowLine2 ; The pixel shadow, third third, pixel line 2
+$7280 t RewindSide2Text ; "REWIND SIDE 2 THEN PRESS ANY KEY"
+@res texts/rewind-side-2.bin
+$72A0 t SearchingText ; "SEARCHING FOR " (then LevelText)
+@res texts/searching.bin
+$72AE t ErrorInLoadingText ; "ERROR IN LOADING"
+@res texts/error-in-loading.bin
+$72BE t CreditText ; "C R E D I T  5 ": the credits left
+$72CB CreditDigit ; '5' at the start; a continue spends one
+$72CD t PressFireText ; "PRESS FIRE BUTTON"
+@res texts/press-fire.bin
+$72DE t BeamMeterEmpty ; ten '<': the empty BEAM meter
+@res texts/beam-meter-empty.bin
+$72E8 b ContinueData ; the countdown's work bytes
+$72EB ContinueRow ; the countdown's colour row, read and written by Continue
+$72F0 b KeyBitTable ; the bit masks $10, 8, 4, 2, 1 ReadKey turns a half-row bit into
+$72F5 b CarrierColours ; bytes CarrierDraw reads by the carrier's kind
+$72FC b ShadowLine2Tail ; zeros
+$7300 b ShadowLine3 ; The pixel shadow, third third, pixel line 3
+$7380 b TitleStars ; the title's star states (2 bytes a star) the star task uses while the title runs
+$73A8 t StarChars ; "()*+ ": unused (known only from the code: nothing reads it)
+$73AD b CollapseColumns ; six bytes TitleLogo reads
+$73B3 t DigitChars ; '1'-'9': the place digits of the high-score table
+@module titlestate ; The star task's switches and the Kempston probe
+$73BC c StarsOn ; Switch the star task on (task 0 of TaskTable)
+> A = 1, then StarsSet writes it to the task's switch byte (TaskTable + 2).
+> Witness: L1 38 (c1, continue, ctl-if2, ctl-kempston, ctl-sinclair, gameover, hiscore, hiscore-typed, l2-l8).
+$73BE StarsSet ; write A to the star task's switch
+$73C2 c StarsOff ; Switch the star task off
+> Witness: L1 58 (c1, continue, ctl-if2, ctl-kempston, ctl-sinclair, ending, gameover, hiscore, hiscore-typed, l1-l7).
+$73C5 c PlayStars ; Point the star task at the play's star states
+> Writes 0 into the star phase operand, patches the star step to LD A,2 and points the star task's state pointer at $7380.
+> Witness: L1 17 (c1, ending, gameover, hiscore, l1-l7).
+$73D8 c TitleStarsOn ; Point the star task at the title's star states
+> Writes $3C into the star phase operand, patches the star step to LD A,8 / LD (HL),A and points the state pointer at $80D8.
+> Witness: L1 38 (c1, continue, ctl-if2, ctl-kempston, ctl-sinclair, gameover, hiscore, hiscore-typed, l2-l8).
+$73EC c ProbeKempston ; Look for a Kempston joystick: read port $1F up to 255 times
+> Stores the low four bits of the first non-zero read in KempstonAbsent, or 0 when all 255 reads were 0 (a Kempston at rest). The 48K's floating bus reads non-zero, so 0 means "a Kempston is there". Called once from the entry.
+> Witness: L1 1 (c1).
+$73FE b ShadowLine4 ; The pixel shadow, third third, pixel line 4 (from $7400)
+$7480 t TitleTexts ; the title page's lines: BLAST OFF AND STRIKE / THE EVIL BYDO EMPIRE / PRESS FIRE TO PLAY / 'ENTER' SELECTS KEYS / (c) 1987 BY IREM CORP.
+@res texts/title.bin
+$74E3 t EnterNameText ; "ENTER YOUR NAME PILOT $"
+@res texts/enter-name.bin
+$74FA b ControlBits ; the last control read: bit 0 up, 1 down, 2 left, 3 right, 4 fire, 5 detach
+$74FB ControlMethod ; 1 Interface 2, 2 keys, 3 Kempston, 4 Sinclair / cursor, as the title's fire picked it
+$74FC ControlVector ; the reader of the control method, taken from ControlVectors
+$74FE b ShadowLine4Tail ; zeros
+$7580 t BestPilotsText ; "TODAY'S BEST PILOTS"
+@res texts/best-pilots.bin
+$7593 b ForceShotTurns 9 ; four tables of 9 bytes: the next direction of a reflected laser by the cells around it (BounceShot)
+$75B7 b ClearList 4 ; The blocks ClearPlayState zeroes at every start: address, length, ...; a zero word ends it
+@res tables/clear-list.bin
+> $4000 6144 (the screen), $7E00 640 (SolidMap), $8100 640, $8501 252 (EnemySlots), $7AD7 28 (HitList), $5EB4 332 (the shots, missiles and explosions), $8386 109 (EnemyShots and the ship's records), $71D4 12 (ForceShotsA/B), $7DF9 7 (LevelVars).
+$75DD b ExplosionFrames ; the objects of each explosion kind and step, DrawExplosions
+$75F5 b ShadowLine5 ; zeros, then the pixel shadow's line 5 from $7600
+@module screen ; Screen helpers: the sides, the high-score table, the title colours
+$7680 c ClearSides ; Paint column 0 and column 31 of the 24 attribute rows with C (0: black)
+> Witness: L1 56 (c1, continue, ctl-if2, ctl-kempston, ctl-sinclair, gameover, hiscore, hiscore-typed, l1-l8).
+$7690 c ShowHiScores ; Clear the screen and show the high-score table
+> ClearScreen, the black sides, the title colour task (task 4) on, then PrintHiScores.
+> Witness: L1 9 (c1, gameover, hiscore, hiscore-typed).
+$769B c PrintHiScores ; Print "TODAY'S BEST PILOTS" and the nine entries of HiScoreTable
+> Each entry: its place digit (DigitChars), the name and the score, double height, from row 3 down.
+> Witness: L1 1309 (c1, gameover, hiscore, hiscore-typed).
+$76CB c CycleTitleColour ; Interrupt task 4: step the screen's colours through the INKs on a black paper
+> Paints the top attribute rows with the next colour and copies them down the screen: the whole screen follows.
+> Witness: L1 807 (c1, ctl-if2, ctl-kempston, ctl-sinclair, ending, gameover, hiscore, hiscore-typed, l1-l7).
+$76F5 t RewindTapeText ; "REWIND TAPE"
+@res texts/rewind-tape.bin
+$7700 b ShadowLine6 ; The pixel shadow, third third, pixel line 6
+$7780 b DefinedKeys 2 ; Six keys as (half-row port high byte, bit mask), DefineKeys / ReadKeys
+@res tables/defined-keys.bin
+> As loaded: $FB/1 Q, $FB/2 W, $DF/2 O, $BF/4 K, $DF/1 P, $7F/1 SPACE.
+$778C w ControlVectors ; The four control readers by ControlMethod: ReadIf2, ReadKeys, ReadKempston, ReadCursor
+$7794 b DetachKey ; the joystick methods' detach key: port $7F, bit 0 (SPACE)
+$7796 c TitleLoop ; The title: logo, texts and the high-score table in turn until a fire picks the control method
+> Stars off, the play state cleared, TitleLogo, the title lines; DefineKeys while the title waits (ENTER defines keys); then the high-score table, polling SelectControl; round again. SelectControl leaves the loop through the stack with the method chosen.
+> Witness: L1 8 (c1, gameover, hiscore).
+$77FF b Unused77FF ; a byte no recording reads (known only from the heatmap)
+$7800 b PlayAttrs 32 ; The play field's attribute shadow: 20 rows of 32 attributes
+> Written by the scroll and the sprite drawers.
+@module vars ; The variables, the font and the high-score table
+$7A80 b GameVars ; The variables of play
+> Read and written in the play recordings; cleared in parts by ClearPlayState and ClearShipStuff.
+$7A80 ColumnPtr ; the next byte of ColumnBuffer the metatile drawers write
+$7A82 ScrollStep ; the step (0-7) in the 8-frame scroll cycle
+$7A83 MetaColumn ; the column (0-3) of the metatile the next column is cut from
+$7A84 MapColumn ; the map block column the scroll has reached: the level's position
+$7A85 MapReadPtr ; the map byte the next metatile is read from
+$7A87 MapBlockPtr ; the first of the 5 map bytes of the current block column
+$7A89 FrameCounter ; counts the passes of the scroll (and the title colour's steps)
+$7A8A IntTicks ; counts interrupts; the main loop waits until it reaches 3
+$7A8B KempstonAbsent ; 0 when ProbeKempston found port $1F quiet: only then does the title take the Kempston's fire
+$7A8C ExtraLives ; the extra lives given (CheckExtraLife)
+$7A8D DeathTimer ; set to 32 when the ship dies; LoseLife counts it down
+$7A8E ScrollHalted ; non-zero while the scroll stands (a boss, wave command 1)
+$7A8F WavesHalted ; non-zero once the level's end started
+$7A90 WavePtr ; the next entry of the level's wave script
+$7A94 TextHeight ; 0: PrintText draws double height; 1: normal
+$7A95 HitCount ; the tags gathered into HitList by the last drawing (14 at most)
+$7A96 HitResult ; ProcessHits' result
+$7A97 BeamMeter ; the BEAM meter's column
+$7A98 ShieldTimer ; the frames the ship stays untouchable ($38 at the first start, $30 from the pick-up)
+$7A99 ScoreChanged ; non-zero when AddScore changed the score: CheckExtraLife prints it
+$7A9A WaveOverride ; a wave command 3 value: the next wave's slot
+$7A9B LevelEndTimer ; counts down after the level's end command
+$7A9C DrawTag ; the tag DrawSprite writes into SolidMap for each cell
+$7A9D StarFrame ; the star task's counter
+$7A9E ShooterLimit ; wave command 4: how many enemies may fire at once
+$7A9F Shooters ; the enemies firing now
+$7AA0 Lives ; the lives (5 at the start)
+$7AA1 ShipColumn ; the ship's column (1-28)
+$7AA2 ShipRow ; the ship's row (1-19)
+$7AA3 ForceAttached ; the Force: 0 free, 1 at the ship's nose, 2 at its tail
+$7AA4 ShipFrame ; the ship's sprite: 3 level, 2 and 4 the tilts
+$7AA5 BitUpperOn ; the upper bit device is fitted
+$7AA6 BitLowerOn ; the lower bit device is fitted
+$7AA7 MissilesOn ; the homing missiles are fitted
+$7AA8 ForceRecord ; the Force's records, 3 bytes each (state, column, row): $7AA8, $7AAB, $7AAE (ForceRecordOf)
+$7AB1 BitPositions ; the bits' positions
+$7ABD WeaponKind ; the Force's laser kind (the crystal's colour)
+$7ABE ForceLevel ; the Force's level: 0 none, 1-3
+$7ABF BeamCharge ; the beam's charge while fire is held, up to $40
+$7AC0 BeamPower ; the beam's strength left
+$7AC1 Carriers ; the two pick-up carriers' records
+$7AC9 BossBlast ; non-zero while the boss explodes (BossDestroyed)
+$7ACA BossBlastCount ; the random explosions left
+$7ACB BossBlastPos ; the sweep position after the random ones
+$7ACD RandomPtr ; the ROM pointer whose bytes are the random numbers (NextRandom)
+$7ACF Scratch ; scratch words of the shot and award routines
+$7AD7 HitList ; the tags the last drawing gathered (15 bytes)
+$7AE7 MissileLaunch ; the missiles' launch records, 6 bytes each ($7AE7, $7AED)
+$7AF0 b Font 8 ; The font: 8 bytes a character from '!' (the code - $20 from $7AE8; a space draws character $3B)
+@res graphics/font.bin
+> PrintText draws it double height, PrintTextNormal as it is.
+$7CD8 b HiScoreTable 17 ; Nine entries of 17 bytes: name (10), score (6 ASCII digits), $A0 (bit 7 ends the text)
+@res texts/hiscores.bin
+> InsertHiScore inserts a new score, shifting the lower entries down; the names as loaded are the defaults.
+$7D71 b HiScoreSpare ; the 17 bytes past the ninth entry the insertion shifts the last entry into (no recording reads them)
+@res leftovers/hiscore-spare.bin
+$7D82 b MissileFrames ; The homing missile's frame lists: (sprite, step) pairs, $FF ends a list
+$7D98 MissileTurns ; the lists by direction ($7D98, $7D9B, $7D9F, $7DA6, $7DAA)
+$7DB1 AntiAirPathUp ; the upward anti-air shot's path: (row step, sprite) pairs, $63 ends
+$7DD6 AntiAirPathDown ; the downward path
+$7DF9 b LevelVars ; seven bytes the levels' own code uses; cleared at each start
+$7E00 b SolidMap 32 ; The collision map: one byte a cell of the 20 x 32 play field, the tag of what is there
+> 0 empty; small values the ship and its shots; $80 + slot an enemy; $FA an enemy's soft part; $FB-$FF hard scenery (from the metatile attribute's bit 7). GetCell reads it.
+$7EE2 EntryCopySource ; the 414 bytes the entry copies to EntryCopy before SolidMap is first cleared
+$8080 b RowTable 4 ; The 20 play rows: (screen address, attribute address) of each row's right end
+> ScrollRows walks it; the star task starts at its second row.
+$80D0 b RowTableEnd ; zeros after the table
+$80D8 b PlayStarStates ; the play's star states (2 bytes a star) for the star task
+$8100 b StarBuffer ; the star task's work (640 bytes cleared by ClearPlayState)
+@module intro ; The loading screen scroller
+$814F c ShowLoadingScreen ; Show the title picture and scroll the credits along the bottom
+> Copies TitleScreen (6912 bytes) to the screen; then each character of ScrollerText in turn is printed at the right of the bottom rows and the rows scrolled left (ScrollRowLeft) with a HALT a step, until the text's last character; then a wait.
+> Witness: L1 1 (c1).
+$8198 c ScrollRowLeft ; Scroll 32 bytes of pixel lines left by one pixel (RL (HL) from the right end)
+> Witness: L1 7440 (c1).
+$81A9 t ScrollerText ; "STOP THE TAPE $" and the credits: R TYPE, PROGRAMMED BY BOB PAPE, GRAPHICS, SOUND, IREM 1987, ELECTRIC DREAMS 1988
+@res texts/scroller.bin
+$837B b ScrollerEnd ; eight zeros after the text
+$8383 c Im2Jump ; The IM 2 target: JP Interrupt (every vector of Im2Table is $83, so the CPU jumps to $8383)
+> Witness: L1 134792 (c1, continue, ctl-if2, ctl-kempston, ctl-sinclair, ending, gameover, hiscore, hiscore-typed, l1-l8).
+$8386 b EnemyShots 3 ; The enemy shots, 3 bytes each (direction and kind, column, row): MoveEnemyShots
+$83DA ShipTrail ; the ship's last positions for the bits (TrailPoint)
+$83E2 BeamShot ; the beam shot: length, row, column
+$83E5 AntiAirShots ; the two anti-air shot records ($83E5, $83E9)
+$83ED MissileTimer ; frames before the missiles may fire again
+$83F2 ShipEntry ; the ship's fly-in: 1 flying in, 2 turning back, 0 done
+$83F3 BeamHudText ; the HUD text DrawHud prints after BEAM-
+$8400 Im2Table ; the IM 2 vector table: 257 bytes of $83
+$8501 EnemySlots ; 28 enemy slots of 9 bytes: flags, position, script and kind pointers, movers
+@module main ; The entry, the main loop and the start of a life
+$85FD c Entry ; The game's entry from the loader's tail: build the tables, show the title picture, load level 1, run the title
+> Interrupts off; SP = $FFFE; builds BitReverse; copies EntryCopySource to EntryCopy; IM 2 through Im2Table; ProbeKempston; ShowLoadingScreen; LoadLevel loads level 1. Then NewGame, StartLife, MainLoop.
+> Witness: L1 1 (c1).
+$8634 NewGame ; a new game: the restart point, the score and lives reset, the title loop
+$863D StartLife ; a life starts: stars on, the play state cleared, the level drawn from its restart column, the ship placed
+$8649 MainLoop ; one pass of the game (the calls in order below), then wait for the third interrupt
+$8656 MainLoopPatch ; three NOPs
+$868C MainWait ; wait until IntTicks reaches 3
+$8696 c RestartPoint ; Copy the level's first restart column and wave entry into the live ones
+> Witness: L1 10 (c1, gameover, hiscore, l2-l8).
+$86A9 c NewGameState ; Lives = 5, ExtraLives = 0, the sound silenced, the score set to "000000"
+> Witness: L1 4 (c1, continue, gameover, hiscore).
+$86C3 c ClearPlayState ; Zero the ClearList blocks, set the colours and the control reader
+> Zeroes every ClearList block; attributes and PlayAttrs $47; border black; clears ShieldTimer, the title colour task, the controls patch at ShieldControls, Shooters, MissileTimer and the death patch at ShipDies + 3; ControlVector from ControlVectors by ControlMethod; ResumeWaves.
+> Witness: L1 55 (c1, continue, ctl-if2, ctl-kempston, ctl-sinclair, ending, gameover, hiscore, hiscore-typed, l1-l8).
+$8721 c StartPlayField ; Start the play field at the level's restart column
+> Clears ScrollHalted and the BEAM meter, takes MapColumn and WavePtr from the restart point, DrawFirstScreen, stars on, DrawHud, the black sides.
+> Witness: L1 38 (c1, continue, ctl-if2, ctl-kempston, ctl-sinclair, gameover, hiscore, hiscore-typed, l2-l8).
+@module scroll ; The scroll: map, metatiles, the shadow and the column buffer
+$8741 c CutMetatile ; Cut the next cells of a column from a metatile as stored
+> A = the metatile: MetatileAddress; the column MetaColumn's 4 cells (9 bytes each) to ColumnPtr.
+> Witness: L1 11076 (c1, continue, ctl-if2, ctl-kempston, ctl-sinclair, gameover, hiscore, hiscore-typed, l1-l8).
+$8778 c CutMetatileMirrored ; Cut a column from a metatile mirrored left to right (the bytes through BitReverse)
+> Witness: L1 320 (hiscore, hiscore-typed, l1-l4, l6, l7).
+$879E c MirrorCell ; Copy one cell's 8 pixel bytes through BitReverse, then its attribute
+> Witness: L1 1280 (hiscore, hiscore-typed, l1-l4, l6, l7).
+$87B8 c CutMetatileFlipped ; Cut a column from a metatile upside down
+> Witness: L1 1540 (l1-l8).
+$87F2 c CutMetatileBoth ; Cut a column from a metatile mirrored and upside down
+> Witness: L1 172 (l x5).
+$882D c MetatileAddress ; HL = the metatile A's data below the level's map (LevelMetatiles - (A + 1) x 144)
+> Witness: L1 14628 (c1, continue, ctl-if2, ctl-kempston, ctl-sinclair, gameover, hiscore, hiscore-typed, l1-l8).
+$8842 c ScrollRows ; Shift the 20 rows of the shadows one cell left and copy the changed cells to the screen
+> For each row of RowTable: the attribute shadow and the solid map row shifted; the row walked from the right, scenery cells shifted in the shadow, other cells copied from the pixel shadow to the screen. While the scroll stands the scenery is shifted through the unrolled chain ShiftRun.
+> Witness: L1 27714 (c1, continue, ctl-if2, ctl-kempston, ctl-sinclair, ending, gameover, hiscore, hiscore-typed, l1-l8).
+$8914 c ShiftRun ; The unrolled RL (HL) / DEC L chain, entered 3 bytes a cell from its end to shift a run of cells one pixel left
+> Witness: L1 229672 (l1-l8).
+$8917 c ShiftRun30 ; the chain from 30 cells
+> Witness: L1 237848 (l1-l8).
+$891A c ShiftRun29 ; the chain from 29 cells
+> Witness: L1 246432 (l1-l8).
+$891D c ShiftRun28 ; the chain from 28 cells
+> Witness: L1 255664 (l1-l8).
+$8920 c ShiftRun27 ; the chain from 27 cells
+> Witness: L1 264696 (l1-l8).
+$8923 c ShiftRun26 ; the chain from 26 cells
+> Witness: L1 273536 (l1-l8).
+$8926 c ShiftRun25 ; the chain from 25 cells
+> Witness: L1 303736 (c1, continue, ctl-if2, ctl-kempston, ctl-sinclair, gameover, hiscore, hiscore-typed, l1-l8).
+$8929 c ShiftRun24 ; the chain from 24 cells
+> Witness: L1 324720 (c1, continue, ctl-if2, ctl-kempston, ctl-sinclair, gameover, hiscore, hiscore-typed, l1-l8).
+$892C c ShiftRun23 ; the chain from 23 cells
+> Witness: L1 342872 (c1, continue, ctl-if2, ctl-kempston, ctl-sinclair, gameover, hiscore, hiscore-typed, l1-l8).
+$892F c ShiftRun22 ; the chain from 22 cells
+> Witness: L1 361560 (c1, continue, ctl-if2, ctl-kempston, ctl-sinclair, gameover, hiscore, hiscore-typed, l1-l8).
+$8932 c ShiftRun21 ; the chain from 21 cells
+> Witness: L1 380400 (c1, continue, ctl-if2, ctl-kempston, ctl-sinclair, gameover, hiscore, hiscore-typed, l1-l8).
+$8935 c ShiftRun20 ; the chain from 20 cells
+> Witness: L1 406608 (c1, continue, ctl-if2, ctl-kempston, ctl-sinclair, gameover, hiscore, hiscore-typed, l1-l8).
+$8938 c ShiftRun19 ; the chain from 19 cells
+> Witness: L1 426384 (c1, continue, ctl-if2, ctl-kempston, ctl-sinclair, gameover, hiscore, hiscore-typed, l1-l8).
+$893B c ShiftRun18 ; the chain from 18 cells
+> Witness: L1 450640 (c1, continue, ctl-if2, ctl-kempston, ctl-sinclair, gameover, hiscore, hiscore-typed, l1-l8).
+$893E c ShiftRun17 ; the chain from 17 cells
+> Witness: L1 489272 (c1, continue, ctl-if2, ctl-kempston, ctl-sinclair, gameover, hiscore, hiscore-typed, l1-l8).
+$8941 c ShiftRun16 ; the chain from 16 cells
+> Witness: L1 528376 (c1, continue, ctl-if2, ctl-kempston, ctl-sinclair, gameover, hiscore, hiscore-typed, l1-l8).
+$8944 c ShiftRun15 ; the chain from 15 cells
+> Witness: L1 605984 (c1, continue, ctl-if2, ctl-kempston, ctl-sinclair, gameover, hiscore, hiscore-typed, l1-l8).
+$8947 c ShiftRun14 ; the chain from 14 cells
+> Witness: L1 639680 (c1, continue, ctl-if2, ctl-kempston, ctl-sinclair, gameover, hiscore, hiscore-typed, l1-l8).
+$894A c ShiftRun13 ; the chain from 13 cells
+> Witness: L1 690760 (c1, continue, ctl-if2, ctl-kempston, ctl-sinclair, gameover, hiscore, hiscore-typed, l1-l8).
+$894D c ShiftRun12 ; the chain from 12 cells
+> Witness: L1 733488 (c1, continue, ctl-if2, ctl-kempston, ctl-sinclair, gameover, hiscore, hiscore-typed, l1-l8).
+$8950 c ShiftRun11 ; the chain from 11 cells
+> Witness: L1 792336 (c1, continue, ctl-if2, ctl-kempston, ctl-sinclair, gameover, hiscore, hiscore-typed, l1-l8).
+$8953 c ShiftRun10 ; the chain from 10 cells
+> Witness: L1 844720 (c1, continue, ctl-if2, ctl-kempston, ctl-sinclair, gameover, hiscore, hiscore-typed, l1-l8).
+$8956 c ShiftRun9 ; the chain from 9 cells
+> Witness: L1 1011616 (c1, continue, ctl-if2, ctl-kempston, ctl-sinclair, gameover, hiscore, hiscore-typed, l1-l8).
+$8959 c ShiftRun8 ; the chain from 8 cells
+> Witness: L1 1254160 (c1, continue, ctl-if2, ctl-kempston, ctl-sinclair, gameover, hiscore, hiscore-typed, l1-l8).
+$895C c ShiftRun7 ; the chain from 7 cells
+> Witness: L1 1596368 (c1, continue, ctl-if2, ctl-kempston, ctl-sinclair, gameover, hiscore, hiscore-typed, l1-l8).
+$895F c ShiftRun6 ; the chain from 6 cells
+> Witness: L1 1742181 (c1, continue, ctl-if2, ctl-kempston, ctl-sinclair, gameover, hiscore, hiscore-typed, l1-l8).
+$8962 c ShiftRun5 ; the chain from 5 cells
+> Witness: L1 1841989 (c1, continue, ctl-if2, ctl-kempston, ctl-sinclair, gameover, hiscore, hiscore-typed, l1-l8).
+$8965 c ShiftRun4 ; the chain from 4 cells
+> Witness: L1 2001893 (c1, continue, ctl-if2, ctl-kempston, ctl-sinclair, gameover, hiscore, hiscore-typed, l1-l8).
+$8968 c ShiftRun3 ; the chain from 3 cells
+> Witness: L1 2383797 (c1, continue, ctl-if2, ctl-kempston, ctl-sinclair, gameover, hiscore, hiscore-typed, l1-l8).
+$896B c ShiftRun2 ; the chain from 2 cells
+> Witness: L1 2590180 (c1, continue, ctl-if2, ctl-kempston, ctl-sinclair, gameover, hiscore, hiscore-typed, l1-l8).
+$896E c ShiftRun1 ; the last cell, then the next pixel line
+> Witness: L1 2653860 (c1, continue, ctl-if2, ctl-kempston, ctl-sinclair, gameover, hiscore, hiscore-typed, l1-l8).
+$8974 c ShiftRunDone ; Where the chain returns: back into ScrollRows
+> Witness: L1 331732 (c1, continue, ctl-if2, ctl-kempston, ctl-sinclair, gameover, hiscore, hiscore-typed, l1-l8).
+$8979 c Scroll ; The scroll's step for this pass
+> ScrollRows; FrameCounter + 1, ScrollStep = its low 3 bits. Step 0: the next metatile column (every 4th a new block column: MapColumn + 1), the column buffer flushed into column 31; the other steps cut one metatile of the block column each (CutNextMetatile).
+> Witness: L1 27061 (c1, continue, ctl-if2, ctl-kempston, ctl-sinclair, ending, gameover, hiscore, hiscore-typed, l1-l8).
+$899F ScrollNewColumn ; step 0
+$8A13 CutNextMetatile ; a map byte: bits 0-5 the metatile, bits 6-7 the drawer (as stored, mirrored, upside down, both)
+$8A3F c SetDrawLimit ; Write B into the four sprite drawers' column limit
+> Witness: L1 76 (c1, continue, ctl-if2, ctl-kempston, ctl-sinclair, gameover, hiscore, hiscore-typed, l2-l8).
+$8A40 SetDrawLimitA ; the same with A (the levels' code calls it)
+$8A4D c TitleLogo ; Draw the R-TYPE logo: the letters fly in and settle, with the stars and the scroll running
+> Witness: L1 17 (c1, ending, gameover, hiscore, l1-l7).
+$8AE7 c LogoRow ; Draw the logo letters along a row, run the stars and the scroll once
+> Witness: L1 170 (c1, ending, gameover, hiscore, l1-l7).
+$8B06 c ReadControls ; Call the control method's reader through ControlVector
+> Witness: L1 29982 (c1, continue, ctl-if2, ctl-kempston, ctl-sinclair, ending, gameover, hiscore, hiscore-typed, l1-l8).
+$8B0A c ReadIf2 ; Read Interface 2 (half-row $F7FE through BitReverse)
+> Witness: L1 123263 (c1, ctl-if2, ctl-kempston, ctl-sinclair, gameover, hiscore).
+$8B14 c ReadKeys ; Read the six DefinedKeys into the control bits
+> Witness: L1 152582 (c1, continue, ctl-if2, ctl-kempston, ctl-sinclair, ending, gameover, hiscore, hiscore-typed, l1-l8).
+$8B19 c ReadKempston ; Read the Kempston port $1F into the control bits
+> Witness: L1 123262 (c1, ctl-if2, ctl-kempston, ctl-sinclair, gameover, hiscore).
+$8B27 ControlDetach ; the joystick readers' detach key (DetachKey)
+$8B2D c ReadCursor ; Read the Sinclair joystick (half-row $EFFE, keys 6-0, through BitReverse)
+> Witness: L1 123264 (c1, ctl-if2, ctl-kempston, ctl-sinclair, gameover, hiscore).
+$8B3E ReadKeysFrom ; the keys at HL into the bits
+$8B63 ReadDetach ; the detach key into bit 5; the bits stored in ControlBits
+$8B70 c TestKey ; Read the key (port, mask) at HL: Z when pressed; HL past the pair
+> Witness: L1 1285283 (c1, continue, ctl-if2, ctl-kempston, ctl-sinclair, ending, gameover, hiscore, hiscore-typed, l1-l8).
+$8B77 c CheckPause ; Pause: CAPS SHIFT + 1 pauses, CAPS SHIFT + 2 goes on
+> Returns at once unless half-row $FEFE reads CAPS SHIFT alone (of its low 4 keys) and half-row $F7FE key 1 alone. Paused: interrupts off (the sound and stars stop), "GAME PAUSED" printed over and over until CAPS SHIFT and key 2 alone are down; then the text row cleared, interrupts on, DrawHud. There is no abort key: the game only ends when the lives and credits run out.
+> Witness: L1 27061 (c1, continue, ctl-if2, ctl-kempston, ctl-sinclair, ending, gameover, hiscore, hiscore-typed, l1-l8).
+$8BA0 c ReadRow1 ; A = keys 1-4 of half-row $F7FE as bits (pressed = 1); Z when key 1 alone
+> No recording ran it: known only from the code.
+$8BA4 c ReadRow0 ; A = CAPS SHIFT, Z, X, C of half-row $FEFE; Z when CAPS SHIFT alone
+> Witness: L1 27061 (c1, continue, ctl-if2, ctl-kempston, ctl-sinclair, ending, gameover, hiscore, hiscore-typed, l1-l8).
+$8BAE c StartPlay ; Set the ship up for a life
+> The first play (FirstPlay 0): ShieldTimer $38 and the fly-in from the left (ShipEntry 1); later lives: ShieldTimer $30... at the set place.
+> Witness: L1 38 (c1, continue, ctl-if2, ctl-kempston, ctl-sinclair, gameover, hiscore, hiscore-typed, l2-l8).
+$8BE8 c Continue ; The CONTINUE screen: count down while fire may be pressed
+> Witness: L1 3 (continue, gameover, hiscore).
+$8C5C c BigDigit ; Draw the countdown digit as block characters
+> Witness: L1 21 (continue, gameover, hiscore).
+$8C8B c ShipFlyIn ; Move the ship in at the first start (ShipEntry 1, then 2), then hand it to the controls
+> Witness: L1 27064 (c1, continue, ctl-if2, ctl-kempston, ctl-sinclair, ending, gameover, hiscore, hiscore-typed, l1-l8).
+$8CC5 c Silence ; Stop all three sound channels
+> Witness: L1 37 (c1, continue, ctl-if2, ctl-kempston, ctl-sinclair, gameover, hiscore, hiscore-typed).
+$8CD8 c ScrollAttrs ; Scroll the attribute shadow and the solid map one cell left (unless ScrollHalted)
+> Witness: L1 3370 (c1, continue, ctl-if2, ctl-kempston, ctl-sinclair, ending, gameover, hiscore, hiscore-typed, l1-l8).
+$8CF0 c ScrollAttrRows ; LDIR a run of each of A rows of 32
+> Witness: L1 104320 (c1, continue, ctl-if2, ctl-kempston, ctl-sinclair, gameover, hiscore, hiscore-typed, l1-l8).
+@module sprites ; The sprite drawers and the cell map
+$8CFD c DrawSprite ; Draw an object (D, E its size, HL its cells) at row B column C into the shadows and SolidMap
+> Each cell is 9 bytes (attribute, 8 pixel lines). A cell off the play field is skipped. CellFree decides whether it may be drawn over what is there; CellMark writes DrawTag into SolidMap and the attribute into PlayAttrs; the pixel bytes go to the pixel shadow. While DrawPrepare has the hits on, what was there is gathered into HitList.
+> Witness: L1 450223 (c1, continue, ctl-if2, ctl-kempston, ctl-sinclair, ending, gameover, hiscore, hiscore-typed, l1-l8).
+$8D65 c DrawSpriteMirrored ; Draw an object mirrored left to right
+> Witness: L1 27030 (c1, continue, ctl-if2, ctl-kempston, ctl-sinclair, ending, gameover, hiscore, hiscore-typed, l1-l8).
+$8DD3 c DrawSpriteFlipped ; Draw an object upside down
+> Witness: L1 26350 (c1, continue, ctl-if2, ctl-kempston, ctl-sinclair, ending, gameover, hiscore, hiscore-typed, l1-l8).
+$8E29 c DrawSpriteBoth ; Draw an object mirrored and upside down
+> Witness: L1 13308 (ending, l1-l8).
+$8E85 c LevelObject ; D, E, HL = the size and cells of the level's object A (LevelObjects)
+> Witness: L1 198340 (c1, continue, ctl-if2, ctl-kempston, ctl-sinclair, ending, gameover, hiscore, hiscore-typed, l1-l8).
+$8E8C c GameObject ; D, E, HL = the size and cells of the game's object A (GameObjects)
+> Witness: L1 317051 (c1, continue, ctl-if2, ctl-kempston, ctl-sinclair, ending, gameover, hiscore, hiscore-typed, l1-l8).
+$8E92 ObjectEntry ; 4 bytes an entry
+$8EA2 c CellMark ; Write DrawTag into the SolidMap cell and the attribute into PlayAttrs
+> Witness: L1 1541974 (c1, continue, ctl-if2, ctl-kempston, ctl-sinclair, ending, gameover, hiscore, hiscore-typed, l1-l8).
+$8EC2 c CellFree ; Carry when the cell at row B column C may be drawn on; a taken cell may be gathered as a hit
+> Reads SolidMap ($7E00 + row x 32 + column). A taken cell returns at the RET here unless DrawPrepare made it a NOP: then the tag goes into HitList (14 at most) and a soft cell's ($FA) position into HitCells.
+> Witness: L1 2025510 (c1, continue, ctl-if2, ctl-kempston, ctl-sinclair, ending, gameover, hiscore, hiscore-typed, l1-l8).
+$8EDB CollectHit ; the code behind the patched RET
+$8F0B CellFreeEmpty ; the empty cell's test
+@module tapeload ; The level loader's tape reader
+$8F1F c LoadBytes ; Load DE bytes to IX from tape at the game's turbo speed
+> Interrupts off; pushes LoadDone so that every return enables interrupts again; waits for the pilot and the sync, then reads the flag and the bytes with the border stripes; carry set when the check byte is right.
+> Witness: L1 31 (c1, ending, l1-l8).
+$8F9E c EdgePair ; Wait for two edges
+> Witness: L1 788129 (c1, ending, l1-l8).
+$8FA2 c EdgeOne ; Wait for one edge on the EAR bit, counting B; carry when found
+> Witness: L1 1650894 (c1, ending, l1-l8).
+$8FA3 EdgeLoop ; the counting loop
+$8FBB b Unused8FBB ; bytes no recording reads (known only from the heatmap)
+@module waves ; The attack waves: the wave script, the enemy slots and their movers
+$8FCB c SlotFlags ; The enemy slot's hits left
+> Witness: L1 61290 (c1, continue, ending, gameover, hiscore, hiscore-typed, l1-l8).
+$8FDD c RunWaves ; Start the waves the script has reached
+> Unless WavesHalted: while the entry at WavePtr matches the scroll's position, takes its kind (a command when $63: CommandWave) and script and starts it (StartWave).
+> Witness: L1 27064 (c1, continue, ctl-if2, ctl-kempston, ctl-sinclair, ending, gameover, hiscore, hiscore-typed, l1-l8).
+$8FE2 RunWavesNext ; the next entry
+$9013 c StartWave ; Put enemy kind A with its movement script into a free slot
+> The kind's record from LevelKinds; WaveOverride picks the slot; no free slot: the wave is dropped.
+> Witness: L1 2570 (c1, continue, ctl-if2, ctl-kempston, ctl-sinclair, ending, gameover, hiscore, hiscore-typed, l1-l8).
+$908F StartWaveDone ; back to RunWavesNext
+$9093 c CommandWave ; A wave command: 1 halt the scroll (a boss), 2 resume, 3 next slot, 4 shooter limit, 5 the level's end, 6 a sound
+> Witness: L1 227 (c1, continue, ctl-if2, ctl-kempston, ctl-sinclair, ending, gameover, hiscore, hiscore-typed, l1-l8).
+$90F7 c ResumeWaves ; Clear ScrollHalted and WavesHalted and restore CellFreeEmpty's code
+> Witness: L1 55 (c1, continue, ctl-if2, ctl-kempston, ctl-sinclair, ending, gameover, hiscore, hiscore-typed, l1-l8).
+$9109 c MoveEnemies ; Move every live enemy slot by its kind's movers
+> For each slot: DrawTag = $80 + slot; the script's step; then the kind's first mover from LevelMoves and its second from LevelMoves2: the levels' own code, which comes back to MoveStore, MoveDraw, MoveDrawA, MoveNext or MoveDone.
+> Witness: L1 27063 (c1, continue, ctl-if2, ctl-kempston, ctl-sinclair, ending, gameover, hiscore, hiscore-typed, l1-l8).
+$9114 MoveEnemiesSlot ; the next slot
+$9121 MoveEnemiesNext ; advance IY
+$9168 MoveStore ; a mover's exit: store the new position, draw
+$916E MoveDraw ; draw with the script's sprite
+$916F MoveDrawA ; draw object A (its low 2 bits pick the drawer)
+$9195 MoveNext ; the second mover
+$91A5 MoveScript ; step the slot's script
+$91B1 MoveDone ; the slot done
+$91DC MoveSlotEnd ; back to the loop
+$91E0 MoveFree ; free the slot
+$91E6 c TableEntry ; HL = the word at HL + 2 x A
+> Witness: L1 326146 (c1, continue, ctl-if2, ctl-kempston, ctl-sinclair, ending, gameover, hiscore, hiscore-typed, l1-l8).
+$91F2 c ShipDies ; The ship is hit: a life off, the explosion, DeathTimer 32
+> Three ways in: JP NC at $956D (scenery ahead of the ship, GetCell), JP NZ at $9574 (an enemy's cell), JP at $C3CE (an enemy shot, MoveEnemyShots). Without the immortality POKE: gameover, continue and hiscore (level 1) (and c1) take $9574 2-6 times and $956D 0-1 times, $C3CE never; deaths-l7 (level 7, the stage 1 POKE undone, 8390 frames) takes $956D 4 times, $9574 once and runs $C3CE 3 times: 8 lives, 8 runs of ShipDies.
+> $91F5 is a NOP in play; a RET there makes the ship immortal (BossDestroyed and the end of level 8 put it there; the immortality POKE of the stage 1 recordings writes $C9 at $91F2).
+> Witness: L1 6613 (c1, continue, ctl-if2, ctl-kempston, ctl-sinclair, ending, gameover, hiscore, hiscore-typed, l1-l8).
+$9218 c ClearShipStuff ; Clear the ship's, the shots' and the enemy shots' state
+> Witness: L1 66 (c1, continue, ctl-if2, ctl-kempston, ctl-sinclair, gameover, hiscore, hiscore-typed).
+$9234 c DrawLives ; Print LifeChar A times from column C leftwards, then a blank
+> Witness: L1 255 (c1, continue, ctl-if2, ctl-kempston, ctl-sinclair, gameover, hiscore, hiscore-typed, l2-l8).
+$924B c LoseLife ; Count the death down: the explosion, PILOT STAND BY or MISSION OVER, CONTINUE, the next life
+> Witness: L1 27094 (c1, continue, ctl-if2, ctl-kempston, ctl-sinclair, ending, gameover, hiscore, hiscore-typed, l1-l8).
+$9269 LoseLifeNow ; the timer reached 0
+$92C5 c PilotStandBy ; Print PILOT STAND BY $ and wait
+> Witness: L1 29 (c1, continue, ctl-if2, ctl-kempston, ctl-sinclair, gameover, hiscore, hiscore-typed).
+$92CD c MissionOver ; Sounds, MISSION OVER $ and a wait
+> Witness: L1 4 (continue, gameover, hiscore, hiscore-typed).
+$92DF PrintAndWait ; print HL double height at BC, wait
+$92E8 c CheckHiScore ; Enter the score into the table when high enough, then show the table
+> Witness: L1 4 (continue, gameover, hiscore, hiscore-typed).
+$92FA c InsertHiScore ; Find the score's place, shift the lower entries, take the name typed with up, down and fire
+> Witness: L1 4 (continue, gameover, hiscore, hiscore-typed).
+@module ship ; The ship, the Force, the bits, the pick-ups, the shots, the beam and the missiles
+$93D0 c MoveMissiles ; Move the homing missiles, count MissileTimer down
+> Witness: L1 27064 (c1, continue, ctl-if2, ctl-kempston, ctl-sinclair, ending, gameover, hiscore, hiscore-typed, l1-l8).
+$93F0 c MoveMissile ; Move one missile along its frame lists, turning toward a target
+> Witness: L1 63293 (c1, continue, ctl-if2, ctl-kempston, ctl-sinclair, ending, gameover, hiscore, hiscore-typed, l1-l8).
+$9455 MissileDrawer ; the drawer picked by the frame, patched into the CALL below
+$946B MissileTurn ; the frame list ended: the next one by state
+$94F1 c MoveShip ; Move the ship by the controls, tilt it while it climbs or dives, test what it touches
+> Witness: L1 27064 (c1, continue, ctl-if2, ctl-kempston, ctl-sinclair, ending, gameover, hiscore, hiscore-typed, l1-l8).
+$9577 c ShipShield ; While ShieldTimer runs: the shield; then the fire and detach controls
+> Witness: L1 19736 (c1, continue, ctl-if2, ctl-kempston, ctl-sinclair, ending, gameover, hiscore, hiscore-typed, l1-l8).
+$95A5 ShieldControls ; the patched byte: NOP in play, RET when the controls are off
+$95F6 c MoveForce ; Move the Force by its state, draw it, dock it at the ship
+> Witness: L1 27064 (c1, continue, ctl-if2, ctl-kempston, ctl-sinclair, ending, gameover, hiscore, hiscore-typed, l1-l8).
+$96A4 c ForceTarget ; Patch the Force's seek and return the ship's column + 1
+> Witness: L1 4 (l1).
+$9731 c ForceSeek ; Step the Force toward its target, testing the cells it would enter
+> Witness: L1 4 (l1).
+$9788 ForceSeekEnd ; the patched RET
+$9789 ForceStore ; store the Force's new position
+$978E c ForceProbe ; Test the cell in direction A; carry when it is free
+> Witness: L1 16 (l1).
+$97A1 c DirUp ; The up probe and its opposite
+> Witness: L1 8 (l1).
+$97A6 c DirDown ; The down probe and its opposite
+> Witness: L1 4 (l1).
+$97AB c DirLeft ; The left probe and its opposite
+> Witness: L1 4 (l1).
+$97B0 c DirRight ; The right probe and its opposite
+> Witness: L1 4 (l1).
+$97B5 c ForceTry ; Patch the probe operands and test the cell
+> Witness: L1 4 (l1).
+$97DC ForceDraw ; draw the Force, dock it when it touches the ship
+$982A MoveCarriers ; move the pick-up carriers, then the bits
+$983C c MoveCarrierA ; Move carrier A and draw it; touching the ship takes its pick-up
+> Witness: L1 27064 (c1, continue, ctl-if2, ctl-kempston, ctl-sinclair, ending, gameover, hiscore, hiscore-typed, l1-l8).
+$9856 CarrierDraw ; draw a carrier
+$98A1 c MoveCarrierB ; Move carrier B
+> Witness: L1 27064 (c1, continue, ctl-if2, ctl-kempston, ctl-sinclair, ending, gameover, hiscore, hiscore-typed, l1-l8).
+$98BD TakePickup ; the ship took a pick-up: by its kind the bits, the missiles, the shield, a laser crystal and a Force level
+$9921 c ForceRecordOf ; DE = the Force record of level A
+> Witness: L1 20 (l1-l8).
+$9969 MoveBitDevices ; move the two bits behind the ship's trail
+$99AE c BitFrame ; Step a bit's animation counter; A = its sprite
+> Witness: L1 13446 (ending, l1, l4-l8).
+$99BC c NextCarrierFrame ; Step a carrier's animation; A = its character from CarrierFrames
+> Witness: L1 5737 (l1-l8).
+$99CD c CarrierTimer ; Count a carrier's timer down; Z when it ran out
+> Witness: L1 5759 (l1-l8).
+$99DA c TrailPoint ; Store the ship's position in the trail ring
+> Witness: L1 13446 (ending, l1, l4-l8).
+$99FE c DrawGame ; Draw game object A at BC as stored, with the hits gathered
+> Witness: L1 284759 (c1, continue, ctl-if2, ctl-kempston, ctl-sinclair, ending, gameover, hiscore, hiscore-typed, l1-l8).
+$9A06 c DrawGameFlipped ; Draw game object A upside down
+> Witness: L1 3528 (c1, continue, ctl-if2, ctl-kempston, ctl-sinclair, gameover, hiscore, hiscore-typed, l1-l8).
+$9A0E c DrawGameMirrored ; Draw game object A mirrored
+> Witness: L1 2112 (l1-l8).
+$9A16 c DrawGameBoth ; Draw game object A mirrored and upside down
+> Witness: L1 3572 (l1-l8).
+$9A1E c DrawPrepare ; GameObject A and the hit gathering on (CellFree's RET made a NOP)
+> Witness: L1 293971 (c1, continue, ctl-if2, ctl-kempston, ctl-sinclair, ending, gameover, hiscore, hiscore-typed, l1-l8).
+$9A26 DrawFinish ; the hit gathering off again
+$9A2C c FireBeam ; Fire: charge the beam while fire is held, release a beam or a shot
+> Held: BeamCharge grows and the BEAM meter with it. Released: a short charge fires a plain shot and the Force's lasers by WeaponKind; a longer one a beam by the charge.
+> Witness: L1 14604 (c1, continue, ctl-if2, ctl-kempston, ctl-sinclair, gameover, hiscore, hiscore-typed, l1-l8).
+$9AA2 BeamRelease ; release the charged beam
+$9C2C c StartMissile ; Start a homing missile record HL if free
+> Witness: L1 2850 (l1-l5, l8).
+$9C31 c StartRecord ; Write a record at HL
+> Witness: L1 1990 (l1-l8).
+$9C40 ForceGround ; the ground laser
+$9C99 FireMissiles ; launch the homing missiles when fitted and free
+$9CF2 FireBits ; the bits' shots
+$9D0E c ForceShotA ; Fire a reflect-laser pair from ForceShotsA
+> Witness: L1 1947 (l1, l4-l8).
+$9D13 c ForceShotB ; Fire a reflect-laser pair from ForceShotsB
+> Witness: L1 205 (l7).
+$9D16 ForceShotFrom ; the shot into the first free pair
+$9D5C c ShotFire ; Start a plain ship shot
+> Witness: L1 3769 (c1, continue, gameover, hiscore, hiscore-typed, l1-l8).
+$9D65 ShotSound ; sound 1
+$9D6C c ShotFireTriple ; Start the three-way shot
+> No recording ran it: known only from the code.
+$9D6F c ShotFireDouble ; Start the two-cell shot
+> No recording ran it: known only from the code.
+$9D81 c ShotFireDiagonal ; Start the diagonal pair
+> No recording ran it: known only from the code.
+$9D90 c ShotStore ; Write the shot A at E, D into the record HL
+> No recording ran it: known only from the code.
+$9D96 c FreeShot ; HL = a free ship shot record; none: return to the caller's caller
+> Witness: L1 3769 (c1, continue, gameover, hiscore, hiscore-typed, l1-l8).
+$9DA5 c MoveShipShots ; Move the ship's shots and draw them; a shot leaving the field or hitting scenery ends
+> Witness: L1 27064 (c1, continue, ctl-if2, ctl-kempston, ctl-sinclair, ending, gameover, hiscore, hiscore-typed, l1-l8).
+$9DFA c MoveForceShots ; Move the reflect-laser pairs, bouncing off the scenery
+> Witness: L1 27064 (c1, continue, ctl-if2, ctl-kempston, ctl-sinclair, ending, gameover, hiscore, hiscore-typed, l1-l8).
+$9E6B c MoveBeam ; Move the beam shot, ending it at scenery
+> Witness: L1 27064 (c1, continue, ctl-if2, ctl-kempston, ctl-sinclair, ending, gameover, hiscore, hiscore-typed, l1-l8).
+$9EB6 c DrawBeam ; Draw the beam's segment
+> Witness: L1 1887 (c1, continue, ctl-if2, ctl-kempston, ctl-sinclair, gameover, hiscore, hiscore-typed, l1-l8).
+$9ED5 MoveAntiAir ; move the two anti-air shots
+$9EE4 c MoveAntiAirShot ; Move an anti-air shot along AntiAirPathUp or AntiAirPathDown
+> Witness: L1 54107 (c1, continue, ctl-if2, ctl-kempston, ctl-sinclair, ending, gameover, hiscore, hiscore-typed, l1-l8).
+$9F6E c ShotPathStep ; Step a shot along its path table; $63 ends it
+> Witness: L1 1473 (l1).
+$9F89 ShotEnd ; end the shot
+$9F99 AntiAirDown ; the downward shot
+$A01F c MoveMissileSet ; Move the three missile records, then the bit units
+> Witness: L1 27064 (c1, continue, ctl-if2, ctl-kempston, ctl-sinclair, ending, gameover, hiscore, hiscore-typed, l1-l8).
+$A04A c MoveMissileRec ; Move one missile record and draw its trail
+> Witness: L1 81192 (c1, continue, ctl-if2, ctl-kempston, ctl-sinclair, ending, gameover, hiscore, hiscore-typed, l1-l8).
+$A060 c BounceShot ; One step of a reflected shot: the next direction by the cells around it (ForceShotTurns)
+> Witness: L1 24156 (l1-l5, l8).
+$A16F BounceEnd ; the shot left the field
+$A17F c GetCellWindow ; Copy the 3 x 3 cells around BC
+> Witness: L1 13408 (l1-l5, l8).
+$A196 c CellWindowRow ; One row of 3 cells
+> Witness: L1 40224 (l1-l5, l8).
+$A1B5 c DrawTrail ; Draw a missile's trail
+> Witness: L1 12078 (l1-l5, l8).
+$A216 MoveBitUnits ; move the bit units
+$A22E c MoveBitUnit ; Move one bit unit and draw it
+> Witness: L1 54128 (c1, continue, ctl-if2, ctl-kempston, ctl-sinclair, ending, gameover, hiscore, hiscore-typed, l1-l8).
+$A248 c BitStep ; One step of a bit unit by the cells around it
+> Witness: L1 24346 (l3-l8).
+$A3C5 BitEnd ; the bit left the field
+$A3D5 c DrawBitTrail ; Draw a bit unit's trail
+> Witness: L1 12173 (l3-l8).
+$A431 c ReadCellWindow ; Read the cells around BC
+> Witness: L1 19099 (l3-l8).
+$A46B c SolidHard ; Test A for hard scenery
+> Witness: L1 21 (l1).
+$A470 c SolidAny ; Test A for any blocking cell
+> Witness: L1 78558 (l1-l8).
+$A473 SolidTest ; the enemy-cell part
+$A486 c BitHits ; DE = the hit counter of the current bit unit
+> Witness: L1 143860 (l3-l8).
+$A490 c AddScoreFlag ; Mark the score, then ProcessHits
+> Witness: L1 68907 (c1, continue, ctl-if2, ctl-kempston, ctl-sinclair, ending, gameover, hiscore, hiscore-typed, l1-l8).
+$A495 c ProcessHits ; Process HitList: enemy slots lose a hit, soft cells explode
+> Witness: L1 258153 (c1, continue, ctl-if2, ctl-kempston, ctl-sinclair, ending, gameover, hiscore, hiscore-typed, l1-l8).
+$A4A4 ProcessHitsNext ; the next tag
+$A4E5 c ExplodeSoftCell ; Clear the soft cell at BC and its neighbours, draw the explosion
+> Witness: L1 717 (l4).
+$A53A c DrawCellBlast ; Draw level object A at the cell left of BC and clear the cells there
+> Witness: L1 879 (l4).
+$A551 HitEnemy ; an enemy slot's tag
+$A592 HitCounted ; a hit that counts
+$A599 c EnemyDies ; An enemy is destroyed: an explosion and the score award
+> Witness: L1 1313 (c1, continue, ending, gameover, hiscore, hiscore-typed, l1-l8).
+$A5A5 c FreeExplosion ; HL = a free explosion record
+> Witness: L1 1317 (c1, continue, ending, gameover, hiscore, hiscore-typed, l1-l8).
+$A5B4 c AwardScore ; Start the explosion by the kind's size and return DE = the award (ScoreAwards)
+> The kind's byte 2: high nibble the explosion size ($10 sound 8, $40 sound $0A, else 9), low nibble the award.
+> Witness: L1 1317 (c1, continue, ending, gameover, hiscore, hiscore-typed, l1-l8).
+@module graphics ; The game's graphics: sprites and the object table
+$A5F7 b GraphicsHead ; bytes before the first sprite (no recording reads them; known only from the heatmap)
+@res leftovers/graphics-head.bin
+$A604 b Sprites 9 ; The game's sprites: cells of 9 bytes (attribute, 8 pixel bytes) drawn through GameObjects
+@res graphics/sprites.bin
+> The ship, its shield, the Force in its levels, the bits, the shots, the beam, the missiles, the explosions, the carriers, the logo letters. Read in every play recording.
+$BC67 b GameObjects 4 ; 111 objects of 4 bytes: width, height, the cells' address (GameObject)
+@res tables/game-objects.bin
+@module interrupt ; The interrupt and its task table, the stars, the keys and the control choice
+$BE23 c Interrupt ; The IM 2 handler: count IntTicks, run the due tasks of TaskTable
+> For each of the 5 entries (address, switch, counter, reload): when the switch's bit 0 is set the counter counts down, and at 0 is reloaded and the task called.
+> Witness: L1 134792 (c1, continue, ctl-if2, ctl-kempston, ctl-sinclair, ending, gameover, hiscore, hiscore-typed, l1-l8).
+$BE5E c RunTask ; JP (DE)
+> Witness: L1 173253 (c1, continue, ctl-if2, ctl-kempston, ctl-sinclair, ending, gameover, hiscore, hiscore-typed, l1-l8).
+$BE60 b TaskTable 5 ; The 5 interrupt tasks: address, switch, counter, reload
+@res tables/task-table.bin
+> Task 0 StarTask (off at the entry); tasks 1-3 the sound channels SoundTask1-3, every third tick; task 4 CycleTitleColour (off).
+$BE79 c StarTask ; Interrupt task 0: move the background stars in the empty cells
+> Witness: L1 44791 (c1, continue, ctl-if2, ctl-kempston, ctl-sinclair, ending, gameover, hiscore, hiscore-typed, l1-l8).
+$BE97 c StarStep ; Move one star; skip cells with something in them
+> Witness: L1 851029 (c1, continue, ctl-if2, ctl-kempston, ctl-sinclair, ending, gameover, hiscore, hiscore-typed, l1-l8).
+$BF45 c StarCell ; The star's screen byte and its SolidMap cell
+> Witness: L1 834718 (c1, continue, ctl-if2, ctl-kempston, ctl-sinclair, ending, gameover, hiscore, hiscore-typed, l1-l8).
+$BF55 c ReadKey ; Scan the keyboard: the key's half-row and bit when exactly one key is down
+> Witness: L1 50954 (c1, ending, l1-l8).
+$BF5B ReadKeyRow ; one half-row
+$BF6F ReadKeyNext ; the next half-row
+$BF87 c WaitKey ; Wait for exactly one key
+> Witness: L1 47723 (c1, ending, l1-l8).
+$BF92 c DefineKeys ; ENTER held: define the six keys by prompts
+> Witness: L1 6476 (c1, gameover, hiscore).
+$BFD4 c DefineKey ; Prompt for one key and store it
+> Witness: L1 6 (c1).
+$C011 c SelectControl ; Pick the control method by the fire that is pressed
+> Keys 2, Interface 2 1, Kempston 3 (only when KempstonAbsent is 0), Sinclair 4: ControlMethod, and out of the title through the stack.
+> Witness: L1 123098 (c1, ctl-if2, ctl-kempston, ctl-sinclair, gameover, hiscore).
+@module util ; Text, cells, the score and the boss
+$C05D c NextRandom ; A = the next ROM byte at RandomPtr
+> Witness: L1 400 (ending, l7, l8).
+$C06A c ClearHits ; HitCount and HitCellCount = 0, HitList cleared
+> Witness: L1 81406 (c1, continue, ctl-if2, ctl-kempston, ctl-sinclair, ending, gameover, hiscore, hiscore-typed, l1-l8).
+$C07A c ClearColourOverride ; The drawers' colour override off
+> Witness: L1 55887 (c1, continue, ctl-if2, ctl-kempston, ctl-sinclair, ending, gameover, hiscore, hiscore-typed, l1-l8).
+$C07F c PrintRow22 ; Print the text HL double height on the text row, column C
+> Witness: L1 69 (c1, ending, hiscore, hiscore-typed, l1-l8).
+$C081 c PrintText ; Print the text HL double height at row B column C
+> Witness: L1 39746 (c1, continue, ctl-if2, ctl-kempston, ctl-sinclair, ending, gameover, hiscore, hiscore-typed, l1-l8).
+$C084 c PrintTextNormal ; Print the text HL at row B column C
+> Witness: L1 17800 (c1, continue, ctl-if2, ctl-kempston, ctl-sinclair, ending, gameover, hiscore, hiscore-typed, l1-l8).
+$C086 PrintTextA ; A into TextHeight
+$C089 PrintChar ; the next character
+$C0D9 c PrintHalf ; Pixel lines of a character, each doubled
+> Witness: L1 602127 (c1, continue, ctl-if2, ctl-kempston, ctl-sinclair, ending, gameover, hiscore, hiscore-typed, l1-l8).
+$C0E4 c GetCell ; A = the SolidMap cell at row B column C
+> Witness: L1 241013 (c1, continue, ctl-if2, ctl-kempston, ctl-sinclair, ending, gameover, hiscore, hiscore-typed, l1-l8).
+$C0F9 c BossBlastStep ; Run the boss explosion twice a pass
+> Witness: L1 27064 (c1, continue, ctl-if2, ctl-kempston, ctl-sinclair, ending, gameover, hiscore, hiscore-typed, l1-l8).
+$C0FC c BossBlastOnce ; One step of the boss explosion: random explosions over the boss, then the sweep
+> Witness: L1 54128 (c1, continue, ctl-if2, ctl-kempston, ctl-sinclair, ending, gameover, hiscore, hiscore-typed, l1-l8).
+$C19C c BossDestroyed ; Start the boss explosion (called by the levels' boss code)
+> Sets ScrollHalted, BossBlast and WavesHalted; puts a RET into ShipDies + 3 (immortal) and ShieldControls (the controls off); RandomPtr and BossBlastPos = 0; the explosions cleared; the solid cells marked. Known only from the code: no recording runs it.
+$C1E0 c EnemyHit ; The slot was hit: a sound while it has hits left, else EnemyDies
+> Witness: L1 170404 (c1, continue, ctl-if2, ctl-kempston, ctl-sinclair, ending, gameover, hiscore, hiscore-typed, l1-l8).
+$C20B c ClearCells ; Clear D rows of E cells of SolidMap from BC
+> Witness: L1 2996 (l x5).
+$C225 c StartWaveAt ; Start a wave from a record at HL, for the levels' code
+> Witness: L1 833 (ending, l1, l3-l5, l7, l8).
+$C23F c AddScore ; Add D to the score digit E, carrying
+> Witness: L1 1355 (c1, continue, ending, gameover, hiscore, hiscore-typed, l1-l8).
+$C25E c LevelEnd ; The level's end: at each step of LevelEndTimer the next part, then the next level
+> Witness: L1 27064 (c1, continue, ctl-if2, ctl-kempston, ctl-sinclair, ending, gameover, hiscore, hiscore-typed, l1-l8).
+$C2C5 c ClearTextRow ; Clear the text row
+> Witness: L1 77 (c1, continue, ctl-if2, ctl-kempston, ctl-sinclair, ending, gameover, hiscore, hiscore-typed, l1-l8).
+$C2D6 c CheckRestart ; At a checkpoint column, set the restart column and wave
+> Witness: L1 27056 (c1, continue, ctl-if2, ctl-kempston, ctl-sinclair, ending, gameover, hiscore, hiscore-typed, l1-l8).
+$C2FB c EnemyFire ; An enemy fires at the ship while Shooters is below ShooterLimit
+> Witness: L1 33065 (c1, continue, ctl-if2, ctl-kempston, ctl-sinclair, gameover, hiscore, hiscore-typed, l1, l3-l7).
+$C348 c MoveEnemyShots ; Move the enemy shots; one that reaches the ship kills it
+> Witness: L1 27064 (c1, continue, ctl-if2, ctl-kempston, ctl-sinclair, ending, gameover, hiscore, hiscore-typed, l1-l8).
+$C3D1 c MoveByBits ; Step BC by the direction bits of A: bit 0 up, 1 down, 2 left, 3 right
+> Witness: L1 256283 (c1, continue, ctl-if2, ctl-kempston, ctl-sinclair, ending, gameover, hiscore, hiscore-typed, l1-l8).
+$C3E5 c SoftCellsOn ; Patch the drawers for the soft cells
+> Witness: L1 2649 (c1, continue, ctl-if2, ctl-kempston, ctl-sinclair, gameover, hiscore, hiscore-typed, l1-l8).
+$C3EE c SoftCellsOff ; Restore them
+> Witness: L1 7280 (c1, continue, ctl-if2, ctl-kempston, ctl-sinclair, gameover, hiscore, hiscore-typed, l1-l8).
+$C3F5 SoftCellsSet ; write A into the drawer
+$C3F9 c ClearCellsTag ; ClearCells through the attribute shadow
+> Witness: L1 1594 (l1, l2, l4).
+$C40E c DrawExplosions ; Step and draw the explosions
+> Witness: L1 27064 (c1, continue, ctl-if2, ctl-kempston, ctl-sinclair, ending, gameover, hiscore, hiscore-typed, l1-l8).
+$C44B c DrawHud ; Paint and print the HUD: BEAM, the meter, HI SCORE, the lives and the score
+> Witness: L1 77 (c1, continue, ctl-if2, ctl-kempston, ctl-sinclair, gameover, hiscore, hiscore-typed, l2-l8).
+$C49A t PausedText ; "GAME  PAUSED"
+@res texts/paused.bin
+$C4A6 b PausedPad ; eight zeros before the level space (no recording reads them)
+@module levelspace ; The level space: what the loader left where each level is loaded
+@about LoadLevel loads each level's body to $C4AE; at the entry the space holds what the loader left: zeros, a stale copy of loader bytes and the title picture ShowLoadingScreen shows. Each level's own source is src/levelN.
+$C4AE b LevelSpace ; The level header and body (zeros at the entry)
+$C4AE LevelRestartColumn ; the block column a life restarts at
+$C4AF LevelRestartWave ; the wave script entry a life restarts at
+$C4B1 LevelChecks ; three checkpoint columns
+$C4B4 LevelWaves ; the wave script's start and the checkpoints' entries
+$C4BA LevelObjects ; the level's object table (LevelObject)
+$C4BC LevelMetatiles ; the map, the metatiles below it (MetatileAddress)
+$C4BE LevelKinds ; the enemy kinds (StartWave)
+$C4C0 LevelMoves ; the first movers (MoveEnemies)
+$C4C2 LevelMoves2 ; the second movers
+$C544 b LoaderLeftover ; bytes the loader's last moves left, never read before a level overwrites them
+@res leftovers/loader-leftover.bin
+$DD18 b TitleScreen ; The title picture (a SCREEN$) ShowLoadingScreen copies to the screen
+@res screens/title.scr
+$F818 b LevelSpaceTail ; the bytes after the picture up to the sound's stack: level 1 loads over $F818-$F859; no play recording reads the rest
+@res leftovers/level-space-tail.bin
+$F872 b SoundStack ; ten bytes the tone commands use as a stack (LD SP,$F87A: the four voice periods pushed, TonePlayer reads them from $F872); read in every play recording
+@module sound ; The beeper sound: three channels run by the interrupt tasks
+$F87C c PlaySound ; Start sound H with the channel bits L (the priority and the timbre)
+> Witness: L1 11980 (continue, ctl-if2, ctl-kempston, ctl-sinclair, ending, gameover, hiscore, hiscore-typed, l1-l8).
+$F894 c SoundStart ; Find a channel at the priority, set its timbre and its script
+> Witness: L1 11980 (continue, ctl-if2, ctl-kempston, ctl-sinclair, ending, gameover, hiscore, hiscore-typed, l1-l8).
+$F8DD SoundTimbre ; the store patched by SoundStart
+$F8E8 c SoundTask1 ; Interrupt task 1: run channel 1's script
+> Witness: L1 43169 (continue, ctl-if2, ctl-kempston, ctl-sinclair, ending, gameover, hiscore, hiscore-typed, l1-l8).
+$F8F5 b SoundTask1Tail ; bytes after the task
+$F8F8 c SoundTask2 ; Interrupt task 2: run channel 2's script
+> Witness: L1 43638 (continue, ctl-if2, ctl-kempston, ctl-sinclair, ending, gameover, hiscore, hiscore-typed, l1-l8).
+$F905 b SoundTask2Tail ; bytes after the task
+$F908 c SoundTask3 ; Interrupt task 3: run channel 3's script
+> Witness: L1 45531 (continue, ctl-if2, ctl-kempston, ctl-sinclair, ending, gameover, hiscore, hiscore-typed, l1-l8).
+$F913 c SoundStep ; One step of a channel's script: a command byte and its routine (the table at $FBEB)
+> Witness: L1 132338 (continue, ctl-if2, ctl-kempston, ctl-sinclair, ending, gameover, hiscore, hiscore-typed, l1-l8).
+$F948 SoundEnd ; command: the script ends
+$F952 c TimbreHigh ; Set the tone routines for timbre 1
+> Witness: L1 67055 (continue, ctl-if2, ctl-kempston, ctl-sinclair, ending, gameover, hiscore, hiscore-typed, l1-l8).
+$F963 c TimbreMid ; Timbre 2
+> Witness: L1 24872 (continue, ctl-if2, ctl-kempston, ctl-sinclair, gameover, hiscore, hiscore-typed, l1-l8).
+$F975 c TimbreLow ; Timbre 3
+> Witness: L1 40411 (continue, gameover, hiscore, hiscore-typed, l1-l8).
+$F985 SoundCall ; command: call a sub-script
+$F987 c SoundPush ; Keep the script pointer
+> Witness: L1 255 (continue, ctl-if2, ctl-kempston, ctl-sinclair, ending, gameover, hiscore, hiscore-typed, l1-l7).
+$F994 SoundNop ; XOR A, RET
+$F996 SoundReturn ; command: back from a sub-script
+$F9A3 SoundNext ; JP (IY)
+$F9A5 SoundRepeat ; command: a repeat count
+$F9B7 SoundRepeatStore ; store the count
+$F9BA SoundLoop ; command: loop back while the count lasts
+$F9C7 b SoundCommandSpare ; bytes of an unused command (known only from the code)
+$F9D4 SoundSetScript ; the channel's script from the table
+$F9DD SoundSetScriptB ; the high byte
+$F9E7 c NotePeriod ; DE = the period of a note
+> Witness: L1 41852 (continue, ctl-if2, ctl-kempston, ctl-sinclair, ending, gameover, hiscore, hiscore-typed, l1-l8).
+$FA08 c TonePair12 ; Voices 1 and 2
+> Witness: L1 2854 (continue, ctl-if2, ctl-kempston, ctl-sinclair, ending, gameover, hiscore, hiscore-typed, l1-l8).
+$FA18 c TonePair34 ; Voices 3 and 4
+> Witness: L1 964 (l1, l2).
+$FA1A TonePair34A ; after the POP
+$FA25 TonePushLast ; push and return
+$FA28 c ToneDown12 ; Voices 1 and 2 sliding down
+> Witness: L1 1678 (continue, ctl-if2, ctl-kempston, ctl-sinclair, gameover, hiscore, hiscore-typed, l1-l8).
+$FA3A c ToneDown34 ; Voices 3 and 4 sliding down
+> Witness: L1 4532 (continue, ctl-if2, ctl-kempston, ctl-sinclair, ending, gameover, hiscore, hiscore-typed, l1-l8).
+$FA4B ToneDownLast ; push and return
+$FA4E c ToneUp12 ; Voices 1 and 2 sliding up
+> Witness: L1 5931 (continue, ctl-if2, ctl-kempston, ctl-sinclair, gameover, hiscore, hiscore-typed, l1-l8).
+$FA5F c ToneUp34 ; Voices 3 and 4 sliding up
+> Witness: L1 4967 (continue, ctl-if2, ctl-kempston, ctl-sinclair, gameover, hiscore, hiscore-typed, l1-l8).
+$FA6E ToneUpLast ; push and return
+$FA71 NoiseBurst ; command: noise from the ROM's bytes through OUT ($FE) at $FAA2
+$FAAF ChordPlay1 ; command: TonePair12 + ToneDown34
+$FABA ChordPlay1B ; second half
+$FABD ChordPlay1C ; to the player
+$FABF ChordPlay2 ; command: TonePair12 + ToneUp34
+$FACA ChordPlay2B ; second half
+$FACD ChordPlay2C ; to the player
+$FACF ChordPlay3 ; command: ToneUp12 + TonePair34
+$FADA ChordPlay3B ; second half
+$FADD ChordPlay3C ; to the player
+$FADF ChordPlay4 ; command: ToneDown12 + TonePair34
+$FAEA ChordPlay4B ; second half
+$FAED ChordPlay4C ; to the player
+$FAEF ChordPlay5 ; command: ToneDown12 + ToneDown34
+$FAFA ChordPlay5B ; second half
+$FAFD ChordPlay5C ; to the player
+$FAFF ChordPlay6 ; command: ToneUp12 + ToneUp34
+$FB03 ChordPlay6B ; the SP set
+$FB0A ChordPlay6C ; second half
+$FB0D ChordPlay6D ; to the player
+$FB0F b SoundCommandsSpare ; bytes no recording reads (known only from the code)
+$FB2F TonePlayer ; play the pushed periods as one tone: OUT ($FE) at $FB52
+$FB3C TonePlayerLoop ; the delay chain
+$FB45 TonePlayerPeriod ; one period
+$FB5C TonePlayerNext ; the next voice pair
+$FB66 b SoundData ; The sound data: note periods, the channel slots, the command table ($FBEB), the script table ($FC0B)
+> The script table at $FC0B holds 35 words, sounds $00-$22. By the code that starts them (the run counts of the starting instruction over all recordings): $00 silence (Silence, CommandWave); $01 shot (ShotSound, 3940 runs); $02 beam charging (FireBeam, 90); $03 a level 8 wave sound (wave command 6 at columns 35, 41, 48); $04 enemy hit (EnemyHit, 2492); $05 beam released (BeamRelease, 143); $06 missiles (FireMissiles, 482); $08 small explosion, $0A middle explosion, $09 big explosion (AwardScore by the enemy's size, 1377/848/747; BossDestroyed's $09 or $0A never ran); $09 also the ship hit (ShipDies, 38); $0A also a life lost (LoseLife, 37) and the level 7 wave sound (columns 73-74, 94); $0B a key defined (DefineKeys, DefineKey: never ran); $0C the best pilots table entered (InsertHiScore, 10); $0D pick-up (TakePickup, 20); $0E extra life (ExtraLifeSound, 6); $0F a soft cell hit (ProcessHitsNext, 717); $10-$13 the level 2 wave sounds (columns 31-90: the boss's beat); $14 the Force docks (ForceDraw 1; ShieldControls never ran); $15 the level's end tune (LevelEnd, 8); $16 the name entered (InsertHiScore, 1); $18 a shot bounced off the scenery (BounceShot, 1576: a noise burst, NoiseBurst); $19, $1D, $1E the control method chosen (SelectControl, 3 each); $1A, $1B mission over (MissionOver, 4 each); $1C the Force on the ground (ForceGround, 507); $22 the CONTINUE count (Continue, 21).
+> Sounds $07, $17 (the same script as $18) and $1F-$21 are started by no code and no wave script: known only from the table. $15-$1E have their scripts at $5B64-$5CFF, $1F-$21 at $F168-$F35C inside the level space (whatever the loaded level holds there), $22 at $72E8.
+@res sound/sound-data.bin
+$FC9C b SoundScripts ; the sound scripts
+@res sound/sound-scripts.bin
+$FD9F b SoundScriptsEnd ; bytes no recording reads
+@module tail ; The extra life, the waits and fills, the level loader, the first screen
+$FDA5 c CheckExtraLife ; When the score changed: print it and give an extra life at 50 000 and at each 100 000
+> Witness: L1 26646 (continue, ctl-if2, ctl-kempston, ctl-sinclair, ending, gameover, hiscore, hiscore-typed, l1-l8).
+$FDAA c PrintScore ; Print the score and check the extra life (DrawHud calls it here)
+> LD HL,Lives; the next instruction starts in its last byte ($7A, LD A,D) where nothing jumps. The score printed; an extra life when the second digit is 5 and none was given, or when the first digit equals ExtraLives: ExtraLives + 1, Lives + 1, DrawHud, sound $0E.
+> Witness: L1 1149 (continue, ctl-if2, ctl-kempston, ctl-sinclair, ending, gameover, hiscore, hiscore-typed, l1-l8).
+$FDE3 ExtraLifeSound ; the sound
+$FDE7 ExtraLifeNone ; no life
+$FDE9 c Wait256 ; Wait 256 frames
+> Witness: L1 9 (ending, hiscore, l1-l7).
+$FDEB c WaitFrames ; HALT B times
+> Witness: L1 7537 (continue, ctl-if2, ctl-kempston, ctl-sinclair, ending, gameover, hiscore, hiscore-typed, l1-l8).
+$FDEF c ClearBlock ; Zero BC bytes from HL
+> Witness: L1 80987 (continue, ctl-if2, ctl-kempston, ctl-sinclair, ending, gameover, hiscore, hiscore-typed, l1-l8).
+$FDF0 c FillBlock ; Fill BC bytes from HL with A
+> Witness: L1 84425 (continue, ctl-if2, ctl-kempston, ctl-sinclair, ending, gameover, hiscore, hiscore-typed, l1-l8).
+$FDF3 FillRest ; the LDIR
+$FDF8 c ClearScreen ; Zero the bitmap $4000-$57FF
+> Witness: L1 11 (continue, gameover, hiscore, hiscore-typed).
+$FE02 b SpareFE02 ; a byte between the routines
+$FE03 c LoadLevel ; Load the next level from tape
+> The digit + 1; SEARCHING FOR R TYPE LEVEL N; START TAPE; headers read and skipped until the level's; LOADING, the body to $C4AE; STOP TAPE, LOADED OK, a key. A load error: ERROR IN LOADING, REWIND TAPE, a key, again. After the last level ('0'): REWIND TAPE first.
+> Witness: L1 8 (ending, l1-l7).
+$FE24 LoadLevelRewind ; the rewind prompt
+$FE4A LoadLevelStart ; START TAPE
+$FE5B LoadLevelHeader ; read a header
+$FEBE LoadLevelRetry ; back to START TAPE
+$FEC0 c LoadDone ; Every LoadBytes return: EI; RET C; an error falls into LoadError
+> Witness: L1 23 (ending, l1-l8).
+$FEC2 c LoadError ; ERROR IN LOADING, REWIND TAPE, a key, retry
+> Witness: L1 2 (ending).
+$FEEB c DrawFirstScreen ; Draw the 8 block columns from the restart column into the shadow, then the scenery marks
+> Soft cells on; the drawers' limit $20; each map byte drawn with its drawer (a patched CALL); MapReadPtr / MapBlockPtr set; every attribute with bit 7 marks its SolidMap cell $FF and loses bit 7; the limit back; soft cells off.
+> Witness: L1 38 (c1, continue, ctl-if2, ctl-kempston, ctl-sinclair, gameover, hiscore, hiscore-typed, l2-l8).
+$FF28 DrawFirstCell ; one metatile
+$FF48 DrawFirstPatch ; the drawer written into the CALL
+$FF7A FirstScreenMarks ; the bit-7 attributes into SolidMap
+$FF94 b StackArea ; Loader leftovers ($FF94-$FFC7, no play recording reads them) and the stack (SP = $FFFE)
+@res leftovers/stack-area.bin

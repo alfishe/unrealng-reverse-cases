@@ -1,0 +1,106 @@
+# The annotations of level 5 (8904 bytes loaded at $C4AE by LoadLevel): the source of src/level5/*.asm (kit/mkgame.py).
+# The game addresses the level uses are named from src/game/game.ann (@equ). Movers: the entries of the two mover tables
+# (LevelMoves, LevelMoves2) MoveEnemies jumps to; each comes back to the game at MoveStore, MoveDraw, MoveDrawA, MoveNext or MoveDone.
+@equ $7A84 MapColumn
+@equ $7A89 FrameCounter
+@equ $7A9C DrawTag
+@equ $7AA1 ShipColumn
+@equ $7AA2 ShipRow
+@equ $7AC1 Carriers 8
+@equ $7ACF Scratch 8
+@equ $7DF9 LevelVars 7
+@equ $8501 EnemySlots 252
+@equ $8CFD DrawSprite 104
+@equ $8D65 DrawSpriteMirrored 110
+@equ $8DD3 DrawSpriteFlipped 86
+@equ $8E29 DrawSpriteBoth 92
+@equ $8E85 LevelObject 7
+@equ $8EA2 CellMark 32
+@equ $9168 MoveStore 6
+@equ $916E MoveDraw
+@equ $9195 MoveNext 16
+@equ $91A5 MoveScript 12
+@equ $91B1 MoveDone 43
+@equ $A599 EnemyDies 12
+@equ $C0E4 GetCell 21
+@equ $C225 StartWaveAt 26
+@equ $C23F AddScore 31
+
+@module level5data ; Level 5
+@about The level's body: the header the game reads at $C4AE, the sprites, the object table, the metatiles, the map, the wave script, the enemy kinds and their movement scripts, the two mover tables and the movers.
+$C4AE b L5Header ; The level header: restart point, checkpoints and the pointers the game reads
+> Restart column $00, restart wave $0000; checkpoint columns $00, $23, $FF with wave entries $D62C, $D8E8, $DA5A; objects $D14E, map $D4BA, kinds $DEC4, movers $E1AC and $E1C8.
+$C4AF L5RestartWave ; the wave entry a life restarts at (the game keeps its live copy here)
+$C4B1 L5Checks ; three checkpoint columns (CheckRestart)
+$C4B4 L5WaveStarts ; the wave entries of the start and the checkpoints
+$C4BA L5Pointers ; objects, map, kinds, movers 1, movers 2
+$C4C4 b L5Spare ; zeros up to the sprites
+$C4E0 b L5Sprites 9 ; The level's sprites: cells of 9 bytes (attribute, 8 pixel bytes) the object table points at
+@res levels/level5/sprites.bin
+$D14E b L5Objects 4 ; The level's object table: width, height, the cells' address (LevelObject)
+@res levels/level5/objects.bin
+$D1EA b L5Metatiles 9 ; The metatiles, 144 bytes each (4 x 4 cells of 9 bytes), numbered down from the map: metatile n at $D4BA - 144 x (n + 1) (MetatileAddress); 5 of them
+@res levels/level5/metatiles.bin
+$D4BA b L5Map 5 ; The map: 5 bytes a block column (74 columns), each byte a metatile (bits 0-5) and its drawer (bits 6-7)
+@res levels/level5/map.bin
+$D62C b L5Waves ; The wave script: entries (scroll position, kind, script) RunWaves starts; then the enemies' movement scripts
+$DEC4 b L5Kinds ; The enemy kinds StartWave reads (LevelKinds)
+$E1AC w L5MoversA ; The first mover of each kind (14 words, LevelMoves)
+$E1C8 w L5MoversB ; The second mover of each kind (16 words, LevelMoves2)
+$E1E8 c L5MoverA0 ; Mover A0
+> Witness: L1 0 (none).
+$E1EE c L5MoverA1 ; Mover A1
+> No recording ran it: known only from the code.
+$E1FC c L5MoverA2 ; Mover A2
+> Witness: L1 101 (l5).
+$E201 c L5MoverA3 ; Mover A3
+> Witness: L1 453 (l5).
+$E249 c L5MoverA4 ; Mover A4
+> Witness: L1 4378 (l5).
+$E29D c L5MoverA5 ; Mover A5
+> Witness: L1 616 (l5).
+$E2A4 c L5MoverA6 ; Mover A6
+> Witness: L1 39 (l5).
+$E2F5 c L5MoverA7 ; Mover A7
+> Witness: L1 320 (l5).
+$E31A c L5MoverA8 ; Mover A8
+> Witness: L1 1836 (l5).
+$E341 c L5MoverA9 ; Mover A9
+> Witness: L1 4030 (l5).
+$E421 c L5MoverA10 ; Mover A10
+> Witness: L1 212 (l5).
+$E4FD c L5MoverA11 ; Mover A11
+> Witness: L1 29 (l5).
+$E500 c L5MoverA12 ; Mover A12
+> Witness: L1 328 (l5).
+$E507 c L5MoverA13 ; Mover A13
+> Witness: L1 568 (l5).
+$E5E2 c L5MoverB0 ; Mover B0
+> Witness: L1 1904 (l5).
+$E5E5 c L5MoverB1 ; Mover B1
+> Witness: L1 6505 (l5).
+$E5F0 c L5MoverB2 ; Mover B2
+> Witness: L1 4228 (l5).
+$E5F6 c L5MoverB3 ; Mover B3, B4, B5, B6, B7
+> No recording ran it: known only from the code.
+$E5FA c L5MoverB8 ; Mover B8
+> No recording ran it: known only from the code.
+$E5FE c L5MoverB10 ; Mover B10, B11
+> Witness: L1 25 (l5).
+$E602 c L5MoverB9 ; Mover B9, B12
+> Witness: L1 4 (l5).
+$E606 c L5MoverB13 ; Mover B13
+> No recording ran it: known only from the code.
+$E60A c L5MoverB14 ; Mover B14
+> Witness: L1 33 (l5).
+$E60E c L5MoverB15 ; Mover B15
+> Witness: L1 39 (l5).
+$E317 b L5SpawnA ; A wave record (kind $0A) the movers fill and pass to StartWaveAt
+$E33E b L5SpawnB ; A wave record (kind $0A): nothing in the level names it (known only from the code)
+$E641 b L5SlotDirs 3 ; Three bytes a slot (by DrawTag): the direction L5SlotDir returns for Mover A9
+$E693 c L5SlotDir ; A = the first byte of the slot's L5SlotDirs record (slot = DrawTag & $7F - 1)
+> Witness: L1 3609 (l5).
+$E6A6 c L5StepDir ; Step the slot by A: 1 row - 1, 2 row + 1, 3 column - 1, 4 column + 1 ...
+> Witness: L1 116 (l5).
+$E6FB c L5SlotBusy ; Return while the slot is free; else drop the return and go on at Mover B1 (Mover B15 calls it)
+> Witness: L1 101 (l5).

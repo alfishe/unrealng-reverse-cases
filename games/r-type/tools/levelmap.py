@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
-"""Draws each level's scenery from the level block of the original tape, the way ScrollFeed (`$8979` -> `$8A13`)
+"""Draws each level's scenery from the case's resources (src/res/levels/levelN: map.txt, metatiles.png and
+metatiles-attrs.csv, tools/res_formats.py), the way ScrollFeed (`$8979` -> `$8A13`)
 builds it: no emulator, only the bytes.
 
     python3 tools/levelmap.py [--level N] [--per-row 28] [--scale 1] OUTDIR
@@ -22,10 +23,9 @@ import sys
 from PIL import Image, ImageDraw, ImageFont
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
-import media_compare  # noqa: E402
+import res_formats  # noqa: E402
 
 CASE = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))
-TAPE = os.path.join(CASE, 'work', 'stage1', 'media', 'rtype.tzx')
 BASE = 0xC4AE
 PAL = [(0, 0, 0), (0, 0, 205), (205, 0, 0), (205, 0, 205), (0, 205, 0), (0, 205, 205), (205, 205, 0), (205, 205, 205)]
 BRI = [(0, 0, 0), (0, 0, 255), (255, 0, 0), (255, 0, 255), (0, 255, 0), (0, 255, 255), (255, 255, 0), (255, 255, 255)]
@@ -39,32 +39,34 @@ def font(size):
 
 
 def levels():
-    media_compare.MIN = 3
-    b = media_compare.blocks(TAPE)
-    return {n: b[k][1:-1] for n, k in enumerate(range(15, 30, 2), 1)}
+    """{level: Level} from the resources alone: src/res/levels/levelN/map.txt and metatiles.png + metatiles-attrs.csv"""
+    return {n: Level(res_formats.load(f'levels/level{n}/map.bin'), res_formats.load(f'levels/level{n}/metatiles.bin'),
+                     level_map_address(n)) for n in range(1, 9)}
+
+
+def level_map_address(n):
+    """the map's address, from the level's .ann (the L<n>Map entry), for the labels only"""
+    for line in open(os.path.join(CASE, 'src', f'level{n}', f'level{n}.ann')):
+        if f' b L{n}Map ' in line:
+            return int(line[1:5], 16)
+    return 0
 
 
 class Level:
-    def __init__(self, body):
-        self.d = body
-
-    def byte(self, a):
-        return self.d[a - BASE]
-
-    def word(self, a):
-        return self.byte(a) | self.byte(a + 1) << 8
-
-    @property
-    def map(self):
-        return self.word(0xC4BC)
+    def __init__(self, map_bytes, metatiles, map_address):
+        self.m, self.t, self.map = map_bytes, metatiles, map_address
 
     @property
     def columns(self):
-        return (self.word(0xC4B4) - self.map) // 5
+        return len(self.m) // 5
+
+    def cell(self, col, row):
+        return self.m[col * 5 + row]
 
     def tile(self, n):
-        a = self.map - (n + 1) * 144
-        return a, self.d[a - BASE:a - BASE + 144]
+        """(address, 144 bytes) of metatile n: the metatiles lie below the map, numbered down from it"""
+        k = len(self.t) // 144
+        return self.map - (n + 1) * 144, self.t[(k - 1 - n) * 144:(k - n) * 144]
 
 
 def rev(b):
@@ -94,7 +96,7 @@ def strip(lv):
     img = Image.new('RGB', (lv.columns * 32, 160))
     for col in range(lv.columns):
         for row in range(5):
-            m = lv.byte(lv.map + col * 5 + row)
+            m = lv.cell(col, row)
             draw_tile(img, col * 32, row * 32, lv.tile(m & 0x3F)[1], m >> 6)
     return img
 
@@ -108,13 +110,12 @@ def main():
     a = ap.parse_args()
     os.makedirs(a.out, exist_ok=True)
     f = font(13)
-    for n, body in levels().items():
+    for n, lv in levels().items():
         if a.level and n != a.level:
             continue
-        lv = Level(body)
         s = strip(lv)
         per = a.per_row
-        drawn = max(c for c in range(lv.columns) if any(lv.byte(lv.map + c * 5 + r) for r in range(5))) + 1
+        drawn = max(c for c in range(lv.columns) if any(lv.cell(c, r) for r in range(5))) + 1
         nrows = (drawn + per - 1) // per
         lab = 18
         out = Image.new('RGB', (per * 32 + 8, nrows * (160 + lab + 6) + 22), (255, 255, 255))
@@ -132,7 +133,7 @@ def main():
         if a.scale > 1:
             out = out.resize((out.width * a.scale, out.height * a.scale), Image.NEAREST)
         out.save(os.path.join(a.out, f'level-{n}.png'))
-        used = sorted({lv.byte(lv.map + i) & 0x3F for i in range(lv.columns * 5)})
+        used = sorted({b & 0x3F for b in lv.m})
         cols = 12
         tw, th = 32 * 2 + 16, 32 * 2 + 34
         tiles = Image.new('RGB', (cols * tw + 8, ((max(used) + cols) // cols) * th + 24), (255, 255, 255))

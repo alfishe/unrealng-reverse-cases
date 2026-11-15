@@ -119,8 +119,8 @@ def bottom_text(r):
     return any(r.lab.read(0x50E0 + 256 * k, 32)[c] and attrs[c] & 7 == 3 for k in range(8) for c in range(32))
 
 
-def boot(r):
-    """Power-on to "REWIND SIDE 2 THEN PRESS ANY KEY": LOAD "" on a 48K, PLAY once, the SpeedLock part at signal
+def boot(r, keys=('J', 'SS+P', 'SS+P', 'ENTER')):
+    """Power-on to "REWIND SIDE 2 THEN PRESS ANY KEY": LOAD "" on a 48K (keys: ENTER for the 128K menu's Tape Loader), PLAY once, the SpeedLock part at signal
     speed until the tape stops at the stop block before level 1 (the emulator's block 32)"""
     lab = r.lab
     for name in ('fast_tape', 'turbo_tape'):
@@ -131,7 +131,7 @@ def boot(r):
     r.tape_log.append({'frame': lab.frame, 'action': 'insert', 'path': 'rtype.tzx'})
     r.wait(200)
     r.shot('rom')
-    for k in ('J', 'SS+P', 'SS+P', 'ENTER'):
+    for k in keys:
         r.tap(k, 3, 5)
     r.tape_play()
     block = 0
@@ -367,6 +367,21 @@ def plan_ending(r):
 
 
 
+def plan_deaths(r):
+    """deaths: from STATE (a level's start, as plan level), the tape wound as plan level does, no POKE: the autopilot
+    until every life is lost or FRAMES (default 12000) run out, screens every 250 frames; the ways the ship dies
+    are counted from the recording's branches at $956D (scenery ahead), $9574 (a cell of an enemy) and the runs at
+    $C3CE (an enemy shot)"""
+    n0 = level(r)
+    if r.lab.read(DEATH, 1)[0] != 0xCD:   # the stage 1 level states carry their recording's RET there
+        r.poke(DEATH, [0xCD], 'the original CALL byte back at $91F2: undoes the immortality POKE the start state holds')
+    tape_at(r, int(os.environ.get('TAPE_BLOCK', str(32 + 3 * (n0 - 1)))))
+    r.shot(f'start-L{n0}')
+    autopilot(r, int(os.environ.get('FRAMES', '12000')), stop=lambda: r.lab.read(LIVES, 1)[0] == 0, every=250,
+              name='play')
+    r.shot(f'end-L{level(r)}-lives{r.lab.read(LIVES, 1)[0]}')
+
+
 SCORE = 0x71C9        # the score, six ASCII digits ('053300' in l2's next.szx)
 
 
@@ -390,7 +405,24 @@ def plan_hiscore(r):
         r.shot(f'after-{k:02d}')
 
 
-PLANS = {'hiscore': plan_hiscore, 'c1': plan_c1, 'level': plan_level, 'ctl': plan_ctl, 'gameover': plan_gameover,
+def plan_m128(r):
+    """m128 (run with --model 128k): power-on on a 128K, the menu's Tape Loader (ENTER), the original tape as in c1, the
+    title, the keys defined, FIRE, the autopilot for PLAY frames (default 1500); the ROM's first bytes at the title and at
+    the end show which ROM the tail's `OUT ($7FFD),$30` left paged in"""
+    boot(r, keys=('ENTER',))
+    load_level1(r)
+    r.wait(300)
+    r.shot('title')
+    r.moments.append({'frame': r.lab.frame, 'name': 'rom-0000', 'bytes': r.lab.read(0, 8).hex()})
+    define_keys(r)
+    r.wait(100)
+    r.tap(F, 8, 60)
+    r.shot('play-start')
+    autopilot(r, int(os.environ.get('PLAY', '1500')), every=500, name='play')
+    r.moments.append({'frame': r.lab.frame, 'name': 'rom-0000', 'bytes': r.lab.read(0, 8).hex()})
+
+
+PLANS = {'m128': plan_m128, 'deaths': plan_deaths, 'hiscore': plan_hiscore, 'c1': plan_c1, 'level': plan_level, 'ctl': plan_ctl, 'gameover': plan_gameover,
          'continue': plan_continue, 'ending': plan_ending}
 
 

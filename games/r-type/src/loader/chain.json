@@ -1,0 +1,55 @@
+{
+  "about": "The decryption chain and the SpeedLock 7 reader $EC00-$FEE7 (4840 bytes), in their plain view",
+  "image_cmd": [
+    "sh",
+    "-c",
+    "test -f work/parts/level8-c4ae.bin || $SKOOLKIT_VENV/bin/python tools/parts.py"
+  ],
+  "image": "work/parts/chain-ec00.bin",
+  "org": "EC00",
+  "ann": "src/loader/chain.ann",
+  "top": "chain",
+  "bin": "chain.bin",
+  "dest": "src/loader",
+  "device": "ZXSPECTRUM48",
+  "mode": "blocks",
+  "pages": [
+    5,
+    2,
+    0
+  ],
+  "header": [
+    "; R-Type, Electric Dreams Software 1988: the BASIC's enciphered tail in its plain view, $EC00-$FEE7: the layers of the",
+    "; decryption chain as each one runs, then the SpeedLock 7 reader as the last layer leaves it.",
+    "; tools/speedlock7.py masters these bytes back into the tape's (src/tape/basic.asm INCBINs the result)."
+  ],
+  "l1": [
+    {
+      "path": "work/parts/chain-trace.json",
+      "format": "trace",
+      "reads": false
+    },
+    {
+      "path": "work/stage2/c1/load/l1.json",
+      "lo": "FB7E",
+      "hi": "FEE8",
+      "reads": false
+    }
+  ],
+  "data_entries": "stop",
+  "work": "work/stage2/mkchain",
+  "ref_builds": [
+    [
+      "stage1/c1",
+      "c1: a 48K from power-on, the whole load at signal speed (SpeedLock 7, level 1), the menu, play on level 1"
+    ]
+  ],
+  "other_builds": [],
+  "witness_skip": [
+    "stage1/c1"
+  ],
+  "witness_builds": [
+    "stage2/c1/chain",
+    "stage2/c1/load"
+  ]
+}

@@ -1,0 +1,103 @@
+# The annotations of level 7 (12997 bytes loaded at $C4AE by LoadLevel): the source of src/level7/*.asm (kit/mkgame.py).
+# The game addresses the level uses are named from src/game/game.ann (@equ). Movers: the entries of the two mover tables
+# (LevelMoves, LevelMoves2) MoveEnemies jumps to; each comes back to the game at MoveStore, MoveDraw, MoveDrawA, MoveNext or MoveDone.
+@equ $7A84 MapColumn
+@equ $7A89 FrameCounter
+@equ $7A9C DrawTag
+@equ $7AA1 ShipColumn
+@equ $7AA2 ShipRow
+@equ $7AC1 Carriers 8
+@equ $7ACF Scratch 8
+@equ $7DF9 LevelVars 7
+@equ $8CFD DrawSprite 104
+@equ $8E85 LevelObject 7
+@equ $8EA2 CellMark 32
+@equ $9168 MoveStore 6
+@equ $916E MoveDraw
+@equ $9195 MoveNext 16
+@equ $91A5 MoveScript 12
+@equ $91B1 MoveDone 43
+@equ $A599 EnemyDies 12
+@equ $A5A5 FreeExplosion 15
+@equ $A5B4 AwardScore 67
+@equ $C05D NextRandom 13
+@equ $C0E4 GetCell 21
+@equ $C19C BossDestroyed 68
+@equ $C20B ClearCells 26
+@equ $C225 StartWaveAt 26
+@equ $C23F AddScore 31
+@equ $C3E5 SoftCellsOn 9
+@equ $C3EE SoftCellsOff 7
+
+@module level7data ; Level 7
+@about The level's body: the header the game reads at $C4AE, the sprites, the object table, the metatiles, the map, the wave script, the enemy kinds and their movement scripts, the two mover tables and the movers.
+$C4AE b L7Header ; The level header: restart point, checkpoints and the pointers the game reads
+> Restart column $00, restart wave $0000; checkpoint columns $00, $2D, $FF with wave entries $E86A, $E9DC, $ED01; objects $D150, map $E6F8, kinds $F153, movers $F4B1 and $F4CF.
+$C4AF L7RestartWave ; the wave entry a life restarts at (the game keeps its live copy here)
+$C4B1 L7Checks ; three checkpoint columns (CheckRestart)
+$C4B4 L7WaveStarts ; the wave entries of the start and the checkpoints
+$C4BA L7Pointers ; objects, map, kinds, movers 1, movers 2
+$C4C4 b L7Spare ; zeros up to the sprites
+$C4E0 b L7Sprites 9 ; The level's sprites: cells of 9 bytes (attribute, 8 pixel bytes) the object table points at
+@res levels/level7/sprites.bin
+$D150 b L7Objects 4 ; The level's object table: width, height, the cells' address (LevelObject)
+@res levels/level7/objects.bin
+$D228 b L7Metatiles 9 ; The metatiles, 144 bytes each (4 x 4 cells of 9 bytes), numbered down from the map: metatile n at $E6F8 - 144 x (n + 1) (MetatileAddress); 37 of them
+@res levels/level7/metatiles.bin
+$E6F8 b L7Map 5 ; The map: 5 bytes a block column (74 columns), each byte a metatile (bits 0-5) and its drawer (bits 6-7)
+@res levels/level7/map.bin
+$E86A b L7Waves ; The wave script: entries (scroll position, kind, script) RunWaves starts; then the enemies' movement scripts
+$F153 b L7Kinds ; The enemy kinds StartWave reads (LevelKinds)
+$F4B1 w L7MoversA ; The first mover of each kind (15 words, LevelMoves)
+$F4CF w L7MoversB ; The second mover of each kind (16 words, LevelMoves2)
+$F4EF c L7MoverA0 ; Mover A0
+> Witness: L1 0 (none).
+$F4F5 c L7MoverA1 ; Mover A1
+> Witness: L1 1719 (l7).
+$F503 c L7MoverA2 ; Mover A2
+> Witness: L1 245 (l7).
+$F508 c L7MoverA3 ; Mover A3
+> Witness: L1 158 (l7).
+$F529 c L7MoverA4 ; Mover A4
+> Witness: L1 2011 (l7).
+$F570 c L7MoverA5 ; Mover A5
+> Witness: L1 351 (l7).
+$F5D0 c L7MoverA6 ; Mover A6
+> Witness: L1 378 (l7).
+$F5FA c L7MoverA7 ; Mover A7
+> Witness: L1 840 (l7).
+$F65C c L7MoverA8 ; Mover A8, A9
+> Witness: L1 196 (l7).
+$F66D c L7MoverA10 ; Mover A10, A11, A12
+> Witness: L1 4788 (l7).
+$F6BE c L7MoverA13 ; Mover A13, A14
+> Witness: L1 796 (l7).
+$F6FC c L7MoverB0 ; Mover B0
+> Witness: L1 4198 (l7).
+$F6FF c L7MoverB1 ; Mover B1
+> Witness: L1 8892 (l7).
+$F70A c L7MoverB2 ; Mover B2, B3
+> Witness: L1 1191 (l7).
+$F710 c L7MoverB4 ; Mover B4, B5
+> Witness: L1 196 (l7).
+$F716 c L7MoverB6 ; Mover B6
+> Witness: L1 2011 (l7).
+$F71D c L7MoverB7 ; Mover B7
+> Witness: L1 32 (l7).
+$F721 c L7MoverB8 ; Mover B8
+> No recording ran it: known only from the code.
+$F725 c L7MoverB10 ; Mover B10, B11
+> Witness: L1 86 (l7).
+$F729 c L7MoverB9 ; Mover B9, B12
+> No recording ran it: known only from the code.
+$F72D c L7MoverB13 ; Mover B13
+> Witness: L1 67 (l7).
+$F731 c L7MoverB14 ; Mover B14
+> Witness: L1 57 (l7).
+$F735 c L7MoverB15 ; Mover B15
+> Witness: L1 3 (l7).
+$F526 b L7SpawnA ; A wave record (kind $24) the movers fill and pass to StartWaveAt
+$F56D b L7SpawnB ; A wave record the movers fill and pass to StartWaveAt
+$F6F9 b L7SpawnC ; A wave record the movers fill and pass to StartWaveAt
+$F768 c L7SlotBusy ; Return while the slot is free; else drop the return and go on at Mover B1 (Mover B15 calls it)
+> Witness: L1 245 (l7).

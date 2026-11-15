@@ -19,6 +19,20 @@ sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import levelmap as L  # noqa: E402
 
 
+class Body:
+    """the level's body as tools/build.sh assembles it (build/levelN.bin, loaded at $C4AE)"""
+
+    def __init__(self, n):
+        here = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+        self.d = open(os.path.join(here, 'build', 'level%d.bin' % n), 'rb').read()
+
+    def byte(self, a):
+        return self.d[a - L.BASE]
+
+    def word(self, a):
+        return self.d[a - L.BASE] | self.d[a - L.BASE + 1] << 8
+
+
 def cells(lv, a, w, h):
     out = []
     for _ in range(w * h):
@@ -54,7 +68,7 @@ def main():
     ap.add_argument('--order', default='rows')
     ap.add_argument('--scale', type=int, default=2)
     a = ap.parse_args()
-    lv = L.Level(L.levels()[a.level])
+    lv = Body(a.level)
     t = lv.word(0xC4BA)
     ents = []
     n = 1

@@ -1,0 +1,102 @@
+# The annotations of level 8 (11980 bytes loaded at $C4AE by LoadLevel): the source of src/level8/*.asm (kit/mkgame.py).
+# The game addresses the level uses are named from src/game/game.ann (@equ). Movers: the entries of the two mover tables
+# (LevelMoves, LevelMoves2) MoveEnemies jumps to; each comes back to the game at MoveStore, MoveDraw, MoveDrawA, MoveNext or MoveDone.
+@equ $7A82 ScrollStep
+@equ $7A83 MetaColumn
+@equ $7A84 MapColumn
+@equ $7A89 FrameCounter
+@equ $7A90 WavePtr 4
+@equ $7AA1 ShipColumn
+@equ $7AA2 ShipRow
+@equ $7AC1 Carriers 8
+@equ $7ACD RandomPtr 2
+@equ $7DF9 LevelVars 7
+@equ $8501 EnemySlots 252
+@equ $8CFD DrawSprite 104
+@equ $8E85 LevelObject 7
+@equ $8EA2 CellMark 32
+@equ $9168 MoveStore 6
+@equ $916E MoveDraw
+@equ $9195 MoveNext 16
+@equ $91A5 MoveScript 12
+@equ $91B1 MoveDone 43
+@equ $C05D NextRandom 13
+@equ $C19C BossDestroyed 68
+@equ $C20B ClearCells 26
+@equ $C225 StartWaveAt 26
+@equ $C23F AddScore 31
+
+@module level8data ; Level 8
+@about The level's body: the header the game reads at $C4AE, the sprites, the object table, the metatiles, the map, the wave script, the enemy kinds and their movement scripts, the two mover tables and the movers.
+$C4AE b L8Header ; The level header: restart point, checkpoints and the pointers the game reads
+> Restart column $00, restart wave $0000; checkpoint columns $00, $FF, $FF with wave entries $E6EC, $E8EF, $E8EF; objects $D99C, map $E354, kinds $EBCA, movers $EEAC and $EECC.
+$C4AF L8RestartWave ; the wave entry a life restarts at (the game keeps its live copy here)
+$C4B1 L8Checks ; three checkpoint columns (CheckRestart)
+$C4B4 L8WaveStarts ; the wave entries of the start and the checkpoints
+$C4BA L8Pointers ; objects, map, kinds, movers 1, movers 2
+$C4C4 b L8Spare ; zeros up to the sprites
+$C4E0 b L8Sprites 9 ; The level's sprites: cells of 9 bytes (attribute, 8 pixel bytes) the object table points at
+@res levels/level8/sprites.bin
+$D99C b L8Objects 4 ; The level's object table: width, height, the cells' address (LevelObject)
+@res levels/level8/objects.bin
+$DA54 b L8Metatiles 9 ; The metatiles, 144 bytes each (4 x 4 cells of 9 bytes), numbered down from the map: metatile n at $E354 - 144 x (n + 1) (MetatileAddress); 16 of them
+@res levels/level8/metatiles.bin
+$E354 b L8Map 5 ; The map: 5 bytes a block column (184 columns), each byte a metatile (bits 0-5) and its drawer (bits 6-7)
+@res levels/level8/map.bin
+$E6EC b L8Waves ; The wave script: entries (scroll position, kind, script) RunWaves starts; then the enemies' movement scripts
+$EBCA b L8Kinds ; The enemy kinds StartWave reads (LevelKinds)
+$EEAC w L8MoversA ; The first mover of each kind (16 words, LevelMoves)
+$EECC w L8MoversB ; The second mover of each kind (16 words, LevelMoves2)
+$EEEC c L8MoverA0 ; Mover A0
+> Witness: L1 0 (none).
+$EEF2 c L8MoverA1 ; Mover A1
+> Witness: L1 2059 (l8).
+$EF00 c L8MoverA2 ; Mover A2
+> Witness: L1 158 (l8).
+$EF05 c L8MoverA3 ; Mover A3
+> Witness: L1 2445 (l8).
+$EFC5 c L8MoverA4 ; Mover A4
+> Witness: L1 1120 (l8).
+$EFE0 c L8MoverA5 ; Mover A5, A11, A12, A13, A14, A15
+> No recording ran it: known only from the code.
+$EFF5 c L8MoverA6 ; Mover A6
+> No recording ran it: known only from the code.
+$F029 c L8MoverA7 ; Mover A7
+> Witness: L1 1670 (l8).
+$F04A c L8MoverA8 ; Mover A8
+> Witness: L1 752 (l8).
+$F07F c L8MoverA9 ; Mover A9
+> Witness: L1 835 (l8).
+$F0AD c L8MoverA10 ; Mover A10
+> Witness: L1 2697 (l8).
+$F0B4 c L8MoverB0 ; Mover B0
+> Witness: L1 6262 (l8).
+$F0B7 c L8MoverB1 ; Mover B1
+> Witness: L1 5474 (l8).
+$F0C2 c L8MoverB2 ; Mover B2
+> No recording ran it: known only from the code.
+$F0C9 c L8MoverB3 ; Mover B3
+> Witness: L1 752 (l8).
+$F0CF c L8MoverB4 ; Mover B4, B5, B6, B7
+> No recording ran it: known only from the code.
+$F0D3 c L8MoverB8 ; Mover B8
+> No recording ran it: known only from the code.
+$F0D7 c L8MoverB10 ; Mover B10, B11
+> Witness: L1 34 (l8).
+$F0DB c L8MoverB9 ; Mover B9, B12
+> Witness: L1 13 (l8).
+$F0DF c L8MoverB13 ; Mover B13
+> Witness: L1 51 (l8).
+$F0E3 c L8MoverB14 ; Mover B14
+> Witness: L1 60 (l8).
+$F0E7 c L8MoverB15 ; Mover B15
+> No recording ran it: known only from the code.
+$EF8E b L8Vars ; Four bytes Mover A3's code keeps
+$EF92 c L8BossBurst ; Mover A3's end: free four slots from EnemySlots + 171 and start a wave (L8SpawnA) at each one's position
+> Witness: L1 2 (l8).
+$EFC2 b L8SpawnA ; A wave record (kind $1B) filled with a slot's position and passed to StartWaveAt
+$F11A c L8Random ; RandomPtr + 1; A = the ROM byte there
+> Witness: L1 152 (l8).
+$F123 c L8SlotBusy ; Return while the slot is free; else drop the return and go on at Mover B1 (Mover B15 calls it)
+> Witness: L1 158 (l8).
+$F12E b L8Tail ; Bytes after the code (words $F457, $F423 ..., $ED06 ...): no code of the level names them, no level 8 recording reads them

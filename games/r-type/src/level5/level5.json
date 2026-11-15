@@ -1,0 +1,40 @@
+{
+  "about": "Level 5: the body LoadLevel $FE03 reads to $C4AE (8904 bytes)",
+  "image_cmd": [
+    "sh",
+    "-c",
+    "test -f work/parts/level8-c4ae.bin || $SKOOLKIT_VENV/bin/python tools/parts.py"
+  ],
+  "image": "work/parts/level5-c4ae.bin",
+  "org": "C4AE",
+  "ann": "src/level5/level5.ann",
+  "top": "level5",
+  "bin": "level5.bin",
+  "dest": "src/level5",
+  "device": "ZXSPECTRUM48",
+  "mode": "blocks",
+  "same_bytes": true,
+  "pages": [
+    5,
+    2,
+    0
+  ],
+  "header": [
+    "; R-Type, Electric Dreams Software 1988: level 5, 8904 bytes loaded at $C4AE by LoadLevel $FE03 (tape TZX block 56)."
+  ],
+  "l1": [
+    {
+      "path": "work/stage1/rec/l5/l1.json",
+      "lo": "C4AE",
+      "hi": "E776"
+    }
+  ],
+  "work": "work/stage2/mklevel5",
+  "ref_builds": [
+    [
+      "stage1/rec/l5",
+      "l5: level 5 played from its load to the next search (the immortality POKE $91F2)"
+    ]
+  ],
+  "other_builds": []
+}
