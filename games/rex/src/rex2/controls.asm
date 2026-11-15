@@ -131,7 +131,7 @@ ReadDownBit:
   BIT 3,A                 ; BIT n,A: n written by SetDown
   RET
 
-; H: silence, wait for fire up, then for fire; the sound back
+; H: silence; loop while fire is not pressed (ReadFire); the sound back
 ;
 ; As REX 1's Pause $A4E7 (src/game/controls.asm).
 ;

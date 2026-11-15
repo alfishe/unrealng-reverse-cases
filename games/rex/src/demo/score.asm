@@ -199,8 +199,8 @@ AddScore:
 AddScoreShow:
   JP ShowScore            ; print it
 
-; The screen flash of a smart bomb or a bonus: the attribute shadow faded
-; through FadeSteps $90DD by FadeStepIndex $5ECB
+; The HUD flash of a power pod (only TakePowerPod starts it): rows 0-1
+; ($5800-$583F) stepped through FadeSteps $90DD by FadeStepIndex $5ECB
 ;
 ; As REX 1's FadeStep $9A4C (src/game/score.asm).
 ;

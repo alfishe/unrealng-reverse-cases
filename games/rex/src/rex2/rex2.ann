@@ -1,5 +1,9 @@
 # The annotations of rex2: the source of src/rex2/*.asm (../../kit/mkgame.py --part src/rex2/rex2.json). Format:
 # ../../../../docs/ann-format.md.
+@alias ShadowOffset $E4FF-$5800 ; the distance from a screen attribute to its cell in the attribute shadow $E4FF (PowerBar adds it); not an address in the sprites
+@isub $B9F5 LD DE,ShadowOffset
+@isub $BAA1 LD DE,ShadowOffset
+
 @module graphics ; The development link, the graphics and the level data: the font, the characters, the blocks, the room maps and the sprites
 @about The tape loads part 2's code block at $61A8, 400 bytes above part 1's. Its first bytes are the authors' development link, here complete and never overwritten: DevLink $61A8 talks to a host over ports $1F, $3F, $5F and $7F (commands $B4-$BA: poke a block, send a block, page $7FFD, set a breakpoint, return), with the machine's state saved at $62F8. No instruction of the game reaches it. Then come the same tables as part 1, 550 bytes higher ($226): the font (Font $6306, characters 32-95, found at $6206 + 8 x code), the cell type, picture and attribute of the 256 room characters (CharFlags $6506, CharGraphics $6606, CharAttrs $6E06), the 256 blocks of 3 x 3 characters (BlockDefs $6F06), the room maps (RoomMaps $7806, 70 bytes a room; rooms 0-25 are used, RoomExits $B1A7) and the sprites ($8198-$946F).
 @about The sprites are stored pre-shifted as in part 1 (a frame list of 8 offsets picks the copy for X & 7; DrawSprite $B296 ORs it into the back buffer). Part 2's enemies are new: kinds 1-5 and 9 have their own pictures and behaviours (ObjectBehaviour $BD27); their names are not in the game (part 2 has no roll call), so the labels name them by kind.
@@ -16,7 +20,7 @@ $6306 b Font 8 ; The font: 64 characters, codes 32-95 (space to underscore), 8 b
 > PrintChar, PrintDigits, the box frame of PrintBoxed ($6346, $6356, $6366, $637E, $63DE, $63EE) and the menu's FontChar $DFB1 read it.
 @res fonts/rex2.bin
 $6506 b CharFlags 16 ; The cell type of each of the 256 room characters: what Rex and the objects test in the room grid
-> DrawRoomCell copies CharFlags[c] into the grid for each character drawn. As in part 1, plus part 2's types: 3 kills a falling object (ObjectFall $C721), 4 is the big squidgy thing (BossHit $B743), $15 and $16 make walkers dissolve (MaybeDissolve $C5B4, CellDissolve $C5BA).
+> DrawRoomCell copies CharFlags[c] into the grid for each character drawn. As in part 1, plus part 2's types: 3 kills Rex when he walks, jumps or falls into it (RexWalkDeadly, RexJumpDeadly, RexFall) and a falling object (ObjectFall $C721), 4 is the big squidgy thing (BossHit $B743), $15 and $16 make walkers dissolve (MaybeDissolve $C5B4, CellDissolve $C5BA).
 @res tables/rex2-char-flags.bin
 $6606 b CharGraphics 8 ; The 256 room characters, 8 bytes each
 @res chars/rex2.bin
@@ -50,7 +54,6 @@ $8B60 SpriteHudIcons2 ; the HUD's weapon icons, second row
 $8BA0 SpriteBonusPod ; the bonus pod (BlowUp)
 $8BC0 SpriteBonusPod2 ; the bonus pod (BlowUp, InitBonusPod $CCBF)
 $8BE0 SpriteKind3 ; kind 3 (InitKind3 $CC53)
-$8CFF SpritePowerBar ; the power bar cells (PowerBar)
 $8D20 SpriteKind2 ; kind 2 (InitKind2 $CC75)
 $8E20 SpriteKind5 ; kind 5 (InitKind5 $CCF3)
 $8F00 SpriteKind1 ; kind 1 (InitKind1 $CC40)
@@ -60,7 +63,7 @@ $9100 SpriteKind14 ; kind 14, the mine (InitKind14 $CD15)
 $9180 ExplosionPicture ; an exploding object's picture (UpdateObject $BC50); part 1 copied its own to $6018
 
 @module entry ; The entry, a new game, the waits for fire
-$9470 c GameEntry ; The code block's entry (USR 38010): DI, the menu, the high score, then NewGame
+$9470 c GameEntry ; The code block's entry (USR 38000, the BASIC's line 60): DI, the menu, the high score, then NewGame
 > As REX 1's GameEntry $947A (src/game/entry.asm).
 > Witness: L1 1 (c2).
 $948E c NewGame ; A new game: the variables reset, score, lives, bombs and shield from the code ($A263, $A267, $A266, $A265), StartWeapon, PHASE TWO:ENTER THE LIVING TOWER TO REACH ZENITH and PRESS FIRE TO BEGIN, the wait for fire, Rex materialises
@@ -113,18 +116,18 @@ $976E c SmartBombStep ; One step of a running smart bomb: kill the next marked o
 $9791 BombNextObject ; the next marked object
 
 @module entry
-$97AB c WaitFireOrAttract ; Wait for fire for up to 50000 polls; none starts the attract mode
+$97AB c WaitFireOrAttract ; Wait up to 50000 polls for fire: Temp1 = 1 after a press and its release, 0 when the count runs out
 > As REX 1's WaitFireOrAttract $97C3 (src/game/entry.asm).
 > Witness: L1 10 (c2, rzx-p2-00000).
 $97B5 WaitFireCount ; the 50000-poll count
 $97BB WaitFireDelay ; a short delay between polls
 $97C3 WaitFireRelease ; fire must be released first
-$97D2 c WaitFire ; Wait for fire up, then for fire (no timeout): after the game over and the CODE panel
+$97D2 c WaitFire ; Wait for fire, then for its release (no timeout): after the game over and the CODE panel
 > As REX 1's WaitFire $97EA (src/game/entry.asm).
 > Known only from the code: no recording runs it.
 > Witness: L1 0 ().
-$97D5 WaitFireUp ; wait for fire up
-$97DB WaitFireDown ; wait for fire
+$97D5 WaitFireDown ; wait for fire pressed
+$97DB WaitFireUp ; wait for fire released
 $97E5 c ShowPointsUnused ; REX 1's ShowPoints (the points sign SpritePoints $84D8, kind $FF); KillObject does it inline, nothing calls this (leftover)
 > Witness: L1 0 ().
 
@@ -164,7 +167,7 @@ $9945 c AddScore ; Score $A1D7 + HL; every 100 points ExtraLifeCount $A20F count
 > As REX 1's AddScore $9A27 (src/game/score.asm).
 > Witness: L1 198 (c2, p2-room20, rzx-p2- x20).
 $9967 AddScoreShow ; print it
-$996A c FadeStep ; The screen flash of a smart bomb or a bonus: the attribute shadow faded through FadeSteps $99D1 by FadeStepIndex $A1DB
+$996A c FadeStep ; The HUD flash of a power pod (only TakePowerPod starts it): rows 0-1 ($5800-$583F) stepped through FadeSteps $99D1 by FadeStepIndex $A1DB
 > As REX 1's FadeStep $9A4C (src/game/score.asm).
 > Witness: L1 10871 (c2, p2-room20, rzx-p2- x21).
 $9983 FadeStepAttr ; the step's attribute change
@@ -214,7 +217,7 @@ $9CB3 c ShardBack ; DeathShardPtr $A1F0 - 2: the shards step back
 > Witness: L1 0 ().
 $9CBC c ShrinkArea ; BossAreaPtr $A26A - 2: the boss's explosion area the smaller one (BossExplodes at timer $82)
 > Witness: L1 1 (rzx-p2-40000).
-$9CC5 c RexDies ; Rex is killed (unless Immune or already dying): Dying, the timer 50, the free smart bomb (none while the boss dies), the shield off, dematerialise
+$9CC5 c RexDies ; Rex is killed (unless Immune): the sweep reset, Dying, the timer 50, the free smart bomb (none while the boss dies), LosePower, ShieldEnergy refilled to 99, dematerialise while lives are left (which switches the shield off)
 > Changed from REX 1's RexDies $9BDA (src/game/death.asm).
 > Witness: L1 36 (c2, p2-room20, rzx-p2- x14).
 $9CE7 RexDiesPower ; LosePower (the boss's death gives no free bomb)
@@ -240,7 +243,7 @@ $9E29 SparkleClear ; clear the dots, the sound
 $9E3D c Dematerialise ; Rex vanishes: the shield off, the sparkle out (Vanishing $A1FB = 1), the sound $D552
 > As REX 1's Dematerialise $9D47 (src/game/death.asm).
 > Witness: L1 36 (c2, p2-room20, rzx-p2- x14).
-$9E67 c SparkleUpdate ; One step of the sparkle: random masks over Rex's 3 x 3 cells in the attribute shadow; at the end the sparkle stops
+$9E67 c SparkleUpdate ; One step of the sparkle in Rex's 3-byte box of the back buffer (SparkleBufferOrigin $E89F): SparkleCount lines cleared, the next 3 ANDed with random bytes; at the end the sparkle stops
 > As REX 1's SparkleUpdate $9D71 (src/game/death.asm).
 > Witness: L1 10438 (c2, p2-room20, rzx-p2- x21).
 $9E9B SparkleRow ; each row of the 3 x 3 patch
@@ -282,7 +285,7 @@ $A0A5 b SparkleMasks 8 ; Eight bit masks $80-$01, then the particles' offsets (S
 $A0AD SparkleDots ; the sparkle's particles: Y, X offset pairs
 
 @module cells ; The cells under Rex: ladders, restart markers, the shield recharger, the weapon stations
-$A0F8 c CellsUnderRex ; Test the cells under Rex and act: the lift ($12), the restart marker (7), the shield recharger (8, up to 100), the weapon stations ($0A-$0D)
+$A0F8 c CellsUnderRex ; Test the cells under Rex and act: the lift ($12), the restart marker (7), the shield recharger (8, up to 99), the weapon stations ($0A-$0D)
 > Changed from REX 1's CellsUnderRex $9F5F (src/game/cells.asm).
 > Witness: L1 8990 (c2, p2-room20, rzx-p2- x21).
 $A130 OnLadder ; a ladder or lift: no fall, Rex lifted
@@ -317,16 +320,16 @@ $A1AB b FireLatch ; 1 while fire is held (one shot a press for the slow weapons)
 @var $A1C8 SmartBombSteps ; the smart bomb's steps left (16)
 @var $A1C9 SmartBombOn ; a smart bomb runs
 @var $A1CA SmartBombPtr ; the next object to kill
-@var $A1CC SpriteMirror ; DrawSprite: bit 7 draws the picture mirrored (MirrorTable $AE52)
+@var $A1CC SpriteMirror ; DrawSprite: bit 7 a fixed frame, SpritePicture, the frame list ignored (mirroring, through MirrorTable $AE52, is A not 0 at the call)
 @var $A1CD SpritePicture ; DrawSprite: the picture
 @var $A1D1 ObjectHitCount ; the hits an object took
-@var $A1D2 KillFlashPtr ; the HUD attribute address of the latest kill
+@var $A1D2 KillFlashPtr ; the combo row cell lit by the latest hit ($5843 + 3 a hit; at rest $E9FF)
 @var $A1D4 ComboCount ; kills in a row
 @var $A1D5 ComboTimer ; passes left for the next kill to count in the row
 @var $A1D7 Score ; the score, in hundreds
 @var $A1D9 RapidShotsOn ; the 100 RAPID SHOTS bonus runs
 @var $A1DA RapidShotsLeft ; its shots left
-@var $A1DB FadeStepIndex ; the screen flash's step (FadeStep $996A)
+@var $A1DB FadeStepIndex ; the power pod's HUD flash step, $FF at rest (FadeStep $996A)
 @var $A1DC SpawnTimer ; passes to the next random spawn
 @var $A1DD SpawnPeriod ; the room's spawn period
 @var $A1DE ScriptSpawnStep ; the scripted spawn's step 0 off (the scripted spawn never starts in part 2)
@@ -336,7 +339,7 @@ $A1AB b FireLatch ; 1 while fire is held (one shot a press for the slow weapons)
 @var $A1E5 ShieldKeyLatch ; the down key is held (one toggle a press)
 @var $A1E6 ShieldEnergy ; the shield's energy, 0-99
 @var $A1E7 ShieldDrainRate ; passes for one unit of energy while the shield is on
-@var $A1E8 WeaponIcon ; the HUD weapon icon shown
+@var $A1E8 WeaponIcon ; the gun held (always 1): BestWeapon reads it as entry 0 before HasDoubleFire .. HasSpray
 @var $A1E9 HasDoubleFire ; the weapons held: double fire
 @var $A1EA HasLaser ; laser
 @var $A1EB HasMultiple ; multiple (drones)
@@ -359,7 +362,7 @@ $A1AB b FireLatch ; 1 while fire is held (one shot a press for the slow weapons)
 @var $A1FD SweepPos ; the HUD sweep's position
 @var $A1FE SweepCount ; sweeps made at this width
 @var $A1FF SweepDir ; the sweep's direction
-@var $A200 SweepWidth ; the sweep's width (8 at the start; at 1 Rex dies)
+@var $A200 SweepWidth ; the sweep's width (12 after ResetSweep; Rex dies when it would drop to 0)
 @var $A201 FireDelay ; passes between shots
 @var $A202 AnimCount1 ; animation counters of the cells
 @var $A203 AnimCount2 ; 
@@ -434,7 +437,7 @@ $A1AB b FireLatch ; 1 while fire is held (one shot a press for the slow weapons)
 @isub $97B2 LD DE,50000
 @isub $DF20 LD HL,$EFFE
 @isub $A590 LD BC,Font-256
-$A26C c HudSweep ; One step of the HUD sweep; every 5 sweeps narrower; width 1 kills Rex
+$A26C c HudSweep ; One step of the HUD sweep (none while FadeStepIndex is not $FF); every 5 round trips one narrower; the width dropping to 0 kills Rex
 > As REX 1's HudSweep $A0C4 (src/game/hud.asm).
 > Witness: L1 10871 (c2, p2-room20, rzx-p2- x21).
 $A287 SweepMove ; the sweep's step by its direction
@@ -492,14 +495,14 @@ $A43F BufferLine ; each line: 16 words through the stack
 $A487 c PrintTextHL ; Print the text record at HL (PrintText)
 > As REX 1's PrintTextHL $A2DF (src/game/hud.asm).
 > Witness: L1 92 (c2, rzx-p2-00000, rzx-p2-40000).
-$A491 c PrintChar ; Print character A at column Temp2, line Temp1 (pixels) from Font $6306 through ScreenLineTable $AC9A
+$A491 c PrintChar ; Print character A at column Temp2, line Temp3 (pixels) from Font $6306 through ScreenLineTable $AC9A
 > As REX 1's PrintChar $A2E9 (src/game/hud.asm).
 > Witness: L1 1224 (c2, rzx-p2-00000, rzx-p2-40000).
 $A4AF c PrintText ; Print a text record: [attribute][column][line] characters, 0 ends; the attributes set
 > As REX 1's PrintText $A307 (src/game/hud.asm).
 > Witness: L1 92 (c2, rzx-p2-00000, rzx-p2-40000).
 $A4C6 PrintTextChar ; each character
-$A4C9 PrintTextAttr ; the attributes
+$A4C9 PrintTextLine ; each of the character's 8 lines; the attribute after them
 $A501 PrintTextNext ; the next character
 $A50F PrintTextEnd ; the end
 $A510 c UnusedRandom ; A = the byte at RandomSeed $A23A, the seed + 1 within $0000-$3FFF; nothing calls it (leftover)
@@ -565,7 +568,7 @@ $A683 c ReadDown ; Z = down (the shield) pressed (default J)
 > As REX 1's ReadDown $A4DB (src/game/controls.asm).
 > Witness: L1 20852 (c2, p2-room20, rzx-p2- x21).
 $A68C ReadDownBit ; BIT n,A: n written by SetDown
-$A68F c Pause ; H: silence, wait for fire up, then for fire; the sound back
+$A68F c Pause ; H: silence; loop while fire is not pressed (ReadFire); the sound back
 > As REX 1's Pause $A4E7 (src/game/controls.asm).
 > Witness: L1 20392 (p2-room20).
 $A69C c OrChar ; OR the 8 bytes at DE into the buffer at HL (32-byte rows)
@@ -632,10 +635,10 @@ $A908 c GiveSpray ; The spray station: HasSpray $A1EC = 1; GiveWeapon: the icons
 > Known only from the code: no recording runs it.
 > Witness: L1 0 ().
 $A90B GiveWeapon ; the icons and the best weapon
-$A914 c RollCharRight ; Roll an 8-byte character at HL one line up (REX 1's conveyor roll; nothing calls it in part 2)
+$A914 c RollCharUp ; Roll an 8-byte character at HL one line up (REX 1's conveyor roll; nothing calls it in part 2)
 > Witness: L1 0 ().
 $A91B RollUpLoop ; each line
-$A925 c RollCharLeft ; Roll an 8-byte character at HL one line down (nothing calls it in part 2)
+$A925 c RollCharDown ; Roll an 8-byte character at HL one line down (nothing calls it in part 2)
 > Witness: L1 0 ().
 $A930 RollDownLoop ; each line
 
@@ -717,7 +720,7 @@ $B363 DrawMirroredByte ; each byte through MirrorTable
 $B37F c ReturnToStack ; LD SP,(Temp2): RET: DrawAnimCells' exit with the stack it saved
 > As REX 1's ReturnToStack $B339 (src/game/render.asm).
 > Witness: L1 10901 (c2, p2-room20, rzx-p2- x21).
-$B384 c DrawAnimCells ; Draw the room's animated cells (AnimCellList $D962) into the back buffer, the stack as the list pointer
+$B384 c DrawAnimCells ; Draw every scenery cell of the room (SceneryCellList $D962) into the back buffer, the stack as the list pointer
 > As REX 1's DrawAnimCells $B33E (src/game/render.asm).
 > Witness: L1 10902 (c2, p2-room20, rzx-p2- x21).
 $B38B DrawAnimCellLoop ; each listed cell
@@ -764,7 +767,7 @@ $B5A0 c LaserSound ; DE = the laser's sound $D50D
 $B5A4 c SpraySound ; DE = the spray's sound $D516
 > As REX 1's SpraySound $B55E (src/game/weapons.asm).
 > Witness: L1 3998 (rzx-p2- x15).
-$B5A8 c EnemyShotSound ; The enemies' shot sound $D504, if channel 2 is free
+$B5A8 c EnemyShotSound ; The enemies' shot sound $D504, if channel C (the third, Channels+$10) is free
 > As REX 1's EnemyShotSound $B562 (src/game/weapons.asm).
 > Witness: L1 1121 (c2, p2-room20, rzx-p2- x19).
 $B5B6 c FindEnemySlot ; IY = a free slot among the enemies' 20 bullets
@@ -1043,12 +1046,12 @@ $C2E7 c ObjectMove ; The kinds' moves: pods none, 14 drifts (Blob), the others w
 > Witness: L1 19526 (c2, p2-room20, rzx-p2- x20).
 $C300 ObjectMoveWalk ; walk right or left
 $C30A b ObjectMoveCode 16 ; Code of ObjectMove's kinds that no recording reached; the kit keeps it as bytes
-$C3C1 c Blob ; Kind 14, the mine: drift by dX, dY; a solid cell above kills it; it rests and heads for Rex in turn, a few passes each
-> Changed from REX 1's Blob $C150 (src/game/objects.asm).
+$C3C1 c DriftObject ; Kind 14, the mine: drift by dX, dY; a solid cell above kills it; it rests and heads for Rex in turn, a few passes each
+> Changed from REX 1's DriftObject $C150 (src/game/objects.asm).
 > Witness: L1 3566 (c2, p2-room20, rzx-p2- x11).
-$C3EA BlobTimer ; 
-$C409 BlobRandom ; 
-$C423 BlobDown ; 
+$C3EA DriftTimer ; 
+$C409 DriftRandom ; 
+$C423 DriftDown ; 
 $C433 c WalkRight ; A walker's step right: a solid cell ahead turns it; off the edge WalkOff; a kind 0 on a cell $0F falls, $0E hops, $10 maybe jumps, $15 or $16 dissolves
 > Changed from REX 1's WalkRight $C3E0 (src/game/objects.asm).
 > Witness: L1 2953 (c2, p2-room20, rzx-p2- x17).
@@ -1124,7 +1127,7 @@ $C794 c ObjectCell ; ObjectCellPtr $A1B4 = the grid cell of the object at IX
 > Witness: L1 42807 (c2, p2-room20, rzx-p2- x20).
 
 @module rooms ; The rooms: drawing a room, the exits, the objects made, the spawners
-$C7AE c DrawRoom ; Draw the room: silence, the map's 7 x 10 blocks into the buffer, the grid and the attribute shadow; the animated cells listed
+$C7AE c DrawRoom ; Draw the room: silence, the map's 7 x 10 blocks into the grid, the attribute shadow and SceneryCellList (its pixel writes into the buffer are wiped by BuildRoom's ClearBuffer after it; the cell list redraws them)
 > As REX 1's DrawRoom $C745 (src/game/rooms.asm).
 > Witness: L1 32 (c2, p2-room20, rzx-p2- x17).
 $C7E5 DrawRoomRow ; each block row
@@ -1160,14 +1163,14 @@ $C95E MultiplyLoop ;
 $C962 c ReadExits ; The room's exits and object list from RoomExits; the list's header: count, spawn sides, timers, spawn kind
 > As REX 1's ReadExits $C8EF (src/game/rooms.asm).
 > Witness: L1 32 (c2, p2-room20, rzx-p2- x17).
-$C9BB c SetSpawnTop ; SpawnTop $A1C7 = 1
+$C9BB c SetSpawnTop ; SpawnTop $A1C7 = $FF
 > As REX 1's SetSpawnTop $C948 (src/game/rooms.asm).
 > Known only from the code: no recording runs it.
 > Witness: L1 0 ().
-$C9C1 c SetSpawnRight ; SpawnRight $A1C6 = 1
+$C9C1 c SetSpawnRight ; SpawnRight $A1C6 = $FF
 > As REX 1's SetSpawnRight $C94E (src/game/rooms.asm).
 > Witness: L1 8 (c2, rzx-p2-00000, rzx-p2-06000, rzx-p2-08000).
-$C9C7 c SetSpawnLeft ; SpawnLeft $A1C5 = 1
+$C9C7 c SetSpawnLeft ; SpawnLeft $A1C5 = $FF
 > As REX 1's SetSpawnLeft $C954 (src/game/rooms.asm).
 > Known only from the code: no recording runs it.
 > Witness: L1 0 ().
@@ -1241,12 +1244,14 @@ $CD44 c SpeedUpTick ; The SPEED UP bonus: count down; the speed back at the end
 $CD52 c WalkRightKey ; Right: facing right, the speed set
 > As REX 1's WalkRightKey $CFDA (src/game/rexmove.asm).
 > Witness: L1 1507 (c2, p2-room20, rzx-p2- x21).
-$CD64 WalkRightFast ; SPEED UP: 2 pixels
+$CD59 WalkRightFast ; SPEED UP (SpeedUp not 0): 4 pixels, SpeedUpTick counts down
+$CD64 WalkRightNormal ; the normal walk: 2 pixels
 $CD69 WalkRightFacing ; 
 $CD6E c WalkLeftKey ; Left: facing left, the speed set
 > As REX 1's WalkLeftKey $CFF6 (src/game/rexmove.asm).
 > Witness: L1 1319 (c2, rzx-p2- x21).
-$CD80 WalkLeftFast ; 
+$CD75 WalkLeftFast ; SPEED UP: 4 pixels left, SpeedUpTick counts down
+$CD80 WalkLeftNormal ; the normal walk: 2 pixels left
 $CD85 WalkLeftFacing ; 
 $CD8B c RexWalk ; Move Rex by RexSpeed in his facing unless a solid cell (type 3 kills him); at the edges ExitLeft / ExitRight
 > Changed from REX 1's RexWalk $D013 (src/game/rexmove.asm).
@@ -1269,10 +1274,10 @@ $CE17 c IsPassable ; Z if the cell at HL lets a body or a bullet through (PassCe
 $CE22 b SolidCells 10 ; The solid cell types 2, 4, 5, 6, 3 (IsSolid), then PassCells $CE27: 0, $0E, $0F, $10, $11, $12, 3, $15, $16 (IsPassable)
 > Changed from REX 1's SolidCells $D096 (src/game/rexmove.asm).
 $CE27 PassCells ; the cells a body or a bullet passes
-$CE30 c ExitLeft ; Rex at the left edge: to the room RoomLeft $A229 at X $E0
+$CE30 c ExitLeft ; Rex at the left edge: to the room RoomLeft $A229 at X $E8
 > As REX 1's ExitLeft $D0A0 (src/game/rexmove.asm).
 > Witness: L1 3 (rzx-p2-02000, rzx-p2-04000, rzx-p2-10000).
-$CE41 c ExitRight ; Rex at the right edge: to the room RoomRight $A226 at X $10
+$CE41 c ExitRight ; Rex at the right edge: to the room RoomRight $A226 at X $08
 > As REX 1's ExitRight $D0B1 (src/game/rexmove.asm).
 > Witness: L1 3 (p2-room20, rzx-p2-00000, rzx-p2-12000).
 $CE52 c StartJump ; Up: a jump if Rex stands (not jumping or falling)
@@ -1329,7 +1334,7 @@ $D13F c NextBullet ; The next bullet record; a hit that is not the last pauses a
 > Changed from REX 1's NextBullet $D3A7 (src/game/collisions.asm).
 > Witness: L1 846207 (c2, p2-room20, rzx-p2- x20).
 $D149 HitNotLast ; a hit that is not the last: a kind 8 pauses (timer IX+$10 = 4)
-$D15A c HitObject ; A hit: the flash picture SpriteHitFlash $8258, the combo score (ComboCount $A1D4), the object killed after its hits
+$D15A c HitObject ; A hit: the flash picture SpriteHitFlash $8258, the combo score (ComboCount $A1D4; none for the spray), the object killed after its hits (the laser kills at once)
 > As REX 1's HitObject $D3C2 (src/game/collisions.asm).
 > Witness: L1 16 (rzx-p2- x10).
 $D167 ClimbTurn ; 
@@ -1442,7 +1447,7 @@ $D6A1 c FillAttrs ; Fill B rows of E attributes from HL with A
 $D6AC FillAttrsRow ; 
 $D6B5 FillAttrsCell ; 
 $D6C6 b DebugHook 2 ; Leftover: POP BC: RET, the routine the development link calls ($62BD)
-$D962 AnimCellList ; the room's animated cells: 4 bytes each (cell, character, picture pointer), filled by DrawRoom
+$D962 SceneryCellList ; every visible scenery cell of the room, 4 bytes each (buffer address, picture address), filled by DrawRoom and redrawn each pass by DrawAnimCells (364 cells in room 0: past entry 255 the one-byte index of CellIndexMap wraps)
 
 @module menu ; The title, the menu, the code from part 1, DEFINE KEYS
 $DAC0 c TitleMenu ; The title and menu: the title on, the five menu texts, then MenuCode (the code first, then the keys 1-4)
@@ -1478,15 +1483,15 @@ $DD9B c ScanKey ; DEFINE: wait for a key not SPACE, not H and not taken; its por
 $DD9D ScanKeyRow ; each half-row
 $DDA7 ScanKeyBit ; 
 $DDB9 ScanKeyShift ; 
-$DDCF ScanKeyNextRow ; 
-$DDD1 ScanKeyFound ; 
+$DDCF ScanKeyFound ; a key down: its port and bit kept
+$DDD1 ScanKeyRelease ; wait until the key is let go
 $DE04 ScanKeyTaken ; a key already chosen?
 $DE13 b DefineTaken 6 ; the characters of the keys chosen so far
 $DE19 b DefineKeys 16 ; Code: 1: DEFINE: PRESS a key for each of UP, DOWN, LEFT, RIGHT, FIRE (ScanKey, the setters), then the confirm
 > Part 1's DefineKeys moved by $C5: DefineTaken cleared, PRESS, then for each control ScanKey and its setter (SetUp $A65D, SetDown $A676, SetLeft $A62B, SetRight $A644, SetFire $A612), ControlXor 0 and the confirm. No part 2 recording chose DEFINE (known only from the code); the kit keeps it as bytes because recording c2 reads $DC2A-$DE45 once at frames 22596-22597 (the reader is not identified) and the rest lies in CellIndexMap's span.
 $DEE6 b ChooseKempston 16 ; Code: key 2, Kempston: the readers on port $001F, ControlXor $FF; the confirm
 > Built like ChooseSinclair. Inside CellIndexMap's span ($DE9F on), so the play reads it as data and the kit keeps it as bytes.
-$DE9F CellIndexMap ; after the menu: each grid cell's index into AnimCellList (DrawRoom), over this code and the menu's texts
+$DE9F CellIndexMap ; after the menu: each grid cell's index into SceneryCellList (DrawRoom), over this code and the menu's texts
 $DF20 c ChooseSinclair ; 4: Sinclair (port $EFFE, keys 6-0): fire bit 0, up 1, down 2, right 3, left 4; the confirm
 > Witness: L1 2 (c2, rzx-p2-00000).
 $DF59 b ChooseCursor 16 ; Code: key 3, Cursor: port $EFFE fire bit 0 (key 0), right 2 (8), up 3 (7), down 4 (6); left $F7FE bit 4 (5); the confirm
@@ -1503,7 +1508,7 @@ $DFBD b DrawChar 9 ; Code: 8 bytes from DE down the screen at HL: LD B,8: LD A,(
 $DFC6 b MenuTexts 16 ; The menu's text records: SELECT, 1:DEFINE, 2:KEMPSTON, 3:CURSOR, 4:SINCLAIR; the confirms; DEFINE's PRESS, :UP, :DOWN, :LEFT, :RIGHT, :FIRE (twice, two colours)
 @res texts/rex2-menu.bin
 $E0C7 b MenuSpace 16 ; Zeros to the title screen: the room grid's space after the menu
-$E19E RoomGridLeft ; the grid's origin one byte left (CellPointer with A = 1)
+$E19E RoomGridLeft ; the grid's origin one byte left (CellPointer with A = 0, Rex facing right)
 $E19F RoomGrid ; the room grid's origin: the cell under (x, y) at $E19F + 32 x (y / 8) + x / 8
 $E1FF RoomGridPlay ; the grid's first play row (line 24)
 $E4FF b TitleScreen 16 ; The title screen (6912 bytes to $FFFF; the tape ends at $FFF9), shown by TitleMenu; then the attribute shadow ($E4FF-$E7FE) and the back buffer

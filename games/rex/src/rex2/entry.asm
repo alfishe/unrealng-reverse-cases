@@ -2,8 +2,8 @@
 ; entry.asm: The entry, a new game, the waits for fire
 ; --------------------------------------------------------------------------------------------------------------------
 
-; The code block's entry (USR 38010): DI, the menu, the high score, then
-; NewGame
+; The code block's entry (USR 38000, the BASIC's line 60): DI, the menu, the
+; high score, then NewGame
 ;
 ; As REX 1's GameEntry $947A (src/game/entry.asm).
 ;
@@ -126,7 +126,8 @@ NewGameScore:
 
   ORG $97AB
 
-; Wait for fire for up to 50000 polls; none starts the attract mode
+; Wait up to 50000 polls for fire: Temp1 = 1 after a press and its release, 0
+; when the count runs out
 ;
 ; As REX 1's WaitFireOrAttract $97C3 (src/game/entry.asm).
 ;
@@ -154,7 +155,7 @@ WaitFireRelease:
   LD (Temp1),A
   RET
 
-; Wait for fire up, then for fire (no timeout): after the game over and the
+; Wait for fire, then for its release (no timeout): after the game over and the
 ; CODE panel
 ;
 ; As REX 1's WaitFire $97EA (src/game/entry.asm).
@@ -164,12 +165,12 @@ WaitFireRelease:
 ; Witness: L1 0 ().
 WaitFire:
   CALL SoundSilence
-WaitFireUp:
-  CALL ReadFire           ; wait for fire up
-  JP NZ,WaitFireUp
 WaitFireDown:
-  CALL ReadFire           ; wait for fire
-  JP Z,WaitFireDown
+  CALL ReadFire           ; wait for fire pressed
+  JP NZ,WaitFireDown
+WaitFireUp:
+  CALL ReadFire           ; wait for fire released
+  JP Z,WaitFireUp
   CALL SoundReset
   RET
 

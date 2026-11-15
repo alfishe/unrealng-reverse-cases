@@ -86,7 +86,7 @@ def cmd_layout(args):
     d.text((x0, y0 + 478), 'Buffer column c (0-29) goes to screen column c + 1.', fill=K.TEXT, font=fs)
     # memory map
     regions = [
-        (0xD962, 0xDE9E, 'AnimCellList $D962: buffer, picture; $FF ends', (200, 110, 230)),
+        (0xD962, 0xDE9E, 'SceneryCellList $D962: buffer, picture; $FF ends', (200, 110, 230)),
         (0xDE9F, 0xE19E, 'CellIndexMap $DE9F: list index, 32 x 24', (150, 90, 200)),
         (0xE19F, 0xE49E, 'RoomGrid $E19F: cell types (CharFlags), 32 x 24', (230, 90, 80)),
         (0xE49F, 0xE4FE, '', (70, 70, 80)),
@@ -157,7 +157,7 @@ def cmd_build(args):
         d.text((tx, yy + 16), f'buffer ${buf:04X} (+32 a line)', fill=(80, 210, 120), font=fs)
         d.text((tx, yy + 32), f'shadow ${shadow:04X}, grid ${grid:04X}', fill=(240, 200, 70), font=fs)
         d.text((tx, yy + 48), f'screen line {line}, column {scol}', fill=K.DIM, font=fs)
-        d.text((tx, yy + 64), 'listed in AnimCellList' if listed else 'not listed (blank or marker)',
+        d.text((tx, yy + 64), 'listed in SceneryCellList' if listed else 'not listed (blank or marker)',
                fill=(200, 110, 230) if listed else K.DIM, font=fs)
         rows.append((c, buf, shadow, grid, line, scol, listed))
     y += 3 * 120 + 6
@@ -262,10 +262,10 @@ def cmd_animchars(args):
             v = chars[143][i]
             v = ((v << 1) | (v >> 7)) & 0xFF
             chars[143][i] = ((v << 1) | (v >> 7)) & 0xFF
-        for n in (28, 26):  # RollCharLeft: one line down
+        for n in (28, 26):  # RollCharDown: one line down
             c = chars[n]
             chars[n] = bytearray([c[7]]) + c[:7]
-        c = chars[11]  # RollCharRight: one line up
+        c = chars[11]  # RollCharUp: one line up
         chars[11] = c[1:] + bytearray([c[0]])
         src = sym['AnimFramesA'] if toggle == 0 else sym['AnimFramesB']
         frames = mem[src:src + 32]
@@ -288,8 +288,8 @@ def cmd_animchars(args):
                 chars[int(key)] = bytearray(data)
         toggle ^= 1
     rows = [(111, 'char 111 $6758: RRC each line (main loop)'), (143, 'char 143 $6858: RLC twice each line'),
-            (28, 'char 28 $64C0: RollCharLeft $A7BA (a line down)'), (26, 'char 26 $64B0: RollCharLeft'),
-            (11, 'char 11 $6438: RollCharRight $A7A9 (a line up)'),
+            (28, 'char 28 $64C0: RollCharDown $A7BA (a line down)'), (26, 'char 26 $64B0: RollCharDown'),
+            (11, 'char 11 $6438: RollCharUp $A7A9 (a line up)'),
             (252, 'chars 252-255 $6BC0: AnimFramesA/B'),
             (250, 'chars 250-251 $6BB0: FramesList2 $A602'), (68, 'char 68 $6600: FramesList1 $A60C'),
             (127, 'char 127 $67D8: FramesList4 $A61A')]

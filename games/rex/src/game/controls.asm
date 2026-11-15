@@ -21,8 +21,9 @@ SetFire:
 
 ; Z = fire pressed (default O, $DFFE bit 1)
 ;
-; Witness: L1 3012610 (c1, p1-code, p1-cursor, p1-define, p1-gameover,
-; p1-kempston, p1-room x5, rzx-p1- x33).
+; Witness: L1 3033772 (c1, p1-code, p1-cursor, p1-define, p1-gameover,
+; p1-kempston, p1-poke41241, p1-rooms238, p1-shots, p1-speedup, p1-room x5,
+; rzx-p1- x33).
 ReadFire:
   LD BC,$DFFE
   IN A,(C)
@@ -44,8 +45,9 @@ SetLeft:
 
 ; Z = left pressed (default Q)
 ;
-; Witness: L1 15259 (c1, p1-code, p1-cursor, p1-define, p1-gameover,
-; p1-kempston, p1-room x5, rzx-p1- x32).
+; Witness: L1 16946 (c1, p1-code, p1-cursor, p1-define, p1-gameover,
+; p1-kempston, p1-poke41241, p1-rooms238, p1-shots, p1-speedup, p1-room x5,
+; rzx-p1- x32).
 ReadLeft:
   LD BC,$FBFE
   IN A,(C)
@@ -67,8 +69,9 @@ SetRight:
 
 ; Z = right pressed (default W)
 ;
-; Witness: L1 15289 (c1, p1-code, p1-cursor, p1-define, p1-gameover,
-; p1-kempston, p1-room x5, rzx-p1- x32).
+; Witness: L1 16976 (c1, p1-code, p1-cursor, p1-define, p1-gameover,
+; p1-kempston, p1-poke41241, p1-rooms238, p1-shots, p1-speedup, p1-room x5,
+; rzx-p1- x32).
 ReadRight:
   LD BC,$FBFE
   IN A,(C)
@@ -90,8 +93,9 @@ SetUp:
 
 ; Z = up (jump) pressed (default I)
 ;
-; Witness: L1 15000 (c1, p1-code, p1-cursor, p1-define, p1-gameover,
-; p1-kempston, p1-room x5, rzx-p1- x32).
+; Witness: L1 16687 (c1, p1-code, p1-cursor, p1-define, p1-gameover,
+; p1-kempston, p1-poke41241, p1-rooms238, p1-shots, p1-speedup, p1-room x5,
+; rzx-p1- x32).
 ReadUp:
   LD BC,$DFFE
   IN A,(C)
@@ -113,8 +117,9 @@ SetDown:
 
 ; Z = down (the shield) pressed (default J)
 ;
-; Witness: L1 33630 (c1, p1-code, p1-cursor, p1-define, p1-gameover,
-; p1-kempston, p1-room x5, rzx-p1- x32).
+; Witness: L1 37004 (c1, p1-code, p1-cursor, p1-define, p1-gameover,
+; p1-kempston, p1-poke41241, p1-rooms238, p1-shots, p1-speedup, p1-room x5,
+; rzx-p1- x32).
 ReadDown:
   LD BC,$BFFE
   IN A,(C)
@@ -124,7 +129,7 @@ ReadDownBit:
   BIT 3,A                 ; BIT n,A: n written by SetDown
   RET
 
-; H: silence, wait for fire up, then for fire; the sound back
+; H: silence; loop while fire is not pressed (ReadFire); the sound back
 ;
 ; Witness: L1 51872 (c1, p1-cursor).
 Pause:
@@ -136,8 +141,9 @@ Pause:
 
 ; OR the 8 bytes at DE into the buffer at HL (32-byte rows)
 ;
-; Witness: L1 22962 (c1, p1-code, p1-cursor, p1-define, p1-gameover,
-; p1-kempston, p1-room24, p1-room30, rzx-p1- x32).
+; Witness: L1 23346 (c1, p1-code, p1-cursor, p1-define, p1-gameover,
+; p1-kempston, p1-poke41241, p1-shots, p1-speedup, p1-room24, p1-room30,
+; rzx-p1- x32).
 OrChar:
   LD B,$08
 OrCharLoop:

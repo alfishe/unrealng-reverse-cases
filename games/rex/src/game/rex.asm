@@ -14,8 +14,8 @@
 ; keeps it to one toggle a press; the shield goes on only while ShieldEnergy
 ; $A04D is not 0 and Rex is not materialising ($A060).
 ;
-; Witness: L1 293 (c1, p1-code, p1-cursor, p1-define, p1-kempston, p1-room30,
-; rzx-p1- x32).
+; Witness: L1 299 (c1, p1-code, p1-cursor, p1-define, p1-kempston, p1-speedup,
+; p1-room30, rzx-p1- x32).
 ShieldToggle:
   LD A,(SparkleMode)
   OR A
@@ -39,8 +39,9 @@ ShieldToggle:
 ; Returns while Rex is not present (RexPresent $A05D 0: he is materialising);
 ; then, if Dying $A055, JP DeathAnimation $9AC5. Called every pass.
 ;
-; Witness: L1 16841 (c1, p1-code, p1-cursor, p1-define, p1-gameover,
-; p1-kempston, p1-room x5, rzx-p1- x32).
+; Witness: L1 18528 (c1, p1-code, p1-cursor, p1-define, p1-gameover,
+; p1-kempston, p1-poke41241, p1-rooms238, p1-shots, p1-speedup, p1-room x5,
+; rzx-p1- x32).
 RexState:
   LD A,(RexPresent)
   OR A
@@ -61,8 +62,9 @@ RexState:
 ; $88F2, 4 x 21, through ShiftFrames2 $AE65, 4 pixels left of Rex (8 right of
 ; that facing left) and 2 lines up.
 ;
-; Witness: L1 15408 (c1, p1-code, p1-cursor, p1-define, p1-gameover,
-; p1-kempston, p1-room x5, rzx-p1- x32).
+; Witness: L1 17095 (c1, p1-code, p1-cursor, p1-define, p1-gameover,
+; p1-kempston, p1-poke41241, p1-rooms238, p1-shots, p1-speedup, p1-room x5,
+; rzx-p1- x32).
 DrawRex:
   LD A,(RexX)
   LD (SpriteX),A

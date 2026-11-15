@@ -5,8 +5,9 @@
 ; Each enemy bullet in Rex's box: the shield takes it (faster drain), else Rex
 ; dies
 ;
-; Witness: L1 16926 (c1, p1-code, p1-cursor, p1-define, p1-gameover,
-; p1-kempston, p1-room x5, rzx-p1- x32).
+; Witness: L1 18613 (c1, p1-code, p1-cursor, p1-define, p1-gameover,
+; p1-kempston, p1-poke41241, p1-rooms238, p1-shots, p1-speedup, p1-room x5,
+; rzx-p1- x32).
 EnemyBulletsHitRex:
   LD A,(Dying)
   OR A
@@ -53,8 +54,9 @@ EnemyBulletNext:
 ; $D29E, $D299, $D310, $D321 by kind); the shield kills it, else Rex dies; pods
 ; are taken; then Rex's bullets against it
 ;
-; Witness: L1 73516 (c1, p1-code, p1-cursor, p1-define, p1-gameover,
-; p1-kempston, p1-room x5, rzx-p1- x32).
+; Witness: L1 82130 (c1, p1-code, p1-cursor, p1-define, p1-gameover,
+; p1-kempston, p1-poke41241, p1-rooms238, p1-shots, p1-speedup, p1-room x5,
+; rzx-p1- x32).
 ObjectHitsRex:
   LD A,(Dying)
   OR A
@@ -162,8 +164,9 @@ ObjectTakePod:
 ; Rex's 30 bullets against the object at IX: a hit object takes damage
 ; (HitObject, HitObjectHard) or is killed
 ;
-; Witness: L1 68268 (c1, p1-code, p1-cursor, p1-define, p1-gameover,
-; p1-kempston, p1-room x5, rzx-p1- x32).
+; Witness: L1 76882 (c1, p1-code, p1-cursor, p1-define, p1-gameover,
+; p1-kempston, p1-poke41241, p1-rooms238, p1-shots, p1-speedup, p1-room x5,
+; rzx-p1- x32).
 BulletsHitObject:
   LD IY,$5B60
   LD B,$1E
@@ -246,8 +249,9 @@ BulletKill:
 
 ; The next bullet record
 ;
-; Witness: L1 2085566 (c1, p1-code, p1-cursor, p1-define, p1-gameover,
-; p1-kempston, p1-room x5, rzx-p1- x32).
+; Witness: L1 2344896 (c1, p1-code, p1-cursor, p1-define, p1-gameover,
+; p1-kempston, p1-poke41241, p1-rooms238, p1-shots, p1-speedup, p1-room x5,
+; rzx-p1- x32).
 NextBullet:
   LD DE,$000F
   ADD IY,DE
@@ -258,8 +262,8 @@ NextBullet:
 ; A hit that is not the object's last: a kind 8 pauses (its timer IX+$10 = 4);
 ; then the next bullet
 ;
-; Witness: L1 917 (c1, p1-code, p1-gameover, p1-room24, p1-room30, rzx-p1-
-; x30).
+; Witness: L1 951 (c1, p1-code, p1-gameover, p1-poke41241, p1-shots,
+; p1-speedup, p1-room24, p1-room30, rzx-p1- x30).
 HitNotLast:
   LD A,(IX+$09)
   AND $7F
@@ -269,9 +273,10 @@ HitNotLast:
   JP NextBullet
 
 ; A hit: the flash picture SpriteHitFlash $8632, the combo score (ComboCount
-; $A03B), the object killed after its hits
+; $A03B; none for the spray, Weapon 4), the object killed after its hits (the
+; laser, Weapon 2, kills at once)
 ;
-; Witness: L1 74 (p1-room30, rzx-p1- x20).
+; Witness: L1 76 (p1-speedup, p1-room30, rzx-p1- x20).
 HitObject:
   LD A,(Weapon)
   CP $02
@@ -310,7 +315,7 @@ HitObject:
 
 ; A hit on an armoured object: the flash, more hits needed
 ;
-; Witness: L1 89 (p1-room30, rzx-p1- x13).
+; Witness: L1 90 (p1-speedup, p1-room30, rzx-p1- x13).
 HitObjectHard:
   LD A,(Weapon)
   CP $04
@@ -344,7 +349,7 @@ HitObjectHard:
 
 ; The power pod ($FE): PowerGain twice if it is a big one, the pod sound
 ;
-; Witness: L1 135 (p1-room30, rzx-p1- x27).
+; Witness: L1 139 (p1-speedup, p1-room30, rzx-p1- x27).
 TakePowerPod:
   PUSH AF
   LD DE,SfxPowerPod
@@ -393,7 +398,7 @@ BonusTextTable:
 ; $A041 = 100). The screen is saved first (SaveScreen $D8A3) and restored
 ; after.
 ;
-; Witness: L1 2 (rzx-p1-50000, rzx-p1-56000).
+; Witness: L1 3 (p1-speedup, rzx-p1-50000, rzx-p1-56000).
 BonusRoulette:
   LD (IX+$0C),$00
   PUSH IX

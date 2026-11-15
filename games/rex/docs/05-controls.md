@@ -327,7 +327,7 @@ Confirm (c1, p1-*). Known only from the code: N at the confirm (MenuAgain); no r
 inside CellIndexMap `$DE9F`'s span, which play overwrites, so after the menu those bytes are data.
 
 The point: three of the four choices are tables written as code. CURSOR saves one load by reusing a leftover
-operand, and the listing mislabels its port constants as buffer addresses.
+operand; its two port constants are written as numbers (`LD HL,$EFFE`, `LD HL,$F7FE`), not as buffer addresses.
 
 ## 5.5 DEFINE: ScanKey
 
@@ -386,15 +386,15 @@ DBC7  06 05                       LD B,$05
 DBC9  1E 00                       LD E,$00
 DBCB  57                          LD D,A               ; keep the byte
 DBCC  0F           ScanKeyShift:  RRCA
-DBCD  D2 E2 DB                    JP NC,ScanKeyNextRow ; a 0: found (misnamed)
+DBCD  D2 E2 DB                    JP NC,ScanKeyFound ; a 0: found
 DBD0  1C                          INC E
 DBD1  10 F9                       DJNZ ScanKeyShift
 ; ...
-DBE4  DD 4E 00     ScanKeyFound:  LD C,(IX+$00)
+DBE4  DD 4E 00     ScanKeyRelease:  LD C,(IX+$00)
 DBE7  DD 46 01                    LD B,(IX+$01)
 DBEA  ED 78                       IN A,(C)
 DBEC  BA                          CP D                 ; the same byte: still held
-DBED  CA E4 DB                    JP Z,ScanKeyFound
+DBED  CA E4 DB                    JP Z,ScanKeyRelease
 DBF0  7B                          LD A,E
 DBF1  CB 27                       SLA A                ; 8E, three SLAs
 ; ...
@@ -409,7 +409,7 @@ flowchart TD
     B --> C{a 0 among bits 0-4?}
     C -- no --> D[next row, after row 7 row 0 again]
     D --> A
-    C -- yes, bit E --> E[ScanKeyFound: IN the same port]
+    C -- yes, bit E --> E[ScanKeyRelease: IN the same port]
     E --> F{byte still D?}
     F -- yes --> E
     F -- no --> G[DefineBit = 47 + 8E; c = KeyNames row x 5 + E]
@@ -427,7 +427,7 @@ DBAE-DC25,A46A-A4E6,DD54-DE1F,DEF0-DF04 --pictures 45 --title "..." --out docs/i
 
 How to read:
 
-- The code panel shows ScanKeyFound looping on `IN` while P is held, then the exit when P is let go.
+- The code panel shows ScanKeyRelease looping on `IN` while P is held, then the exit when P is let go.
 - The view is the readers' bytes `$A460-$A4EF`. Near frame 200 T 5000, SetUp writes `FE DF` at `$A4C3` and `47` at
   `$A4CC` (yellow).
 - The memory rows `$A000-$A0FF` show DefinePort `$A0AB` being written.
@@ -666,7 +666,7 @@ flowchart LR
 
 Only fire ends the pause; H does not. The pause returns in the middle of MainKeys. Fire is still down when ReadFire
 runs a few hundred T later, so the press that ends the pause also fires a shot. Witness: `p1-cursor` H at
-1253-1258, 0 at 1359, FireLatch = 1 at frame 1360. The `.ann` says "wait for fire up, then for fire"; that is wrong.
+1253-1258, 0 at 1359, FireLatch = 1 at frame 1360.
 
 **Smart bomb** `$9751` (SPACE) does nothing while SmartBombOn `$A030` is set or Bombs `$A06C` is 0. Otherwise it
 takes a bomb, redraws the bomb icons (ShowBombs, [doc 8](08-hud-and-text.md)), sets SmartBombOn = 1 and
@@ -718,13 +718,11 @@ A poll costs about 495 T: 385 T of delay, 74 T of ReadFire, and the count. 50 00
 about 350 frames or 7 s. The timing is known only from the code. The attract mode itself runs once in `c1`
 (Attract L1 1).
 
-WaitFire `$97EA` (after GAME OVER and after the CODE panel) has no timeout. It waits for fire down, then for fire up.
-Its labels are swapped: WaitFireUp is the loop that waits for the press, WaitFireDown the one that waits for the
-release.
+WaitFire `$97EA` (after GAME OVER and after the CODE panel) has no timeout. It waits for fire down, then for fire up:
+WaitFireDown is the loop that waits for the press, WaitFireUp the one that waits for the release.
 
 The point: a game starts on the release of fire, not on its press, so the held fire does not also shoot in the first
-pass. The `.ann` of WaitFireOrAttract speaks of "AnyKey" and "the return address dropped". It is a plain return with
-Temp1, and NewGame does the jump.
+pass. WaitFireOrAttract itself is a plain return with Temp1; NewGame does the jump.
 
 ## 5.10 REX 2: the code entry
 
@@ -925,14 +923,13 @@ A script plays until its room's end (TutorNextRoom) or a death. It ends with zer
 would hold nothing for 255 passes.
 
 **SPACE** is DEMO's only key (`$7FFE` bit 0, read at `$8C47`). DemoPause `$9FAD` silences the sound, waits for SPACE
-up, then for SPACE down, then goes on. Witness: `demo-cycle` SPACE at 30000 and 30106; DemoPause L1 1. Its inner
-label is `MainKeys` and its comment "the fixed keys: ENTER, H, SPACE"; both were copied from part 1 by mistake.
+up, then for SPACE down, then goes on. Witness: `demo-cycle` SPACE at 30000 and 30106; DemoPause L1 1. Its two
+loops are DemoPauseUp `$9FB0` and DemoPauseDown `$9FBA`.
 
 Known only from the code: a press held past the next pass's SPACE read pauses again at once.
 
 The point: the tutor is a recording of a player, stored as run lengths of one-pass inputs. The random seed is reset
-in each room, so the same script replays the same demo every time. The stage 1 note "DEMO starts with Sinclair keys"
-is wrong: DEMO reads no key but SPACE.
+in each room, so the same script replays the same demo every time. DEMO reads no key but SPACE.
 
 ## 5.12 Known only from the code
 

@@ -57,22 +57,24 @@ CharFlags:
 CharGraphics:
   INCBIN "res/chars/rex1.bin",$0000,88
 AnimChar11:
-  ; $6438 character 11, rolled by RollCharLeft $A7BA every pass
+  ; $6438 character 11, rolled one line up by RollCharUp $A7A9 every pass
+  ;   (MainAnimate)
   INCBIN "res/chars/rex1.bin",$0058,120
 AnimChar26:
-  ; $64B0 character 26, rolled by RollCharRight $A7A9
+  ; $64B0 character 26, rolled one line down by RollCharDown $A7BA
   INCBIN "res/chars/rex1.bin",$00D0,16
 AnimChar28:
-  ; $64C0 character 28, rolled by RollCharLeft
+  ; $64C0 character 28, rolled one line down by RollCharDown
   INCBIN "res/chars/rex1.bin",$00E0,320
 AnimChar68:
-  ; $6600 character 68: frames from AnimFramesB $AEAD (AnimateCells $A55E)
+  ; $6600 character 68: frames from FramesList1 $A60C (AnimateCells $A55E,
+  ;   CopyFrame)
   INCBIN "res/chars/rex1.bin",$0220,344
 AnimChar111:
   ; $6758 character 111: each line rotated right (RRC) by the main loop
   INCBIN "res/chars/rex1.bin",$0378,128
 AnimChar127:
-  ; $67D8 character 127: frames from AnimFramesA $AE8D
+  ; $67D8 character 127: frames from FramesList4 $A61A (CopyFrame)
   INCBIN "res/chars/rex1.bin",$03F8,128
 AnimChar143:
   ; $6858 character 143: each line rotated left (RLC)
@@ -86,7 +88,8 @@ AnimChar250:
   ;   $A5A7)
   INCBIN "res/chars/rex1.bin",$07D0,16
 AnimChar252:
-  ; $6BC0 character 252: frames from FramesList4 $A61A
+  ; $6BC0 characters 252-255: AnimFramesA $AE8D / AnimFramesB $AEAD on
+  ;   alternate passes (AnimateCells)
   INCBIN "res/chars/rex1.bin",$07E0,32
 
 ; The attribute of each of the 256 room characters
@@ -170,10 +173,7 @@ SpriteHudIcons2:
   INCBIN "res/sprites/rex1.bin",$0D38,64
 SpriteBonusPod:
   ; $8CEA the bonus pod (kind $7D, $BE39)
-  INCBIN "res/sprites/rex1.bin",$0D78,21
-SpritePowerBar:
-  ; $8CFF the power bar cells (PowerBar $B96B)
-  INCBIN "res/sprites/rex1.bin",$0D8D,11
+  INCBIN "res/sprites/rex1.bin",$0D78,32
 SpriteBonusPod2:
   ; $8D0A ($BE43)
   INCBIN "res/sprites/rex1.bin",$0D98,128

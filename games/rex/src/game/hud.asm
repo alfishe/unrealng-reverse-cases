@@ -6,14 +6,19 @@
 ; records in a framed box (PanelBox $CE7B). Numbers go through ToDigits (five decimal digits, Digits $A0A6) and
 ; PrintDigits.
 ;
-; HudSweep is the bar that runs along the HUD's attribute row $582B: every 5 sweeps it gets narrower ($A067); reaching
-; 1 would kill Rex. The room changes reset it (ResetSweep $A133), and no recording lets it run down.
+; HudSweep is the bar that runs along the HUD's attribute row $582B: every 5 round trips it gets one narrower
+; (SweepWidth $A067, 12 after ResetSweep $A133); when the width would drop to 0 ($A119-$A11B: DEC A, OR A, JP
+; Z,RexDies) Rex dies. Room changes and deaths (RexDies) reset it. It stands still while the power pod's HUD flash
+; runs (FadeStepIndex not $FF). p1-gameover lets it run down from width 2. The magazines' infinite-time POKE 43545,0
+; ($AA19) hits data in this release (ShardPaths); POKE 41241,0 (the DEC A at $A119 made a NOP) keeps the width.
 ; --------------------------------------------------------------------------------------------------------------------
 
-; One step of the HUD sweep; every 5 sweeps narrower; width 1 kills Rex
+; One step of the HUD sweep (none while FadeStepIndex is not $FF); every 5
+; round trips one narrower; the width dropping to 0 kills Rex
 ;
-; Witness: L1 16927 (c1, p1-code, p1-cursor, p1-define, p1-gameover,
-; p1-kempston, p1-room x5, rzx-p1- x32).
+; Witness: L1 18614 (c1, p1-code, p1-cursor, p1-define, p1-gameover,
+; p1-kempston, p1-poke41241, p1-rooms238, p1-shots, p1-speedup, p1-room x5,
+; rzx-p1- x32).
 HudSweep:
   LD A,(FadeStepIndex)
   CP $FF
@@ -78,8 +83,8 @@ SweepRight:
 
 ; The sweep back to full width (BuildRoom, RexDies)
 ;
-; Witness: L1 116 (c1, p1-cursor, p1-define, p1-gameover, p1-kempston, p1-room
-; x5, rzx-p1- x32).
+; Witness: L1 122 (c1, p1-cursor, p1-define, p1-gameover, p1-kempston,
+; p1-rooms238, p1-speedup, p1-room x5, rzx-p1- x32).
 ResetSweep:
   LD A,$0C
   LD (SweepWidth),A
@@ -90,8 +95,8 @@ ResetSweep:
 ; Print B text records from IX in a framed box (attribute A, box from the first
 ; record), the panel sound
 ;
-; Witness: L1 41 (c1, p1-code, p1-cursor, p1-define, p1-gameover, p1-kempston,
-; rzx-p1- x7).
+; Witness: L1 52 (c1, menu-rollcall, p1-code, p1-cursor, p1-define,
+; p1-gameover, p1-kempston, p1-speedup, rzx-p1- x7).
 PrintBoxed:
   PUSH IX
   PUSH BC
@@ -292,8 +297,9 @@ HudTexts:
 ; Copy the back buffer's 168 play lines to the screen through ScreenLines $AC0D
 ; (the stack as the pointer)
 ;
-; Witness: L1 17005 (c1, p1-code, p1-cursor, p1-define, p1-gameover,
-; p1-kempston, p1-room x5, rzx-p1- x32).
+; Witness: L1 18698 (c1, p1-code, p1-cursor, p1-define, p1-gameover,
+; p1-kempston, p1-poke41241, p1-rooms238, p1-shots, p1-speedup, p1-room x5,
+; rzx-p1- x32).
 BufferToScreen:
   LD (Temp1),SP
   LD SP,ScreenLines
@@ -340,8 +346,8 @@ BufferLine:
 
 ; Print the text record at HL (PrintText)
 ;
-; Witness: L1 121 (c1, p1-code, p1-cursor, p1-define, p1-gameover, p1-kempston,
-; rzx-p1- x7).
+; Witness: L1 142 (c1, menu-rollcall, p1-code, p1-cursor, p1-define,
+; p1-gameover, p1-kempston, p1-speedup, rzx-p1- x7).
 PrintTextHL:
   PUSH BC
   CALL PrintText
@@ -350,11 +356,11 @@ PrintTextHL:
   DJNZ PrintTextHL
   RET
 
-; Print character A at column Temp2, line Temp1 (pixels) from Font $60E0
+; Print character A at column Temp2, line Temp3 (pixels) from Font $60E0
 ; through ScreenLineTable $ABDD
 ;
-; Witness: L1 1674 (c1, p1-code, p1-cursor, p1-define, p1-gameover,
-; p1-kempston, rzx-p1- x7).
+; Witness: L1 1949 (c1, menu-rollcall, p1-code, p1-cursor, p1-define,
+; p1-gameover, p1-kempston, p1-speedup, rzx-p1- x7).
 PrintChar:
   LD A,(Temp3)
   LD L,A
@@ -378,8 +384,8 @@ PrintChar:
 ; Print a text record: [attribute][column][line] characters, 0 ends; the
 ; attributes set
 ;
-; Witness: L1 128 (c1, p1-code, p1-cursor, p1-define, p1-gameover, p1-kempston,
-; rzx-p1- x7).
+; Witness: L1 152 (c1, menu-rollcall, p1-code, p1-cursor, p1-define,
+; p1-gameover, p1-kempston, p1-speedup, rzx-p1- x7).
 PrintText:
   LD A,(IX+$00)
   LD (Temp1),A
@@ -391,8 +397,9 @@ PrintText:
   ADD IX,DE
 PrintTextChar:
   CALL PrintChar          ; each character
-PrintTextAttr:
-  LD L,(IY+$00)           ; the attributes
+PrintTextLine:
+  LD L,(IY+$00)           ; each of the character's 8 lines; the attribute
+                          ; after them
   LD H,(IY+$01)
   PUSH DE
   LD A,(Temp2)
@@ -405,7 +412,7 @@ PrintTextAttr:
   INC DE
   INC IY
   INC IY
-  DJNZ PrintTextAttr
+  DJNZ PrintTextLine
   LD A,(IX+$00)
   CP $20
   JR Z,PrintTextNext
@@ -445,8 +452,9 @@ UnusedRandom:
 ; A = a random byte: the byte at RandomSeed $A0A1 (walking $0000-$3FFF, the
 ; ROM) plus R
 ;
-; Witness: L1 52974 (c1, p1-code, p1-cursor, p1-define, p1-gameover,
-; p1-kempston, p1-room x5, rzx-p1- x32).
+; Witness: L1 56999 (c1, p1-code, p1-cursor, p1-define, p1-gameover,
+; p1-kempston, p1-poke41241, p1-rooms238, p1-shots, p1-speedup, p1-room x5,
+; rzx-p1- x32).
 Random:
   PUSH HL
   LD A,(RandomSeed)
@@ -461,8 +469,9 @@ Random:
 
 ; A = a random byte from RandomSeed2 $A0A3 and R
 ;
-; Witness: L1 11497 (c1, p1-cursor, p1-define, p1-gameover, p1-kempston,
-; p1-room14, p1-room24, p1-room26, p1-room30, rzx-p1- x29).
+; Witness: L1 14250 (c1, p1-cursor, p1-define, p1-gameover, p1-kempston,
+; p1-poke41241, p1-rooms238, p1-shots, p1-speedup, p1-room14, p1-room24,
+; p1-room26, p1-room30, rzx-p1- x29).
 Random2:
   PUSH HL
   LD (Temp1),BC
@@ -504,8 +513,8 @@ ClearScreen:
 
 ; Print B digits of Digits $A0A6 at HL on the screen
 ;
-; Witness: L1 1798 (c1, p1-code, p1-cursor, p1-define, p1-gameover,
-; p1-kempston, p1-room x5, rzx-p1- x33).
+; Witness: L1 1861 (c1, p1-code, p1-cursor, p1-define, p1-gameover,
+; p1-kempston, p1-rooms238, p1-shots, p1-speedup, p1-room x5, rzx-p1- x33).
 PrintDigits:
   PUSH IX
   LD IX,Digits
@@ -542,8 +551,8 @@ DigitLoop:
 
 ; HL one pixel line down the screen
 ;
-; Witness: L1 4452 (c1, p1-code, p1-cursor, p1-define, p1-gameover,
-; p1-kempston, p1-room x5, rzx-p1- x33).
+; Witness: L1 4599 (c1, p1-code, p1-cursor, p1-define, p1-gameover,
+; p1-kempston, p1-rooms238, p1-shots, p1-speedup, p1-room x5, rzx-p1- x33).
 ScreenDown:
   LD B,$08
 ScreenDownCell:
@@ -556,8 +565,8 @@ ScreenDownCell:
 
 ; HL into five decimal digits at Digits $A0A6 (units first)
 ;
-; Witness: L1 1803 (c1, p1-code, p1-cursor, p1-define, p1-gameover,
-; p1-kempston, p1-room x5, rzx-p1- x33).
+; Witness: L1 1866 (c1, p1-code, p1-cursor, p1-define, p1-gameover,
+; p1-kempston, p1-rooms238, p1-shots, p1-speedup, p1-room x5, rzx-p1- x33).
 ToDigits:
   PUSH IX
   LD (DigitTemp),HL
@@ -587,8 +596,8 @@ ToDigits:
 
 ; One digit: count how many times DE goes into HL
 ;
-; Witness: L1 9015 (c1, p1-code, p1-cursor, p1-define, p1-gameover,
-; p1-kempston, p1-room x5, rzx-p1- x33).
+; Witness: L1 9330 (c1, p1-code, p1-cursor, p1-define, p1-gameover,
+; p1-kempston, p1-rooms238, p1-shots, p1-speedup, p1-room x5, rzx-p1- x33).
 DigitOf:
   LD HL,(DigitTemp)
   LD IX,$0000

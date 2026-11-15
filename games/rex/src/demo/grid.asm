@@ -315,10 +315,10 @@ DronePictures:
 ; Roll an 8-byte character at HL one line up (the first line goes last): the
 ; conveyor characters
 ;
-; As REX 1's RollCharRight $A7A9 (src/game/grid.asm).
+; As REX 1's RollCharUp $A7A9 (src/game/grid.asm).
 ;
 ; Witness: L1 6741 (d1, demo-cycle).
-RollCharRight:
+RollCharUp:
   PUSH HL
   LD C,(HL)
   LD E,L
@@ -338,10 +338,10 @@ RollRightLoop:
 
 ; Roll an 8-byte character at HL one line down
 ;
-; As REX 1's RollCharLeft $A7BA (src/game/grid.asm).
+; As REX 1's RollCharDown $A7BA (src/game/grid.asm).
 ;
 ; Witness: L1 13482 (d1, demo-cycle).
-RollCharLeft:
+RollCharDown:
   PUSH HL
   LD DE,$0007
   ADD HL,DE

@@ -138,8 +138,8 @@ flowchart LR
 *Interrupts across the load and the game. The point: the last `EI` the machine runs is the ROM's after the last
 block; the game's `DI` closes it for good. Witness: `c1`, 159 interrupts in frames 0-13 700, none after.*
 
-A pass longer than a frame breaks nothing here, because nothing waits for the frame. Rex moves a pixel a pass, not a
-pixel a frame. A room with more objects runs slower, and the player sees the whole game slow down (4.5).
+A pass longer than a frame breaks nothing here, because nothing waits for the frame. Rex moves 2 pixels a pass, not 2
+pixels a frame. A room with more objects runs slower, and the player sees the whole game slow down (4.5).
 
 ## 4.3 The main loop and the order of a pass
 
@@ -320,13 +320,13 @@ A2DA  LD SP,(Temp1)
 A2DE  RET
 ```
 
-**DrawAnimCells `$B33E`** writes every listed scenery cell into the buffer. `SP` walks `AnimCellList $D962`: pairs of
+**DrawAnimCells `$B33E`** writes every listed scenery cell into the buffer. `SP` walks `SceneryCellList $D962`: pairs of
 words, the cell's buffer address and its character's 8 bytes. A low byte of `$FF` ends the list.
 
 ```
 B33E  DrawAnimCells:
 B33E  LD (Temp2),SP
-B342  LD SP,AnimCellList      ; $D962
+B342  LD SP,SceneryCellList      ; $D962
 B345  DrawAnimCellLoop:
 B345  POP HL                  ; the cell in the buffer
 B346  POP DE                  ; the character's graphics
@@ -347,7 +347,7 @@ B33D  RET
 
 Worked example, room 5 in `rzx-p1-08000` (memory at frame 1161): the list at `$D962` holds 362 cells before its
 `$FF`. Room 5 has 362 non-empty cells, so the list is the whole scenery, not only its animated part. The name
-`AnimCellList` says less than the list holds (sent to the lead). The scenery is drawn again every pass because
+`SceneryCellList` says less than the list holds (sent to the lead). The scenery is drawn again every pass because
 `ClearBuffer` wiped it in the pass before.
 
 ```mermaid
@@ -370,7 +370,7 @@ passes: 3367 of 3 frames, 8839 of 4, 1775 of 5 and 60 of 6. Part 2's short passe
 the replayed segments agree: `rzx-p1-*` runs 14 137 passes in 64 813 frames (4.58 a pass, room builds included);
 `rzx-p2-*` runs 9795 in 41 776 (4.27).
 
-So the game runs at about 11 passes a second. Rex walks a pixel a pass (two with SPEED UP): about 11 pixels a
+So the game runs at about 11 passes a second. Rex walks 2 pixels a pass (4 with SPEED UP): about 22 pixels a
 second.
 
 The cost of each step, measured on five light passes of `rzx-p1-08000` (frames 1160-1206, room 5; 283 183 T a pass

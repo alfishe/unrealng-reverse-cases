@@ -913,7 +913,7 @@ ObjectMove:
   AND $7F
   CP $08
   CP $0E
-  JP Z,Blob
+  JP Z,DriftObject
   OR A
   JP NZ,ObjectMoveWalk
 ObjectMoveWalk:
@@ -941,10 +941,10 @@ ObjectMoveCode:
 ; Kind 14, the mine: drift by dX, dY; a solid cell above kills it; it rests and
 ; heads for Rex in turn, a few passes each
 ;
-; Changed from REX 1's Blob $C150 (src/game/objects.asm).
+; Changed from REX 1's DriftObject $C150 (src/game/objects.asm).
 ;
 ; Witness: L1 3566 (c2, p2-room20, rzx-p2- x11).
-Blob:
+DriftObject:
   LD A,(IX+$00)
   ADD A,(IX+$04)
   LD (IX+$00),A
@@ -953,14 +953,14 @@ Blob:
   LD (IX+$01),A
   LD A,(IX+$09)
   CP $0F
-  JP Z,BlobTimer
+  JP Z,DriftTimer
   LD HL,(ObjectCellPtr)
   LD DE,$0020
   AND A
   SBC HL,DE
   CALL IsSolid
   JP Z,KillObject
-BlobTimer:
+DriftTimer:
   DEC (IX+$11)
   RET NZ
   LD A,R
@@ -969,13 +969,13 @@ BlobTimer:
   LD (IX+$11),A
   LD A,(IX+$09)
   CP $0F
-  JP Z,BlobRandom
+  JP Z,DriftRandom
   LD A,(IX+$12)
   XOR $01
   LD (IX+$12),A
   OR A
   RET Z
-BlobRandom:
+DriftRandom:
   LD A,R
   AND $07
   ADD A,$08
@@ -983,9 +983,9 @@ BlobRandom:
   LD (IX+$04),$01
   LD A,(RexX)
   CP (IX+$00)
-  JP NC,BlobDown
+  JP NC,DriftDown
   LD (IX+$04),$FF
-BlobDown:
+DriftDown:
   LD (IX+$05),$01
   LD A,(RexY)
   CP (IX+$01)

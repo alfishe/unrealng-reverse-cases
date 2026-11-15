@@ -5,8 +5,9 @@
 ; HL = the grid cell of SpriteX/SpriteY ($E19F + 32 x (Y / 8) + X / 8; A = 1
 ; the grid from $E19E)
 ;
-; Witness: L1 215029 (c1, p1-code, p1-cursor, p1-define, p1-gameover,
-; p1-kempston, p1-room x5, rzx-p1- x32).
+; Witness: L1 233965 (c1, p1-code, p1-cursor, p1-define, p1-gameover,
+; p1-kempston, p1-poke41241, p1-rooms238, p1-shots, p1-speedup, p1-room x5,
+; rzx-p1- x32).
 CellPointer:
   PUSH AF
   LD A,(SpriteY)
@@ -41,8 +42,9 @@ CellPointerAdd:
 
 ; HL = the back buffer address of SpriteX / SpriteY
 ;
-; Witness: L1 4771 (c1, p1-code, p1-cursor, p1-define, p1-gameover,
-; p1-kempston, p1-room24, p1-room30, rzx-p1- x32).
+; Witness: L1 4835 (c1, p1-code, p1-cursor, p1-define, p1-gameover,
+; p1-kempston, p1-poke41241, p1-shots, p1-speedup, p1-room24, p1-room30,
+; rzx-p1- x32).
 BufferAddress:
   LD A,(SpriteY)
   LD L,A
@@ -72,8 +74,9 @@ BufferAddress:
 ; Every other pass: the animated characters' next frames (AnimFramesA $AE8D,
 ; AnimFramesB $AEAD, the frame lists $A60C, $A61A)
 ;
-; Witness: L1 16879 (c1, p1-code, p1-cursor, p1-define, p1-gameover,
-; p1-kempston, p1-room x5, rzx-p1- x32).
+; Witness: L1 18560 (c1, p1-code, p1-cursor, p1-define, p1-gameover,
+; p1-kempston, p1-poke41241, p1-rooms238, p1-shots, p1-speedup, p1-room x5,
+; rzx-p1- x32).
 AnimateCells:
   LD HL,AnimFramesA
   LD A,(PassToggle)
@@ -107,8 +110,9 @@ AnimFrameCopy:
 
 ; The frames of character 250 from FramesList2 $A602
 ;
-; Witness: L1 16879 (c1, p1-code, p1-cursor, p1-define, p1-gameover,
-; p1-kempston, p1-room x5, rzx-p1- x32).
+; Witness: L1 18560 (c1, p1-code, p1-cursor, p1-define, p1-gameover,
+; p1-kempston, p1-poke41241, p1-rooms238, p1-shots, p1-speedup, p1-room x5,
+; rzx-p1- x32).
 AnimateCells2:
   LD IY,AnimCount2
   LD DE,FramesList2
@@ -129,8 +133,9 @@ AnimateRestart:
 ; Copy the frame at HL into the character at DE (8 bytes), from the list
 ; position Temp1
 ;
-; Witness: L1 51471 (c1, p1-code, p1-cursor, p1-define, p1-gameover,
-; p1-kempston, p1-room x5, rzx-p1- x32).
+; Witness: L1 56514 (c1, p1-code, p1-cursor, p1-define, p1-gameover,
+; p1-kempston, p1-poke41241, p1-rooms238, p1-shots, p1-speedup, p1-room x5,
+; rzx-p1- x32).
 CopyFrame:
   LD (Temp1),DE
   LD (Temp2),HL
@@ -185,8 +190,9 @@ InitDronesLoop:
 ; The multiple weapon (Weapon 3): the drones orbit Rex (DroneOrbit $A6CB) and
 ; are drawn (DronePicture $A74B), one per power level
 ;
-; Witness: L1 16841 (c1, p1-code, p1-cursor, p1-define, p1-gameover,
-; p1-kempston, p1-room x5, rzx-p1- x32).
+; Witness: L1 18528 (c1, p1-code, p1-cursor, p1-define, p1-gameover,
+; p1-kempston, p1-poke41241, p1-rooms238, p1-shots, p1-speedup, p1-room x5,
+; rzx-p1- x32).
 UpdateDrones:
   LD A,(Dying)
   OR A
@@ -296,9 +302,10 @@ DronePicture:
 ; Roll an 8-byte character at HL one line up (the first line goes last): the
 ; conveyor characters
 ;
-; Witness: L1 16878 (c1, p1-code, p1-cursor, p1-define, p1-gameover,
-; p1-kempston, p1-room x5, rzx-p1- x32).
-RollCharRight:
+; Witness: L1 18559 (c1, p1-code, p1-cursor, p1-define, p1-gameover,
+; p1-kempston, p1-poke41241, p1-rooms238, p1-shots, p1-speedup, p1-room x5,
+; rzx-p1- x32).
+RollCharUp:
   PUSH HL
   LD C,(HL)
   LD E,L
@@ -318,9 +325,10 @@ RollRightLoop:
 
 ; Roll an 8-byte character at HL one line down
 ;
-; Witness: L1 33757 (c1, p1-code, p1-cursor, p1-define, p1-gameover,
-; p1-kempston, p1-room x5, rzx-p1- x32).
-RollCharLeft:
+; Witness: L1 37119 (c1, p1-code, p1-cursor, p1-define, p1-gameover,
+; p1-kempston, p1-poke41241, p1-rooms238, p1-shots, p1-speedup, p1-room x5,
+; rzx-p1- x32).
+RollCharDown:
   PUSH HL
   LD DE,$0007
   ADD HL,DE

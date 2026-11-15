@@ -1,19 +1,22 @@
 ; --------------------------------------------------------------------------------------------------------------------
 ; rexmove.asm: Rex's moves: walk, jump, fall, the edges of the room
 ;
-; Rex walks a pixel a pass (two with SPEED UP, SpeedUp $A072), jumps by JumpSteps $D0D8 (up 6, 6, 4, 4, 2, 2, 0, ...)
-; and falls faster each step (FallSpeed $A0BC) until a cell that is not passable (PassCells $D09A) or a ladder.
-; Walking off the left or right edge, jumping off the top or falling off the bottom changes the room by the exits;
-; falling with no exit below kills him.
+; Rex walks 2 pixels a pass (4 with SPEED UP, SpeedUp $A072: WalkRightKey / WalkLeftKey set RexSpeed), jumps by
+; JumpSteps $D0D8 (up 6, 6, 4, 4, 2, 2, 0, ...) and falls faster each step (FallSpeed $A0BC) until a cell that is not
+; passable (PassCells $D09A) or a ladder. Walking off the left or right edge, jumping off the top or falling off the
+; bottom changes the room by the exits; falling with no exit below kills him.
 ; --------------------------------------------------------------------------------------------------------------------
 
   ORG $CFCC
 
 ; The SPEED UP bonus: count down; the speed back at the end
 ;
-; Known only from the code: no recording runs it.
+; SpeedUpPhase $A073 starts at 200 (PrizeSpeedUp) and counts the walking
+; passes; at 0 SpeedUp ends. Run by p1-speedup: the roulette stopped on SPEED
+; UP by fire, SpeedUpPhase 200 at frame 1740 down to 0 at 2740, RexSpeed 4 / -4
+; meanwhile, 2 / -2 after.
 ;
-; Witness: L1 0 ().
+; Witness: L1 200 (p1-speedup).
 SpeedUpTick:
   LD A,(SpeedUpPhase)
   DEC A
@@ -26,18 +29,20 @@ SpeedUpTick:
 
 ; Right: facing right, the speed set
 ;
-; Witness: L1 4189 (c1, p1-code, p1-cursor, p1-define, p1-kempston, p1-room x5,
-; rzx-p1- x32).
+; Witness: L1 4760 (c1, p1-code, p1-cursor, p1-define, p1-kempston,
+; p1-rooms238, p1-speedup, p1-room x5, rzx-p1- x32).
 WalkRightKey:
   LD A,(SpeedUp)
   OR A
-  JP Z,WalkRightFast
-  LD A,$04
+  JP Z,WalkRightNormal
+WalkRightFast:
+  LD A,$04                ; SPEED UP (SpeedUp not 0): 4 pixels, SpeedUpTick
+                          ; counts down
   LD (RexSpeed),A
   CALL SpeedUpTick
   JP WalkRightFacing
-WalkRightFast:
-  LD A,$02                ; SPEED UP: 2 pixels
+WalkRightNormal:
+  LD A,$02                ; the normal walk: 2 pixels
   LD (RexSpeed),A
 WalkRightFacing:
   XOR A
@@ -46,17 +51,19 @@ WalkRightFacing:
 
 ; Left: facing left, the speed set
 ;
-; Witness: L1 4126 (c1, p1-code, p1-cursor, p1-room x5, rzx-p1- x32).
+; Witness: L1 4294 (c1, p1-code, p1-cursor, p1-speedup, p1-room x5, rzx-p1-
+; x32).
 WalkLeftKey:
   LD A,(SpeedUp)
   OR A
-  JP Z,WalkLeftFast
-  LD A,$FC
+  JP Z,WalkLeftNormal
+WalkLeftFast:
+  LD A,$FC                ; SPEED UP: 4 pixels left, SpeedUpTick counts down
   LD (RexSpeed),A
   CALL SpeedUpTick
   JP WalkLeftFacing
-WalkLeftFast:
-  LD A,$FE
+WalkLeftNormal:
+  LD A,$FE                ; the normal walk: 2 pixels left
   LD (RexSpeed),A
 WalkLeftFacing:
   LD A,$01
@@ -66,8 +73,9 @@ WalkLeftFacing:
 ; Move Rex by RexSpeed in his facing unless a solid cell; at the edges ExitLeft
 ; / ExitRight
 ;
-; Witness: L1 14989 (c1, p1-code, p1-cursor, p1-define, p1-gameover,
-; p1-kempston, p1-room x5, rzx-p1- x32).
+; Witness: L1 16675 (c1, p1-code, p1-cursor, p1-define, p1-gameover,
+; p1-kempston, p1-poke41241, p1-rooms238, p1-shots, p1-speedup, p1-room x5,
+; rzx-p1- x32).
 RexWalk:
   LD A,(RexFacing)
   OR A
@@ -116,8 +124,9 @@ RexWalkLeftCell:
 
 ; Z if the cell at HL is solid (SolidCells' first 4: 2, 4, 5, 6)
 ;
-; Witness: L1 102606 (c1, p1-code, p1-cursor, p1-define, p1-gameover,
-; p1-kempston, p1-room x5, rzx-p1- x32).
+; Witness: L1 111966 (c1, p1-code, p1-cursor, p1-define, p1-gameover,
+; p1-kempston, p1-poke41241, p1-rooms238, p1-shots, p1-speedup, p1-room x5,
+; rzx-p1- x32).
 IsSolid:
   PUSH HL
   PUSH BC
@@ -127,8 +136,9 @@ IsSolid:
 
 ; Z if A is one of B values at DE
 ;
-; Witness: L1 239855 (c1, p1-code, p1-cursor, p1-define, p1-gameover,
-; p1-kempston, p1-room x5, rzx-p1- x32).
+; Witness: L1 262708 (c1, p1-code, p1-cursor, p1-define, p1-gameover,
+; p1-kempston, p1-poke41241, p1-rooms238, p1-shots, p1-speedup, p1-room x5,
+; rzx-p1- x32).
 InList:
   LD C,$FF
 InListLoop:
@@ -152,8 +162,9 @@ InListFound:
 ; Z if the cell at HL lets a body or a bullet through: empty (0) or one of
 ; $0E-$12 (PassCells $D09A)
 ;
-; Witness: L1 137249 (c1, p1-code, p1-cursor, p1-define, p1-gameover,
-; p1-kempston, p1-room x5, rzx-p1- x32).
+; Witness: L1 150742 (c1, p1-code, p1-cursor, p1-define, p1-gameover,
+; p1-kempston, p1-poke41241, p1-rooms238, p1-shots, p1-speedup, p1-room x5,
+; rzx-p1- x32).
 IsPassable:
   PUSH HL
   PUSH BC
@@ -169,9 +180,9 @@ SolidCells:
 PassCells:
   DEFB $00,$0E,$0F,$10,$11,$12 ; the cells a body or a bullet passes
 
-; Rex at the left edge: to the room RoomLeft $A090 at X $E0
+; Rex at the left edge: to the room RoomLeft $A090 at X $E8
 ;
-; Witness: L1 82 (p1-room14, p1-room26, p1-room27, rzx-p1- x12).
+; Witness: L1 161 (p1-speedup, p1-room14, p1-room26, p1-room27, rzx-p1- x12).
 ExitLeft:
   LD A,(RoomLeft)
   OR A
@@ -182,10 +193,10 @@ ExitLeft:
   POP BC
   JP ChangeRoom
 
-; Rex at the right edge: to the room RoomRight $A08D at X $10
+; Rex at the right edge: to the room RoomRight $A08D at X $08
 ;
-; Witness: L1 293 (c1, p1-cursor, p1-kempston, p1-room14, p1-room24, p1-room26,
-; p1-room27, rzx-p1- x14).
+; Witness: L1 298 (c1, p1-cursor, p1-kempston, p1-rooms238, p1-speedup,
+; p1-room14, p1-room24, p1-room26, p1-room27, rzx-p1- x14).
 ExitRight:
   LD A,(RoomRight)
   OR A
@@ -198,8 +209,8 @@ ExitRight:
 
 ; Up: a jump if Rex stands (not jumping or falling)
 ;
-; Witness: L1 1997 (c1, p1-code, p1-cursor, p1-define, p1-kempston, p1-room14,
-; p1-room26, p1-room27, p1-room30, rzx-p1- x32).
+; Witness: L1 2080 (c1, p1-code, p1-cursor, p1-define, p1-kempston, p1-speedup,
+; p1-room14, p1-room26, p1-room27, p1-room30, rzx-p1- x32).
 StartJump:
   LD A,(FallSpeed)
   OR A
@@ -221,8 +232,9 @@ JumpSteps:
 ; One step of the jump: up by JumpSteps unless a solid cell above; off the top
 ; ExitUp
 ;
-; Witness: L1 15000 (c1, p1-code, p1-cursor, p1-define, p1-gameover,
-; p1-kempston, p1-room x5, rzx-p1- x32).
+; Witness: L1 16687 (c1, p1-code, p1-cursor, p1-define, p1-gameover,
+; p1-kempston, p1-poke41241, p1-rooms238, p1-shots, p1-speedup, p1-room x5,
+; rzx-p1- x32).
 RexJump:
   LD A,(Jumping)
   OR A
@@ -253,8 +265,8 @@ RexJump:
 
 ; Stop the jump and the fall; Rex on the cell's top
 ;
-; Witness: L1 138 (p1-code, p1-room14, p1-room26, p1-room27, p1-room30, rzx-p1-
-; x12).
+; Witness: L1 150 (p1-code, p1-speedup, p1-room14, p1-room26, p1-room27,
+; p1-room30, rzx-p1- x12).
 Land:
   LD A,$02
   LD (FallSpeed),A
@@ -270,7 +282,7 @@ Land:
 
 ; Rex off the top: to the room RoomUp $A08E at the bottom
 ;
-; Witness: L1 15 (p1-code, p1-room30, rzx-p1- x10).
+; Witness: L1 17 (p1-code, p1-speedup, p1-room30, rzx-p1- x10).
 ExitTop:
   XOR A
   LD (Jumping),A
@@ -290,8 +302,9 @@ ExitTop:
 ; Rex falls when no floor is under him; off the bottom to RoomDown $A08F, or
 ; death with no exit
 ;
-; Witness: L1 14989 (c1, p1-code, p1-cursor, p1-define, p1-gameover,
-; p1-kempston, p1-room x5, rzx-p1- x32).
+; Witness: L1 16675 (c1, p1-code, p1-cursor, p1-define, p1-gameover,
+; p1-kempston, p1-poke41241, p1-rooms238, p1-shots, p1-speedup, p1-room x5,
+; rzx-p1- x32).
 RexFall:
   LD A,(Jumping)
   OR A

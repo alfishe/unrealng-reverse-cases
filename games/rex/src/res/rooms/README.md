@@ -9,14 +9,14 @@
 One file a part, three resources in it:
 
 - `room N`, then `exits U R D L $ADDR`: the room numbers up, right, down and left (0 none, 99 the end of the part:
-  part 1's room 34 up, the CODE panel), and the address of the room's object list (the exits' word);
+  part 1's room 31 up, the CODE panel), and the address of the room's object list (the exits' word);
 - seven rows of ten block codes (hex): the map, 30 x 21 characters (blocks/, chars/);
 - `list $ADDR ROOMS: ...` at the end: each object list at its address with the rooms that use it, split for the eye
   into the header | each `[kind][X][Y]` | `$FF`. The header is [spawn sides: bit 7 top, 6 right, 5 left][spawn period]
   [spawn kind] in REX 1 and REX 2 and [sides][period] in DEMO (ReadExits); up to 16 objects. The lists must follow
   each other with no gap (the build checks each address).
 
-REX 1 has rooms 0-34 (room 0 is never entered: its exit right leads to room 1, where the game starts). REX 2 has
+REX 1 has rooms 0-34. Room 0 is the start room (NewGame sets Room 0); no exit leads back to it, because exit 0 means none (ReadExits, ExitLeft and the others test `OR A : RET Z`). REX 2 has
 26 rooms in its exits table and 35 map slots: the slots 26-34 are a leftover, REX 1's rooms 26-34 with 44 to 69 of
 each room's 70 codes the same, reached by no exit. DEMO has rooms 0-5; TutorRooms plays 4, 1, 0, 2.
 

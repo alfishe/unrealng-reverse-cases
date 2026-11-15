@@ -327,7 +327,7 @@ ScanKeyBit:
   LD D,A
 ScanKeyShift:
   RRCA
-  JP NC,ScanKeyNextRow
+  JP NC,ScanKeyFound
   INC E
   DJNZ ScanKeyShift
   POP BC
@@ -337,15 +337,15 @@ ScanKeyShift:
   ADD IY,DE
   DJNZ ScanKeyBit
   JP ScanKeyRow
-ScanKeyNextRow:
-  POP BC
-  PUSH DE
 ScanKeyFound:
-  LD C,(IX+$00)
+  POP BC                  ; a key down: its port and bit kept
+  PUSH DE
+ScanKeyRelease:
+  LD C,(IX+$00)           ; wait until the key is let go
   LD B,(IX+$01)
   IN A,(C)
   CP D
-  JP Z,ScanKeyFound
+  JP Z,ScanKeyRelease
   LD A,E
   SLA A
   SLA A
@@ -401,7 +401,7 @@ CellIndexMap:
   DEFB $E0,$06,$01,$FD,$E5,$CD,$87,$A4,$FD,$E1,$CD,$9B,$DD,$FD,$77,$04 ; grid
   DEFB $CD,$B1,$DF,$21,$0F,$50,$CD,$BD,$DF,$CD,$12,$A6,$AF,$32,$47,$A2 ; cell's
   DEFB $DD,$21,$4C,$E0,$C3,$93,$DF                                     ; index into
-                                                                       ; AnimCellList
+                                                                       ; SceneryCellList
                                                                        ; (DrawRoom),
                                                                        ; over this
                                                                        ; code and
@@ -519,7 +519,7 @@ MenuSpace:
   DEFB $00,$00,$00,$00,$00,$00,$00
 RoomGridLeft:
   DEFB $00                ; the grid's origin one byte left (CellPointer with A
-                          ; = 1)
+                          ; = 0, Rex facing right)
 RoomGrid:
   DEFB $00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00 ; the room
   DEFB $00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00 ; grid's

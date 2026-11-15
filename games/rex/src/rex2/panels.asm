@@ -745,12 +745,12 @@ DebugHook:
   DEFB $00,$00
   DEFB $00,$00
   DEFB $00,$00
-AnimCellList:
-  DEFB $00,$00            ; the room's animated cells: 4 bytes each (cell,
-  DEFB $00,$00            ; character, picture pointer), filled by DrawRoom
-  DEFB $00,$00
-  DEFB $00,$00
-  DEFB $00,$00
+SceneryCellList:
+  DEFB $00,$00            ; every visible scenery cell of the room, 4 bytes
+  DEFB $00,$00            ; each (buffer address, picture address), filled by
+  DEFB $00,$00            ; DrawRoom and redrawn each pass by DrawAnimCells
+  DEFB $00,$00            ; (364 cells in room 0: past entry 255 the one-byte
+  DEFB $00,$00            ; index of CellIndexMap wraps)
   DEFB $00,$00
   DEFB $00,$00
   DEFB $00,$00

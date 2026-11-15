@@ -250,15 +250,15 @@ ReturnToStack:
   LD SP,(Temp2)
   RET
 
-; Draw the room's animated cells (AnimCellList $D962) into the back buffer, the
-; stack as the list pointer
+; Draw every scenery cell of the room (SceneryCellList $D962) into the back
+; buffer, the stack as the list pointer
 ;
 ; As REX 1's DrawAnimCells $B33E (src/game/render.asm).
 ;
 ; Witness: L1 10902 (c2, p2-room20, rzx-p2- x21).
 DrawAnimCells:
   LD (Temp2),SP
-  LD SP,AnimCellList
+  LD SP,SceneryCellList
 DrawAnimCellLoop:
   POP HL                  ; each listed cell
   POP DE

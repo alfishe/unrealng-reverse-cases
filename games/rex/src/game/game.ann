@@ -17,6 +17,10 @@
 
 @inline $D8C0 6
 
+@alias ShadowOffset $E4FF-$5800 ; the distance from a screen attribute to its cell in the attribute shadow $E4FF (PowerBar adds it); not an address in the sprites
+@isub $B97A LD DE,ShadowOffset
+@isub $BA26 LD DE,ShadowOffset
+
 @module graphics ; The graphics and the level data: the font, the characters, the blocks, the room maps and the sprites
 @about The tape loads the code block at $6018 (CLEAR 24599). Its first bytes are a leftover of the authors' development link (DevLinkStub $6018-$607D); the menu copies the object explosion picture from $E336 over it (192 bytes, $6018-$60D7), so the stub never runs. Then come the tables every room is built from: the 64-character font (Font $60E0, characters 32-95, found at $5FE0 + 8 x code), a flag byte for each of the 256 room characters (CharFlags $62E0: the cell types Rex and the objects test), the 256 characters (CharGraphics $63E0, 8 bytes each), their attributes (CharAttrs $6BE0), the 256 blocks of 3 x 3 characters (BlockDefs $6CE0) and the rooms (RoomMaps $75E0, 7 rows of 10 blocks, 70 bytes a room).
 @about The sprites follow from $7F72 to $9479. Each is stored pre-shifted: a frame list of 8 offsets (ShiftFrames $AE5D and the like, one an X & 7) picks the copy for the pixel phase, and DrawSprite $B258 ORs it into the back buffer, width and height from $A0B1 / $A0B2. Their owners are named at each label.
@@ -34,16 +38,16 @@ $62E0 b CharFlags 16 ; The cell type of each of the 256 room characters: what Re
 $63E0 b CharGraphics 8 ; The 256 room characters, 8 bytes each
 > Drawn by DrawRoomCell $C7E2 into the back buffer; the animated ones are rotated in place each pass by the main loop ($6438, $64B0, $64C0, $6600, $6758, $67D8, $6858, $6BA8, $6BB0, $6BC0).
 @res chars/rex1.bin
-$6438 AnimChar11 ; character 11, rolled by RollCharLeft $A7BA every pass
-$64B0 AnimChar26 ; character 26, rolled by RollCharRight $A7A9
-$64C0 AnimChar28 ; character 28, rolled by RollCharLeft
-$6600 AnimChar68 ; character 68: frames from AnimFramesB $AEAD (AnimateCells $A55E)
+$6438 AnimChar11 ; character 11, rolled one line up by RollCharUp $A7A9 every pass (MainAnimate)
+$64B0 AnimChar26 ; character 26, rolled one line down by RollCharDown $A7BA
+$64C0 AnimChar28 ; character 28, rolled one line down by RollCharDown
+$6600 AnimChar68 ; character 68: frames from FramesList1 $A60C (AnimateCells $A55E, CopyFrame)
 $6758 AnimChar111 ; character 111: each line rotated right (RRC) by the main loop
-$67D8 AnimChar127 ; character 127: frames from AnimFramesA $AE8D
+$67D8 AnimChar127 ; character 127: frames from FramesList4 $A61A (CopyFrame)
 $6858 AnimChar143 ; character 143: each line rotated left (RLC)
 $6BA8 AnimChar249 ; character 249: frames from FramesList3 $A5F4 (AnimateRestart $A5B7)
 $6BB0 AnimChar250 ; character 250: frames from FramesList2 $A602 (AnimateCells2 $A5A7)
-$6BC0 AnimChar252 ; character 252: frames from FramesList4 $A61A
+$6BC0 AnimChar252 ; characters 252-255: AnimFramesA $AE8D / AnimFramesB $AEAD on alternate passes (AnimateCells)
 $6BE0 b CharAttrs 16 ; The attribute of each of the 256 room characters
 @res chars/rex1.bin
 $6CE0 b BlockDefs 9 ; The 256 blocks: 3 x 3 character codes each, rows top to bottom
@@ -73,7 +77,6 @@ $8B5A SpriteScanner2 ; kind 8's start picture (InitKind8 $CCBF)
 $8C0A SpriteHudIcons ; the HUD's weapon and bomb icons (DrawHudIcons $A1E2)
 $8CAA SpriteHudIcons2 ; the HUD's weapon icons, second row (DrawWeaponIcon $A21F)
 $8CEA SpriteBonusPod ; the bonus pod (kind $7D, $BE39)
-$8CFF SpritePowerBar ; the power bar cells (PowerBar $B96B)
 $8D0A SpriteBonusPod2 ; ($BE43)
 $8D8A SpriteKind12 ; kind 12 (ramming pod)
 $8E4A SpriteKind11 ; kind 11 (launcher)
@@ -103,7 +106,7 @@ $9498 c NewGame ; A new game: every variable reset, the HUD, PHASE ONE and PRESS
 @about Then the keys: down toggles the shield, ENTER restarts (NewGame), H pauses, SPACE fires a smart bomb; while Rex lives, fire, right, left and up (jump), then the jump, the fall and the walk, and the cells under Rex. Last the animated characters are rotated. There is no frame wait: interrupts stay off, so the game's speed is its work.
 $9583 c MainLoop ; Build the room, then one pass of play a frame (MainPass)
 > The room change (ChangeRoom $C95A) and the life lost jump back here. The keys are the readers $A477-$A4DB: down ShieldToggle $967F, fire FireWeapon $B372, right WalkRight $CFDA, left WalkLeft $CFF6, up StartJump $D0C2; ENTER ($BFFE bit 0) NewGame, H ($BFFE bit 4) Pause $A4E7, SPACE ($7FFE bit 0) SmartBomb $9751. ENTER, H and SPACE are fixed keys; the other five follow the menu's choice (DEFINE, Kempston, Cursor, Sinclair).
-> Witness: L1 73 (c1, p1-cursor, p1-define, p1-kempston, p1-room x5, rzx-p1- x30).
+> Witness: L1 79 (c1, p1-cursor, p1-define, p1-kempston, p1-rooms238, p1-speedup, p1-room x5, rzx-p1- x30).
 $9586 MainPass ; one pass: bullets, drones, Rex, objects, sound, draw, collisions, HUD
 $95D2 MainKeys ; the fixed keys: ENTER, H, SPACE
 $9617 MainRexKeys ; while Rex lives: fire
@@ -119,13 +122,13 @@ $967B c SoundOffReturn ; CALL SoundSilence: RET; no instruction reaches it (left
 @about Rex is a sprite at RexX $A0B6 / RexY $A0B7 (pixels; the play area starts at line 24) facing RexFacing $A0BB. The down key toggles the shield (ShieldOn $A049), which drains ShieldEnergy $A04D while on and stops shots and enemies (EnemyBulletsHitRex $D1B9, ObjectHitsRex $D215 test it). RexState runs the death animation while Dying $A055 is set; DrawRex picks his picture: walking, jumping or shielded.
 $967F c ShieldToggle ; The down key: switch the shield on or off (once a press, only with energy left)
 > Called by MainPass when ReadDown $A4DB sees the key. ShieldKeyLatch $A04C keeps it to one toggle a press; the shield goes on only while ShieldEnergy $A04D is not 0 and Rex is not materialising ($A060).
-> Witness: L1 293 (c1, p1-code, p1-cursor, p1-define, p1-kempston, p1-room30, rzx-p1- x32).
+> Witness: L1 299 (c1, p1-code, p1-cursor, p1-define, p1-kempston, p1-speedup, p1-room30, rzx-p1- x32).
 $969B c RexState ; Rex's death animation while he is present and Dying $A055 is set, else nothing
 > Returns while Rex is not present (RexPresent $A05D 0: he is materialising); then, if Dying $A055, JP DeathAnimation $9AC5. Called every pass.
-> Witness: L1 16841 (c1, p1-code, p1-cursor, p1-define, p1-gameover, p1-kempston, p1-room x5, rzx-p1- x32).
+> Witness: L1 18528 (c1, p1-code, p1-cursor, p1-define, p1-gameover, p1-kempston, p1-poke41241, p1-rooms238, p1-shots, p1-speedup, p1-room x5, rzx-p1- x32).
 $96A7 c DrawRex ; Draw Rex: his picture (walking or jumping); with the shield on, its hum, its drain and the bubble
 > Sets SpriteX $A0AF, SpriteY $A0B0, the size 3 x 16 ($A0B1, $A0B2) and the mirror flag by RexFacing; the picture through ShiftFrames $AE5D: SpriteRexJump $8F62 while jumping or falling (and not on a lift, OnLift $A07A), else SpriteRex $80F2. DrawSprite $B258. With ShieldOn $A049: the hum SfxShield (its period SfxShieldTone = $04B0 + Random & $1F) started when channel 2 is free, ShieldDrain $99D3 with L = 1, then the bubble SpriteShield $88F2, 4 x 21, through ShiftFrames2 $AE65, 4 pixels left of Rex (8 right of that facing left) and 2 lines up.
-> Witness: L1 15408 (c1, p1-code, p1-cursor, p1-define, p1-gameover, p1-kempston, p1-room x5, rzx-p1- x32).
+> Witness: L1 17095 (c1, p1-code, p1-cursor, p1-define, p1-gameover, p1-kempston, p1-poke41241, p1-rooms238, p1-shots, p1-speedup, p1-room x5, rzx-p1- x32).
 $96DC DrawRexWalk ; on a lift or on the ground: the walking picture
 $96E2 DrawRexFacing ; the mirror flag by facing
 $970A DrawRexShield ; the shield on: drain it, the bubble's X
@@ -137,39 +140,39 @@ $9749 c SmartBombFree ; A smart bomb that costs nothing (Rex's death): unless on
 > Witness: L1 42 (c1, p1-cursor, p1-define, p1-gameover, p1-kempston, p1-room24, p1-room30, rzx-p1- x18).
 $9751 c SmartBomb ; SPACE: one smart bomb from Bombs $A06C (none left, nothing), the HUD updated, the room's objects marked
 > Witness: L1 15 (c1, p1-cursor, rzx-p1- x5).
-$9763 c SmartBombMark ; Mark every object of the room for the smart bomb; SmartBombOn $A030 = 1, 16 steps
+$9763 c SmartBombMark ; Start the smart bomb: SmartBombOn $A030 = 1, 16 steps, SmartBombPtr $5E66; every enemy bullet stopped (the live byte +6 of the 20 records from $5D22 set to 2)
 > Writes the object pointers from ObjectTable $5E66 (ObjectCount $A092 records of 24 bytes) into the list at $5D28.
 > Witness: L1 50 (c1, p1-cursor, p1-define, p1-gameover, p1-kempston, p1-room24, p1-room30, rzx-p1- x22).
 $9778 MarkLoop ; the next object
 $977F MarkNext ; the next record
 $9786 c SmartBombStep ; One step of a running smart bomb: kill the next marked object, flash the screen
 > Every pass; returns at once while SmartBombOn $A030 is 0. Each step KillObject $981F on the next object and CopyAttrs $C8BF; after 16 steps the bomb ends.
-> Witness: L1 16814 (c1, p1-code, p1-cursor, p1-define, p1-gameover, p1-kempston, p1-room x5, rzx-p1- x32).
+> Witness: L1 18501 (c1, p1-code, p1-cursor, p1-define, p1-gameover, p1-kempston, p1-poke41241, p1-rooms238, p1-shots, p1-speedup, p1-room x5, rzx-p1- x32).
 $97A9 BombNextObject ; the next marked object
 
 @module entry
-$97C3 c WaitFireOrAttract ; Wait for fire for up to 50000 polls; none starts the attract mode
-> Silences the sound, waits for fire up (ReadFire $A477), then counts BC = 50000 ($C350) down reading fire. Fire: AnyKey $A093 = 1, SoundReset $D5AE, RET. Timeout: JP Attract $A915 (the return address is dropped: the attract mode never returns).
+$97C3 c WaitFireOrAttract ; Wait up to 50000 polls for fire: Temp1 = 1 after a press and its release, 0 when the count runs out
+> Temp1 = 0 and the sound silenced, then DE = 50000 counted down, a DJNZ delay of 30 before each poll of ReadFire $A477. A press: wait for its release (WaitFireRelease), SoundReset $D5AE, Temp1 = 1, RET. The count out: RET with Temp1 0 and the sound still off. NewGame's second call tests Temp1 and jumps to Attract $A915 on 0; the weapon panel (WeaponPanel) ignores it.
 > Witness: L1 20 (c1, p1-code, p1-cursor, p1-define, p1-kempston, rzx-p1- x5).
 $97CD WaitFireCount ; the 50000-poll count
 $97D3 WaitFireDelay ; a short delay between polls
 $97DB WaitFireRelease ; fire must be released first
 @isub $97CA LD DE,50000
-$97EA c WaitFire ; Wait for fire up, then for fire (no timeout): after the game over and the CODE panel
+$97EA c WaitFire ; Wait for fire, then for its release (no timeout): after the game over and the CODE panel
 > Witness: L1 3 (c1, p1-code, p1-gameover).
-$97ED WaitFireUp ; wait for fire up
-$97F3 WaitFireDown ; wait for fire
+$97ED WaitFireDown ; wait for fire pressed
+$97F3 WaitFireUp ; wait for fire released
 
 @module score ; The kills, the score, the lives and the shield figure
 @about A killed object (KillObject $981F, from a bullet, the smart bomb, a collision or a fall) scores KillScores $994E[kind] x 100 points (AddScore $9A27), turns into the points sign (ShowPoints $97FD) and, for the six kinds that are people (0 foot man, 4, 5, 6, 7 and 12), adds one to HumansKilled $A089 and leaves the human's picture (KillHuman $98A7). The game over panel prints HumansKilled. Every 100 x 100 points (ExtraLifeCount $A076) gives a life, at most 9.
 $97FD c ShowPoints ; Turn the object at IX into the points sign: picture SpritePoints $81B2, kind $FF (no collisions), at rest
 > Witness: L1 5 (rzx-p1-24000).
 $981F c KillObject ; Kill the object at IX: its score, the kill flash in the HUD, the explosion sound; people add to HumansKilled
-> The kill flash: KillFlashPtr $A039 = the attribute address of the object's column in the HUD row (bright), timer $A03C. Kind 14 (the mine) scores nothing. Kinds 3 and 4 also end the scripted spawn (EndScriptSpawn $9968). Then KillHuman $98A7 or ShowPoints $97FD.
-> Witness: L1 1009 (c1, p1-code, p1-cursor, p1-define, p1-gameover, p1-kempston, p1-room24, p1-room30, rzx-p1- x32).
+> The kill flash: KillFlashPtr $A039 = the next cell of the HUD's combo row ($5843 + 3 a hit, at rest $E9FF), timer $A03C. Kind 14 (the mine) scores nothing. Kind 5 also ends the scripted spawn (EndScriptSpawn $9968). Then KillHuman $98A7 or ShowPoints $97FD.
+> Witness: L1 1016 (c1, p1-code, p1-cursor, p1-define, p1-gameover, p1-kempston, p1-shots, p1-speedup, p1-room24, p1-room30, rzx-p1- x32).
 $98A7 c KillHuman ; A person killed: HumansKilled $A089 + 1, the human's picture SpriteHuman $92F2, the panel of a kill
 > For kinds 0, 7, 6, 12, 4 and 5. The object becomes a falling body; FindFreeObject $D858 and the human's initialiser ($CDA2, $CE67) set up its picture.
-> Witness: L1 152 (c1, p1-room24, p1-room30, rzx-p1- x27).
+> Witness: L1 155 (c1, p1-speedup, p1-room24, p1-room30, rzx-p1- x27).
 $98AF KillScore ; the kind's score
 $990A KillHumanMake ; the human's body in a free record
 $990E KillHumanSet ; its picture and size
@@ -177,32 +180,32 @@ $9928 KillHumanLive ; alive
 $994E b KillScores 16 ; The score of each object kind, in hundreds: kind 0 1, 1 2, 2 1, 3 1, 4 2, 5 3, 6 1, 7 1, 8 6, 9 6, 10 5, 11 8, 12 3, 13 10, 14 0, 15 2, then 1s
 > The menu's roll call agrees: FOOT MAN 100, STOMPER 200, SCANNER 600, SWING GUN 600, SHOOTERS 500, LAUNCHER 800, RAMMING POD 300, MINE LAYER 1000, MINE no score, BLOB 200.
 @res tables/rex1-kill-scores.bin
-$9968 c EndScriptSpawn ; Stop the scripted spawn: the objects of kinds 3 and 4 lose their timer ($9989)
+$9968 c EndScriptSpawn ; Stop the scripted spawn (KillObject on a kind 5): the objects of kinds 3 and 4 lose their timer ($9989)
 > Witness: L1 2 (rzx-p1-04000, rzx-p1-12000).
 $9972 EndSpawnLoop ; each object
 $9989 c StopObjectSpawn ; IY's object: timer (IY+$10) = 0, ScriptSpawnStep $A045 = 0
 > Witness: L1 10 (rzx-p1-04000, rzx-p1-12000).
 $9992 c KillFlashFade ; Fade the HUD's kill flash one step (attribute row $5840, 30 cells), then mark the latest kill's two cells white
-> Witness: L1 16926 (c1, p1-code, p1-cursor, p1-define, p1-gameover, p1-kempston, p1-room x5, rzx-p1- x32).
+> Witness: L1 18613 (c1, p1-code, p1-cursor, p1-define, p1-gameover, p1-kempston, p1-poke41241, p1-rooms238, p1-shots, p1-speedup, p1-room x5, rzx-p1- x32).
 $9997 FadeHudLoop ; each HUD attribute one step darker
 $999F FadeHudNext ; the next cell
 $99AB c ShowScore ; Print Score $A03E in the HUD
-> Witness: L1 299 (c1, p1-code, p1-room30, rzx-p1- x31).
+> Witness: L1 306 (c1, p1-code, p1-shots, p1-speedup, p1-room30, rzx-p1- x31).
 $99BB c ShowLives ; Print Lives $A063 in the HUD
 > Witness: L1 53 (c1, p1-code, p1-cursor, p1-define, p1-kempston, p1-room24, p1-room30, rzx-p1- x26).
 $99CE c ShieldDrainFast ; ShieldDrainRate $A04E - 1: a hit on the shield drains it faster (EnemyBulletsHitRex, ObjectHitsRex)
-> Witness: L1 80 (p1-room30, rzx-p1- x21).
+> Witness: L1 82 (p1-speedup, p1-room30, rzx-p1- x21).
 $99D3 c ShieldDrain ; With the shield on, count ShieldDrainRate down; at 0 one unit of ShieldEnergy $A04D goes; none left switches the shield off
-> Witness: L1 2693 (p1-code, p1-cursor, p1-define, p1-kempston, p1-room26, p1-room30, rzx-p1- x29).
+> Witness: L1 2797 (p1-code, p1-cursor, p1-define, p1-kempston, p1-speedup, p1-room26, p1-room30, rzx-p1- x29).
 $99EF ShieldOff ; no energy: the shield off
 $99FA c ShowShield ; Print ShieldEnergy $A04D in the HUD and colour it: red when low, green otherwise ($E513, $E514 in the attribute shadow)
-> Witness: L1 1442 (c1, p1-code, p1-cursor, p1-define, p1-kempston, p1-room x5, rzx-p1- x32).
+> Witness: L1 1498 (c1, p1-code, p1-cursor, p1-define, p1-kempston, p1-rooms238, p1-speedup, p1-room x5, rzx-p1- x32).
 $9A27 c AddScore ; Score $A03E + HL; every 100 points ExtraLifeCount $A076 counts, at 100 an extra life (ExtraLife $D5A0)
 > Not while Rex is dying. Jumps to ShowScore.
-> Witness: L1 442 (c1, p1-code, p1-cursor, p1-define, p1-gameover, p1-kempston, p1-room24, p1-room30, rzx-p1- x32).
+> Witness: L1 449 (c1, p1-code, p1-cursor, p1-define, p1-gameover, p1-kempston, p1-shots, p1-speedup, p1-room24, p1-room30, rzx-p1- x32).
 $9A49 AddScoreShow ; print it
-$9A4C c FadeStep ; The screen flash of a smart bomb or a bonus: the attribute shadow faded through FadeSteps $9AB3 by FadeStepIndex $A042
-> Witness: L1 16926 (c1, p1-code, p1-cursor, p1-define, p1-gameover, p1-kempston, p1-room x5, rzx-p1- x32).
+$9A4C c FadeStep ; The HUD flash of a power pod (only TakePowerPod starts it): rows 0-1 ($5800-$583F) stepped through FadeSteps $9AB3 by FadeStepIndex $A042
+> Witness: L1 18613 (c1, p1-code, p1-cursor, p1-define, p1-gameover, p1-kempston, p1-poke41241, p1-rooms238, p1-shots, p1-speedup, p1-room x5, rzx-p1- x32).
 $9A65 FadeStepAttr ; the step's attribute change
 $9A70 FadeCells ; each cell of the shadow
 $9A81 FadeNextCell ; the next cell
@@ -212,8 +215,8 @@ $9AA7 FadeDecrease ; a darker step
 $9AB3 b FadeSteps 18 ; The fade's 17 steps: 1 six times, 0 five times, 2 six times, then $FF (the end)
 
 @module death ; Rex's death, the life lost, the game over, the restart points, the sparkle
-@about RexDies starts a death (not while Immune $A071): Dying $A055 = 1, a free smart bomb, the shield gone, the sparkle out (Dematerialise $9D47). DeathAnimation runs 50 passes ($A056) of shards flying from Rex (DeathShards $9C05), then LifeLost: one life less, Rex back at the last restart point (RestartX $A059, RestartY $A05A, RestartRoom $A05B, saved by the restart markers, SaveRestart $9C3B) with a materialise sparkle, and the room built again. No life left: the game over panel (GAME OVER, HI-SCORE, HUMANS KILLED) and a new game.
-@about The sparkle ($9D0F-$9F0B) is Rex appearing or vanishing as random dots: SparkleUpdate fills a 3 x 3 cell patch of the attribute shadow by random masks, SparkleDraw draws the particles (SparkleMasks $9F0C, SparkleDots $9F14).
+@about RexDies starts a death (not while Immune $A071): Dying $A055 = 1, a free smart bomb, LosePower, ShieldEnergy back to 99, the shield off, the sparkle out (Dematerialise $9D47). DeathAnimation runs 50 passes ($A056) of shards flying from Rex (DeathShards $9C05), then LifeLost: one life less, Rex back at the last restart point (RestartX $A059, RestartY $A05A, RestartRoom $A05B, saved by the restart markers, SaveRestart $9C3B) with a materialise sparkle, and the room built again. No life left: the game over panel (GAME OVER, HI-SCORE, HUMANS KILLED) and a new game.
+@about The sparkle ($9D0F-$9F0B) is Rex appearing or vanishing as random dots: SparkleUpdate works on Rex's 3-byte-wide box in the back buffer (SparkleBufferOrigin $E89F): SparkleCount lines cleared, the next 3 lines ANDed with random bytes, SparkleDraw draws the particles (SparkleMasks $9F0C, SparkleDots $9F14).
 $9AC5 c DeathAnimation ; One pass of Rex's death: the shards, the death picture, the sound; at the end LifeLost
 > The shards follow DeathShards $9C05 (DeathShardPtr $A057 moved by ShardNext $9BC8 / ShardBack $9BD1); SpriteRexDeath $816A; the attribute fade SaveCellAttrs $CF9B / RestoreCellAttrs $CF6E. After DeathTimer $A056 passes: JP LifeLost $9C76.
 > Witness: L1 758 (c1, p1-cursor, p1-define, p1-gameover, p1-kempston, p1-room24, p1-room30, rzx-p1- x18).
@@ -225,9 +228,9 @@ $9BC8 c ShardNext ; DeathShardPtr $A057 + 2
 > Witness: L1 4 (c1, p1-gameover).
 $9BD1 c ShardBack ; DeathShardPtr $A057 - 2: the shards step back
 > Witness: L1 4 (c1, p1-gameover).
-$9BDA c RexDies ; Rex is killed (unless Immune $A071 or already dying): Dying, the timer 50, the free smart bomb, the shield off, dematerialise
+$9BDA c RexDies ; Rex is killed (unless Immune $A071): the sweep reset (ResetSweep), Dying, the timer 50, the free smart bomb, LosePower, ShieldEnergy refilled to 99, dematerialise (which switches the shield off)
 > Called by the collisions (EnemyBulletsHitRex $D1B9, ObjectHitsRex $D215), the fall (RexFall $D14D) and the HUD sweep's end (HudSweep $A0C4). Resets the sweep (ResetSweep $A133).
-> Witness: L1 42 (c1, p1-cursor, p1-define, p1-gameover, p1-kempston, p1-room24, p1-room30, rzx-p1- x18).
+> Witness: L1 221 (c1, p1-cursor, p1-define, p1-gameover, p1-kempston, p1-poke41241, p1-rooms238, p1-speedup, p1-room24, p1-room30, rzx-p1- x18).
 $9C05 b DeathShards 6 ; The shards' 9 paths: X, Y step pairs, read by DeathAnimation
 $9C3B c SaveRestart ; A restart marker (cell $07) under Rex: save Rex's place, room and facing as the restart point, a chime
 > Only when RexX & 7 = 2 (Rex centred on the marker) and the point differs from the saved one. The marker character is animated by AnimateRestart $A5B7.
@@ -246,8 +249,8 @@ $9D1F c Materialise ; Rex appears: RexPresent 0, the sparkle in (SparkleOn $A05F
 $9D33 SparkleClear ; clear the dots, the sound
 $9D47 c Dematerialise ; Rex vanishes: the shield off, the sparkle out (Vanishing $A062 = 1), the sound $D7BA
 > Witness: L1 40 (c1, p1-cursor, p1-define, p1-kempston, p1-room24, p1-room30, rzx-p1- x18).
-$9D71 c SparkleUpdate ; One step of the sparkle: random masks over Rex's 3 x 3 cells in the attribute shadow; at the end the sparkle stops
-> Witness: L1 16839 (c1, p1-code, p1-cursor, p1-define, p1-gameover, p1-kempston, p1-room x5, rzx-p1- x32).
+$9D71 c SparkleUpdate ; One step of the sparkle in Rex's 3-byte box of the back buffer (SparkleBufferOrigin $E89F): SparkleCount lines cleared, the next 3 ANDed with random bytes; at the end the sparkle stops
+> Witness: L1 18526 (c1, p1-code, p1-cursor, p1-define, p1-gameover, p1-kempston, p1-poke41241, p1-rooms238, p1-shots, p1-speedup, p1-room x5, rzx-p1- x32).
 $9DA5 SparkleRow ; each row of the 3 x 3 patch
 $9DA8 SparkleCell ; each cell: a random mask
 $9DC9 c SparkleDeadCode ; LD A,100: LD ($A061),A after a JP: no instruction reaches it (leftover)
@@ -264,7 +267,7 @@ $9DF6 c FillCells3 ; Write C into a 3 x 3 patch at HL (32-byte rows)
 > Witness: L1 1381 (c1, p1-cursor, p1-define, p1-kempston, p1-room24, p1-room30, rzx-p1- x21).
 $9DF9 FillCellsRow ; each row
 $9E02 c SparkleDraw ; Draw the sparkle's particles round Rex (SparkleMasks $9F0C, SparkleDots $9F14); at the end of a dematerialise LifeLost
-> Witness: L1 16839 (c1, p1-code, p1-cursor, p1-define, p1-gameover, p1-kempston, p1-room x5, rzx-p1- x32).
+> Witness: L1 18526 (c1, p1-code, p1-cursor, p1-define, p1-gameover, p1-kempston, p1-poke41241, p1-rooms238, p1-shots, p1-speedup, p1-room x5, rzx-p1- x32).
 $9E0D SparkleDotLoop ; each particle
 $9E52 SparkleDotNext ; the next particle
 $9E6D SparkleDots2 ; the dots' timer
@@ -280,7 +283,7 @@ $9F14 SparkleDots ; the sparkle's particles: Y, X offset pairs
 @module cells ; The cells under Rex: ladders, restart markers, the shield recharger, the weapon stations
 @about CellsUnderRex reads the grid under Rex's feet (RexCellPtr $A019 + $60, + $61). A ladder or lift ($12) stops his fall and lifts him; a restart marker ($07) saves the restart point; the recharger ($08) gives a unit of shield a pass; the four weapon stations ($0D double fire, $0A laser, $0B multiple, $0C spray) give the weapon and show its panel once.
 $9F5F c CellsUnderRex ; Test the cells under Rex and act: lift, restart marker, recharger, weapon stations
-> Witness: L1 14952 (c1, p1-code, p1-cursor, p1-define, p1-gameover, p1-kempston, p1-room x5, rzx-p1- x32).
+> Witness: L1 16633 (c1, p1-code, p1-cursor, p1-define, p1-gameover, p1-kempston, p1-poke41241, p1-rooms238, p1-shots, p1-speedup, p1-room x5, rzx-p1- x32).
 $9F97 OnLadder ; a ladder or lift: no fall, Rex lifted
 $9FB2 StationDouble ; the double fire station
 $9FC1 StationLaser ; the laser station
@@ -288,7 +291,7 @@ $9FD0 StationMultiple ; the multiple station
 $9FDF c StationSpray ; The spray station ($0C): GiveSpray $A79D and the SPRAY panel (SprayText $ABCA)
 > Witness: L1 69 (rzx-p1- x5).
 $9FEE c Recharge ; The recharger ($08): ShieldEnergy + 1 up to 99 while the shield is off, the recharge sound
-> Witness: L1 956 (rzx-p1- x18).
+> Witness: L1 990 (p1-speedup, rzx-p1- x18).
 
 @module variables ; The game's variables
 @about All the state of a game sits in $A012-$A0C3, zero in the tape image: NewGame $9498 sets each before play. The temporaries $A093-$A09A are shared by many routines (a routine's input or scratch); the sprite parameters $A0AF-$A0B2 are DrawSprite's inputs.
@@ -314,16 +317,16 @@ $A012 b Variables 16 ; The variables $A012-$A0C3 (178 bytes, all zero on the tap
 @var $A02F SmartBombSteps ; the smart bomb's steps left (16)
 @var $A030 SmartBombOn ; a smart bomb runs
 @var $A031 SmartBombPtr 2 ; the next object to kill
-@var $A033 SpriteMirror ; DrawSprite: bit 7 draws the picture mirrored (MirrorTable $AD5D)
+@var $A033 SpriteMirror ; DrawSprite: bit 7 a fixed frame, SpritePicture, the frame list ignored (mirroring, through MirrorTable $AD5D, is A not 0 at the call)
 @var $A034 SpritePicture 2 ; DrawSprite: the picture
 @var $A038 ObjectHitCount ; the hits an object took
-@var $A039 KillFlashPtr 2 ; the HUD attribute address of the latest kill
+@var $A039 KillFlashPtr 2 ; the combo row cell lit by the latest hit ($5843 + 3 a hit; at rest $E9FF)
 @var $A03B ComboCount ; kills in a row
 @var $A03C ComboTimer ; passes left for the next kill to count in the row
 @var $A03E Score 2 ; the score, in hundreds
 @var $A040 RapidShotsOn ; the 100 RAPID SHOTS bonus runs
 @var $A041 RapidShotsLeft ; its shots left
-@var $A042 FadeStepIndex ; the screen flash's step (FadeStep $9A4C)
+@var $A042 FadeStepIndex ; the power pod's HUD flash step, $FF at rest (FadeStep $9A4C)
 @var $A043 SpawnTimer ; passes to the next random spawn
 @var $A044 SpawnPeriod ; the room's spawn period
 @var $A045 ScriptSpawnStep ; the scripted spawn's step (ScriptSpawn $A9F4), 0 off
@@ -333,7 +336,7 @@ $A012 b Variables 16 ; The variables $A012-$A0C3 (178 bytes, all zero on the tap
 @var $A04C ShieldKeyLatch ; the down key is held (one toggle a press)
 @var $A04D ShieldEnergy ; the shield's energy, 0-99
 @var $A04E ShieldDrainRate ; passes for one unit of energy while the shield is on
-@var $A04F WeaponIcon ; the HUD weapon icon shown
+@var $A04F WeaponIcon ; the gun held (always 1): BestWeapon reads it as entry 0 before HasDoubleFire .. HasSpray
 @var $A050 HasDoubleFire ; the weapons held: double fire
 @var $A051 HasLaser ; laser
 @var $A052 HasMultiple ; multiple (drones)
@@ -356,7 +359,7 @@ $A012 b Variables 16 ; The variables $A012-$A0C3 (178 bytes, all zero on the tap
 @var $A064 SweepPos ; the HUD sweep's position
 @var $A065 SweepCount ; sweeps made at this width
 @var $A066 SweepDir ; the sweep's direction
-@var $A067 SweepWidth ; the sweep's width (8 at the start; at 1 Rex dies)
+@var $A067 SweepWidth ; the sweep's width (12 after ResetSweep; Rex dies when it would drop to 0)
 @var $A068 FireDelay ; passes between shots
 @var $A069 AnimCount1 ; animation counters of the cells
 @var $A06A AnimCount2
@@ -416,16 +419,16 @@ $A012 b Variables 16 ; The variables $A012-$A0C3 (178 bytes, all zero on the tap
 
 @module hud ; The HUD, the text printer, the numbers
 @about The HUD fills the top three character rows: the score, lives, shield, weapons, bombs and the power bar. Texts are records [attribute][column][line in pixels] then characters ending with 0; PrintText prints one, PrintBoxed prints B records in a framed box (PanelBox $CE7B). Numbers go through ToDigits (five decimal digits, Digits $A0A6) and PrintDigits.
-@about HudSweep is the bar that runs along the HUD's attribute row $582B: every 5 sweeps it gets narrower ($A067); reaching 1 would kill Rex. The room changes reset it (ResetSweep $A133), and no recording lets it run down.
-$A0C4 c HudSweep ; One step of the HUD sweep; every 5 sweeps narrower; width 1 kills Rex
-> Witness: L1 16927 (c1, p1-code, p1-cursor, p1-define, p1-gameover, p1-kempston, p1-room x5, rzx-p1- x32).
+@about HudSweep is the bar that runs along the HUD's attribute row $582B: every 5 round trips it gets one narrower (SweepWidth $A067, 12 after ResetSweep $A133); when the width would drop to 0 ($A119-$A11B: DEC A, OR A, JP Z,RexDies) Rex dies. Room changes and deaths (RexDies) reset it. It stands still while the power pod's HUD flash runs (FadeStepIndex not $FF). p1-gameover lets it run down from width 2. The magazines' infinite-time POKE 43545,0 ($AA19) hits data in this release (ShardPaths); POKE 41241,0 (the DEC A at $A119 made a NOP) keeps the width.
+$A0C4 c HudSweep ; One step of the HUD sweep (none while FadeStepIndex is not $FF); every 5 round trips one narrower; the width dropping to 0 kills Rex
+> Witness: L1 18614 (c1, p1-code, p1-cursor, p1-define, p1-gameover, p1-kempston, p1-poke41241, p1-rooms238, p1-shots, p1-speedup, p1-room x5, rzx-p1- x32).
 $A0DF SweepMove ; the sweep's step by its direction
 $A0E9 SweepLeft ; moving left
 $A0FB SweepRight ; moving right
 $A133 c ResetSweep ; The sweep back to full width (BuildRoom, RexDies)
-> Witness: L1 116 (c1, p1-cursor, p1-define, p1-gameover, p1-kempston, p1-room x5, rzx-p1- x32).
+> Witness: L1 122 (c1, p1-cursor, p1-define, p1-gameover, p1-kempston, p1-rooms238, p1-speedup, p1-room x5, rzx-p1- x32).
 $A13E c PrintBoxed ; Print B text records from IX in a framed box (attribute A, box from the first record), the panel sound
-> Witness: L1 41 (c1, p1-code, p1-cursor, p1-define, p1-gameover, p1-kempston, rzx-p1- x7).
+> Witness: L1 52 (c1, menu-rollcall, p1-code, p1-cursor, p1-define, p1-gameover, p1-kempston, p1-speedup, rzx-p1- x7).
 $A146 BoxedRecord ; each record
 $A150 BoxedSize ; the box's size from the records
 $A160 BoxedDraw ; the box
@@ -454,37 +457,37 @@ $A239 c NextWeaponIcon ; The next weapon icon two columns on
 $A24C b HudTexts 16 ; The HUD's texts: a row of "#", the figures 0000000:99:3, the icon row ("]\ ^\ _\ @\ ..." are the HUD's own characters)
 @res texts/rex1-hud.bin
 $A28A c BufferToScreen ; Copy the back buffer's 168 play lines to the screen through ScreenLines $AC0D (the stack as the pointer)
-> Witness: L1 17005 (c1, p1-code, p1-cursor, p1-define, p1-gameover, p1-kempston, p1-room x5, rzx-p1- x32).
+> Witness: L1 18698 (c1, p1-code, p1-cursor, p1-define, p1-gameover, p1-kempston, p1-poke41241, p1-rooms238, p1-shots, p1-speedup, p1-room x5, rzx-p1- x32).
 $A297 BufferLine ; each line: 16 words through the stack
 $A2DF c PrintTextHL ; Print the text record at HL (PrintText)
-> Witness: L1 121 (c1, p1-code, p1-cursor, p1-define, p1-gameover, p1-kempston, rzx-p1- x7).
-$A2E9 c PrintChar ; Print character A at column Temp2, line Temp1 (pixels) from Font $60E0 through ScreenLineTable $ABDD
-> Witness: L1 1674 (c1, p1-code, p1-cursor, p1-define, p1-gameover, p1-kempston, rzx-p1- x7).
+> Witness: L1 142 (c1, menu-rollcall, p1-code, p1-cursor, p1-define, p1-gameover, p1-kempston, p1-speedup, rzx-p1- x7).
+$A2E9 c PrintChar ; Print character A at column Temp2, line Temp3 (pixels) from Font $60E0 through ScreenLineTable $ABDD
+> Witness: L1 1949 (c1, menu-rollcall, p1-code, p1-cursor, p1-define, p1-gameover, p1-kempston, p1-speedup, rzx-p1- x7).
 $A307 c PrintText ; Print a text record: [attribute][column][line] characters, 0 ends; the attributes set
-> Witness: L1 128 (c1, p1-code, p1-cursor, p1-define, p1-gameover, p1-kempston, rzx-p1- x7).
+> Witness: L1 152 (c1, menu-rollcall, p1-code, p1-cursor, p1-define, p1-gameover, p1-kempston, p1-speedup, rzx-p1- x7).
 $A31E PrintTextChar ; each character
-$A321 PrintTextAttr ; the attributes
+$A321 PrintTextLine ; each of the character's 8 lines; the attribute after them
 $A359 PrintTextNext ; the next character
 $A367 PrintTextEnd ; the end
 $A368 b UnusedRandom 13 ; Leftover: LD HL,($A0A1): INC HL: LD A,H: AND $3F: LD H,A: LD A,(HL): LD ($A0A1),HL: RET, a random routine nothing calls
 > Known only from the code: the bytes are a routine that walks RandomSeed through the ROM's first 16 K (the ROM as noise), Random $A375's older form.
 $A375 c Random ; A = a random byte: the byte at RandomSeed $A0A1 (walking $0000-$3FFF, the ROM) plus R
-> Witness: L1 52974 (c1, p1-code, p1-cursor, p1-define, p1-gameover, p1-kempston, p1-room x5, rzx-p1- x32).
+> Witness: L1 56999 (c1, p1-code, p1-cursor, p1-define, p1-gameover, p1-kempston, p1-poke41241, p1-rooms238, p1-shots, p1-speedup, p1-room x5, rzx-p1- x32).
 $A388 c Random2 ; A = a random byte from RandomSeed2 $A0A3 and R
-> Witness: L1 11497 (c1, p1-cursor, p1-define, p1-gameover, p1-kempston, p1-room14, p1-room24, p1-room26, p1-room30, rzx-p1- x29).
+> Witness: L1 14250 (c1, p1-cursor, p1-define, p1-gameover, p1-kempston, p1-poke41241, p1-rooms238, p1-shots, p1-speedup, p1-room14, p1-room24, p1-room26, p1-room30, rzx-p1- x29).
 $A38F Random2Loop ; 8 shifts
 $A3AE c ClearScreen ; Clear the screen's bitmap and attributes
 > Witness: L1 9 (c1, p1-code, p1-cursor, p1-define, p1-kempston, rzx-p1-00000, rzx-p1-64000).
 $A3C8 c PrintDigits ; Print B digits of Digits $A0A6 at HL on the screen
-> Witness: L1 1798 (c1, p1-code, p1-cursor, p1-define, p1-gameover, p1-kempston, p1-room x5, rzx-p1- x33).
+> Witness: L1 1861 (c1, p1-code, p1-cursor, p1-define, p1-gameover, p1-kempston, p1-rooms238, p1-shots, p1-speedup, p1-room x5, rzx-p1- x33).
 $A3DE DigitLoop ; each digit
 $A3F9 c ScreenDown ; HL one pixel line down the screen
-> Witness: L1 4452 (c1, p1-code, p1-cursor, p1-define, p1-gameover, p1-kempston, p1-room x5, rzx-p1- x33).
+> Witness: L1 4599 (c1, p1-code, p1-cursor, p1-define, p1-gameover, p1-kempston, p1-rooms238, p1-shots, p1-speedup, p1-room x5, rzx-p1- x33).
 $A3FB ScreenDownCell ; the next character row or third
 $A402 c ToDigits ; HL into five decimal digits at Digits $A0A6 (units first)
-> Witness: L1 1803 (c1, p1-code, p1-cursor, p1-define, p1-gameover, p1-kempston, p1-room x5, rzx-p1- x33).
+> Witness: L1 1866 (c1, p1-code, p1-cursor, p1-define, p1-gameover, p1-kempston, p1-rooms238, p1-shots, p1-speedup, p1-room x5, rzx-p1- x33).
 $A447 c DigitOf ; One digit: count how many times DE goes into HL
-> Witness: L1 9015 (c1, p1-code, p1-cursor, p1-define, p1-gameover, p1-kempston, p1-room x5, rzx-p1- x33).
+> Witness: L1 9330 (c1, p1-code, p1-cursor, p1-define, p1-gameover, p1-kempston, p1-rooms238, p1-shots, p1-speedup, p1-room x5, rzx-p1- x33).
 $A450 DigitCount ; subtract DE while it goes
 $A45A DigitStore ; the digit
 
@@ -493,50 +496,50 @@ $A45A DigitStore ; the digit
 $A46A c SetFire ; Fire reads DefinePort $A0AB, bit DefineBit $A0AD (the operands at $A478, $A481)
 > Witness: L1 5 (c1, p1-cursor, p1-define, p1-kempston, rzx-p1-00000).
 $A477 c ReadFire ; Z = fire pressed (default O, $DFFE bit 1)
-> Witness: L1 3012610 (c1, p1-code, p1-cursor, p1-define, p1-gameover, p1-kempston, p1-room x5, rzx-p1- x33).
+> Witness: L1 3033772 (c1, p1-code, p1-cursor, p1-define, p1-gameover, p1-kempston, p1-poke41241, p1-rooms238, p1-shots, p1-speedup, p1-room x5, rzx-p1- x33).
 $A480 ReadFireBit ; BIT n,A: n written by SetFire
 $A483 c SetLeft ; Left reads DefinePort, DefineBit
 > Witness: L1 5 (c1, p1-cursor, p1-define, p1-kempston, rzx-p1-00000).
 $A490 c ReadLeft ; Z = left pressed (default Q)
-> Witness: L1 15259 (c1, p1-code, p1-cursor, p1-define, p1-gameover, p1-kempston, p1-room x5, rzx-p1- x32).
+> Witness: L1 16946 (c1, p1-code, p1-cursor, p1-define, p1-gameover, p1-kempston, p1-poke41241, p1-rooms238, p1-shots, p1-speedup, p1-room x5, rzx-p1- x32).
 $A499 ReadLeftBit ; BIT n,A: n written by SetLeft
 $A49C c SetRight ; Right reads DefinePort, DefineBit
 > Witness: L1 5 (c1, p1-cursor, p1-define, p1-kempston, rzx-p1-00000).
 $A4A9 c ReadRight ; Z = right pressed (default W)
-> Witness: L1 15289 (c1, p1-code, p1-cursor, p1-define, p1-gameover, p1-kempston, p1-room x5, rzx-p1- x32).
+> Witness: L1 16976 (c1, p1-code, p1-cursor, p1-define, p1-gameover, p1-kempston, p1-poke41241, p1-rooms238, p1-shots, p1-speedup, p1-room x5, rzx-p1- x32).
 $A4B2 ReadRightBit ; BIT n,A: n written by SetRight
 $A4B5 c SetUp ; Up reads DefinePort, DefineBit
 > Witness: L1 5 (c1, p1-cursor, p1-define, p1-kempston, rzx-p1-00000).
 $A4C2 c ReadUp ; Z = up (jump) pressed (default I)
-> Witness: L1 15000 (c1, p1-code, p1-cursor, p1-define, p1-gameover, p1-kempston, p1-room x5, rzx-p1- x32).
+> Witness: L1 16687 (c1, p1-code, p1-cursor, p1-define, p1-gameover, p1-kempston, p1-poke41241, p1-rooms238, p1-shots, p1-speedup, p1-room x5, rzx-p1- x32).
 $A4CB ReadUpBit ; BIT n,A: n written by SetUp
 $A4CE c SetDown ; Down reads DefinePort, DefineBit
 > Witness: L1 5 (c1, p1-cursor, p1-define, p1-kempston, rzx-p1-00000).
 $A4DB c ReadDown ; Z = down (the shield) pressed (default J)
-> Witness: L1 33630 (c1, p1-code, p1-cursor, p1-define, p1-gameover, p1-kempston, p1-room x5, rzx-p1- x32).
+> Witness: L1 37004 (c1, p1-code, p1-cursor, p1-define, p1-gameover, p1-kempston, p1-poke41241, p1-rooms238, p1-shots, p1-speedup, p1-room x5, rzx-p1- x32).
 $A4E4 ReadDownBit ; BIT n,A: n written by SetDown
-$A4E7 c Pause ; H: silence, wait for fire up, then for fire; the sound back
+$A4E7 c Pause ; H: silence; loop while fire is not pressed (ReadFire); the sound back
 > Witness: L1 51872 (c1, p1-cursor).
 $A4F4 c OrChar ; OR the 8 bytes at DE into the buffer at HL (32-byte rows)
-> Witness: L1 22962 (c1, p1-code, p1-cursor, p1-define, p1-gameover, p1-kempston, p1-room24, p1-room30, rzx-p1- x32).
+> Witness: L1 23346 (c1, p1-code, p1-cursor, p1-define, p1-gameover, p1-kempston, p1-poke41241, p1-shots, p1-speedup, p1-room24, p1-room30, rzx-p1- x32).
 $A4F6 OrCharLoop ; each line
 
 @module grid ; The room grid, the animated cells, the drones
 $A503 c CellPointer ; HL = the grid cell of SpriteX/SpriteY ($E19F + 32 x (Y / 8) + X / 8; A = 1 the grid from $E19E)
-> Witness: L1 215029 (c1, p1-code, p1-cursor, p1-define, p1-gameover, p1-kempston, p1-room x5, rzx-p1- x32).
+> Witness: L1 233965 (c1, p1-code, p1-cursor, p1-define, p1-gameover, p1-kempston, p1-poke41241, p1-rooms238, p1-shots, p1-speedup, p1-room x5, rzx-p1- x32).
 $A533 CellPointerAdd ; the column
 $A535 c BufferAddress ; HL = the back buffer address of SpriteX / SpriteY
-> Witness: L1 4771 (c1, p1-code, p1-cursor, p1-define, p1-gameover, p1-kempston, p1-room24, p1-room30, rzx-p1- x32).
+> Witness: L1 4835 (c1, p1-code, p1-cursor, p1-define, p1-gameover, p1-kempston, p1-poke41241, p1-shots, p1-speedup, p1-room24, p1-room30, rzx-p1- x32).
 $A55E c AnimateCells ; Every other pass: the animated characters' next frames (AnimFramesA $AE8D, AnimFramesB $AEAD, the frame lists $A60C, $A61A)
-> Witness: L1 16879 (c1, p1-code, p1-cursor, p1-define, p1-gameover, p1-kempston, p1-room x5, rzx-p1- x32).
+> Witness: L1 18560 (c1, p1-code, p1-cursor, p1-define, p1-gameover, p1-kempston, p1-poke41241, p1-rooms238, p1-shots, p1-speedup, p1-room x5, rzx-p1- x32).
 $A56B AnimFrameB ; character 252's frames
 $A571 AnimFrameCopy ; copy a frame
 $A5A7 c AnimateCells2 ; The frames of character 250 from FramesList2 $A602
-> Witness: L1 16879 (c1, p1-code, p1-cursor, p1-define, p1-gameover, p1-kempston, p1-room x5, rzx-p1- x32).
+> Witness: L1 18560 (c1, p1-code, p1-cursor, p1-define, p1-gameover, p1-kempston, p1-poke41241, p1-rooms238, p1-shots, p1-speedup, p1-room x5, rzx-p1- x32).
 $A5B7 c AnimateRestart ; The restart marker's frames (character 249, FramesList3 $A5F4)
 > Witness: L1 833 (c1, p1-cursor, p1-define, p1-kempston, p1-room24, p1-room30, rzx-p1- x23).
 $A5C4 c CopyFrame ; Copy the frame at HL into the character at DE (8 bytes), from the list position Temp1
-> Witness: L1 51471 (c1, p1-code, p1-cursor, p1-define, p1-gameover, p1-kempston, p1-room x5, rzx-p1- x32).
+> Witness: L1 56514 (c1, p1-code, p1-cursor, p1-define, p1-gameover, p1-kempston, p1-poke41241, p1-rooms238, p1-shots, p1-speedup, p1-room x5, rzx-p1- x32).
 $A5D1 CopyFrameNext ; the list's next frame
 $A5E9 CopyFrameDo ; copy it
 $A5F4 b FramesList3 14 ; The frame lists of the animated characters: restart marker ($A5F4), character 250 ($A602), $A60C, $A61A
@@ -547,7 +550,7 @@ $A628 c InitDrones ; The drones' table at $5E50: 8 records of 3 bytes, the angle
 > Witness: L1 42 (c1, p1-code, p1-cursor, p1-define, p1-kempston, rzx-p1- x19).
 $A62F InitDronesLoop ; each drone
 $A639 c UpdateDrones ; The multiple weapon (Weapon 3): the drones orbit Rex (DroneOrbit $A6CB) and are drawn (DronePicture $A74B), one per power level
-> Witness: L1 16841 (c1, p1-code, p1-cursor, p1-define, p1-gameover, p1-kempston, p1-room x5, rzx-p1- x32).
+> Witness: L1 18528 (c1, p1-code, p1-cursor, p1-define, p1-gameover, p1-kempston, p1-poke41241, p1-rooms238, p1-shots, p1-speedup, p1-room x5, rzx-p1- x32).
 $A653 DroneLoop ; each drone
 $A6A1 DroneDraw ; draw the drones
 $A6C2 DroneNext ; the next drone
@@ -566,25 +569,25 @@ $A79D c GiveSpray ; The spray station: HasSpray $A053 = 1; GiveWeapon: the icons
 $A7A0 GiveWeapon ; the icons and the best weapon
 
 @module grid
-$A7A9 c RollCharRight ; Roll an 8-byte character at HL one line up (the first line goes last): the conveyor characters
-> Witness: L1 16878 (c1, p1-code, p1-cursor, p1-define, p1-gameover, p1-kempston, p1-room x5, rzx-p1- x32).
+$A7A9 c RollCharUp ; Roll an 8-byte character at HL one line up (the first line goes last): the conveyor characters
+> Witness: L1 18559 (c1, p1-code, p1-cursor, p1-define, p1-gameover, p1-kempston, p1-poke41241, p1-rooms238, p1-shots, p1-speedup, p1-room x5, rzx-p1- x32).
 $A7B0 RollRightLoop ; each line
-$A7BA c RollCharLeft ; Roll an 8-byte character at HL one line down
-> Witness: L1 33757 (c1, p1-code, p1-cursor, p1-define, p1-gameover, p1-kempston, p1-room x5, rzx-p1- x32).
+$A7BA c RollCharDown ; Roll an 8-byte character at HL one line down
+> Witness: L1 37119 (c1, p1-code, p1-cursor, p1-define, p1-gameover, p1-kempston, p1-poke41241, p1-rooms238, p1-shots, p1-speedup, p1-room x5, rzx-p1- x32).
 $A7C5 RollLeftLoop ; each line
 
 @module codepanel ; The end of part 1: the access code for part 2
-@about Room exit 99 (the lift out of the complex) ends part 1 at CodePanel. The code is 16 digits that carry the game into part 2: the double fire, the score's five digits, the laser, the lives, the multiple, the score again, the spray, the shield's two digits, the bombs, each written 9 - digit, then a three-digit checksum (the sum of the 13). The panel shows CODE: and the digits, waits for fire and starts a new game.
+@about Room exit 99 (the lift out of the complex) ends part 1 at CodePanel. The code is 16 digits that carry the game into part 2, in the places 0 double fire, 1 score thousands, 2 spray, 3 lives, 4 laser, 5 score hundreds, 6 multiple, 7 score units, 8 shield units, 9 score tens, 10 bombs, 11 shield tens, 12 score ten-thousands, each written 9 - digit; 13-15 the checksum's units, hundreds and tens (the sum of the 13 shown digits). The panel shows CODE: and the digits, waits for fire and starts a new game.
 $A7CE c CodePanel ; The end of part 1: the CODE panel with the access code, then a new game
-> Reached only from ChangeRoom $C95A when the exit leads to room 99. The digits go into CodeText $A884 at the places $A88C-$A89B. No stage 1 recording reached it; p1-code does (room 31's exit to 99, the panel shown, fire, a new game in room 1).
+> Reached only from ChangeRoom $C95A when the exit leads to room 99. The digits go into CodeText $A884 at the places $A88C-$A89B. No stage 1 recording reached it; p1-code does (room 31's exit to 99, the panel shown, fire, a new game in room 0).
 > Witness: L1 1 (p1-code).
 $A84F CodeDigitsLoop ; each digit: 9 - digit, the checksum summed
 $A884 b CodeText 8 ; The CODE panel: [attribute 6][column 6][line $50] "CODE:" and 16 places for the digits, 0
 @res texts/rex1-code.bin
-$A88C CodeDigits ; the 16 places: double fire, score, laser, lives, multiple, ..., the checksum's three
+$A88C CodeDigits ; the 16 places: 0 double fire, 1 score thousands, 2 spray, 3 lives, 4 laser, 5 score hundreds, 6 multiple, 7 score units, 8 shield units, 9 score tens, 10 bombs, 11 shield tens, 12 score ten-thousands, each written 9 - digit; 13-15 the checksum's units, hundreds and tens (the sum of the 13 shown digits)
 $A89D c BuildRoom ; Build the room Room $A0B8: exits and objects, the map drawn, the buffer shown, the room's objects made, the scripted spawn
 > ResetSweep $A133, RoomExits ReadExits $C8EF, DrawRoom $C745, ClearBuffer / DrawAnimCells / BufferToScreen, CopyAttrs $C8BF, MakeObjects $CB52; rooms 2, 3, 4, 6 and 20 start the scripted spawn (StartScriptSpawn $C965); ShowShield.
-> Witness: L1 74 (c1, p1-cursor, p1-define, p1-kempston, p1-room x5, rzx-p1- x30).
+> Witness: L1 80 (c1, p1-cursor, p1-define, p1-kempston, p1-rooms238, p1-speedup, p1-room x5, rzx-p1- x30).
 $A8FD BuildRoomScript ; the scripted spawn
 $A903 BuildRoomShield ; the shield figure
 $A90C b AttractRooms 9 ; The attract mode's rooms: 6, 17, 1, 20, 10, 23, 29, 32, then $FF (again)
@@ -633,8 +636,8 @@ $AE6D ShiftFrames3
 $AE75 ShiftFrames4
 $AE7D ShiftFrames5
 $AE85 ShiftFrames6
-$AE8D AnimFramesA ; the frames of animated character 127: 4 x 8 bytes
-$AEAD AnimFramesB ; the frames of animated character 68: 4 x 8 bytes
+$AE8D AnimFramesA ; characters 252-255 on the passes with PassToggle 0: 4 x 8 bytes
+$AEAD AnimFramesB ; characters 252-255 on the other passes: 4 x 8 bytes
 $AECD b RoomObjectLists 16 ; The rooms' object lists: a header [spawn sides: bit 7 top, 6 right, 5 left][spawn period][spawn kind] (ReadExits $C8EF), then up to 16 records [kind][X][Y] (MakeObjects $CB52), $FF ends
 @res rooms/rex1-objects.bin
 $B133 b RoomExits 6 ; The exits of the rooms 0-34: up, right, down, left (0 none, 99 the end of part 1), then the word of the room's object list
@@ -644,33 +647,33 @@ $B133 b RoomExits 6 ; The exits of the rooms 0-34: up, right, down, left (0 none
 @module render ; The renderer: the back buffer, the sprites, the animated cells
 @about The play area is drawn in a back buffer of 32-byte lines ($E800 + 32 x line; the play's 168 lines are $EB00-$FFFF) and copied to the screen once a pass (BufferToScreen $A28A). ClearBuffer empties it with PUSH; DrawSprite ORs a pre-shifted picture into it (width and height written into its own loop operands), DrawMirrored the same through MirrorTable for a picture facing left.
 $B205 c ClearBuffer ; Clear the back buffer's play lines $EB00-$FFFF with PUSH (the stack from $FFFF down)
-> Witness: L1 16997 (c1, p1-code, p1-cursor, p1-define, p1-gameover, p1-kempston, p1-room x5, rzx-p1- x32).
+> Witness: L1 18688 (c1, p1-code, p1-cursor, p1-define, p1-gameover, p1-kempston, p1-poke41241, p1-rooms238, p1-shots, p1-speedup, p1-room x5, rzx-p1- x32).
 $B211 ClearBufferLoop ; PUSH HL x 16 a line
 $B258 c DrawSprite ; OR a picture into the back buffer: HL its frame list, DE the picture, SpriteX/SpriteY, SpriteWidth/Height (written into the loop at $B2AC, $B2B0); A non-zero draws it mirrored
-> Witness: L1 96311 (c1, p1-code, p1-cursor, p1-define, p1-gameover, p1-kempston, p1-room x5, rzx-p1- x32).
+> Witness: L1 106778 (c1, p1-code, p1-cursor, p1-define, p1-gameover, p1-kempston, p1-poke41241, p1-rooms238, p1-shots, p1-speedup, p1-room x5, rzx-p1- x32).
 $B2AA DrawSpritePlain ; not mirrored
 $B2AB DrawSpriteRows ; LD B,rows: the height written by DrawSprite
 $B2AD DrawSpriteRow ; each line
 $B2AF DrawSpriteBytes ; LD B,bytes: the width written by DrawSprite
 $B2B1 DrawSpriteByte ; each byte: OR into the buffer
 $B2C1 c DrawMirrored ; DrawSprite facing left: the picture's bytes right to left through MirrorTable $AD5D
-> Witness: L1 26040 (c1, p1-code, p1-cursor, p1-gameover, p1-kempston, p1-room x5, rzx-p1- x32).
+> Witness: L1 30331 (c1, p1-code, p1-cursor, p1-gameover, p1-kempston, p1-poke41241, p1-rooms238, p1-shots, p1-speedup, p1-room x5, rzx-p1- x32).
 $B314 DrawMirroredStart
 $B317 DrawMirroredRows ; LD B,rows: written by DrawMirrored
 $B319 DrawMirroredRow ; each line
 $B31B DrawMirroredBytes ; LD B,bytes: written by DrawMirrored
 $B31D DrawMirroredByte ; each byte through MirrorTable
 $B339 c ReturnToStack ; LD SP,(Temp2): RET: DrawAnimCells' exit with the stack it saved
-> Witness: L1 16999 (c1, p1-code, p1-cursor, p1-define, p1-gameover, p1-kempston, p1-room x5, rzx-p1- x32).
-$B33E c DrawAnimCells ; Draw the room's animated cells (AnimCellList $D962) into the back buffer, the stack as the list pointer
-> Witness: L1 17005 (c1, p1-code, p1-cursor, p1-define, p1-gameover, p1-kempston, p1-room x5, rzx-p1- x32).
+> Witness: L1 18691 (c1, p1-code, p1-cursor, p1-define, p1-gameover, p1-kempston, p1-poke41241, p1-rooms238, p1-shots, p1-speedup, p1-room x5, rzx-p1- x32).
+$B33E c DrawAnimCells ; Draw every scenery cell of the room (SceneryCellList $D962) into the back buffer, the stack as the list pointer
+> Witness: L1 18698 (c1, p1-code, p1-cursor, p1-define, p1-gameover, p1-kempston, p1-poke41241, p1-rooms238, p1-shots, p1-speedup, p1-room x5, rzx-p1- x32).
 $B345 DrawAnimCellLoop ; each listed cell
 
 @module weapons ; The weapons: firing, the bullets, the power level
 @about Fire shoots the current Weapon $A013: 0 the gun, 1 double fire (two shots, up and down), 2 laser (one long shot), 3 multiple (Rex's shot plus one from each drone), 4 spray (8 shots fanned by SprayDirections $B436). PowerLevel $A014 (1-6) sets how many shots may be in the air (FindShotSlot) and is used up by firing (PowerDrain $B9EF) and gained by power pods (PowerGain $B98E); at 1 the weapon falls back to the best one held (BestWeapon $B9D7). The power bar in the HUD shows it.
 @about Rex's bullets live in 30 records of 15 bytes at $5B60, the enemies' in 20 at $5D22: [X][Y][grid pointer][flags][dX][dY][live][speed][..][type][count][..]. MoveBullets steps them by type: the gun's bullet, the long laser beam, a spray dot, an enemy shot; a bullet that meets a solid cell stops, and the cells 4, 5 and 6 are damaged (BulletHitsCell $B707).
 $B372 c FireWeapon ; Fire: a shot of the current weapon if a slot is free (once a press, only while Rex is present)
-> Witness: L1 2643 (c1, p1-code, p1-cursor, p1-define, p1-kempston, p1-room x5, rzx-p1- x32).
+> Witness: L1 2704 (c1, p1-code, p1-cursor, p1-define, p1-kempston, p1-shots, p1-speedup, p1-room x5, rzx-p1- x32).
 $B38D FireGun ; the gun
 $B3A6 FireByWeapon ; the shot by weapon
 $B3D3 FireDroneShots ; one shot from each drone
@@ -679,31 +682,31 @@ $B404 FireDroneNext ; the next drone
 $B40C c FireDouble ; Double fire's second shot
 > Witness: L1 67 (p1-room14, rzx-p1-04000, rzx-p1-10000, rzx-p1-12000).
 $B41D c FireLaser ; The laser's beam
-> Witness: L1 180 (p1-room24, rzx-p1- x6).
+> Witness: L1 183 (p1-shots, p1-room24, rzx-p1- x6).
 $B436 b SprayDirections 4 ; The spray's 8 directions: [dX word][dY][..], read by FireSpray and by the mine layer's burst (MineBurst $C03A)
 $B456 c FireSpray ; The spray: 8 shots in the 8 directions of SprayDirections, as many as the power level allows
-> Witness: L1 961 (p1-code, p1-room30, rzx-p1- x17).
+> Witness: L1 1010 (p1-code, p1-shots, p1-speedup, p1-room30, rzx-p1- x17).
 $B46D SprayLoop ; each of the 8 directions
 $B47D SprayShot ; the shot
 $B4D3 c SetShotDirection ; A shot's direction from the record at HL: dX word, dY, its picture
-> Witness: L1 5156 (p1-code, p1-room30, rzx-p1- x16).
+> Witness: L1 5524 (p1-code, p1-speedup, p1-room30, rzx-p1- x16).
 $B4EA c SetShotSpeed ; A shot's speed A into its record (dY x 32 added to the grid step)
-> Witness: L1 8212 (c1, p1-code, p1-cursor, p1-kempston, p1-room26, p1-room27, p1-room30, rzx-p1- x25).
+> Witness: L1 8801 (c1, p1-code, p1-cursor, p1-kempston, p1-shots, p1-speedup, p1-room26, p1-room27, p1-room30, rzx-p1- x25).
 $B506 c FindShotSlot ; IY = a free slot among Rex's bullets (as many as the power level allows for the gun and double fire); none: IY = $03E8
-> Witness: L1 9961 (c1, p1-code, p1-cursor, p1-define, p1-kempston, p1-room x5, rzx-p1- x32).
+> Witness: L1 10408 (c1, p1-code, p1-cursor, p1-define, p1-kempston, p1-shots, p1-speedup, p1-room x5, rzx-p1- x32).
 $B51F SlotsByPower ; power x 4 + 1 slots
 $B528 c FindSlot ; Search E slots from IY for a free one; the shot's sound by weapon (gun $D763, laser $D775, spray $D77E; the enemies' $D76C)
-> Witness: L1 14309 (c1, p1-code, p1-cursor, p1-define, p1-gameover, p1-kempston, p1-room x5, rzx-p1- x32).
+> Witness: L1 15464 (c1, p1-code, p1-cursor, p1-define, p1-gameover, p1-kempston, p1-poke41241, p1-rooms238, p1-shots, p1-speedup, p1-room x5, rzx-p1- x32).
 $B52A FindSlotLoop ; each slot
 $B53D FindSlotFound ; free: the sound
 $B55A c LaserSound ; DE = the laser's sound $D775
-> Witness: L1 973 (p1-room24, rzx-p1- x6).
+> Witness: L1 997 (p1-shots, p1-room24, rzx-p1- x6).
 $B55E c SpraySound ; DE = the spray's sound $D77E
-> Witness: L1 6544 (p1-code, p1-room30, rzx-p1- x17).
-$B562 c EnemyShotSound ; The enemies' shot sound $D76C, if channel 2 is free
-> Witness: L1 4342 (c1, p1-cursor, p1-define, p1-gameover, p1-kempston, p1-room x5, rzx-p1- x32).
+> Witness: L1 6966 (p1-code, p1-shots, p1-speedup, p1-room30, rzx-p1- x17).
+$B562 c EnemyShotSound ; The enemies' shot sound $D76C, if channel C (the third, Channels+$10) is free
+> Witness: L1 5050 (c1, p1-cursor, p1-define, p1-gameover, p1-kempston, p1-poke41241, p1-rooms238, p1-shots, p1-speedup, p1-room x5, rzx-p1- x32).
 $B570 c FindEnemySlot ; IY = a free slot among the enemies' 20 bullets
-> Witness: L1 4348 (c1, p1-cursor, p1-define, p1-gameover, p1-kempston, p1-room x5, rzx-p1- x32).
+> Witness: L1 5056 (c1, p1-cursor, p1-define, p1-gameover, p1-kempston, p1-poke41241, p1-rooms238, p1-shots, p1-speedup, p1-room x5, rzx-p1- x32).
 $B57E c EnemyShotFrom ; An enemy shot from IX's X - 16
 > Witness: L1 16 (rzx-p1-20000, rzx-p1-56000).
 $B586 c EnemyShotFromX ; LD A,(IX+0) then into EnemyShotA: no instruction reaches these 3 bytes (leftover)
@@ -712,71 +715,71 @@ $B586 c EnemyShotFromX ; LD A,(IX+0) then into EnemyShotA: no instruction reache
 $B589 c EnemyShotA ; An enemy shot at X A, speed 15
 > Witness: L1 16 (rzx-p1-20000, rzx-p1-56000).
 $B58E c EnemyShot ; An enemy shot from IX: X Temp1, Y IX+1, speed A, kind EnemyShotKind $A054 (bit 7: an enemy's)
-> Witness: L1 3486 (c1, p1-cursor, p1-define, p1-gameover, p1-kempston, p1-room x5, rzx-p1- x32).
+> Witness: L1 4018 (c1, p1-cursor, p1-define, p1-gameover, p1-kempston, p1-poke41241, p1-rooms238, p1-shots, p1-speedup, p1-room x5, rzx-p1- x32).
 $B5A5 c RexShot ; A shot from Rex: his X, Y and facing, speed 17, type the weapon
-> Witness: L1 6714 (c1, p1-code, p1-cursor, p1-define, p1-kempston, p1-room x5, rzx-p1- x32).
+> Witness: L1 7094 (c1, p1-code, p1-cursor, p1-define, p1-kempston, p1-shots, p1-speedup, p1-room x5, rzx-p1- x32).
 $B5C1 c SetupShot ; Fill the slot at IY: live, type A, Y Temp2 + Temp4, X Temp1 + 16, direction Temp3 (left: dX -1, -8 pixels), the grid pointer
-> Witness: L1 12707 (c1, p1-code, p1-cursor, p1-define, p1-gameover, p1-kempston, p1-room x5, rzx-p1- x32).
+> Witness: L1 13750 (c1, p1-code, p1-cursor, p1-define, p1-gameover, p1-kempston, p1-poke41241, p1-rooms238, p1-shots, p1-speedup, p1-room x5, rzx-p1- x32).
 $B5F7 ShotOneUp ; the shot one line up
 $B5FA ShotDirection ; right: dX +1
 $B623 ShotPointer ; its grid pointer
 $B645 c MoveEnemyBullets ; Move the enemies' 20 bullets
-> Witness: L1 16954 (c1, p1-code, p1-cursor, p1-define, p1-gameover, p1-kempston, p1-room x5, rzx-p1- x32).
+> Witness: L1 18641 (c1, p1-code, p1-cursor, p1-define, p1-gameover, p1-kempston, p1-poke41241, p1-rooms238, p1-shots, p1-speedup, p1-room x5, rzx-p1- x32).
 $B64E c MoveBullets ; Move Rex's 30 bullets (falls into MoveShots)
-> Witness: L1 16842 (c1, p1-code, p1-cursor, p1-define, p1-gameover, p1-kempston, p1-room x5, rzx-p1- x32).
+> Witness: L1 18529 (c1, p1-code, p1-cursor, p1-define, p1-gameover, p1-kempston, p1-poke41241, p1-rooms238, p1-shots, p1-speedup, p1-room x5, rzx-p1- x32).
 $B654 c MoveShots ; Move B bullets from IX: by state (live, hit flash 2 and 3) and type (gun, beam, spray dot, enemy shot, bouncing, drone shot)
-> Witness: L1 844313 (c1, p1-code, p1-cursor, p1-define, p1-gameover, p1-kempston, p1-room x5, rzx-p1- x32).
+> Witness: L1 928663 (c1, p1-code, p1-cursor, p1-define, p1-gameover, p1-kempston, p1-poke41241, p1-rooms238, p1-shots, p1-speedup, p1-room x5, rzx-p1- x32).
 $B692 c StepShot ; Move a bullet one step; off the play area it ends; a damaging cell (4, 5, 6) is hit; a solid cell stops it
-> Witness: L1 84287 (c1, p1-code, p1-cursor, p1-define, p1-gameover, p1-kempston, p1-room x5, rzx-p1- x32).
+> Witness: L1 93235 (c1, p1-code, p1-cursor, p1-define, p1-gameover, p1-kempston, p1-poke41241, p1-rooms238, p1-shots, p1-speedup, p1-room x5, rzx-p1- x32).
 $B6D9 StepShotType ; by type
 $B6F6 c NextShot ; The next bullet record (15 bytes on)
-> Witness: L1 844312 (c1, p1-code, p1-cursor, p1-define, p1-gameover, p1-kempston, p1-room x5, rzx-p1- x32).
+> Witness: L1 928662 (c1, p1-code, p1-cursor, p1-define, p1-gameover, p1-kempston, p1-poke41241, p1-rooms238, p1-shots, p1-speedup, p1-room x5, rzx-p1- x32).
 $B700 c EndShot ; The bullet ends (live = 0)
-> Witness: L1 2795 (c1, p1-code, p1-cursor, p1-define, p1-gameover, p1-kempston, p1-room x5, rzx-p1- x30).
-$B707 c BulletHitsCell ; A bullet hits a cell 4, 5 or 6: the cell's character goes one step on (its animated record in AnimCellList), the room's look changes
+> Witness: L1 3045 (c1, p1-code, p1-cursor, p1-define, p1-gameover, p1-kempston, p1-poke41241, p1-rooms238, p1-shots, p1-speedup, p1-room x5, rzx-p1- x30).
+$B707 c BulletHitsCell ; A bullet hits a cell 4, 5 or 6: the cell's character goes one step on (its animated record in SceneryCellList), the room's look changes
 > Witness: L1 290 (c1, rzx-p1- x7).
 $B764 CellHitDone
 $B794 c ShotStopped ; A bullet meets a wall: a small flash (state 2) unless it is the laser, the hit sound $D787
-> Witness: L1 7903 (c1, p1-code, p1-cursor, p1-define, p1-gameover, p1-kempston, p1-room x5, rzx-p1- x32).
+> Witness: L1 8636 (c1, p1-code, p1-cursor, p1-define, p1-gameover, p1-kempston, p1-poke41241, p1-rooms238, p1-shots, p1-speedup, p1-room x5, rzx-p1- x32).
 $B7BD c ShotFlash1 ; The flash's first frame: a cross of three bytes in the buffer
-> Witness: L1 8456 (c1, p1-code, p1-cursor, p1-define, p1-gameover, p1-kempston, p1-room x5, rzx-p1- x31).
+> Witness: L1 9214 (c1, p1-code, p1-cursor, p1-define, p1-gameover, p1-kempston, p1-poke41241, p1-rooms238, p1-shots, p1-speedup, p1-room x5, rzx-p1- x31).
 $B7D8 c ShotFlash2 ; The flash's second frame, then the bullet ends
-> Witness: L1 8440 (c1, p1-code, p1-cursor, p1-define, p1-gameover, p1-kempston, p1-room x5, rzx-p1- x31).
+> Witness: L1 9196 (c1, p1-code, p1-cursor, p1-define, p1-gameover, p1-kempston, p1-poke41241, p1-rooms238, p1-shots, p1-speedup, p1-room x5, rzx-p1- x31).
 $B7FC c MoveBeam ; The long beam (type 7): its frames from BeamPath $A9AF
-> Witness: L1 3449 (c1, p1-cursor, p1-define, p1-gameover, p1-kempston, p1-room14, p1-room24, p1-room26, p1-room30, rzx-p1- x16).
+> Witness: L1 7517 (c1, p1-cursor, p1-define, p1-gameover, p1-kempston, p1-poke41241, p1-shots, p1-speedup, p1-room14, p1-room24, p1-room26, p1-room30, rzx-p1- x16).
 $B838 BeamFrame ; the beam's frame
 $B84C BeamDraw ; draw it
 $B852 BeamByte
 $B867 c DrawShotDot ; Draw a type 4 bullet: a 4-line dot (Rex's or an enemy's shape)
-> Witness: L1 46274 (c1, p1-code, p1-cursor, p1-kempston, p1-room26, p1-room27, p1-room30, rzx-p1- x25).
+> Witness: L1 49181 (c1, p1-code, p1-cursor, p1-kempston, p1-shots, p1-speedup, p1-room26, p1-room27, p1-room30, rzx-p1- x25).
 $B885 DotEnemy ; an enemy's dot
 $B893 c DrawShotByte ; Draw a gun bullet: one byte by direction and side
-> Witness: L1 23803 (c1, p1-cursor, p1-define, p1-gameover, p1-kempston, p1-room x5, rzx-p1- x32).
+> Witness: L1 25458 (c1, p1-cursor, p1-define, p1-gameover, p1-kempston, p1-poke41241, p1-rooms238, p1-shots, p1-speedup, p1-room x5, rzx-p1- x32).
 $B8A6 ByteRightUp
 $B8AB ByteEnemy ; an enemy's bullet
 $B8B7 ByteEnemyLeft
 $B8BC c MoveSplitShot ; A splitting shot (type 2): every few steps it fires a new shot from where it is
-> Witness: L1 1537 (p1-room24, rzx-p1- x6).
+> Witness: L1 1573 (p1-shots, p1-room24, rzx-p1- x6).
 $B8CE SplitStep
 $B8FE SplitFire
 $B920 c MoveSparkShot ; A spark (type 6): random dots by its count (SparkMasks $B943), it fades out
-> Witness: L1 9224 (p1-room24, rzx-p1- x6).
+> Witness: L1 9506 (p1-shots, p1-room24, rzx-p1- x6).
 $B943 b SparkMasks 8 ; The spark's masks by count: $00, $04, $44, $54, $55, $D5, $DD, $DF, then $FF
 $B96B c PowerBar ; Draw the power bar: its end colour flashes by FadeStepIndex
-> Witness: L1 16927 (c1, p1-code, p1-cursor, p1-define, p1-gameover, p1-kempston, p1-room x5, rzx-p1- x32).
+> Witness: L1 18614 (c1, p1-code, p1-cursor, p1-define, p1-gameover, p1-kempston, p1-poke41241, p1-rooms238, p1-shots, p1-speedup, p1-room x5, rzx-p1- x32).
 $B97E c PowerBarColour ; A = PowerLevel + 2 (the bar's colour)
-> Witness: L1 29628 (c1, p1-code, p1-cursor, p1-define, p1-gameover, p1-kempston, p1-room x5, rzx-p1- x32).
+> Witness: L1 32766 (c1, p1-code, p1-cursor, p1-define, p1-gameover, p1-kempston, p1-poke41241, p1-rooms238, p1-shots, p1-speedup, p1-room x5, rzx-p1- x32).
 $B983 c Fill2x2 ; Write A into a 2 x 2 patch at HL
-> Witness: L1 29648 (c1, p1-code, p1-cursor, p1-define, p1-gameover, p1-kempston, p1-room x5, rzx-p1- x32).
+> Witness: L1 32786 (c1, p1-code, p1-cursor, p1-define, p1-gameover, p1-kempston, p1-poke41241, p1-rooms238, p1-shots, p1-speedup, p1-room x5, rzx-p1- x32).
 $B98E c PowerGain ; A power pod: PowerCount $A018 counts, every few the PowerLevel + 1 up to 6, the bar redrawn, the fire faster
-> Witness: L1 206 (p1-room30, rzx-p1- x27).
+> Witness: L1 212 (p1-speedup, p1-room30, rzx-p1- x27).
 $B9C0 GainRank
 $B9D7 c BestWeapon ; Weapon = the best one held (WeaponRank $A06E), WeaponIcon updated
 > Witness: L1 108 (p1-room24, rzx-p1- x15).
 $B9E1 BestLoop ; each weapon held
 $B9EA BestNext
 $B9EF c PowerDrain ; A shot of a special weapon: PowerCount down; at 0 the PowerLevel - 1, the bar redrawn; at 1 BestWeapon
-> Witness: L1 1957 (c1, p1-code, p1-cursor, p1-define, p1-gameover, p1-kempston, p1-room x5, rzx-p1- x32).
+> Witness: L1 2009 (c1, p1-code, p1-cursor, p1-define, p1-gameover, p1-kempston, p1-shots, p1-speedup, p1-room x5, rzx-p1- x32).
 $BA11 DrainRank
 $BA3D c LosePower ; A death: PowerDrain once
 > Witness: L1 42 (c1, p1-cursor, p1-define, p1-gameover, p1-kempston, p1-room24, p1-room30, rzx-p1- x18).
@@ -785,28 +788,28 @@ $BA49 c ResetPower ; Weapon 0, PowerLevel 1, the bar's pointer, WeaponRank 0
 > Witness: L1 9 (c1, p1-code, p1-cursor, p1-define, p1-kempston, rzx-p1-00000, rzx-p1-64000).
 
 @module objects ; The objects: the enemies, the pods, their moves, their shots, the explosions
-@about A room holds up to 31 objects in records of 24 bytes at ObjectTable $5E66 (ObjectCount $A092): +0 X, +1 Y, +2 direction (0 right), +3 falling, +4/+5 picture (or the swing gun's angle picture), +6 fall speed, +9 kind (bit 7: a variant), +$0A/+$0B frame list, +$0C alive, +$0D/+$0E/+$0F size, +$10 speed, +$11/+$12 timers, +$13, +$14 score, +$15 a pod's extra, +$16/+$17 the picture base. UpdateObjects walks them: draw (DrawObject $BAD0), the kind's own behaviour, then the walk, fall and jump common to the walkers, then the collision with Rex (ObjectHitsRex $D215).
+@about A room's objects are records of 24 bytes at ObjectTable $5E66 (ObjectCount $A092, masked by AND $1F to 31, but no room holds more than 16: room 5; the 16 records reach $5FE5, and the stack's lowest mark $5FE2, in DrawRoomCell before MakeObjects, overlaps their last 4 bytes, harmless because MakeObjects writes them afterwards): +0 X, +1 Y, +2 direction (0 right), +3 falling, +4/+5 picture (or the swing gun's angle picture), +6 fall speed, +9 kind (bit 7: a variant), +$0A/+$0B frame list, +$0C alive, +$0D/+$0E/+$0F size, +$10 speed, +$11/+$12 timers, +$13, +$14 hits left (a bullet that brings it to 1 kills the object; the score comes from KillScores), +$15 a pod's extra, +$16/+$17 the picture base. UpdateObjects walks them: draw (DrawObject $BAD0), the kind's own behaviour, then the walk, fall and jump common to the walkers, then the collision with Rex (ObjectHitsRex $D215).
 @about The kinds (the menu's roll call names ten of them): 0 foot man, 1 stomper, 2-7 walkers and people (4, 5, 6, 7 count as humans), 8 scanner, 9 swing gun (a turret that fires in 8 angles), 10 shooters (two shots at once), 11 launcher, 12 ramming pod, 13 mine layer (drops mines), 14 mine, 15 blob, 16 the big gun; $FE a power pod, $FD a bomb pod, $FC the bonus pod, $FF the points sign. A killed enemy explodes into six shards (BlowUp $BD6B, the border clicks) and may leave a pod.
 $BA5C c UpdateObjects ; Update every object of the room (falls into UpdateObject)
-> Witness: L1 16932 (c1, p1-code, p1-cursor, p1-define, p1-gameover, p1-kempston, p1-room x5, rzx-p1- x32).
+> Witness: L1 18619 (c1, p1-code, p1-cursor, p1-define, p1-gameover, p1-kempston, p1-poke41241, p1-rooms238, p1-shots, p1-speedup, p1-room x5, rzx-p1- x32).
 $BA64 c UpdateObject ; One object at IX: skip a dead one; pick its picture (exploding: $6018); draw it; its behaviour
-> Witness: L1 182219 (c1, p1-code, p1-cursor, p1-define, p1-gameover, p1-kempston, p1-room x5, rzx-p1- x32).
+> Witness: L1 200524 (c1, p1-code, p1-cursor, p1-define, p1-gameover, p1-kempston, p1-poke41241, p1-rooms238, p1-shots, p1-speedup, p1-room x5, rzx-p1- x32).
 $BA86 ObjectExploding ; the explosion picture $6018
 $BA89 ObjectPicture
 $BAA9 ObjectShoot ; a random shot
 $BAB1 ObjectShootSlot
 $BAC9 ObjectShootDo
 $BAD0 c DrawObject ; Draw the object at IX (SpriteX/Y, size, mirror, picture, frame list) and dispatch: exploding, ramming turn, shooting kinds
-> Witness: L1 77347 (c1, p1-code, p1-cursor, p1-define, p1-gameover, p1-kempston, p1-room x5, rzx-p1- x32).
+> Witness: L1 86025 (c1, p1-code, p1-cursor, p1-define, p1-gameover, p1-kempston, p1-poke41241, p1-rooms238, p1-shots, p1-speedup, p1-room x5, rzx-p1- x32).
 $BB12 DrawObjectPlain
 $BB16 DrawObjectMirror
 $BB19 DrawObjectDo
 $BB39 c ObjectBehaviour ; By kind: the power pod's frames, the swing gun, the shooters, the launcher, the big gun; else walk, fall, jump, the grid cell and the walk kinds' moves
-> Witness: L1 73519 (c1, p1-code, p1-cursor, p1-define, p1-gameover, p1-kempston, p1-room x5, rzx-p1- x32).
+> Witness: L1 82133 (c1, p1-code, p1-cursor, p1-define, p1-gameover, p1-kempston, p1-poke41241, p1-rooms238, p1-shots, p1-speedup, p1-room x5, rzx-p1- x32).
 $BB66 c ObjectCollide ; ObjectHitsRex for the object at IX
-> Witness: L1 73516 (c1, p1-code, p1-cursor, p1-define, p1-gameover, p1-kempston, p1-room x5, rzx-p1- x32).
+> Witness: L1 82130 (c1, p1-code, p1-cursor, p1-define, p1-gameover, p1-kempston, p1-poke41241, p1-rooms238, p1-shots, p1-speedup, p1-room x5, rzx-p1- x32).
 $BB69 c NextObject ; The next object record (24 bytes on), until all are done
-> Witness: L1 182217 (c1, p1-code, p1-cursor, p1-define, p1-gameover, p1-kempston, p1-room x5, rzx-p1- x32).
+> Witness: L1 200522 (c1, p1-code, p1-cursor, p1-define, p1-gameover, p1-kempston, p1-poke41241, p1-rooms238, p1-shots, p1-speedup, p1-room x5, rzx-p1- x32).
 $BB74 c BigGun ; Kind 16: hangs above line $90; at random fires shots and drops a mine (DropMine $C1F4)
 > Witness: L1 814 (rzx-p1-22000, rzx-p1-24000).
 $BBA5 BigGunMove
@@ -815,42 +818,42 @@ $BBDB BigGunBelow ; below line $90
 $BBE5 BigGunUp
 $BBFA BigGunDown
 $BC0F c ShootForward ; A walker's random shot forward (1 in 16)
-> Witness: L1 507 (c1, rzx-p1-04000, rzx-p1-06000, rzx-p1-08000, rzx-p1-12000).
+> Witness: L1 580 (c1, p1-rooms238, rzx-p1-04000, rzx-p1-06000, rzx-p1-08000, rzx-p1-12000).
 $BC30 c ShootBoth ; A random pair of shots, one each way
-> Witness: L1 444 (c1, rzx-p1- x5).
+> Witness: L1 445 (c1, p1-rooms238, rzx-p1- x5).
 $BC65 c LauncherFire ; Kind 11, the launcher: every few passes a shot that climbs (type $87)
-> Witness: L1 2885 (c1, p1-cursor, p1-define, p1-gameover, p1-kempston, p1-room14, p1-room24, p1-room26, p1-room30, rzx-p1- x16).
+> Witness: L1 5588 (c1, p1-cursor, p1-define, p1-gameover, p1-kempston, p1-poke41241, p1-shots, p1-speedup, p1-room14, p1-room24, p1-room26, p1-room30, rzx-p1- x16).
 $BC92 c ShootersFire ; Kind 10, the shooters: every few passes two shots, right and left
-> Witness: L1 3386 (c1, p1-room14, p1-room24, p1-room26, p1-room30, rzx-p1- x17).
+> Witness: L1 5066 (c1, p1-rooms238, p1-speedup, p1-room14, p1-room24, p1-room26, p1-room30, rzx-p1- x17).
 $BCC6 c ShootFromObject ; A shot from IX at X A, Y IX+1, speed 15
-> Witness: L1 178 (c1, p1-room14, p1-room24, p1-room26, p1-room30, rzx-p1- x13).
+> Witness: L1 288 (c1, p1-rooms238, p1-speedup, p1-room14, p1-room24, p1-room26, p1-room30, rzx-p1- x13).
 $BCDD c SwingGun ; Kind 9, the swing gun: its angle picture (SwingGunFrames $BECB), at random a shot in its angle's direction
-> Witness: L1 9826 (c1, p1-cursor, p1-kempston, p1-room26, p1-room27, p1-room30, rzx-p1- x22).
+> Witness: L1 10296 (c1, p1-cursor, p1-kempston, p1-rooms238, p1-speedup, p1-room26, p1-room27, p1-room30, rzx-p1- x22).
 $BD02 SwingGunFire
 $BD2A SwingGunTurn
 $BD44 c RamTurn ; The ramming pod's turn: the turning pictures, then kind 7 again
-> Witness: L1 382 (p1-room30, rzx-p1- x18).
+> Witness: L1 394 (p1-speedup, p1-room30, rzx-p1- x18).
 $BD5E RamTurnCount
 $BD6B c BlowUp ; An object explodes: the six shards drawn (DrawShard), the attribute flash; at the end it leaves a pod or the points
-> Witness: L1 3827 (c1, p1-code, p1-cursor, p1-define, p1-gameover, p1-kempston, p1-room24, p1-room30, rzx-p1- x32).
+> Witness: L1 3891 (c1, p1-code, p1-cursor, p1-define, p1-gameover, p1-kempston, p1-poke41241, p1-shots, p1-speedup, p1-room24, p1-room30, rzx-p1- x32).
 $BE2E BlowUpEnd ; the explosion over
 $BE35 BlowUpBombPod ; leaves a bomb pod
 $BE3F BlowUpBonusPod ; leaves the bonus pod
 $BE46 BlowUpPodPicture
 $BE53 b BigGunShots 8 ; The big gun's shot timings: $10, $20, $22, $19, $1D, $31, $34, $FF
 $BE5B c SwingShotUpLeft ; A swing gun shot up and left
-> Witness: L1 508 (p1-room26, p1-room27, p1-room30, rzx-p1- x17).
+> Witness: L1 557 (p1-speedup, p1-room26, p1-room27, p1-room30, rzx-p1- x17).
 $BE75 c SwingShotLeft ; A swing gun shot left
-> Witness: L1 899 (c1, p1-cursor, p1-kempston, p1-room26, p1-room27, p1-room30, rzx-p1- x20).
+> Witness: L1 965 (c1, p1-cursor, p1-kempston, p1-speedup, p1-room26, p1-room27, p1-room30, rzx-p1- x20).
 $BE8C c SwingShotSet ; The shot's dX (HL) and speed
-> Witness: L1 2526 (c1, p1-cursor, p1-kempston, p1-room26, p1-room27, p1-room30, rzx-p1- x22).
+> Witness: L1 2741 (c1, p1-cursor, p1-kempston, p1-speedup, p1-room26, p1-room27, p1-room30, rzx-p1- x22).
 $BE9B c SwingShotRight ; A swing gun shot right
-> Witness: L1 736 (c1, p1-cursor, p1-kempston, p1-room26, p1-room27, p1-room30, rzx-p1- x19).
+> Witness: L1 802 (c1, p1-cursor, p1-kempston, p1-speedup, p1-room26, p1-room27, p1-room30, rzx-p1- x19).
 $BEB3 c SwingShotUpRight ; A swing gun shot up and right
-> Witness: L1 383 (c1, p1-cursor, p1-kempston, p1-room26, p1-room27, p1-room30, rzx-p1- x16).
+> Witness: L1 417 (c1, p1-cursor, p1-kempston, p1-speedup, p1-room26, p1-room27, p1-room30, rzx-p1- x16).
 $BECB b SwingGunFrames 8 ; The swing gun's picture offsets by angle: $00, $20, $40, $60, $80, $60, $40, $20
 $BED3 c AnimatePod ; The power pod's frames (PodFrames $BF5B); a pod not taken in time goes
-> Witness: L1 17077 (c1, p1-code, p1-cursor, p1-define, p1-gameover, p1-kempston, p1-room24, p1-room30, rzx-p1- x30).
+> Witness: L1 17476 (c1, p1-code, p1-cursor, p1-define, p1-gameover, p1-kempston, p1-poke41241, p1-shots, p1-speedup, p1-room24, p1-room30, rzx-p1- x30).
 $BEEC PodFrame
 $BF08 PodTimer
 $BF2A PodPicture
@@ -861,45 +864,45 @@ $BF4F PodFrame2
 $BF55 PodFrame3
 $BF5B b PodFrames 11 ; The pod's frame offsets: $00-$A0 and back, $FF
 $BF66 c DrawShard ; One shard of an explosion along its path at HL: the border's speaker bit random (the explosion's crackle), the shard ORed into the buffer
-> Witness: L1 22962 (c1, p1-code, p1-cursor, p1-define, p1-gameover, p1-kempston, p1-room24, p1-room30, rzx-p1- x32).
+> Witness: L1 23346 (c1, p1-code, p1-cursor, p1-define, p1-gameover, p1-kempston, p1-poke41241, p1-shots, p1-speedup, p1-room24, p1-room30, rzx-p1- x32).
 $BF90 ShardX
 $BFA4 ShardY
 $BFCF ShardOff ; off the play area
 $BFDB ShardDraw
 $BFE7 b FlashAttrs 8 ; The attributes of the explosion's flash: $02, $03, $06, $42, $43, $46, $06, $02
 $BFEF c ObjectMove ; The kinds' moves: pods none; 8 scanner, 12/13 the ground walkers, 14 the mine, 15 the blob, 2 the mine layer's burst; the others walk right or left
-> Witness: L1 56609 (c1, p1-code, p1-cursor, p1-define, p1-gameover, p1-kempston, p1-room x5, rzx-p1- x32).
+> Witness: L1 60370 (c1, p1-code, p1-cursor, p1-define, p1-gameover, p1-kempston, p1-poke41241, p1-rooms238, p1-shots, p1-speedup, p1-room x5, rzx-p1- x32).
 $C01F ObjectMoveWalk ; walk right or left
 $C029 ObjectMoveBurst ; kind 2: the burst
 $C03A c MineBurst ; At random (1 in 7) a burst of 8 shots in the spray's directions
 > Witness: L1 21 (rzx-p1-04000, rzx-p1-18000, rzx-p1-20000, rzx-p1-56000).
 $C04A MineBurstLoop ; each shot
 $C05A c Climb ; Kinds 12 and 13: rise by the speed until a solid cell above
-> Witness: L1 3987 (p1-code, p1-gameover, p1-room30, rzx-p1- x16).
+> Witness: L1 4169 (p1-code, p1-gameover, p1-shots, p1-speedup, p1-room30, rzx-p1- x16).
 $C080 ClimbBlocked
 $C0A9 ClimbTurn
 $C0B2 ClimbUp
 $C0BB ClimbDown
 $C0C4 ClimbStep
 $C0E0 c FlyBounce ; A flyer's step: inside the play area move by its speed; at an edge turn
-> Witness: L1 7555 (p1-room14, p1-room24, p1-room26, rzx-p1- x7).
+> Witness: L1 7803 (p1-rooms238, p1-room14, p1-room24, p1-room26, rzx-p1- x7).
 $C119 FlyTurn ; at an edge: turn
 $C12E c RandomFlight ; A random direction: dX and dY each +1 or -1
-> Witness: L1 526 (p1-room14, p1-room24, p1-room26, rzx-p1- x7).
+> Witness: L1 551 (p1-rooms238, p1-room14, p1-room24, p1-room26, rzx-p1- x7).
 $C13B c RandomSign ; A = +1 or -1 at random (Signs $C149)
-> Witness: L1 1052 (p1-room14, p1-room24, p1-room26, rzx-p1- x7).
+> Witness: L1 1102 (p1-rooms238, p1-room14, p1-room24, p1-room26, rzx-p1- x7).
 $C149 b Signs 4 ; $FF, $01, $FF, $01
-$C14D c Mine ; Kind 15's first step: FlyBounce, then Blob
-> Witness: L1 7555 (p1-room14, p1-room24, p1-room26, rzx-p1- x7).
-$C150 c Blob ; Kinds 14 and 15: drift by dX, dY; a solid cell turns it, or kills a mine
-> Witness: L1 12652 (p1-code, p1-room14, p1-room24, p1-room26, p1-room30, rzx-p1- x16).
-$C179 BlobTimer
-$C198 BlobRandom
-$C1BA BlobDown
+$C14D c BlobStart ; Kind 15, the blob: FlyBounce, then DriftObject
+> Witness: L1 7803 (p1-rooms238, p1-room14, p1-room24, p1-room26, rzx-p1- x7).
+$C150 c DriftObject ; Kinds 14 (the mine, entered here) and 15: drift by dX, dY; a solid cell turns it, or kills a mine
+> Witness: L1 13169 (p1-code, p1-rooms238, p1-speedup, p1-room14, p1-room24, p1-room26, p1-room30, rzx-p1- x16).
+$C179 DriftTimer
+$C198 DriftRandom
+$C1BA DriftDown
 $C1CA c GroundWalker ; Kinds 12 and 13: walk right or left; the mine layer drops a mine at random
-> Witness: L1 3987 (p1-code, p1-gameover, p1-room30, rzx-p1- x16).
+> Witness: L1 4169 (p1-code, p1-gameover, p1-shots, p1-speedup, p1-room30, rzx-p1- x16).
 $C1F4 c DropMine ; Make a mine (kind 14) at Temp1, Temp2 in a free object record
-> Witness: L1 158 (p1-code, p1-room30, rzx-p1- x10).
+> Witness: L1 164 (p1-code, p1-speedup, p1-room30, rzx-p1- x10).
 $C213 c ScannerUp ; Kind 8 moving up: its timer steps, then the turn
 > Witness: L1 917 (p1-room30, rzx-p1- x5).
 $C239 ScannerUpStep
@@ -920,152 +923,152 @@ $C3A0 ScannerBottom ; at the bottom
 $C3BE c ScannerReset ; Kind 8's start state
 > Witness: L1 21 (rzx-p1-04000, rzx-p1-18000, rzx-p1-20000, rzx-p1-56000).
 $C3E0 c WalkRight ; A walker's step right: a solid cell ahead turns it (or kills a person, or stops the jumper)
-> Witness: L1 10523 (p1-code, p1-gameover, p1-room x5, rzx-p1- x29).
+> Witness: L1 11394 (p1-code, p1-gameover, p1-poke41241, p1-rooms238, p1-shots, p1-speedup, p1-room x5, rzx-p1- x29).
 $C410 WalkRightStep
 $C41B WalkRightStore
 $C451 WalkRightFloor ; the floor ahead
 $C469 c BlockedRight ; Blocked: kinds 6 and 7 stay, the others turn
-> Witness: L1 273 (p1-code, p1-room14, p1-room24, p1-room30, rzx-p1- x28).
+> Witness: L1 290 (p1-code, p1-rooms238, p1-shots, p1-speedup, p1-room14, p1-room24, p1-room30, rzx-p1- x28).
 $C472 c TurnAround ; Direction ^ 1
-> Witness: L1 278 (p1-code, p1-room14, p1-room24, p1-room30, rzx-p1- x28).
+> Witness: L1 295 (p1-code, p1-poke41241, p1-rooms238, p1-shots, p1-speedup, p1-room14, p1-room24, p1-room30, rzx-p1- x28).
 $C47A c WalkOff ; Kinds 6 and 7 off the edge die; 3, 4, 5 stop
-> Witness: L1 476 (p1-code, p1-gameover, p1-room14, p1-room24, p1-room26, p1-room30, rzx-p1- x29).
+> Witness: L1 511 (p1-code, p1-gameover, p1-poke41241, p1-rooms238, p1-shots, p1-speedup, p1-room14, p1-room24, p1-room26, p1-room30, rzx-p1- x29).
 $C497 c ObjectGone ; The object is dead (alive = 0)
 > Witness: L1 27 (rzx-p1- x8).
 $C49C c EdgeLeft ; At the left edge: kind 0 dies, the others turn
-> Witness: L1 80 (p1-code, p1-room30, rzx-p1- x18).
+> Witness: L1 83 (p1-code, p1-poke41241, p1-speedup, p1-room30, rzx-p1- x18).
 $C4A6 c WalkLeft ; A walker's step left
-> Witness: L1 15127 (c1, p1-code, p1-gameover, p1-room14, p1-room24, p1-room26, p1-room30, rzx-p1- x30).
+> Witness: L1 16822 (c1, p1-code, p1-gameover, p1-poke41241, p1-rooms238, p1-shots, p1-speedup, p1-room14, p1-room24, p1-room26, p1-room30, rzx-p1- x30).
 $C501 WalkLeftFloor
 $C521 WalkLeftBlocked
 $C531 c MaybeJumpRight ; At random a jump instead of the step
-> Witness: L1 226 (p1-room30, rzx-p1- x16).
+> Witness: L1 234 (p1-speedup, p1-room30, rzx-p1- x16).
 $C540 c MaybeJumpLeft ; At random a jump
-> Witness: L1 297 (rzx-p1- x18).
+> Witness: L1 322 (p1-speedup, rzx-p1- x18).
 $C54D c StartHop ; A hop: the jumper's picture $8E8A
-> Witness: L1 113 (p1-room30, rzx-p1- x16).
+> Witness: L1 118 (p1-speedup, p1-room30, rzx-p1- x16).
 $C54E HopTimer
 $C556 c SetHop ; The hop's state: picture HL, speed, timers, bit 7 of the kind
-> Witness: L1 48 (p1-room26, rzx-p1- x18).
+> Witness: L1 52 (p1-speedup, p1-room26, rzx-p1- x18).
 $C577 c MaybeJumper ; A kind 0 walker at random becomes a jumper (SpriteJumper $91B2)
-> Witness: L1 77346 (c1, p1-code, p1-cursor, p1-define, p1-gameover, p1-kempston, p1-room x5, rzx-p1- x32).
+> Witness: L1 86024 (c1, p1-code, p1-cursor, p1-define, p1-gameover, p1-kempston, p1-poke41241, p1-rooms238, p1-shots, p1-speedup, p1-room x5, rzx-p1- x32).
 $C58E MaybeJumperLeft
 $C596 MaybeJumperRoll
 $C5B6 c JumperTimer ; The jumper's timer; at its end it walks again
-> Witness: L1 77346 (c1, p1-code, p1-cursor, p1-define, p1-gameover, p1-kempston, p1-room x5, rzx-p1- x32).
+> Witness: L1 86024 (c1, p1-code, p1-cursor, p1-define, p1-gameover, p1-kempston, p1-poke41241, p1-rooms238, p1-shots, p1-speedup, p1-room x5, rzx-p1- x32).
 $C5EA JumperStop
 $C5EF JumperCount
 $C5FA b ThreeReturns 3 ; Leftover: RET: RET: RET ($C9 x 3) that no instruction reaches
 > Known only from the code: JumperTimer $C5B6 ends with its own RET just before; no jump, call or table names $C5FA-$C5FC.
 $C5FD c StartFallIfIdle ; If the timer is 0, StartFall
-> Witness: L1 174 (rzx-p1- x20).
+> Witness: L1 191 (p1-speedup, rzx-p1- x20).
 $C602 c StartFall ; An object not falling and below line 24 starts to fall (JumpSteps $D0D8)
-> Witness: L1 156 (p1-room30, rzx-p1- x21).
+> Witness: L1 163 (p1-speedup, p1-room30, rzx-p1- x21).
 $C620 c ObjectJump ; The jump of a walker by its jump table; kinds 8 and 12/13 their own; a solid cell above ends it
-> Witness: L1 56608 (c1, p1-code, p1-cursor, p1-define, p1-gameover, p1-kempston, p1-room x5, rzx-p1- x32).
+> Witness: L1 60369 (c1, p1-code, p1-cursor, p1-define, p1-gameover, p1-kempston, p1-poke41241, p1-rooms238, p1-shots, p1-speedup, p1-room x5, rzx-p1- x32).
 $C68B JumpEnd
 $C6A1 JumpKind
 $C6C2 c ObjectFall ; The fall: by the fall speed until a solid cell; below line $B8 the object dies (a person counts)
-> Witness: L1 56608 (c1, p1-code, p1-cursor, p1-define, p1-gameover, p1-kempston, p1-room x5, rzx-p1- x32).
+> Witness: L1 60369 (c1, p1-code, p1-cursor, p1-define, p1-gameover, p1-kempston, p1-poke41241, p1-rooms238, p1-shots, p1-speedup, p1-room x5, rzx-p1- x32).
 $C70D FallLand ; landed
 $C71A FallOut ; below the play area: dead
 $C72B c ObjectCell ; ObjectCellPtr $A01B = the grid cell of the object at IX
-> Witness: L1 95878 (c1, p1-code, p1-cursor, p1-define, p1-gameover, p1-kempston, p1-room x5, rzx-p1- x32).
+> Witness: L1 102599 (c1, p1-code, p1-cursor, p1-define, p1-gameover, p1-kempston, p1-poke41241, p1-rooms238, p1-shots, p1-speedup, p1-room x5, rzx-p1- x32).
 
 @module rooms ; The rooms: drawing a room, the exits, the objects made, the spawners
-@about DrawRoom draws the room Room $A0B8 from RoomMaps $75E0: each block of BlockDefs $6CE0 is 3 x 3 characters; each character goes into the back buffer (CharGraphics $63E0), its attribute into the attribute shadow $E55F (CharAttrs $6BE0) and its flag into the grid $E1FF (CharFlags $62E0); the animated characters are listed in AnimCellList $D962 with their cell index in $DE9F. ReadExits takes the room's exits and object list from RoomExits $B133; MakeObjects builds the records from the list.
+@about DrawRoom draws the room Room $A0B8 from RoomMaps $75E0: each block of BlockDefs $6CE0 is 3 x 3 characters; each character goes into the back buffer (CharGraphics $63E0), its attribute into the attribute shadow $E55F (CharAttrs $6BE0) and its flag into the grid $E1FF (CharFlags $62E0); the animated characters are listed in SceneryCellList $D962 with their cell index in $DE9F. ReadExits takes the room's exits and object list from RoomExits $B133; MakeObjects builds the records from the list.
 @about Monsters keep coming: the random spawner (SpawnRandom $C9CA) makes one of SpawnKind $A088 from the room's spawn sides every SpawnPeriod passes; rooms 2, 3, 4, 6 and 20 also run the scripted spawn (ScriptSpawn $A9F4).
-$C745 c DrawRoom ; Draw the room: silence, the map's 7 x 10 blocks into the buffer, the grid and the attribute shadow; the animated cells listed
-> Witness: L1 74 (c1, p1-cursor, p1-define, p1-kempston, p1-room x5, rzx-p1- x30).
+$C745 c DrawRoom ; Draw the room: silence, the map's 7 x 10 blocks into the grid, the attribute shadow and SceneryCellList (its pixel writes into the buffer are wiped by BuildRoom's ClearBuffer after it; the cell list redraws them)
+> Witness: L1 80 (c1, p1-cursor, p1-define, p1-kempston, p1-rooms238, p1-speedup, p1-room x5, rzx-p1- x30).
 $C77C DrawRoomRow ; each block row
 $C781 DrawRoomBlock ; each block
 $C7AE DrawRoomAttrs
 $C7B5 DrawRoomAttrLoop
 $C7C5 c DrawBlockRow ; One row of 10 blocks
-> Witness: L1 5235 (c1, p1-cursor, p1-define, p1-kempston, p1-room x5, rzx-p1- x30).
+> Witness: L1 5655 (c1, p1-cursor, p1-define, p1-kempston, p1-rooms238, p1-speedup, p1-room x5, rzx-p1- x30).
 $C7C9 BlockRowLoop
 $C7CC BlockRowChar
 $C7E2 c DrawRoomCell ; One block: its 3 x 3 characters into the buffer, the attribute shadow and the grid; an animated character listed
-> Witness: L1 47118 (c1, p1-cursor, p1-define, p1-kempston, p1-room x5, rzx-p1- x30).
+> Witness: L1 50898 (c1, p1-cursor, p1-define, p1-kempston, p1-rooms238, p1-speedup, p1-room x5, rzx-p1- x30).
 $C87F c NextCellPtr ; The grid pointer one character on
-> Witness: L1 376952 (c1, p1-cursor, p1-define, p1-kempston, p1-room x5, rzx-p1- x30).
+> Witness: L1 407192 (c1, p1-cursor, p1-define, p1-kempston, p1-rooms238, p1-speedup, p1-room x5, rzx-p1- x30).
 $C893 c DrawRoomChar ; One character's 8 bytes into the back buffer
-> Witness: L1 47118 (c1, p1-cursor, p1-define, p1-kempston, p1-room x5, rzx-p1- x30).
+> Witness: L1 50898 (c1, p1-cursor, p1-define, p1-kempston, p1-rooms238, p1-speedup, p1-room x5, rzx-p1- x30).
 $C8BF c CopyAttrs ; The attribute shadow $E55F to the screen's play rows $5860; the side columns white
-> Witness: L1 129 (c1, p1-cursor, p1-define, p1-gameover, p1-kempston, p1-room x5, rzx-p1- x32).
+> Witness: L1 136 (c1, p1-cursor, p1-define, p1-gameover, p1-kempston, p1-rooms238, p1-speedup, p1-room x5, rzx-p1- x32).
 $C8CF CopyAttrsSides ; the side columns white
 $C8DB c Delay ; Wait BC x 10 loops
-> Witness: L1 1013646 (c1, p1-cursor, p1-define, p1-kempston, rzx-p1- x6).
+> Witness: L1 3097216 (c1, menu-rollcall, p1-cursor, p1-define, p1-kempston, p1-speedup, rzx-p1- x6).
 $C8DE DelayInner
 $C8E8 c Multiply ; HL = DE x B
-> Witness: L1 6433 (c1, p1-cursor, p1-define, p1-gameover, p1-kempston, p1-room x5, rzx-p1- x31).
+> Witness: L1 6865 (c1, p1-cursor, p1-define, p1-gameover, p1-kempston, p1-rooms238, p1-speedup, p1-room x5, rzx-p1- x31).
 $C8EB MultiplyLoop
 $C8EF c ReadExits ; The room's exits and object list from RoomExits; the list's header: count, spawn sides, timers, spawn kind
-> Witness: L1 74 (c1, p1-cursor, p1-define, p1-kempston, p1-room x5, rzx-p1- x30).
-$C948 c SetSpawnTop ; SpawnTop $A02E = 1
-> Witness: L1 39 (c1, p1-room14, p1-room24, p1-room26, p1-room30, rzx-p1- x21).
-$C94E c SetSpawnRight ; SpawnRight $A02D = 1
-> Witness: L1 45 (c1, p1-cursor, p1-kempston, p1-room14, p1-room26, p1-room27, p1-room30, rzx-p1- x21).
-$C954 c SetSpawnLeft ; SpawnLeft $A02C = 1
-> Witness: L1 33 (p1-room24, p1-room26, p1-room27, p1-room30, rzx-p1- x19).
+> Witness: L1 80 (c1, p1-cursor, p1-define, p1-kempston, p1-rooms238, p1-speedup, p1-room x5, rzx-p1- x30).
+$C948 c SetSpawnTop ; SpawnTop $A02E = $FF
+> Witness: L1 44 (c1, p1-rooms238, p1-speedup, p1-room14, p1-room24, p1-room26, p1-room30, rzx-p1- x21).
+$C94E c SetSpawnRight ; SpawnRight $A02D = $FF
+> Witness: L1 49 (c1, p1-cursor, p1-kempston, p1-rooms238, p1-speedup, p1-room14, p1-room26, p1-room27, p1-room30, rzx-p1- x21).
+$C954 c SetSpawnLeft ; SpawnLeft $A02C = $FF
+> Witness: L1 36 (p1-rooms238, p1-speedup, p1-room24, p1-room26, p1-room27, p1-room30, rzx-p1- x19).
 $C95A c ChangeRoom ; Rex goes through an exit to room A: Room $A0B8 = A, MainLoop; room 99 is the end of part 1 (CodePanel $A7CE)
-> Witness: L1 48 (c1, p1-code, p1-cursor, p1-kempston, p1-room x5, rzx-p1- x27).
+> Witness: L1 54 (c1, p1-code, p1-cursor, p1-kempston, p1-rooms238, p1-speedup, p1-room x5, rzx-p1- x27).
 $C965 c StartScriptSpawn ; The scripted spawn starts: step 1, timer, count 0
-> Witness: L1 4 (c1, rzx-p1-04000, rzx-p1-08000, rzx-p1-12000).
+> Witness: L1 6 (c1, p1-rooms238, rzx-p1-04000, rzx-p1-08000, rzx-p1-12000).
 $C978 c SpawnScripted ; The scripted spawn's step: every few passes the next record of ScriptSpawn into a free object
-> Witness: L1 16926 (c1, p1-code, p1-cursor, p1-define, p1-gameover, p1-kempston, p1-room x5, rzx-p1- x32).
+> Witness: L1 18613 (c1, p1-code, p1-cursor, p1-define, p1-gameover, p1-kempston, p1-poke41241, p1-rooms238, p1-shots, p1-speedup, p1-room x5, rzx-p1- x32).
 $C98D ScriptRecord
 $C99D ScriptNext
 $C9C5 ScriptEnd
 $C9CA c SpawnRandom ; The random spawn: every SpawnPeriod passes, from a spawn side chosen at random
-> Witness: L1 16926 (c1, p1-code, p1-cursor, p1-define, p1-gameover, p1-kempston, p1-room x5, rzx-p1- x32).
+> Witness: L1 18613 (c1, p1-code, p1-cursor, p1-define, p1-gameover, p1-kempston, p1-poke41241, p1-rooms238, p1-shots, p1-speedup, p1-room x5, rzx-p1- x32).
 $C9E5 SpawnFindFree
 $C9F1 SpawnNextRecord
 $CA0B SpawnPickRight ; the right side chosen
 $CA0F SpawnPickLeft ; the left side chosen
 $CA13 c SpawnFromLeft ; A spawn at the left edge, at a free height
-> Witness: L1 165 (c1, p1-cursor, p1-kempston, p1-room14, p1-room24, p1-room27, p1-room30, rzx-p1- x31).
+> Witness: L1 181 (c1, p1-cursor, p1-kempston, p1-poke41241, p1-rooms238, p1-speedup, p1-room14, p1-room24, p1-room27, p1-room30, rzx-p1- x31).
 $CA23 SpawnLeftY
 $CA49 c SpawnObject ; Make an object of SpawnKind at SpriteX/Y
-> Witness: L1 237 (c1, p1-gameover, p1-room x5, rzx-p1- x30).
+> Witness: L1 253 (c1, p1-gameover, p1-rooms238, p1-shots, p1-speedup, p1-room x5, rzx-p1- x30).
 $CA60 SpawnObjectSet
 $CA71 c SpawnFromRight ; A spawn at the right edge
-> Witness: L1 181 (c1, p1-cursor, p1-define, p1-kempston, p1-room x5, rzx-p1- x28).
+> Witness: L1 193 (c1, p1-cursor, p1-define, p1-kempston, p1-poke41241, p1-rooms238, p1-speedup, p1-room x5, rzx-p1- x28).
 $CA81 SpawnRightY
 $CAA7 c SpawnFromTop ; A spawn at the top, above Rex's column
-> Witness: L1 184 (c1, p1-code, p1-cursor, p1-define, p1-gameover, p1-kempston, p1-room24, p1-room26, p1-room27, p1-room30, rzx-p1- x31).
+> Witness: L1 196 (c1, p1-code, p1-cursor, p1-define, p1-gameover, p1-kempston, p1-rooms238, p1-shots, p1-speedup, p1-room24, p1-room26, p1-room27, p1-room30, rzx-p1- x31).
 $CAB7 SpawnTopX
 $CB03 c FindGround ; Find a place with ground under it for a spawn
-> Witness: L1 2408 (c1, p1-room x5, rzx-p1- x27).
+> Witness: L1 2529 (c1, p1-speedup, p1-room x5, rzx-p1- x27).
 $CB50 FindGroundNone
 $CB52 c MakeObjects ; Build the room's objects from its list (ObjectListPtr $A020): [kind][X][Y] each
-> Witness: L1 75 (c1, p1-cursor, p1-define, p1-kempston, p1-room x5, rzx-p1- x30).
+> Witness: L1 81 (c1, p1-cursor, p1-define, p1-kempston, p1-rooms238, p1-speedup, p1-room x5, rzx-p1- x30).
 $CB69 MakeObjectsLoop ; each record of the list
 $CB86 MakeObjectsNext
 $CB88 c MakeObjectIY ; Make the object of the list record at IY (kind from IY+0)
-> Witness: L1 349 (c1, p1-cursor, p1-define, p1-kempston, p1-room x5, rzx-p1- x30).
+> Witness: L1 385 (c1, p1-cursor, p1-define, p1-kempston, p1-rooms238, p1-speedup, p1-room x5, rzx-p1- x30).
 $CB8B c MakeObject ; Make an object of kind A at IX: the common sizes, then the kind's initialiser
-> Witness: L1 586 (c1, p1-cursor, p1-define, p1-gameover, p1-kempston, p1-room x5, rzx-p1- x31).
+> Witness: L1 638 (c1, p1-cursor, p1-define, p1-gameover, p1-kempston, p1-rooms238, p1-shots, p1-speedup, p1-room x5, rzx-p1- x31).
 $CC48 c InitKind0 ; Foot man: SpriteFootMan $7F72, ShiftFrames
-> Witness: L1 198 (c1, p1-room x5, rzx-p1- x28).
+> Witness: L1 212 (c1, p1-rooms238, p1-speedup, p1-room x5, rzx-p1- x28).
 $CC5B c InitKind6 ; Kind 6
-> Witness: L1 43 (p1-room14, p1-room26, p1-room27, p1-room30, rzx-p1- x14).
+> Witness: L1 45 (p1-speedup, p1-room14, p1-room26, p1-room27, p1-room30, rzx-p1- x14).
 $CC83 c InitKind1 ; Stomper
-> Witness: L1 41 (p1-room24, p1-room30, rzx-p1- x14).
+> Witness: L1 43 (p1-rooms238, p1-room24, p1-room30, rzx-p1- x14).
 $CC96 c InitKind3 ; Kind 3
-> Witness: L1 19 (c1, rzx-p1-04000, rzx-p1-08000, rzx-p1-12000).
+> Witness: L1 27 (c1, p1-rooms238, rzx-p1-04000, rzx-p1-08000, rzx-p1-12000).
 $CCA1 c InitKind4 ; Kind 4
-> Witness: L1 5 (c1, rzx-p1-04000, rzx-p1-08000, rzx-p1-12000).
+> Witness: L1 6 (c1, p1-rooms238, rzx-p1-04000, rzx-p1-08000, rzx-p1-12000).
 $CCB0 c InitKind5 ; Kind 5
-> Witness: L1 4 (c1, rzx-p1-04000, rzx-p1-08000, rzx-p1-12000).
+> Witness: L1 6 (c1, p1-rooms238, rzx-p1-04000, rzx-p1-08000, rzx-p1-12000).
 $CCBF c InitKind8 ; Scanner
 > Witness: L1 8 (p1-room30, rzx-p1-04000, rzx-p1-18000, rzx-p1-20000, rzx-p1-54000).
 $CCE6 c InitBonusPod ; Kind $7D, the bonus pod
-> Witness: L1 5 (p1-room30, rzx-p1-52000, rzx-p1-54000, rzx-p1-56000, rzx-p1-60000).
+> Witness: L1 6 (p1-speedup, p1-room30, rzx-p1-52000, rzx-p1-54000, rzx-p1-56000, rzx-p1-60000).
 $CCF8 c InitKind9 ; Swing gun; also kinds 17-20 (the swing gun at four start angles)
-> Witness: L1 94 (c1, p1-cursor, p1-kempston, p1-room26, p1-room27, p1-room30, rzx-p1- x19).
+> Witness: L1 98 (c1, p1-cursor, p1-kempston, p1-rooms238, p1-speedup, p1-room26, p1-room27, p1-room30, rzx-p1- x19).
 $CD1A c InitKind17 ; Kind 17: a swing gun at angle 1
-> Witness: L1 19 (p1-room26, p1-room27, p1-room30, rzx-p1- x13).
+> Witness: L1 21 (p1-rooms238, p1-speedup, p1-room26, p1-room27, p1-room30, rzx-p1- x13).
 $CD2A c InitKind18 ; Kind 18: angle 2
 > Witness: L1 23 (c1, p1-cursor, p1-kempston, p1-room26, p1-room27, p1-room30, rzx-p1- x11).
 $CD3A c InitKind19 ; Kind 19: angle 3
@@ -1073,17 +1076,17 @@ $CD3A c InitKind19 ; Kind 19: angle 3
 $CD4A c InitKind20 ; Kind 20: angle 4
 > Witness: L1 16 (c1, p1-cursor, p1-kempston, p1-room26, p1-room27, rzx-p1- x6).
 $CD5A c InitKind10 ; Shooters
-> Witness: L1 44 (c1, p1-room14, p1-room24, p1-room26, p1-room30, rzx-p1- x15).
+> Witness: L1 54 (c1, p1-rooms238, p1-speedup, p1-room14, p1-room24, p1-room26, p1-room30, rzx-p1- x15).
 $CD7C c InitKind11 ; Launcher
-> Witness: L1 39 (c1, p1-cursor, p1-define, p1-kempston, p1-room14, p1-room24, p1-room26, p1-room30, rzx-p1- x14).
+> Witness: L1 41 (c1, p1-cursor, p1-define, p1-kempston, p1-speedup, p1-room14, p1-room24, p1-room26, p1-room30, rzx-p1- x14).
 $CDA2 c InitKind12 ; Ramming pod; also the human's body
-> Witness: L1 28 (p1-gameover, rzx-p1- x13).
+> Witness: L1 30 (p1-gameover, p1-shots, p1-speedup, rzx-p1- x13).
 $CDB9 c InitKind13 ; Mine layer
 > Witness: L1 12 (p1-room30, rzx-p1- x7).
 $CDD8 c InitKind14 ; Mine
-> Witness: L1 158 (p1-code, p1-room30, rzx-p1- x10).
+> Witness: L1 164 (p1-code, p1-speedup, p1-room30, rzx-p1- x10).
 $CE13 c InitKind15 ; Blob
-> Witness: L1 45 (p1-room14, p1-room24, p1-room26, rzx-p1- x6).
+> Witness: L1 49 (p1-rooms238, p1-room14, p1-room24, p1-room26, rzx-p1- x6).
 $CE3E c InitKind16 ; The big gun
 > Witness: L1 1 (rzx-p1-22000).
 $CE67 c KillHumanPicture ; The human's picture offset by Weapon (Weapon x 50 + 16) into IX+$14 and HumanPicture $A022
@@ -1091,85 +1094,87 @@ $CE67 c KillHumanPicture ; The human's picture offset by Weapon (Weapon x 50 + 1
 
 @module panels ; The panels: the framed box, the attribute shadow
 $CE7B c PanelBox ; Draw a framed box: A attribute, D width, E height, H column, L line, C the frame's colour; the frame from the font's edge characters
-> Witness: L1 41 (c1, p1-code, p1-cursor, p1-define, p1-gameover, p1-kempston, rzx-p1- x7).
+> Witness: L1 52 (c1, menu-rollcall, p1-code, p1-cursor, p1-define, p1-gameover, p1-kempston, p1-speedup, rzx-p1- x7).
 $CEED PanelBoxRow ; each row of the box
 $CF0A c PanelRow ; 8 lines of a box row
-> Witness: L1 166 (c1, p1-code, p1-cursor, p1-define, p1-gameover, p1-kempston, rzx-p1- x7).
+> Witness: L1 209 (c1, menu-rollcall, p1-code, p1-cursor, p1-define, p1-gameover, p1-kempston, p1-speedup, rzx-p1- x7).
 $CF0C PanelRowLine ; each pixel line
 $CF21 c PanelLine ; One pixel line: the left edge, the middle B times, the right edge
-> Witness: L1 1328 (c1, p1-code, p1-cursor, p1-define, p1-gameover, p1-kempston, rzx-p1- x7).
+> Witness: L1 1672 (c1, menu-rollcall, p1-code, p1-cursor, p1-define, p1-gameover, p1-kempston, p1-speedup, rzx-p1- x7).
 $CF2B PanelLineMiddle
 $CF3D c FillShadowRow3 ; Three rows of three: the cells of value $47 (white) take C
-> Witness: L1 4771 (c1, p1-code, p1-cursor, p1-define, p1-gameover, p1-kempston, p1-room24, p1-room30, rzx-p1- x32).
+> Witness: L1 4835 (c1, p1-code, p1-cursor, p1-define, p1-gameover, p1-kempston, p1-poke41241, p1-shots, p1-speedup, p1-room24, p1-room30, rzx-p1- x32).
 $CF47 c FillShadowCells ; One row of three cells
-> Witness: L1 14313 (c1, p1-code, p1-cursor, p1-define, p1-gameover, p1-kempston, p1-room24, p1-room30, rzx-p1- x32).
+> Witness: L1 14505 (c1, p1-code, p1-cursor, p1-define, p1-gameover, p1-kempston, p1-poke41241, p1-shots, p1-speedup, p1-room24, p1-room30, rzx-p1- x32).
 $CF4E ShadowCell2
 $CF57 ShadowCell3
 $CF60 ShadowRowEnd
 $CF6E c CopyCells3 ; Copy a 3 x 3 patch from DE to HL (the shadow's 32-byte rows)
-> Witness: L1 594 (c1, p1-code, p1-cursor, p1-define, p1-gameover, p1-kempston, p1-room24, p1-room30, rzx-p1- x32).
+> Witness: L1 603 (c1, p1-code, p1-cursor, p1-define, p1-gameover, p1-kempston, p1-poke41241, p1-shots, p1-speedup, p1-room24, p1-room30, rzx-p1- x32).
 $CF7D c CopyCells ; One row of three
-> Witness: L1 1782 (c1, p1-code, p1-cursor, p1-define, p1-gameover, p1-kempston, p1-room24, p1-room30, rzx-p1- x32).
+> Witness: L1 1809 (c1, p1-code, p1-cursor, p1-define, p1-gameover, p1-kempston, p1-poke41241, p1-shots, p1-speedup, p1-room24, p1-room30, rzx-p1- x32).
 $CF8F c SaveAttrs ; The screen's top 96 attributes ($5800) into the shadow at $E4FF
 > Witness: L1 9 (c1, p1-code, p1-cursor, p1-define, p1-kempston, rzx-p1-00000, rzx-p1-64000).
 $CF9B c FlashCells ; The explosion's attribute flash: the object's 3 x 3 cells in the shadow coloured from FlashAttrs $BFE7 at random
-> Witness: L1 4771 (c1, p1-code, p1-cursor, p1-define, p1-gameover, p1-kempston, p1-room24, p1-room30, rzx-p1- x32).
+> Witness: L1 4835 (c1, p1-code, p1-cursor, p1-define, p1-gameover, p1-kempston, p1-poke41241, p1-shots, p1-speedup, p1-room24, p1-room30, rzx-p1- x32).
 
 @module rexmove ; Rex's moves: walk, jump, fall, the edges of the room
-@about Rex walks a pixel a pass (two with SPEED UP, SpeedUp $A072), jumps by JumpSteps $D0D8 (up 6, 6, 4, 4, 2, 2, 0, ...) and falls faster each step (FallSpeed $A0BC) until a cell that is not passable (PassCells $D09A) or a ladder. Walking off the left or right edge, jumping off the top or falling off the bottom changes the room by the exits; falling with no exit below kills him.
+@about Rex walks 2 pixels a pass (4 with SPEED UP, SpeedUp $A072: WalkRightKey / WalkLeftKey set RexSpeed), jumps by JumpSteps $D0D8 (up 6, 6, 4, 4, 2, 2, 0, ...) and falls faster each step (FallSpeed $A0BC) until a cell that is not passable (PassCells $D09A) or a ladder. Walking off the left or right edge, jumping off the top or falling off the bottom changes the room by the exits; falling with no exit below kills him.
 $CFCC c SpeedUpTick ; The SPEED UP bonus: count down; the speed back at the end
-> Known only from the code: no recording runs it.
-> Witness: L1 0 ().
+> SpeedUpPhase $A073 starts at 200 (PrizeSpeedUp) and counts the walking passes; at 0 SpeedUp ends. Run by p1-speedup: the roulette stopped on SPEED UP by fire, SpeedUpPhase 200 at frame 1740 down to 0 at 2740, RexSpeed 4 / -4 meanwhile, 2 / -2 after.
+> Witness: L1 200 (p1-speedup).
 $CFDA c WalkRightKey ; Right: facing right, the speed set
-> Witness: L1 4189 (c1, p1-code, p1-cursor, p1-define, p1-kempston, p1-room x5, rzx-p1- x32).
-$CFEC WalkRightFast ; SPEED UP: 2 pixels
+> Witness: L1 4760 (c1, p1-code, p1-cursor, p1-define, p1-kempston, p1-rooms238, p1-speedup, p1-room x5, rzx-p1- x32).
+$CFE1 WalkRightFast ; SPEED UP (SpeedUp not 0): 4 pixels, SpeedUpTick counts down
+$CFEC WalkRightNormal ; the normal walk: 2 pixels
 $CFF1 WalkRightFacing
 $CFF6 c WalkLeftKey ; Left: facing left, the speed set
-> Witness: L1 4126 (c1, p1-code, p1-cursor, p1-room x5, rzx-p1- x32).
-$D008 WalkLeftFast
+> Witness: L1 4294 (c1, p1-code, p1-cursor, p1-speedup, p1-room x5, rzx-p1- x32).
+$CFFD WalkLeftFast ; SPEED UP: 4 pixels left, SpeedUpTick counts down
+$D008 WalkLeftNormal ; the normal walk: 2 pixels left
 $D00D WalkLeftFacing
 $D013 c RexWalk ; Move Rex by RexSpeed in his facing unless a solid cell; at the edges ExitLeft / ExitRight
-> Witness: L1 14989 (c1, p1-code, p1-cursor, p1-define, p1-gameover, p1-kempston, p1-room x5, rzx-p1- x32).
+> Witness: L1 16675 (c1, p1-code, p1-cursor, p1-define, p1-gameover, p1-kempston, p1-poke41241, p1-rooms238, p1-shots, p1-speedup, p1-room x5, rzx-p1- x32).
 $D01D RexWalkStep
 $D040 RexWalkRightCell
 $D056 RexWalkLeftCell
 $D06C c IsSolid ; Z if the cell at HL is solid (SolidCells' first 4: 2, 4, 5, 6)
-> Witness: L1 102606 (c1, p1-code, p1-cursor, p1-define, p1-gameover, p1-kempston, p1-room x5, rzx-p1- x32).
+> Witness: L1 111966 (c1, p1-code, p1-cursor, p1-define, p1-gameover, p1-kempston, p1-poke41241, p1-rooms238, p1-shots, p1-speedup, p1-room x5, rzx-p1- x32).
 $D074 c InList ; Z if A is one of B values at DE
-> Witness: L1 239855 (c1, p1-code, p1-cursor, p1-define, p1-gameover, p1-kempston, p1-room x5, rzx-p1- x32).
+> Witness: L1 262708 (c1, p1-code, p1-cursor, p1-define, p1-gameover, p1-kempston, p1-poke41241, p1-rooms238, p1-shots, p1-speedup, p1-room x5, rzx-p1- x32).
 $D076 InListLoop
 $D085 InListFound
 $D08B c IsPassable ; Z if the cell at HL lets a body or a bullet through: empty (0) or one of $0E-$12 (PassCells $D09A)
-> Witness: L1 137249 (c1, p1-code, p1-cursor, p1-define, p1-gameover, p1-kempston, p1-room x5, rzx-p1- x32).
+> Witness: L1 150742 (c1, p1-code, p1-cursor, p1-define, p1-gameover, p1-kempston, p1-poke41241, p1-rooms238, p1-shots, p1-speedup, p1-room x5, rzx-p1- x32).
 $D096 b SolidCells 10 ; The solid cell types 2, 4, 5, 6 (IsSolid), then PassCells $D09A: 0, $0E, $0F, $10, $11, $12 (IsPassable)
 $D09A PassCells ; the cells a body or a bullet passes
-$D0A0 c ExitLeft ; Rex at the left edge: to the room RoomLeft $A090 at X $E0
-> Witness: L1 82 (p1-room14, p1-room26, p1-room27, rzx-p1- x12).
-$D0B1 c ExitRight ; Rex at the right edge: to the room RoomRight $A08D at X $10
-> Witness: L1 293 (c1, p1-cursor, p1-kempston, p1-room14, p1-room24, p1-room26, p1-room27, rzx-p1- x14).
+$D0A0 c ExitLeft ; Rex at the left edge: to the room RoomLeft $A090 at X $E8
+> Witness: L1 161 (p1-speedup, p1-room14, p1-room26, p1-room27, rzx-p1- x12).
+$D0B1 c ExitRight ; Rex at the right edge: to the room RoomRight $A08D at X $08
+> Witness: L1 298 (c1, p1-cursor, p1-kempston, p1-rooms238, p1-speedup, p1-room14, p1-room24, p1-room26, p1-room27, rzx-p1- x14).
 $D0C2 c StartJump ; Up: a jump if Rex stands (not jumping or falling)
-> Witness: L1 1997 (c1, p1-code, p1-cursor, p1-define, p1-kempston, p1-room14, p1-room26, p1-room27, p1-room30, rzx-p1- x32).
+> Witness: L1 2080 (c1, p1-code, p1-cursor, p1-define, p1-kempston, p1-speedup, p1-room14, p1-room26, p1-room27, p1-room30, rzx-p1- x32).
 $D0D8 b JumpSteps 12 ; The jump's rise a step: 6, 6, 4, 4, 2, 2, 0, 0, 0, 0, then $FF and the fall's start 8
 $D0E4 c RexJump ; One step of the jump: up by JumpSteps unless a solid cell above; off the top ExitUp
-> Witness: L1 15000 (c1, p1-code, p1-cursor, p1-define, p1-gameover, p1-kempston, p1-room x5, rzx-p1- x32).
+> Witness: L1 16687 (c1, p1-code, p1-cursor, p1-define, p1-gameover, p1-kempston, p1-poke41241, p1-rooms238, p1-shots, p1-speedup, p1-room x5, rzx-p1- x32).
 $D11A c Land ; Stop the jump and the fall; Rex on the cell's top
-> Witness: L1 138 (p1-code, p1-room14, p1-room26, p1-room27, p1-room30, rzx-p1- x12).
+> Witness: L1 150 (p1-code, p1-speedup, p1-room14, p1-room26, p1-room27, p1-room30, rzx-p1- x12).
 $D12F c ExitTop ; Rex off the top: to the room RoomUp $A08E at the bottom
-> Witness: L1 15 (p1-code, p1-room30, rzx-p1- x10).
+> Witness: L1 17 (p1-code, p1-speedup, p1-room30, rzx-p1- x10).
 $D14D c RexFall ; Rex falls when no floor is under him; off the bottom to RoomDown $A08F, or death with no exit
-> Witness: L1 14989 (c1, p1-code, p1-cursor, p1-define, p1-gameover, p1-kempston, p1-room x5, rzx-p1- x32).
+> Witness: L1 16675 (c1, p1-code, p1-cursor, p1-define, p1-gameover, p1-kempston, p1-poke41241, p1-rooms238, p1-shots, p1-speedup, p1-room x5, rzx-p1- x32).
 $D196 RexFallLand
 $D19B ExitBottom ; off the bottom: the exit below, or death
 $D1AE RexFallStop
 
 @module collisions ; The collisions: shots and objects against Rex, Rex's shots against objects, the pods
 $D1B9 c EnemyBulletsHitRex ; Each enemy bullet in Rex's box: the shield takes it (faster drain), else Rex dies
-> Witness: L1 16926 (c1, p1-code, p1-cursor, p1-define, p1-gameover, p1-kempston, p1-room x5, rzx-p1- x32).
+> Witness: L1 18613 (c1, p1-code, p1-cursor, p1-define, p1-gameover, p1-kempston, p1-poke41241, p1-rooms238, p1-shots, p1-speedup, p1-room x5, rzx-p1- x32).
 $D1C9 EnemyBulletLoop ; each enemy bullet
 $D208 EnemyBulletKills
 $D20B EnemyBulletNext
 $D215 c ObjectHitsRex ; The object at IX against Rex: its box (written into the compares at $D28E, $D29E, $D299, $D310, $D321 by kind); the shield kills it, else Rex dies; pods are taken; then Rex's bullets against it
-> Witness: L1 73516 (c1, p1-code, p1-cursor, p1-define, p1-gameover, p1-kempston, p1-room x5, rzx-p1- x32).
+> Witness: L1 82130 (c1, p1-code, p1-cursor, p1-define, p1-gameover, p1-kempston, p1-poke41241, p1-rooms238, p1-shots, p1-speedup, p1-room x5, rzx-p1- x32).
 $D23D ObjectBoxKind ; the box by kind
 $D254 ObjectBoxBig ; kind 16: a big box
 $D269 ObjectBoxSmall ; kinds 14, 15: a small box
@@ -1180,7 +1185,7 @@ $D29D BoxWidthAdd ; ADD A,n: the box's width by kind
 $D2CC ObjectHitsUnshielded ; no shield: Rex dies unless a pod
 $D2E1 ObjectTakePod ; a pod is taken
 $D2F6 c BulletsHitObject ; Rex's 30 bullets against the object at IX: a hit object takes damage (HitObject, HitObjectHard) or is killed
-> Witness: L1 68268 (c1, p1-code, p1-cursor, p1-define, p1-gameover, p1-kempston, p1-room x5, rzx-p1- x32).
+> Witness: L1 76882 (c1, p1-code, p1-cursor, p1-define, p1-gameover, p1-kempston, p1-poke41241, p1-rooms238, p1-shots, p1-speedup, p1-room x5, rzx-p1- x32).
 $D2FC BulletLoop
 $D30F BulletBoxHeight ; ADD A,n: the bullet test's height by kind
 $D320 BulletBoxWidth ; ADD A,n: the bullet test's width by kind
@@ -1190,22 +1195,22 @@ $D396 BulletHitStrong
 $D39E BulletHitDo
 $D3A4 BulletKill
 $D3A7 c NextBullet ; The next bullet record
-> Witness: L1 2085566 (c1, p1-code, p1-cursor, p1-define, p1-gameover, p1-kempston, p1-room x5, rzx-p1- x32).
+> Witness: L1 2344896 (c1, p1-code, p1-cursor, p1-define, p1-gameover, p1-kempston, p1-poke41241, p1-rooms238, p1-shots, p1-speedup, p1-room x5, rzx-p1- x32).
 $D3B1 c HitNotLast ; A hit that is not the object's last: a kind 8 pauses (its timer IX+$10 = 4); then the next bullet
-> Witness: L1 917 (c1, p1-code, p1-gameover, p1-room24, p1-room30, rzx-p1- x30).
-$D3C2 c HitObject ; A hit: the flash picture SpriteHitFlash $8632, the combo score (ComboCount $A03B), the object killed after its hits
-> Witness: L1 74 (p1-room30, rzx-p1- x20).
+> Witness: L1 951 (c1, p1-code, p1-gameover, p1-poke41241, p1-shots, p1-speedup, p1-room24, p1-room30, rzx-p1- x30).
+$D3C2 c HitObject ; A hit: the flash picture SpriteHitFlash $8632, the combo score (ComboCount $A03B; none for the spray, Weapon 4), the object killed after its hits (the laser, Weapon 2, kills at once)
+> Witness: L1 76 (p1-speedup, p1-room30, rzx-p1- x20).
 $D41F c HitObjectHard ; A hit on an armoured object: the flash, more hits needed
-> Witness: L1 89 (p1-room30, rzx-p1- x13).
+> Witness: L1 90 (p1-speedup, p1-room30, rzx-p1- x13).
 $D46C c TakePowerPod ; The power pod ($FE): PowerGain twice if it is a big one, the pod sound
-> Witness: L1 135 (p1-room30, rzx-p1- x27).
+> Witness: L1 139 (p1-speedup, p1-room30, rzx-p1- x27).
 $D492 TakePowerPodEnd
 $D494 c TakeBombPod ; The bomb pod ($FD): Bombs + 1 up to 3, the HUD, the sound
 > Witness: L1 3 (p1-room30, rzx-p1-52000, rzx-p1-54000).
 $D4AC w BonusTextTable 5 ; The bonus roulette's five panels: SPEED UP, SHIELD LOSS, 1000 BONUS, ENERGY LOSS, 100 RAPID SHOTS
 $D4B6 c BonusRoulette ; The bonus pod ($FC): a panel cycles through the five prizes until fire (or it slows to a stop); the prize given
 > SPEED UP ($A072 = 1, 200 passes), SHIELD LOSS (drain 20), 1000 BONUS (AddScore 10), ENERGY LOSS (LosePower, the HUD), 100 RAPID SHOTS ($A040 = 1, $A041 = 100). The screen is saved first (SaveScreen $D8A3) and restored after.
-> Witness: L1 2 (rzx-p1-50000, rzx-p1-56000).
+> Witness: L1 3 (p1-speedup, rzx-p1-50000, rzx-p1-56000).
 $D4F0 RouletteShow ; show a prize
 $D4F9 RouletteWait ; wait for fire, slowing down
 $D52F RouletteGive ; give the prize shown
@@ -1222,33 +1227,33 @@ $D5A0 c ExtraLife ; Lives + 1 up to 9, ShowLives
 @about All the game's sound but the explosion's crackle (DrawShard $BF66, the beeper bit) is the AY: SoundWrite puts register D = E through $FFFD / $BFFD. No routine tests for an AY: on a 48K Spectrum without one the writes go to no device and the game plays silent but for the crackle (see work/stage2/NOTES.md, 48K / 128K).
 @about An effect is a descriptor (SfxGun $D763 ...): [channel 1-3][noise flag: 0 a tone, else noise][steps][volume x 16][period word], then the steps, 3 bytes each: [count][period change, signed][volume change]. StartSfx copies it into its channel's 8 bytes at Channels $D832 ($FF free) and sets the mixer ($D855); SoundStep, called twice a pass, moves each channel one step (ChannelStep) and writes its tone and volume.
 $D5AE c SoundReset ; The channels free, the mixer $38 (tones on, noise off), silence
-> Witness: L1 77 (c1, p1-code, p1-cursor, p1-define, p1-kempston, p1-room x5, rzx-p1- x30).
+> Witness: L1 84 (c1, p1-code, p1-cursor, p1-define, p1-kempston, p1-rooms238, p1-speedup, p1-room x5, rzx-p1- x30).
 $D5D7 c SoundSilence ; The three volumes (registers 8-10) to 0
-> Witness: L1 52022 (c1, p1-code, p1-cursor, p1-define, p1-gameover, p1-kempston, p1-room x5, rzx-p1- x30).
+> Witness: L1 52036 (c1, p1-code, p1-cursor, p1-define, p1-gameover, p1-kempston, p1-rooms238, p1-speedup, p1-room x5, rzx-p1- x30).
 $D5E7 c StartSfx ; Start the effect at DE (saves IX, IY, BC)
-> Witness: L1 14740 (c1, p1-code, p1-cursor, p1-define, p1-gameover, p1-kempston, p1-room x5, rzx-p1- x32).
+> Witness: L1 15747 (c1, p1-code, p1-cursor, p1-define, p1-gameover, p1-kempston, p1-poke41241, p1-rooms238, p1-shots, p1-speedup, p1-room x5, rzx-p1- x32).
 $D5F8 c StartSfxIY ; The descriptor at IY into its channel; the mixer bits for tone and noise
-> Witness: L1 14740 (c1, p1-code, p1-cursor, p1-define, p1-gameover, p1-kempston, p1-room x5, rzx-p1- x32).
+> Witness: L1 15747 (c1, p1-code, p1-cursor, p1-define, p1-gameover, p1-kempston, p1-poke41241, p1-rooms238, p1-shots, p1-speedup, p1-room x5, rzx-p1- x32).
 $D643 SfxMixer
 $D651 SfxMixerBits
 $D664 SfxChannel3
 $D670 SfxNoise
 $D674 SfxMixerSet
 $D682 c WriteMixer ; Register 7 = the mixer $D855
-> Witness: L1 14817 (c1, p1-code, p1-cursor, p1-define, p1-gameover, p1-kempston, p1-room x5, rzx-p1- x33).
+> Witness: L1 15831 (c1, p1-code, p1-cursor, p1-define, p1-gameover, p1-kempston, p1-poke41241, p1-rooms238, p1-shots, p1-speedup, p1-room x5, rzx-p1- x33).
 $D68C c SoundStep ; Each of the 3 channels: ChannelStep, then its tone (registers 0-5) or noise period (6)
-> Witness: L1 33856 (c1, p1-code, p1-cursor, p1-define, p1-gameover, p1-kempston, p1-room x5, rzx-p1- x32).
+> Witness: L1 37230 (c1, p1-code, p1-cursor, p1-define, p1-gameover, p1-kempston, p1-poke41241, p1-rooms238, p1-shots, p1-speedup, p1-room x5, rzx-p1- x32).
 $D699 SoundChannelLoop
 $D6C0 SoundNoise
 $D6C8 SoundNextChannel
 $D6DB c ChannelStep ; One step of the channel at IX: the volume written, the tone and volume changed, the next step; at the end the channel silent and free
-> Witness: L1 103565 (c1, p1-code, p1-cursor, p1-define, p1-gameover, p1-kempston, p1-room x5, rzx-p1- x32).
+> Witness: L1 113930 (c1, p1-code, p1-cursor, p1-define, p1-gameover, p1-kempston, p1-poke41241, p1-rooms238, p1-shots, p1-speedup, p1-room x5, rzx-p1- x32).
 $D715 ChannelNextStep
 $D733 ChannelEnd
 $D744 c WriteVolume ; Register 8 + channel = the channel's volume / 16
-> Witness: L1 45766 (c1, p1-code, p1-cursor, p1-define, p1-gameover, p1-kempston, p1-room x5, rzx-p1- x32).
+> Witness: L1 48180 (c1, p1-code, p1-cursor, p1-define, p1-gameover, p1-kempston, p1-poke41241, p1-rooms238, p1-shots, p1-speedup, p1-room x5, rzx-p1- x32).
 $D759 c SoundWrite ; AY register D = E: OUT ($FFFD),D, OUT ($BFFD),E
-> Witness: L1 320181 (c1, p1-code, p1-cursor, p1-define, p1-gameover, p1-kempston, p1-room x5, rzx-p1- x33).
+> Witness: L1 328483 (c1, p1-code, p1-cursor, p1-define, p1-gameover, p1-kempston, p1-poke41241, p1-rooms238, p1-shots, p1-speedup, p1-room x5, rzx-p1- x33).
 $D763 b SfxGun 9 ; The effect descriptors. The gun's shot
 @res sound/rex1-effects.bin
 $D76C SfxEnemyShot ; an enemy's shot
@@ -1271,22 +1276,22 @@ $D857 ChannelNumber ; the channel SoundStep is on
 
 @module panels
 $D858 c FindFreeObject ; IX = the first dead object record; none: IX = $03E8
-> Witness: L1 163 (p1-code, p1-room30, rzx-p1- x10).
+> Witness: L1 169 (p1-code, p1-speedup, p1-room30, rzx-p1- x10).
 $D860 FindFreeLoop
 $D871 c WeaponPanel ; A weapon station's panel (HL: the flag then the text), once a game: the screen saved, the panel, wait for fire, the screen back
 > Witness: L1 95 (rzx-p1- x8).
 $D8A3 c SaveScreen ; The screen's play lines into the back buffer (the panels draw over the screen; BufferToScreen puts it back)
-> Witness: L1 6 (rzx-p1- x6).
+> Witness: L1 7 (p1-speedup, rzx-p1- x6).
 $D8AC SaveScreenLine
 $D8C0 c DrawCharBlock ; Draw a picture straight on the screen from the 6 bytes after the CALL: picture word, column, line, width, height; returns after them
-> Witness: L1 804 (c1, p1-code, p1-cursor, p1-define, p1-kempston, p1-room30, rzx-p1- x14).
+> Witness: L1 1326 (c1, menu-rollcall, p1-code, p1-cursor, p1-define, p1-kempston, p1-room30, rzx-p1- x14).
 $D8E0 CharBlockRow
 $D909 c FillAttrs ; Fill B rows of E attributes from HL with A
-> Witness: L1 108 (c1, p1-code, p1-cursor, p1-define, p1-gameover, p1-kempston, rzx-p1- x7).
+> Witness: L1 140 (c1, menu-rollcall, p1-code, p1-cursor, p1-define, p1-gameover, p1-kempston, p1-speedup, rzx-p1- x7).
 $D914 FillAttrsRow
 $D91D FillAttrsCell
 $D92E b UnusedD92E 16 ; Leftover: $C1 $C9 (POP BC: RET, nothing calls it), then the animated cells' work space
-$D962 AnimCellList ; the room's animated cells: 4 bytes each (cell, character, picture pointer), filled by DrawRoom
+$D962 SceneryCellList ; every visible scenery cell of the room, 4 bytes each (buffer address, picture address), filled by DrawRoom and redrawn each pass by DrawAnimCells (364 cells in room 0: past entry 255 the one-byte index of CellIndexMap wraps)
 
 @module menu ; The title, the menu, DEFINE KEYS, the roll call
 @about TitleMenu shows the title screen (loaded with the code at $E4FF and copied to the screen), prints the menu (SELECT 1:DEFINE 2:KEMPSTON 3:CURSOR 4:SINCLAIR) and, while it waits, rolls through the enemies with their names and scores (RollCallTexts $DC26, RollCallSprites $E067). A key 1-4 chooses the controls and asks to confirm (Y or N; N goes back to the menu). DEFINE asks for UP, DOWN, LEFT, RIGHT and FIRE; each key is read by ScanKey and written into the reader's port and BIT operands.
@@ -1295,24 +1300,26 @@ $DAC0 c TitleMenu ; The title and menu: the title on, the menu text, the roll ca
 > Witness: L1 1 (c1).
 $DB11 MenuLoop ; the menu's wait: keys 1-4, the roll call
 @isub $DB00 LD HL,RollCallSprites-12
-$DB6E b RollCallRestart 3 ; Code: LD HL,RollCallSprites ($21 $67 $E0): the roll call from its first sprite again, then RollCallText
-> TitleMenu's loop falls in here when the next sprite record is the list's $FF. No recording stays in the menu that long (known only from the code); the kit keeps it as bytes because a recording reads these bytes as data (c1, frames 18550-20469, in play; the reader is not identified) and a c seed cannot win over a read (work/stage2/NOTES.md, For the lead).
+$DB6E c RollCallRestart ; The roll call from its first sprite again (HL = RollCallSprites), then RollCallText
+> TitleMenu's loop falls in here when the next sprite record is the list's $FF. Run by menu-rollcall (the menu left alone for 5300 frames, every enemy shown once). c1 also reads these bytes as data in play (frames 18550-20469; the reader is not identified).
+> Witness: L1 1 (menu-rollcall).
 $DB71 c RollCallText ; The next enemy's name and score (2 text records), the next record; at the list's end RollCallTextStart
-> Witness: L1 4 (c1).
-$DB85 b RollCallTextStart 4 ; Code: LD IX,RollCallTexts ($DD $21 $26 $DC): the names from the first again, then RollCallNext
-> RollCallText falls in here at the texts' $FF; never run in the recordings (known only from the code); the kit keeps it as bytes because a recording reads these bytes as data (c1, frames 18550-20469, in play; the reader is not identified) and a c seed cannot win over a read (work/stage2/NOTES.md, For the lead).
+> Witness: L1 14 (c1, menu-rollcall).
+$DB85 c RollCallTextStart ; The names from the first again (IX = RollCallTexts), then RollCallNext
+> Reached at the list's end. Run by menu-rollcall (the menu left alone for 5300 frames).
+> Witness: L1 1 (menu-rollcall).
 $DB89 c RollCallNext ; Keep the text pointer, back to the menu loop
-> Witness: L1 4 (c1).
+> Witness: L1 14 (c1, menu-rollcall).
 $DB90 RollCallTitle
 $DB96 c ShowTitle ; The title screen ($E4FF) to the screen, the menu's attribute box
-> Witness: L1 8 (c1, p1-cursor, p1-define, p1-kempston, rzx-p1-00000).
+> Witness: L1 18 (c1, menu-rollcall, p1-cursor, p1-define, p1-kempston, rzx-p1-00000).
 $DBAE c ScanKey ; DEFINE: wait for a key not SPACE, not H and not taken; its port into DefinePort, its BIT opcode into DefineBit, its character in A
 > Witness: L1 10 (c1, p1-define).
 $DBB0 ScanKeyRow ; each half-row
 $DBBA ScanKeyBit
 $DBCC ScanKeyShift
-$DBE2 ScanKeyNextRow
-$DBE4 ScanKeyFound
+$DBE2 ScanKeyFound ; a key down: its port and bit kept
+$DBE4 ScanKeyRelease
 $DC17 ScanKeyTaken ; a key already chosen?
 $DC26 b RollCallTexts 16 ; The roll call: for each enemy its name and its score as text records, then $FF
 > FOOT MAN 100, STOMPER 200, SCANNER 600, RAMMING POD 300, LAUNCHER 800, SHOOTERS 500, SWING GUN 600, BLOB 200, MINE LAYER 1000, MINE no score.
@@ -1327,12 +1334,14 @@ $DE20 c ChooseKempston ; 2, Kempston: the readers on port $001F, ControlXor $FF;
 $DE5D c ChooseSinclair ; 4: Sinclair (port $EFFE, keys 6-0): fire bit 0, up 1, down 2, right 3, left 4; the confirm
 > Witness: L1 1 (rzx-p1-00000).
 @isub $DE60 LD HL,$EFFE
+@isub $DE9C LD HL,$EFFE
+@isub $DEC2 LD HL,$F7FE
 $DE92 c KeysConfirm ; ControlXor 0 (keys), then the confirm
 > Witness: L1 4 (c1, p1-cursor, p1-define, rzx-p1-00000).
 $DE99 c ChooseCursor ; 3, Cursor: port $EFFE fire bit 0 (key 0), right 2 (8), up 3 (7), down 4 (6); left $F7FE bit 4 (5); the confirm
 > Built like ChooseSinclair, ending with KeysConfirm (ControlXor 0). From $DE9F on, after the menu, these bytes are also CellIndexMap: the room's animated cell index of each grid cell, written by DrawRoom and read by BulletHitsCell, which is why every play recording reads them. Run by p1-cursor (menu key 3, then play on 5-8 and 0: the readers' operands read back as above).
 > Witness: L1 1 (p1-cursor)
-$DE9F CellIndexMap ; after the menu: each grid cell's index into AnimCellList (DrawRoom, BulletHitsCell), over this code and the menu's texts
+$DE9F CellIndexMap ; after the menu: each grid cell's index into SceneryCellList (DrawRoom, BulletHitsCell), over this code and the menu's texts
 $DED2 c Confirm ; The confirm text; Y returns (the game starts), N goes back to the menu (MenuAgain)
 > Witness: L1 5 (c1, p1-cursor, p1-define, p1-kempston, rzx-p1-00000).
 $DED7 ConfirmWait ; Y or N
@@ -1356,15 +1365,15 @@ $DFEC DefineLeftText ; :LEFT
 $DFF6 DefineRightText ; :RIGHT
 $E001 DefineFireText ; :FIRE
 $E00B c RollCallSprite ; Draw the roll call's sprite (RollCallSprites record at HL) frame RollFrame by DrawCharBlock, its picture and column written into the inline parameters
-> Witness: L1 446 (c1, p1-cursor, p1-define, p1-kempston, rzx-p1-00000).
+> Witness: L1 1468 (c1, menu-rollcall, p1-cursor, p1-define, p1-kempston, rzx-p1-00000).
 $E049 b RollSpriteParams 6 ; DrawCharBlock's inline parameters (the picture word, column and line rewritten at $E04D, $E04E)
 $E04F c RollCallFrame ; The next frame (8 a sprite), then the next record
-> Witness: L1 224 (c1, p1-cursor, p1-define, p1-kempston).
+> Witness: L1 746 (c1, menu-rollcall, p1-cursor, p1-define, p1-kempston).
 $E063 RollFrameStore
 $E067 b RollCallSprites 12 ; The roll call's sprites: [picture word][width][height][8 frame offsets], $FF ends
 $E0E0 KeyPorts ; the 8 keyboard half-rows' ports, ScanKey's order
 $E0F0 RollCallPictures ; the roll call's pictures ($E0F6, $E176, $E1F6, $E2B6, $E3F6, $E436, $E496); the room grid is built over them after the menu
-$E19E RoomGridLeft ; the grid's origin one byte left (CellPointer with A = 1)
+$E19E RoomGridLeft ; the grid's origin one byte left (CellPointer with A = 0, Rex facing right)
 $E19F RoomGrid ; the room grid's origin: the cell under (x, y) at $E19F + 32 x (y / 8) + x / 8; built over the roll call's pictures
 $E1FF RoomGridPlay ; the grid's first play row (line 24)
 $E336 ExplosionPicture ; the explosion's picture (192 bytes), copied to $6018 by TitleMenu

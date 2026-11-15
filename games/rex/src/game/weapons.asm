@@ -55,8 +55,8 @@ GiveWeapon:
 ; Fire: a shot of the current weapon if a slot is free (once a press, only
 ; while Rex is present)
 ;
-; Witness: L1 2643 (c1, p1-code, p1-cursor, p1-define, p1-kempston, p1-room x5,
-; rzx-p1- x32).
+; Witness: L1 2704 (c1, p1-code, p1-cursor, p1-define, p1-kempston, p1-shots,
+; p1-speedup, p1-room x5, rzx-p1- x32).
 FireWeapon:
   LD A,(FireLatch)
   OR A
@@ -150,7 +150,7 @@ FireDouble:
 
 ; The laser's beam
 ;
-; Witness: L1 180 (p1-room24, rzx-p1- x6).
+; Witness: L1 183 (p1-shots, p1-room24, rzx-p1- x6).
 FireLaser:
   CALL RexShot
   LD (IY+$05),$00
@@ -177,7 +177,7 @@ SprayDirections:
 ; The spray: 8 shots in the 8 directions of SprayDirections, as many as the
 ; power level allows
 ;
-; Witness: L1 961 (p1-code, p1-room30, rzx-p1- x17).
+; Witness: L1 1010 (p1-code, p1-shots, p1-speedup, p1-room30, rzx-p1- x17).
 FireSpray:
   LD A,(PowerLevel)
   CP $04
@@ -235,7 +235,7 @@ SprayShot:
 
 ; A shot's direction from the record at HL: dX word, dY, its picture
 ;
-; Witness: L1 5156 (p1-code, p1-room30, rzx-p1- x16).
+; Witness: L1 5524 (p1-code, p1-speedup, p1-room30, rzx-p1- x16).
 SetShotDirection:
   LD E,(HL)
   INC HL
@@ -255,8 +255,8 @@ SetShotDirection:
 
 ; A shot's speed A into its record (dY x 32 added to the grid step)
 ;
-; Witness: L1 8212 (c1, p1-code, p1-cursor, p1-kempston, p1-room26, p1-room27,
-; p1-room30, rzx-p1- x25).
+; Witness: L1 8801 (c1, p1-code, p1-cursor, p1-kempston, p1-shots, p1-speedup,
+; p1-room26, p1-room27, p1-room30, rzx-p1- x25).
 SetShotSpeed:
   LD (IY+$05),A
   LD E,A
@@ -279,8 +279,8 @@ SetShotSpeed:
 ; IY = a free slot among Rex's bullets (as many as the power level allows for
 ; the gun and double fire); none: IY = $03E8
 ;
-; Witness: L1 9961 (c1, p1-code, p1-cursor, p1-define, p1-kempston, p1-room x5,
-; rzx-p1- x32).
+; Witness: L1 10408 (c1, p1-code, p1-cursor, p1-define, p1-kempston, p1-shots,
+; p1-speedup, p1-room x5, rzx-p1- x32).
 FindShotSlot:
   XOR A
   LD (ShotSide),A
@@ -302,8 +302,9 @@ SlotsByPower:
 ; Search E slots from IY for a free one; the shot's sound by weapon (gun $D763,
 ; laser $D775, spray $D77E; the enemies' $D76C)
 ;
-; Witness: L1 14309 (c1, p1-code, p1-cursor, p1-define, p1-gameover,
-; p1-kempston, p1-room x5, rzx-p1- x32).
+; Witness: L1 15464 (c1, p1-code, p1-cursor, p1-define, p1-gameover,
+; p1-kempston, p1-poke41241, p1-rooms238, p1-shots, p1-speedup, p1-room x5,
+; rzx-p1- x32).
 FindSlot:
   DEC E
   LD B,E
@@ -333,22 +334,22 @@ FindSlotFound:
 
 ; DE = the laser's sound $D775
 ;
-; Witness: L1 973 (p1-room24, rzx-p1- x6).
+; Witness: L1 997 (p1-shots, p1-room24, rzx-p1- x6).
 LaserSound:
   LD DE,SfxLaser
   RET
 
 ; DE = the spray's sound $D77E
 ;
-; Witness: L1 6544 (p1-code, p1-room30, rzx-p1- x17).
+; Witness: L1 6966 (p1-code, p1-shots, p1-speedup, p1-room30, rzx-p1- x17).
 SpraySound:
   LD DE,SfxSpray
   RET
 
-; The enemies' shot sound $D76C, if channel 2 is free
+; The enemies' shot sound $D76C, if channel C (the third, Channels+$10) is free
 ;
-; Witness: L1 4342 (c1, p1-cursor, p1-define, p1-gameover, p1-kempston, p1-room
-; x5, rzx-p1- x32).
+; Witness: L1 5050 (c1, p1-cursor, p1-define, p1-gameover, p1-kempston,
+; p1-poke41241, p1-rooms238, p1-shots, p1-speedup, p1-room x5, rzx-p1- x32).
 EnemyShotSound:
   POP HL
   LD A,(Channels+$0010)
@@ -360,8 +361,8 @@ EnemyShotSound:
 
 ; IY = a free slot among the enemies' 20 bullets
 ;
-; Witness: L1 4348 (c1, p1-cursor, p1-define, p1-gameover, p1-kempston, p1-room
-; x5, rzx-p1- x32).
+; Witness: L1 5056 (c1, p1-cursor, p1-define, p1-gameover, p1-kempston,
+; p1-poke41241, p1-rooms238, p1-shots, p1-speedup, p1-room x5, rzx-p1- x32).
 FindEnemySlot:
   LD A,$01
   LD (ShotSide),A
@@ -396,8 +397,8 @@ EnemyShotA:
 ; An enemy shot from IX: X Temp1, Y IX+1, speed A, kind EnemyShotKind $A054
 ; (bit 7: an enemy's)
 ;
-; Witness: L1 3486 (c1, p1-cursor, p1-define, p1-gameover, p1-kempston, p1-room
-; x5, rzx-p1- x32).
+; Witness: L1 4018 (c1, p1-cursor, p1-define, p1-gameover, p1-kempston,
+; p1-poke41241, p1-rooms238, p1-shots, p1-speedup, p1-room x5, rzx-p1- x32).
 EnemyShot:
   LD (Temp4),A
   LD A,(IX+$01)
@@ -410,8 +411,8 @@ EnemyShot:
 
 ; A shot from Rex: his X, Y and facing, speed 17, type the weapon
 ;
-; Witness: L1 6714 (c1, p1-code, p1-cursor, p1-define, p1-kempston, p1-room x5,
-; rzx-p1- x32).
+; Witness: L1 7094 (c1, p1-code, p1-cursor, p1-define, p1-kempston, p1-shots,
+; p1-speedup, p1-room x5, rzx-p1- x32).
 RexShot:
   LD A,(RexX)
   LD (Temp1),A
@@ -427,8 +428,9 @@ RexShot:
 ; Fill the slot at IY: live, type A, Y Temp2 + Temp4, X Temp1 + 16, direction
 ; Temp3 (left: dX -1, -8 pixels), the grid pointer
 ;
-; Witness: L1 12707 (c1, p1-code, p1-cursor, p1-define, p1-gameover,
-; p1-kempston, p1-room x5, rzx-p1- x32).
+; Witness: L1 13750 (c1, p1-code, p1-cursor, p1-define, p1-gameover,
+; p1-kempston, p1-poke41241, p1-rooms238, p1-shots, p1-speedup, p1-room x5,
+; rzx-p1- x32).
 SetupShot:
   LD (IY+$06),$01
   LD (IY+$0B),A
@@ -495,8 +497,9 @@ ShotPointer:
 
 ; Move the enemies' 20 bullets
 ;
-; Witness: L1 16954 (c1, p1-code, p1-cursor, p1-define, p1-gameover,
-; p1-kempston, p1-room x5, rzx-p1- x32).
+; Witness: L1 18641 (c1, p1-code, p1-cursor, p1-define, p1-gameover,
+; p1-kempston, p1-poke41241, p1-rooms238, p1-shots, p1-speedup, p1-room x5,
+; rzx-p1- x32).
 MoveEnemyBullets:
   LD IX,$5D22
   LD B,$14
@@ -504,8 +507,9 @@ MoveEnemyBullets:
 
 ; Move Rex's 30 bullets (falls into MoveShots)
 ;
-; Witness: L1 16842 (c1, p1-code, p1-cursor, p1-define, p1-gameover,
-; p1-kempston, p1-room x5, rzx-p1- x32).
+; Witness: L1 18529 (c1, p1-code, p1-cursor, p1-define, p1-gameover,
+; p1-kempston, p1-poke41241, p1-rooms238, p1-shots, p1-speedup, p1-room x5,
+; rzx-p1- x32).
 MoveBullets:
   LD IX,$5B60
   LD B,$1E
@@ -513,8 +517,9 @@ MoveBullets:
 ; Move B bullets from IX: by state (live, hit flash 2 and 3) and type (gun,
 ; beam, spray dot, enemy shot, bouncing, drone shot)
 ;
-; Witness: L1 844313 (c1, p1-code, p1-cursor, p1-define, p1-gameover,
-; p1-kempston, p1-room x5, rzx-p1- x32).
+; Witness: L1 928663 (c1, p1-code, p1-cursor, p1-define, p1-gameover,
+; p1-kempston, p1-poke41241, p1-rooms238, p1-shots, p1-speedup, p1-room x5,
+; rzx-p1- x32).
 MoveShots:
   LD A,(IX+$06)
   OR A
@@ -545,8 +550,9 @@ MoveShots:
 ; Move a bullet one step; off the play area it ends; a damaging cell (4, 5, 6)
 ; is hit; a solid cell stops it
 ;
-; Witness: L1 84287 (c1, p1-code, p1-cursor, p1-define, p1-gameover,
-; p1-kempston, p1-room x5, rzx-p1- x32).
+; Witness: L1 93235 (c1, p1-code, p1-cursor, p1-define, p1-gameover,
+; p1-kempston, p1-poke41241, p1-rooms238, p1-shots, p1-speedup, p1-room x5,
+; rzx-p1- x32).
 StepShot:
   LD A,(IX+$00)
   ADC A,(IX+$04)
@@ -591,8 +597,9 @@ StepShotType:
 
 ; The next bullet record (15 bytes on)
 ;
-; Witness: L1 844312 (c1, p1-code, p1-cursor, p1-define, p1-gameover,
-; p1-kempston, p1-room x5, rzx-p1- x32).
+; Witness: L1 928662 (c1, p1-code, p1-cursor, p1-define, p1-gameover,
+; p1-kempston, p1-poke41241, p1-rooms238, p1-shots, p1-speedup, p1-room x5,
+; rzx-p1- x32).
 NextShot:
   LD DE,$000F
   ADD IX,DE
@@ -602,14 +609,15 @@ NextShot:
 
 ; The bullet ends (live = 0)
 ;
-; Witness: L1 2795 (c1, p1-code, p1-cursor, p1-define, p1-gameover,
-; p1-kempston, p1-room x5, rzx-p1- x30).
+; Witness: L1 3045 (c1, p1-code, p1-cursor, p1-define, p1-gameover,
+; p1-kempston, p1-poke41241, p1-rooms238, p1-shots, p1-speedup, p1-room x5,
+; rzx-p1- x30).
 EndShot:
   LD (IX+$06),$00
   JP NextShot
 
 ; A bullet hits a cell 4, 5 or 6: the cell's character goes one step on (its
-; animated record in AnimCellList), the room's look changes
+; animated record in SceneryCellList), the room's look changes
 ;
 ; Witness: L1 290 (c1, rzx-p1- x7).
 BulletHitsCell:
@@ -630,7 +638,7 @@ BulletHitsCell:
   LD H,$00
   ADD HL,HL
   ADD HL,HL
-  LD DE,AnimCellList
+  LD DE,SceneryCellList
   ADD HL,DE
   LD (Temp2),HL
   INC HL
@@ -697,8 +705,9 @@ CellHitDone:
 ; A bullet meets a wall: a small flash (state 2) unless it is the laser, the
 ; hit sound $D787
 ;
-; Witness: L1 7903 (c1, p1-code, p1-cursor, p1-define, p1-gameover,
-; p1-kempston, p1-room x5, rzx-p1- x32).
+; Witness: L1 8636 (c1, p1-code, p1-cursor, p1-define, p1-gameover,
+; p1-kempston, p1-poke41241, p1-rooms238, p1-shots, p1-speedup, p1-room x5,
+; rzx-p1- x32).
 ShotStopped:
   LD L,(IX+$02)
   LD H,(IX+$03)
@@ -717,8 +726,9 @@ ShotStopped:
 
 ; The flash's first frame: a cross of three bytes in the buffer
 ;
-; Witness: L1 8456 (c1, p1-code, p1-cursor, p1-define, p1-gameover,
-; p1-kempston, p1-room x5, rzx-p1- x31).
+; Witness: L1 9214 (c1, p1-code, p1-cursor, p1-define, p1-gameover,
+; p1-kempston, p1-poke41241, p1-rooms238, p1-shots, p1-speedup, p1-room x5,
+; rzx-p1- x31).
 ShotFlash1:
   LD L,(IX+$02)
   LD H,(IX+$03)
@@ -735,8 +745,9 @@ ShotFlash1:
 
 ; The flash's second frame, then the bullet ends
 ;
-; Witness: L1 8440 (c1, p1-code, p1-cursor, p1-define, p1-gameover,
-; p1-kempston, p1-room x5, rzx-p1- x31).
+; Witness: L1 9196 (c1, p1-code, p1-cursor, p1-define, p1-gameover,
+; p1-kempston, p1-poke41241, p1-rooms238, p1-shots, p1-speedup, p1-room x5,
+; rzx-p1- x31).
 ShotFlash2:
   LD L,(IX+$02)
   LD H,(IX+$03)
@@ -758,8 +769,9 @@ ShotFlash2:
 
 ; The long beam (type 7): its frames from BeamPath $A9AF
 ;
-; Witness: L1 3449 (c1, p1-cursor, p1-define, p1-gameover, p1-kempston,
-; p1-room14, p1-room24, p1-room26, p1-room30, rzx-p1- x16).
+; Witness: L1 7517 (c1, p1-cursor, p1-define, p1-gameover, p1-kempston,
+; p1-poke41241, p1-shots, p1-speedup, p1-room14, p1-room24, p1-room26,
+; p1-room30, rzx-p1- x16).
 MoveBeam:
   LD L,(IX+$01)
   LD H,$00
@@ -822,8 +834,8 @@ BeamByte:
 
 ; Draw a type 4 bullet: a 4-line dot (Rex's or an enemy's shape)
 ;
-; Witness: L1 46274 (c1, p1-code, p1-cursor, p1-kempston, p1-room26, p1-room27,
-; p1-room30, rzx-p1- x25).
+; Witness: L1 49181 (c1, p1-code, p1-cursor, p1-kempston, p1-shots, p1-speedup,
+; p1-room26, p1-room27, p1-room30, rzx-p1- x25).
 DrawShotDot:
   LD DE,$0040
   AND A
@@ -851,8 +863,8 @@ DotEnemy:
 
 ; Draw a gun bullet: one byte by direction and side
 ;
-; Witness: L1 23803 (c1, p1-cursor, p1-define, p1-gameover, p1-kempston,
-; p1-room x5, rzx-p1- x32).
+; Witness: L1 25458 (c1, p1-cursor, p1-define, p1-gameover, p1-kempston,
+; p1-poke41241, p1-rooms238, p1-shots, p1-speedup, p1-room x5, rzx-p1- x32).
 DrawShotByte:
   BIT 7,(IX+$0B)
   JP NZ,ByteEnemy
@@ -877,7 +889,7 @@ ByteEnemyLeft:
 ; A splitting shot (type 2): every few steps it fires a new shot from where it
 ; is
 ;
-; Witness: L1 1537 (p1-room24, rzx-p1- x6).
+; Witness: L1 1573 (p1-shots, p1-room24, rzx-p1- x6).
 MoveSplitShot:
   LD A,(IX+$0E)
   DEC A
@@ -924,7 +936,7 @@ SplitFire:
 
 ; A spark (type 6): random dots by its count (SparkMasks $B943), it fades out
 ;
-; Witness: L1 9224 (p1-room24, rzx-p1- x6).
+; Witness: L1 9506 (p1-shots, p1-room24, rzx-p1- x6).
 MoveSparkShot:
   EX DE,HL
   PUSH DE
@@ -955,8 +967,9 @@ SparkMasks:
 
 ; Draw the power bar: its end colour flashes by FadeStepIndex
 ;
-; Witness: L1 16927 (c1, p1-code, p1-cursor, p1-define, p1-gameover,
-; p1-kempston, p1-room x5, rzx-p1- x32).
+; Witness: L1 18614 (c1, p1-code, p1-cursor, p1-define, p1-gameover,
+; p1-kempston, p1-poke41241, p1-rooms238, p1-shots, p1-speedup, p1-room x5,
+; rzx-p1- x32).
 PowerBar:
   LD A,(FadeStepIndex)
   CP $FF
@@ -964,13 +977,14 @@ PowerBar:
   LD HL,(PowerBarPtr)
   CALL PowerBarColour
   LD HL,(PowerBarPtr)
-  LD DE,SpritePowerBar
+  LD DE,ShadowOffset
   ADD HL,DE
 
 ; A = PowerLevel + 2 (the bar's colour)
 ;
-; Witness: L1 29628 (c1, p1-code, p1-cursor, p1-define, p1-gameover,
-; p1-kempston, p1-room x5, rzx-p1- x32).
+; Witness: L1 32766 (c1, p1-code, p1-cursor, p1-define, p1-gameover,
+; p1-kempston, p1-poke41241, p1-rooms238, p1-shots, p1-speedup, p1-room x5,
+; rzx-p1- x32).
 PowerBarColour:
   LD A,(PowerLevel)
   INC A
@@ -978,8 +992,9 @@ PowerBarColour:
 
 ; Write A into a 2 x 2 patch at HL
 ;
-; Witness: L1 29648 (c1, p1-code, p1-cursor, p1-define, p1-gameover,
-; p1-kempston, p1-room x5, rzx-p1- x32).
+; Witness: L1 32786 (c1, p1-code, p1-cursor, p1-define, p1-gameover,
+; p1-kempston, p1-poke41241, p1-rooms238, p1-shots, p1-speedup, p1-room x5,
+; rzx-p1- x32).
 Fill2x2:
   LD (HL),A
   INC HL
@@ -994,7 +1009,7 @@ Fill2x2:
 ; A power pod: PowerCount $A018 counts, every few the PowerLevel + 1 up to 6,
 ; the bar redrawn, the fire faster
 ;
-; Witness: L1 206 (p1-room30, rzx-p1- x27).
+; Witness: L1 212 (p1-speedup, p1-room30, rzx-p1- x27).
 PowerGain:
   LD HL,Temp1
   LD (HL),A
@@ -1056,8 +1071,8 @@ BestNext:
 ; A shot of a special weapon: PowerCount down; at 0 the PowerLevel - 1, the bar
 ; redrawn; at 1 BestWeapon
 ;
-; Witness: L1 1957 (c1, p1-code, p1-cursor, p1-define, p1-gameover,
-; p1-kempston, p1-room x5, rzx-p1- x32).
+; Witness: L1 2009 (c1, p1-code, p1-cursor, p1-define, p1-gameover,
+; p1-kempston, p1-shots, p1-speedup, p1-room x5, rzx-p1- x32).
 PowerDrain:
   LD HL,Temp1
   LD (HL),A
@@ -1086,7 +1101,7 @@ DrainRank:
   LD HL,(PowerBarPtr)
   CALL Fill2x2
   LD HL,(PowerBarPtr)
-  LD DE,SpritePowerBar
+  LD DE,ShadowOffset
   ADD HL,DE
   CALL Fill2x2
   LD HL,(PowerBarPtr)

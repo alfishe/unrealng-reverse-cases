@@ -1,10 +1,18 @@
 # Rex (Martech Games, 1988)
 
-State: in progress (stage 1, 2026-11-14: the medium, the release check, the recordings).
+State: docs written, in review (2026-11-15): docs 01-10 by the writers, docs 11 and 12 generated, integrated; both
+tape sides build identical from the sources. 12 documents, 62 figures (PNG), 29 animations (GIF), 85 mermaid
+diagrams and 16 audio files (16 short WAV, the longest 4.6 s, no MP3; 1.7 MB), counted on 2026-11-15 with:
+
+```sh
+ls docs/[0-9][0-9]-*.md | wc -l; find docs/img -name '*.png' | wc -l; find docs/img -name '*.gif' | wc -l
+cat docs/[0-9][0-9]-*.md | grep -c '^```mermaid'
+find docs -name '*.mp3' | wc -l; find docs -name '*.wav' | wc -l; du -sh docs/audio
+```
 
 | | |
 | --- | --- |
-| Machine | 48K and 128K from one tape (ZXDB machine type "ZX-Spectrum 48K/128K"). Each part's code holds AY writes (`OUT ($FFFD)` at `$D759` in REX 1, at `$D4F1` in REX 2: `work/stage1/zdis.py` on the tape blocks) besides the beeper; how the program picks the device is stage 2's. This case runs the 128K (both RZX runs of the archive were made on a 128K) |
+| Machine | 48K and 128K from one tape (ZXDB machine type "ZX-Spectrum 48K/128K"). Every part plays its effects on the AY (SoundWrite `$D759` in REX 1: `OUT ($FFFD)`, `OUT ($BFFD)`) and nothing tests for it: on a 48K the writes reach no device and the game is silent but for the beeper crackle of the explosions (DrawShard `$BF66`, `OUT ($FE)`) ([doc 9, 9.1](docs/09-sound.md#91-the-hardware-and-what-a-48k-hears)). No interrupts, no paging: the 48K and the 128K run the same code. This case runs the 128K (both RZX runs of the archive were made on a 128K) |
 | Profile (AGENTS.md 4.0) | see [Profile](#profile) below |
 | Authors | ZXDB 4129: Neil Harris, John Anderson, Richard Allen (The Light); inlay art Steinar Lund |
 | Release | ZXDB 4129: Rex (aka Zenith), Martech Games Ltd, 1988, £8.99; re-releases EDOS, Erbe Software S.A. (Spain, 1988), Winner (1988). Genre in ZXDB "Arcade Game: Shoot-em-up" |
@@ -12,18 +20,17 @@ State: in progress (stage 1, 2026-11-14: the medium, the release check, the reco
 
 ## Profile
 
-Picked in phase 0 from the tape, the instructions (ZXDB `Rex.txt`) and the first recordings; each row is confirmed
-from play in stage 1 and its items go into the writers' briefs.
+Each row from the documents.
 
 | Row (AGENTS.md 4.0) | Rex |
 | --- | --- |
-| Genre | "Arcade, platform, flip-screen" and "Scrolling arcade or shooter" (to be confirmed from play): a run-and-gun platform shooter for one player. Rex, an armoured dinosaur mercenary, walks, jumps and shoots through caves to the heart of the Great Tower of Zenith. Two levels, one a part of the tape: REX 1 (level 1) and REX 2 (level 2), which asks for the access code level 1 gives at its end (the instructions; the POKE file's "Access code always right" for part 2). The map of each level, its rooms and its route come from the level data |
-| Weapons and pick-ups | Rex starts with one weapon; four more are in weapon pods; the energy bubbles the enemies leave raise the weapon energy through pink, green, cyan, yellow and white, and past white the next weapon held; a smart bomb (SPACE), a shield (J); the pods' effects whose texts the code holds (SPEED UP, SHIELD LOSS, 1000 BONUS, ENERGY LOSS, 100 RAPID SHOTS: strings in the DEMO block) |
-| Enemies and bosses | each with a name and a score on the menu's roll call (recording `c1`: STOMPER 200, LAUNCHER 800, BLOB 200, ...); the bosses as the recordings reach them |
-| Rendering | "Flip-screen" or "Scrolling" as play shows it, "Sprites over a background" |
-| Engine | "Multi-load, 128K paging": two parts loaded apart (REX 1 at `$6018`, REX 2 at `$61A8`) and a DEMO on side 2; each part a stage of its own |
-| Sound | the beeper and the AY (the `$FFFD` writes): which plays on which machine, the tunes and effects |
-| Controls | keyboard Q W (left, right), I (jump), J (shield), O (fire), SPACE (smart bomb), H (pause), redefinable except SPACE and H (the instructions); Kempston, cursor and Sinclair from the menu (SELECT 1 DEFINE, 2 KEMPSTON, 3 CURSOR, 4 SINCLAIR: recording `c1`) |
+| Genre | a flip-screen run-and-gun platform shooter for one player ([doc 1](docs/01-game-design.md)): Rex walks, jumps and shoots through rooms one screen each; REX 1 has 35 rooms (0-34) with one-way exits and three forks and ends with a 16-digit access code; REX 2, a separate load, asks for the code, takes Rex's state from it and climbs 26 rooms (0-25) to the boss; DEMO on side 2 plays four of REX 1's rooms by itself as a tutor ([doc 1, 1.1](docs/01-game-design.md#11-the-premise-and-the-three-parts), [1.4](docs/01-game-design.md#14-the-world)) |
+| Weapons and pick-ups | the gun, then double fire, laser, multiple and spray from four stations (REX 1 rooms 1, 6, 23, 11), each with its weapon panel; the power level (1-5 in each of five ranks) sets the shots in the air; pods: power, a smart bomb, the bonus roulette (SPEED UP, SHIELD LOSS, 1000 BONUS, ENERGY LOSS, 100 RAPID SHOTS); the shield and its rechargers; three smart bombs ([doc 10](docs/10-gameplay-logic.md)) |
+| Enemies and bosses | REX 1's 17 kinds (the roll call names ten: STOMPER, SCANNER, SWING GUN, SHOOTERS, LAUNCHER, RAMMING POD, MINE LAYER, BLOB, ...), people counted as HUMANS KILLED, the big gun; REX 2's boss, the big squidgy thing in room 25 ([doc 1, 1.6](docs/01-game-design.md#16-the-enemies), [doc 7](docs/07-objects.md)) |
+| Rendering | flip-screen; the room drawn from a character map into a back buffer `$EB00-$FFFF`, sprites pre-shifted and drawn by DrawSprite and DrawMirrored, the animated scenery redrawn over them, the buffer copied to the screen once a pass, no wait for the beam ([doc 6](docs/06-rendering.md)) |
+| Engine | no interrupts: a main loop of about 4.4 frames a pass, every timer counted in passes; three separate loads (REX 1 at `$6018`, REX 2 and DEMO at `$61A8`), no custom loader, protection or packer ([doc 2](docs/02-architecture.md), [doc 3](docs/03-build-and-load.md), [doc 4](docs/04-game-loop.md)) |
+| Sound | 14 effects on the AY from 9-byte descriptors, stepped twice a pass; the beeper crackle of the explosions; no tune ([doc 9](docs/09-sound.md)) |
+| Controls | 1 DEFINE, 2 KEMPSTON, 3 CURSOR, 4 SINCLAIR through five self-modified readers; SPACE smart bomb, H pause, ENTER restart fixed; REX 2's code entry ([doc 5](docs/05-controls.md)) |
 
 ## Other releases and copies
 
@@ -50,7 +57,9 @@ archive, the POKE file) and compared block by block with the original (`tools/me
 - The game: Rex, The Light for Martech Games, 1988 (ZXDB 4129); ZXDB credits Neil Harris, John Anderson and Richard
   Allen (The Light), and Steinar Lund for the inlay art.
 - The tape: ZXDB `pub/sinclair/games/r/Rex.tzx.zip`, the file in `orig/`.
-- The RZX runs: the RZX archive's `rex.zip` (`rex1.rzx`, `rex2.rzx`), someone else's play, cut into input scripts.
+- The RZX runs: the RZX archive's `rex.zip`, someone else's play, cut into input scripts: `rex1.rzx` (recorded with
+  Spectaculator 0.52, 128K, 64 813 frames, part 1 to its code) and `rex2.rzx` (SPIN 0.5, 128K, 41 776 frames, part 2
+  to the ending); the players are not named in the files.
 - The instructions: ZXDB `pub/sinclair/games-info/r/Rex.txt` (spectrumcomputing.co.uk): the keys, the two parts and
   the access code, the weapons and the energy bubbles, the DEMO ("Tutor Mode") on side 2.
 - A SkoolKit disassembly exists: `ultrabolido/skRex` on GitHub ("A disassembly of Rex, created using SkoolKit", side A
@@ -61,8 +70,10 @@ The documents: [docs/README.md](docs/README.md). How the reverse was done: [WALK
 ## Build
 
 ```bash
-tools/build.sh [SJASMPLUS]     # builds the tape and compares it with orig/Rex.tzx.zip byte for byte (stage 4)
+tools/build.sh [SJASMPLUS]     # build/side1.tzx and side2.tzx, compared with orig/Rex.tzx.zip byte for byte
 ```
 
-The game source is `src/game/*.asm`, written by `kit/mkgame.py` from `src/game/game.ann`; the resources are
-`src/res/` (`src/res/README.md`).
+The sources are `src/game/*.asm` (REX 1), `src/rex2/*.asm` (REX 2) and `src/demo/*.asm` (DEMO), written by
+`kit/mkgame.py` from each part's `.ann` (the BASICs from `src/tape/basic.ann`, the loading screens from `src/screen/`);
+the resources are `src/res/` (`src/res/README.md`; `python3 tools/res_formats.py check`: 43 editable files, 0 bad).
+`python3 ../../kit/refdocs.py --case .` writes docs 11 and 12.

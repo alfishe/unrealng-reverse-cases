@@ -29,13 +29,15 @@ SpeedUpTick:
 WalkRightKey:
   LD A,(SpeedUp)
   OR A
-  JP Z,WalkRightFast
-  LD A,$04
+  JP Z,WalkRightNormal
+WalkRightFast:
+  LD A,$04                ; SPEED UP (SpeedUp not 0): 4 pixels, SpeedUpTick
+                          ; counts down
   LD (RexSpeed),A
   CALL SpeedUpTick
   JP WalkRightFacing
-WalkRightFast:
-  LD A,$02                ; SPEED UP: 2 pixels
+WalkRightNormal:
+  LD A,$02                ; the normal walk: 2 pixels
   LD (RexSpeed),A
 WalkRightFacing:
   XOR A
@@ -50,13 +52,14 @@ WalkRightFacing:
 WalkLeftKey:
   LD A,(SpeedUp)
   OR A
-  JP Z,WalkLeftFast
-  LD A,$FC
+  JP Z,WalkLeftNormal
+WalkLeftFast:
+  LD A,$FC                ; SPEED UP: 4 pixels left, SpeedUpTick counts down
   LD (RexSpeed),A
   CALL SpeedUpTick
   JP WalkLeftFacing
-WalkLeftFast:
-  LD A,$FE
+WalkLeftNormal:
+  LD A,$FE                ; the normal walk: 2 pixels left
   LD (RexSpeed),A
 WalkLeftFacing:
   LD A,$01
@@ -173,7 +176,7 @@ SolidCells:
 PassCells:
   DEFB $00,$0E,$0F,$10,$11,$12,$14 ; the cells a body or a bullet passes
 
-; Rex at the right edge: to the room RoomRight $5B91 at X $10
+; Rex at the right edge: to the room RoomRight $5B91 at X $08
 ;
 ; As REX 1's ExitRight $D0B1 (src/game/rexmove.asm).
 ;

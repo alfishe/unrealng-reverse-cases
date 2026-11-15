@@ -1,0 +1,10 @@
+# p1-poke41241 (integration): REX 1 from work/stage1/rzx/p1/at012000.szx (an RZX state in room 7), no keys.
+# POKEs on this clone: POKE 41241,0 (the DEC A of HudSweep at $A119 made a NOP), SweepWidth $A067 = 41063 = 2 (as in
+# p1-gameover, where the sweep kills Rex at width 1 -> 0), Rex immune (Immune $A071 = 41073 = 1) so no enemy kills him.
+# Witness: SweepWidth stays 2 while SweepCount $A065 runs 5 .. 1 again and again.
+0 POKE 41241 0
+0 POKE 41063 2
+0 POKE 41073 1
+0 -
+3000 -
+3010 END

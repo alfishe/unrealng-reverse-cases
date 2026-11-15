@@ -33,8 +33,9 @@ SmartBomb:
   LD (Bombs),A
   CALL ShowBombs
 
-; Mark every object of the room for the smart bomb; SmartBombOn $A030 = 1, 16
-; steps
+; Start the smart bomb: SmartBombOn $A030 = 1, 16 steps, SmartBombPtr $5E66;
+; every enemy bullet stopped (the live byte +6 of the 20 records from $5D22 set
+; to 2)
 ;
 ; Writes the object pointers from ObjectTable $5E66 (ObjectCount $A092 records
 ; of 24 bytes) into the list at $5D28.
@@ -68,8 +69,9 @@ MarkNext:
 ; KillObject $981F on the next object and CopyAttrs $C8BF; after 16 steps the
 ; bomb ends.
 ;
-; Witness: L1 16814 (c1, p1-code, p1-cursor, p1-define, p1-gameover,
-; p1-kempston, p1-room x5, rzx-p1- x32).
+; Witness: L1 18501 (c1, p1-code, p1-cursor, p1-define, p1-gameover,
+; p1-kempston, p1-poke41241, p1-rooms238, p1-shots, p1-speedup, p1-room x5,
+; rzx-p1- x32).
 SmartBombStep:
   LD A,(SmartBombOn)
   OR A

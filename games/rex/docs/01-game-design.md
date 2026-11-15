@@ -77,7 +77,7 @@ The screens of part 1, in the order a player meets them:
 - **DEFINE** ([`c1` frame 750](img/play/c1-000750-define.png)): PRESS UP, DOWN, LEFT, RIGHT, FIRE in turn.
 - **PHASE ONE** ([`c1` frame 1000](img/play/c1-001000-phase-one.png)): the mission, then PRESS FIRE TO BEGIN. About
   7 s without fire starts the attract mode, which shows eight rooms ([doc 4, 4.8](04-game-loop.md#48-every-delay-pause-and-timer)).
-- **Play** ([`c1` frame 1500](img/play/c1-001500-room1.png), room 0; [`rzx-p1-30000` frame 1000](img/play/rzx-p1-31000-play.png),
+- **Play** ([`c1` frame 1500](img/play/c1-001500-room0.png), room 0; [`rzx-p1-30000` frame 1000](img/play/rzx-p1-31000-play.png),
   room 13). The HUD shows the weapons held, the score (7 digits), the shield, the lives, the power bar and the
   smart bombs; the sweep runs along its attribute row ([doc 8](08-hud-and-text.md)).
 - **A weapon station's panel** (`rzx-p1-00000` frame 1400): DOUBLE FIRE, LASER, MULTIPLE or SPRAY over the room.
@@ -98,7 +98,7 @@ The screens of part 2:
 - **INPUT YOUR CODE** at the menu ([INVALID CODE at `c2` frame 1750](img/play/c2-001750-invalid-code.png); [the
   RZX's code typed, frame 3250](img/play/c2-003250-code.png)).
 - **PHASE TWO** ([`rzx-p2-00000` frame 500](img/play/rzx-p2-00500-phase-two.png)).
-- **Play**: [room 0 at `rzx-p2-00000` frame 1000](img/play/rzx-p2-01000-room1.png), [the same room with the score
+- **Play**: [room 0 at `rzx-p2-00000` frame 1000](img/play/rzx-p2-01000-room0.png), [the same room with the score
   carried, `c2` frame 4250](img/play/c2-004250-part2.png), [the tower, `rzx-p2-20000` frame 1000](img/play/rzx-p2-21000-play.png).
 - **GAME OVER**: the same three boxes; the third reads BIO GROWTHS KILLED.
 - **The ending** ([`rzx-p2-40000` frame 1500](img/play/rzx-p2-41500-ending.png)): "WITH THE BIG SQUIDGY THING
@@ -253,7 +253,8 @@ A killed enemy may leave a pod, which Rex takes by touching it:
 | bonus | `$FC` | a roulette that slows to a stop on one of: SPEED UP (200 passes of double speed), SHIELD LOSS (20 units), 1000 BONUS, ENERGY LOSS (a power step), 100 RAPID SHOTS |
 
 Witnesses: the power pod in 27 RZX segments; the bomb pod in `rzx-p1-52000` and `rzx-p1-54000`; the roulette in
-`rzx-p1-50000` and `rzx-p1-56000` (none stopped on SPEED UP: known only from the code).
+`rzx-p1-50000` and `rzx-p1-56000`; SPEED UP in `p1-speedup` (the same RZX state, fire pressed while SPEED UP showed:
+SpeedUpPhase 200 at frame 1740 down to 0 at 2740, Rex walking 4 pixels a pass meanwhile).
 
 ### The score
 
@@ -386,7 +387,7 @@ How the panel is printed and the texts are in [doc 8](08-hud-and-text.md).
 
 | Moment | Recording, frame | Picture |
 | --- | --- | --- |
-| the start: Rex materialises in room 0 | `c1` 1500 | [room 0](img/play/c1-001500-room1.png), and the sheet above |
+| the start: Rex materialises in room 0 | `c1` 1500 | [room 0](img/play/c1-001500-room0.png), and the sheet above |
 | the first enemies (walkers, room 0) | `c1` 1500 | the same |
 | the first weapon station: DOUBLE FIRE, room 1 | `rzx-p1-00000` 1400 | the REX 1 sheet |
 | the first scripted spawn | room 2 or 4, any recording | [doc 7](07-objects.md) |
@@ -402,7 +403,6 @@ the animations of [doc 10](10-gameplay-logic.md).*
 
 ## 1.9 Known only from the code
 
-- SPEED UP from the roulette: no run stopped on it.
 - A full sweep run-out from width 12 (69 s): `p1-gameover` poked it short.
 - The time-out of the attract wait at a weapon panel.
 - That nothing checks the lives or the shield of a typed code (no hand-made code was typed).

@@ -60,9 +60,10 @@ Font:
 ; test in the room grid
 ;
 ; DrawRoomCell copies CharFlags[c] into the grid for each character drawn. As
-; in part 1, plus part 2's types: 3 kills a falling object (ObjectFall $C721),
-; 4 is the big squidgy thing (BossHit $B743), $15 and $16 make walkers dissolve
-; (MaybeDissolve $C5B4, CellDissolve $C5BA).
+; in part 1, plus part 2's types: 3 kills Rex when he walks, jumps or falls
+; into it (RexWalkDeadly, RexJumpDeadly, RexFall) and a falling object
+; (ObjectFall $C721), 4 is the big squidgy thing (BossHit $B743), $15 and $16
+; make walkers dissolve (MaybeDissolve $C5B4, CellDissolve $C5BA).
 CharFlags:
   INCBIN "res/tables/rex2-char-flags.bin",$0000,256
 
@@ -159,10 +160,7 @@ SpriteBonusPod2:
   INCBIN "res/sprites/rex2.bin",$0A28,32
 SpriteKind3:
   ; $8BE0 kind 3 (InitKind3 $CC53)
-  INCBIN "res/sprites/rex2.bin",$0A48,287
-SpritePowerBar:
-  ; $8CFF the power bar cells (PowerBar)
-  INCBIN "res/sprites/rex2.bin",$0B67,33
+  INCBIN "res/sprites/rex2.bin",$0A48,320
 SpriteKind2:
   ; $8D20 kind 2 (InitKind2 $CC75)
   INCBIN "res/sprites/rex2.bin",$0B88,256

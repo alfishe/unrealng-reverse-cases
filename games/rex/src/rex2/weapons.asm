@@ -62,7 +62,7 @@ GiveWeapon:
 ; calls it in part 2)
 ;
 ; Witness: L1 0 ().
-RollCharRight:
+RollCharUp:
   PUSH HL
   LD C,(HL)
   LD E,L
@@ -83,7 +83,7 @@ RollUpLoop:
 ; Roll an 8-byte character at HL one line down (nothing calls it in part 2)
 ;
 ; Witness: L1 0 ().
-RollCharLeft:
+RollCharDown:
   PUSH HL
   LD DE,$0007
   ADD HL,DE
@@ -330,7 +330,7 @@ SpraySound:
   LD DE,SfxSpray
   RET
 
-; The enemies' shot sound $D504, if channel 2 is free
+; The enemies' shot sound $D504, if channel C (the third, Channels+$10) is free
 ;
 ; As REX 1's EnemyShotSound $B562 (src/game/weapons.asm).
 ;
@@ -1006,7 +1006,7 @@ PowerBar:
   LD HL,(PowerBarPtr)
   CALL PowerBarColour
   LD HL,(PowerBarPtr)
-  LD DE,SpritePowerBar
+  LD DE,ShadowOffset
   ADD HL,DE
 
 ; A = PowerLevel + 2 (the bar's colour)
@@ -1135,7 +1135,7 @@ DrainRank:
   LD HL,(PowerBarPtr)
   CALL Fill2x2
   LD HL,(PowerBarPtr)
-  LD DE,SpritePowerBar
+  LD DE,ShadowOffset
   ADD HL,DE
   CALL Fill2x2
   LD HL,(PowerBarPtr)

@@ -136,12 +136,14 @@ NewGame:
 
   ORG $97C3
 
-; Wait for fire for up to 50000 polls; none starts the attract mode
+; Wait up to 50000 polls for fire: Temp1 = 1 after a press and its release, 0
+; when the count runs out
 ;
-; Silences the sound, waits for fire up (ReadFire $A477), then counts BC =
-; 50000 ($C350) down reading fire. Fire: AnyKey $A093 = 1, SoundReset $D5AE,
-; RET. Timeout: JP Attract $A915 (the return address is dropped: the attract
-; mode never returns).
+; Temp1 = 0 and the sound silenced, then DE = 50000 counted down, a DJNZ delay
+; of 30 before each poll of ReadFire $A477. A press: wait for its release
+; (WaitFireRelease), SoundReset $D5AE, Temp1 = 1, RET. The count out: RET with
+; Temp1 0 and the sound still off. NewGame's second call tests Temp1 and jumps
+; to Attract $A915 on 0; the weapon panel (WeaponPanel) ignores it.
 ;
 ; Witness: L1 20 (c1, p1-code, p1-cursor, p1-define, p1-kempston, rzx-p1- x5).
 WaitFireOrAttract:
@@ -167,17 +169,17 @@ WaitFireRelease:
   LD (Temp1),A
   RET
 
-; Wait for fire up, then for fire (no timeout): after the game over and the
+; Wait for fire, then for its release (no timeout): after the game over and the
 ; CODE panel
 ;
 ; Witness: L1 3 (c1, p1-code, p1-gameover).
 WaitFire:
   CALL SoundSilence
-WaitFireUp:
-  CALL ReadFire           ; wait for fire up
-  JP NZ,WaitFireUp
 WaitFireDown:
-  CALL ReadFire           ; wait for fire
-  JP Z,WaitFireDown
+  CALL ReadFire           ; wait for fire pressed
+  JP NZ,WaitFireDown
+WaitFireUp:
+  CALL ReadFire           ; wait for fire released
+  JP Z,WaitFireUp
   CALL SoundReset
   RET

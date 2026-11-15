@@ -29,13 +29,13 @@ ShowPoints:
 ; Kill the object at IX: its score, the kill flash in the HUD, the explosion
 ; sound; people add to HumansKilled
 ;
-; The kill flash: KillFlashPtr $A039 = the attribute address of the object's
-; column in the HUD row (bright), timer $A03C. Kind 14 (the mine) scores
-; nothing. Kinds 3 and 4 also end the scripted spawn (EndScriptSpawn $9968).
-; Then KillHuman $98A7 or ShowPoints $97FD.
+; The kill flash: KillFlashPtr $A039 = the next cell of the HUD's combo row
+; ($5843 + 3 a hit, at rest $E9FF), timer $A03C. Kind 14 (the mine) scores
+; nothing. Kind 5 also ends the scripted spawn (EndScriptSpawn $9968). Then
+; KillHuman $98A7 or ShowPoints $97FD.
 ;
-; Witness: L1 1009 (c1, p1-code, p1-cursor, p1-define, p1-gameover,
-; p1-kempston, p1-room24, p1-room30, rzx-p1- x32).
+; Witness: L1 1016 (c1, p1-code, p1-cursor, p1-define, p1-gameover,
+; p1-kempston, p1-shots, p1-speedup, p1-room24, p1-room30, rzx-p1- x32).
 KillObject:
   LD HL,ObjectBufferOrigin
   LD (KillFlashPtr),HL
@@ -99,7 +99,7 @@ KillObject:
 ; FindFreeObject $D858 and the human's initialiser ($CDA2, $CE67) set up its
 ; picture.
 ;
-; Witness: L1 152 (c1, p1-room24, p1-room30, rzx-p1- x27).
+; Witness: L1 155 (c1, p1-speedup, p1-room24, p1-room30, rzx-p1- x27).
 KillHuman:
   LD HL,(HumansKilled)
   INC HL
@@ -179,8 +179,8 @@ KillHumanLive:
 KillScores:
   INCBIN "res/tables/rex1-kill-scores.bin",$0000,26
 
-; Stop the scripted spawn: the objects of kinds 3 and 4 lose their timer
-; ($9989)
+; Stop the scripted spawn (KillObject on a kind 5): the objects of kinds 3 and
+; 4 lose their timer ($9989)
 ;
 ; Witness: L1 2 (rzx-p1-04000, rzx-p1-12000).
 EndScriptSpawn:
@@ -212,8 +212,9 @@ StopObjectSpawn:
 ; Fade the HUD's kill flash one step (attribute row $5840, 30 cells), then mark
 ; the latest kill's two cells white
 ;
-; Witness: L1 16926 (c1, p1-code, p1-cursor, p1-define, p1-gameover,
-; p1-kempston, p1-room x5, rzx-p1- x32).
+; Witness: L1 18613 (c1, p1-code, p1-cursor, p1-define, p1-gameover,
+; p1-kempston, p1-poke41241, p1-rooms238, p1-shots, p1-speedup, p1-room x5,
+; rzx-p1- x32).
 KillFlashFade:
   LD HL,$5840
   LD B,$1E
@@ -234,7 +235,7 @@ FadeHudNext:
 
 ; Print Score $A03E in the HUD
 ;
-; Witness: L1 299 (c1, p1-code, p1-room30, rzx-p1- x31).
+; Witness: L1 306 (c1, p1-code, p1-shots, p1-speedup, p1-room30, rzx-p1- x31).
 ShowScore:
   LD HL,(Score)
   CALL ToDigits
@@ -262,7 +263,7 @@ ShowLives:
 ; ShieldDrainRate $A04E - 1: a hit on the shield drains it faster
 ; (EnemyBulletsHitRex, ObjectHitsRex)
 ;
-; Witness: L1 80 (p1-room30, rzx-p1- x21).
+; Witness: L1 82 (p1-speedup, p1-room30, rzx-p1- x21).
 ShieldDrainFast:
   LD A,$01
   LD (ShieldDrainRate),A
@@ -270,8 +271,8 @@ ShieldDrainFast:
 ; With the shield on, count ShieldDrainRate down; at 0 one unit of ShieldEnergy
 ; $A04D goes; none left switches the shield off
 ;
-; Witness: L1 2693 (p1-code, p1-cursor, p1-define, p1-kempston, p1-room26,
-; p1-room30, rzx-p1- x29).
+; Witness: L1 2797 (p1-code, p1-cursor, p1-define, p1-kempston, p1-speedup,
+; p1-room26, p1-room30, rzx-p1- x29).
 ShieldDrain:
   LD A,(ShieldDrainRate)
   DEC A
@@ -296,8 +297,8 @@ ShieldOff:
 ; Print ShieldEnergy $A04D in the HUD and colour it: red when low, green
 ; otherwise ($E513, $E514 in the attribute shadow)
 ;
-; Witness: L1 1442 (c1, p1-code, p1-cursor, p1-define, p1-kempston, p1-room x5,
-; rzx-p1- x32).
+; Witness: L1 1498 (c1, p1-code, p1-cursor, p1-define, p1-kempston,
+; p1-rooms238, p1-speedup, p1-room x5, rzx-p1- x32).
 ShowShield:
   LD A,(ShieldEnergy)
   LD L,A
@@ -325,8 +326,8 @@ ShowShield:
 ;
 ; Not while Rex is dying. Jumps to ShowScore.
 ;
-; Witness: L1 442 (c1, p1-code, p1-cursor, p1-define, p1-gameover, p1-kempston,
-; p1-room24, p1-room30, rzx-p1- x32).
+; Witness: L1 449 (c1, p1-code, p1-cursor, p1-define, p1-gameover, p1-kempston,
+; p1-shots, p1-speedup, p1-room24, p1-room30, rzx-p1- x32).
 AddScore:
   LD A,(Dying)
   OR A
@@ -346,11 +347,12 @@ AddScore:
 AddScoreShow:
   JP ShowScore            ; print it
 
-; The screen flash of a smart bomb or a bonus: the attribute shadow faded
-; through FadeSteps $9AB3 by FadeStepIndex $A042
+; The HUD flash of a power pod (only TakePowerPod starts it): rows 0-1
+; ($5800-$583F) stepped through FadeSteps $9AB3 by FadeStepIndex $A042
 ;
-; Witness: L1 16926 (c1, p1-code, p1-cursor, p1-define, p1-gameover,
-; p1-kempston, p1-room x5, rzx-p1- x32).
+; Witness: L1 18613 (c1, p1-code, p1-cursor, p1-define, p1-gameover,
+; p1-kempston, p1-poke41241, p1-rooms238, p1-shots, p1-speedup, p1-room x5,
+; rzx-p1- x32).
 FadeStep:
   LD A,(FadeStepIndex)
   CP $FF

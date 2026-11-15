@@ -10,8 +10,9 @@
 ; Test the cells under Rex and act: lift, restart marker, recharger, weapon
 ; stations
 ;
-; Witness: L1 14952 (c1, p1-code, p1-cursor, p1-define, p1-gameover,
-; p1-kempston, p1-room x5, rzx-p1- x32).
+; Witness: L1 16633 (c1, p1-code, p1-cursor, p1-define, p1-gameover,
+; p1-kempston, p1-poke41241, p1-rooms238, p1-shots, p1-speedup, p1-room x5,
+; rzx-p1- x32).
 CellsUnderRex:
   XOR A
   LD (OnLift),A
@@ -97,7 +98,7 @@ StationSpray:
 ; The recharger ($08): ShieldEnergy + 1 up to 99 while the shield is off, the
 ; recharge sound
 ;
-; Witness: L1 956 (rzx-p1- x18).
+; Witness: L1 990 (p1-speedup, rzx-p1- x18).
 Recharge:
   INC HL
   LD A,(HL)

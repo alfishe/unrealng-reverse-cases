@@ -1,14 +1,15 @@
 ; --------------------------------------------------------------------------------------------------------------------
 ; death.asm: Rex's death, the life lost, the game over, the restart points, the sparkle
 ;
-; RexDies starts a death (not while Immune $A071): Dying $A055 = 1, a free smart bomb, the shield gone, the sparkle
-; out (Dematerialise $9D47). DeathAnimation runs 50 passes ($A056) of shards flying from Rex (DeathShards $9C05), then
-; LifeLost: one life less, Rex back at the last restart point (RestartX $A059, RestartY $A05A, RestartRoom $A05B,
-; saved by the restart markers, SaveRestart $9C3B) with a materialise sparkle, and the room built again. No life left:
-; the game over panel (GAME OVER, HI-SCORE, HUMANS KILLED) and a new game.
+; RexDies starts a death (not while Immune $A071): Dying $A055 = 1, a free smart bomb, LosePower, ShieldEnergy back to
+; 99, the shield off, the sparkle out (Dematerialise $9D47). DeathAnimation runs 50 passes ($A056) of shards flying
+; from Rex (DeathShards $9C05), then LifeLost: one life less, Rex back at the last restart point (RestartX $A059,
+; RestartY $A05A, RestartRoom $A05B, saved by the restart markers, SaveRestart $9C3B) with a materialise sparkle, and
+; the room built again. No life left: the game over panel (GAME OVER, HI-SCORE, HUMANS KILLED) and a new game.
 ;
-; The sparkle ($9D0F-$9F0B) is Rex appearing or vanishing as random dots: SparkleUpdate fills a 3 x 3 cell patch of
-; the attribute shadow by random masks, SparkleDraw draws the particles (SparkleMasks $9F0C, SparkleDots $9F14).
+; The sparkle ($9D0F-$9F0B) is Rex appearing or vanishing as random dots: SparkleUpdate works on Rex's 3-byte-wide box
+; in the back buffer (SparkleBufferOrigin $E89F): SparkleCount lines cleared, the next 3 lines ANDed with random
+; bytes, SparkleDraw draws the particles (SparkleMasks $9F0C, SparkleDots $9F14).
 ; --------------------------------------------------------------------------------------------------------------------
 
 ; One pass of Rex's death: the shards, the death picture, the sound; at the end
@@ -155,15 +156,16 @@ ShardBack:
   LD (DeathShardPtr),HL
   RET
 
-; Rex is killed (unless Immune $A071 or already dying): Dying, the timer 50,
-; the free smart bomb, the shield off, dematerialise
+; Rex is killed (unless Immune $A071): the sweep reset (ResetSweep), Dying, the
+; timer 50, the free smart bomb, LosePower, ShieldEnergy refilled to 99,
+; dematerialise (which switches the shield off)
 ;
 ; Called by the collisions (EnemyBulletsHitRex $D1B9, ObjectHitsRex $D215), the
 ; fall (RexFall $D14D) and the HUD sweep's end (HudSweep $A0C4). Resets the
 ; sweep (ResetSweep $A133).
 ;
-; Witness: L1 42 (c1, p1-cursor, p1-define, p1-gameover, p1-kempston,
-; p1-room24, p1-room30, rzx-p1- x18).
+; Witness: L1 221 (c1, p1-cursor, p1-define, p1-gameover, p1-kempston,
+; p1-poke41241, p1-rooms238, p1-speedup, p1-room24, p1-room30, rzx-p1- x18).
 RexDies:
   LD A,(Immune)
   OR A
@@ -372,11 +374,13 @@ Dematerialise:
   RET NZ
   JP SparkleClear
 
-; One step of the sparkle: random masks over Rex's 3 x 3 cells in the attribute
-; shadow; at the end the sparkle stops
+; One step of the sparkle in Rex's 3-byte box of the back buffer
+; (SparkleBufferOrigin $E89F): SparkleCount lines cleared, the next 3 ANDed
+; with random bytes; at the end the sparkle stops
 ;
-; Witness: L1 16839 (c1, p1-code, p1-cursor, p1-define, p1-gameover,
-; p1-kempston, p1-room x5, rzx-p1- x32).
+; Witness: L1 18526 (c1, p1-code, p1-cursor, p1-define, p1-gameover,
+; p1-kempston, p1-poke41241, p1-rooms238, p1-shots, p1-speedup, p1-room x5,
+; rzx-p1- x32).
 SparkleUpdate:
   LD A,(SparkleMode)
   OR A
@@ -495,8 +499,9 @@ FillCellsRow:
 ; Draw the sparkle's particles round Rex (SparkleMasks $9F0C, SparkleDots
 ; $9F14); at the end of a dematerialise LifeLost
 ;
-; Witness: L1 16839 (c1, p1-code, p1-cursor, p1-define, p1-gameover,
-; p1-kempston, p1-room x5, rzx-p1- x32).
+; Witness: L1 18526 (c1, p1-code, p1-cursor, p1-define, p1-gameover,
+; p1-kempston, p1-poke41241, p1-rooms238, p1-shots, p1-speedup, p1-room x5,
+; rzx-p1- x32).
 SparkleDraw:
   LD A,(SparkleOn)
   OR A

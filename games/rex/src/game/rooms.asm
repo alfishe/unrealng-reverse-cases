@@ -3,19 +3,20 @@
 ;
 ; DrawRoom draws the room Room $A0B8 from RoomMaps $75E0: each block of BlockDefs $6CE0 is 3 x 3 characters; each
 ; character goes into the back buffer (CharGraphics $63E0), its attribute into the attribute shadow $E55F (CharAttrs
-; $6BE0) and its flag into the grid $E1FF (CharFlags $62E0); the animated characters are listed in AnimCellList $D962
-; with their cell index in $DE9F. ReadExits takes the room's exits and object list from RoomExits $B133; MakeObjects
-; builds the records from the list.
+; $6BE0) and its flag into the grid $E1FF (CharFlags $62E0); the animated characters are listed in SceneryCellList
+; $D962 with their cell index in $DE9F. ReadExits takes the room's exits and object list from RoomExits $B133;
+; MakeObjects builds the records from the list.
 ;
 ; Monsters keep coming: the random spawner (SpawnRandom $C9CA) makes one of SpawnKind $A088 from the room's spawn
 ; sides every SpawnPeriod passes; rooms 2, 3, 4, 6 and 20 also run the scripted spawn (ScriptSpawn $A9F4).
 ; --------------------------------------------------------------------------------------------------------------------
 
-; Draw the room: silence, the map's 7 x 10 blocks into the buffer, the grid and
-; the attribute shadow; the animated cells listed
+; Draw the room: silence, the map's 7 x 10 blocks into the grid, the attribute
+; shadow and SceneryCellList (its pixel writes into the buffer are wiped by
+; BuildRoom's ClearBuffer after it; the cell list redraws them)
 ;
-; Witness: L1 74 (c1, p1-cursor, p1-define, p1-kempston, p1-room x5, rzx-p1-
-; x30).
+; Witness: L1 80 (c1, p1-cursor, p1-define, p1-kempston, p1-rooms238,
+; p1-speedup, p1-room x5, rzx-p1- x30).
 DrawRoom:
   LD A,(SparkleOn)
   OR A
@@ -28,7 +29,7 @@ DrawRoom:
   LD A,$01
   LD (RoomCellPtr),A
   LD IX,BackBuffer
-  LD HL,AnimCellList
+  LD HL,SceneryCellList
   LD (RoomColumn),HL
   LD A,(Room)
   LD E,A
@@ -85,8 +86,8 @@ DrawRoomAttrLoop:
 
 ; One row of 10 blocks
 ;
-; Witness: L1 5235 (c1, p1-cursor, p1-define, p1-kempston, p1-room x5, rzx-p1-
-; x30).
+; Witness: L1 5655 (c1, p1-cursor, p1-define, p1-kempston, p1-rooms238,
+; p1-speedup, p1-room x5, rzx-p1- x30).
 DrawBlockRow:
   PUSH IX
   LD B,$03
@@ -111,8 +112,8 @@ BlockRowChar:
 ; One block: its 3 x 3 characters into the buffer, the attribute shadow and the
 ; grid; an animated character listed
 ;
-; Witness: L1 47118 (c1, p1-cursor, p1-define, p1-kempston, p1-room x5, rzx-p1-
-; x30).
+; Witness: L1 50898 (c1, p1-cursor, p1-define, p1-kempston, p1-rooms238,
+; p1-speedup, p1-room x5, rzx-p1- x30).
 DrawRoomCell:
   PUSH HL
   PUSH AF
@@ -196,8 +197,8 @@ DrawRoomCell:
 
 ; The grid pointer one character on
 ;
-; Witness: L1 376952 (c1, p1-cursor, p1-define, p1-kempston, p1-room x5,
-; rzx-p1- x30).
+; Witness: L1 407192 (c1, p1-cursor, p1-define, p1-kempston, p1-rooms238,
+; p1-speedup, p1-room x5, rzx-p1- x30).
 NextCellPtr:
   LD A,(DE)
   LD (HL),A
@@ -215,8 +216,8 @@ NextCellPtr:
 
 ; One character's 8 bytes into the back buffer
 ;
-; Witness: L1 47118 (c1, p1-cursor, p1-define, p1-kempston, p1-room x5, rzx-p1-
-; x30).
+; Witness: L1 50898 (c1, p1-cursor, p1-define, p1-kempston, p1-rooms238,
+; p1-speedup, p1-room x5, rzx-p1- x30).
 DrawRoomChar:
   PUSH AF
   PUSH DE
@@ -248,8 +249,8 @@ DrawRoomChar:
 ; The attribute shadow $E55F to the screen's play rows $5860; the side columns
 ; white
 ;
-; Witness: L1 129 (c1, p1-cursor, p1-define, p1-gameover, p1-kempston, p1-room
-; x5, rzx-p1- x32).
+; Witness: L1 136 (c1, p1-cursor, p1-define, p1-gameover, p1-kempston,
+; p1-rooms238, p1-speedup, p1-room x5, rzx-p1- x32).
 CopyAttrs:
   LD DE,$5860
   LD HL,AttrShadowPlay
@@ -268,7 +269,8 @@ CopyAttrsSides:
 
 ; Wait BC x 10 loops
 ;
-; Witness: L1 1013646 (c1, p1-cursor, p1-define, p1-kempston, rzx-p1- x6).
+; Witness: L1 3097216 (c1, menu-rollcall, p1-cursor, p1-define, p1-kempston,
+; p1-speedup, rzx-p1- x6).
 Delay:
   PUSH BC
   LD B,$0A
@@ -283,8 +285,8 @@ DelayInner:
 
 ; HL = DE x B
 ;
-; Witness: L1 6433 (c1, p1-cursor, p1-define, p1-gameover, p1-kempston, p1-room
-; x5, rzx-p1- x31).
+; Witness: L1 6865 (c1, p1-cursor, p1-define, p1-gameover, p1-kempston,
+; p1-rooms238, p1-speedup, p1-room x5, rzx-p1- x31).
 Multiply:
   LD HL,$0000
 MultiplyLoop:
@@ -295,8 +297,8 @@ MultiplyLoop:
 ; The room's exits and object list from RoomExits; the list's header: count,
 ; spawn sides, timers, spawn kind
 ;
-; Witness: L1 74 (c1, p1-cursor, p1-define, p1-kempston, p1-room x5, rzx-p1-
-; x30).
+; Witness: L1 80 (c1, p1-cursor, p1-define, p1-kempston, p1-rooms238,
+; p1-speedup, p1-room x5, rzx-p1- x30).
 ReadExits:
   LD A,(Room)
   LD E,A
@@ -345,26 +347,28 @@ ReadExits:
   LD (ObjectListPtr),DE
   RET
 
-; SpawnTop $A02E = 1
+; SpawnTop $A02E = $FF
 ;
-; Witness: L1 39 (c1, p1-room14, p1-room24, p1-room26, p1-room30, rzx-p1- x21).
+; Witness: L1 44 (c1, p1-rooms238, p1-speedup, p1-room14, p1-room24, p1-room26,
+; p1-room30, rzx-p1- x21).
 SetSpawnTop:
   LD HL,SpawnTop
   LD (HL),$FF
   RET
 
-; SpawnRight $A02D = 1
+; SpawnRight $A02D = $FF
 ;
-; Witness: L1 45 (c1, p1-cursor, p1-kempston, p1-room14, p1-room26, p1-room27,
-; p1-room30, rzx-p1- x21).
+; Witness: L1 49 (c1, p1-cursor, p1-kempston, p1-rooms238, p1-speedup,
+; p1-room14, p1-room26, p1-room27, p1-room30, rzx-p1- x21).
 SetSpawnRight:
   LD HL,SpawnRight
   LD (HL),$FF
   RET
 
-; SpawnLeft $A02C = 1
+; SpawnLeft $A02C = $FF
 ;
-; Witness: L1 33 (p1-room24, p1-room26, p1-room27, p1-room30, rzx-p1- x19).
+; Witness: L1 36 (p1-rooms238, p1-speedup, p1-room24, p1-room26, p1-room27,
+; p1-room30, rzx-p1- x19).
 SetSpawnLeft:
   LD HL,SpawnLeft
   LD (HL),$FF
@@ -373,8 +377,8 @@ SetSpawnLeft:
 ; Rex goes through an exit to room A: Room $A0B8 = A, MainLoop; room 99 is the
 ; end of part 1 (CodePanel $A7CE)
 ;
-; Witness: L1 48 (c1, p1-code, p1-cursor, p1-kempston, p1-room x5, rzx-p1-
-; x27).
+; Witness: L1 54 (c1, p1-code, p1-cursor, p1-kempston, p1-rooms238, p1-speedup,
+; p1-room x5, rzx-p1- x27).
 ChangeRoom:
   LD A,(Room)
   CP $63
@@ -383,7 +387,7 @@ ChangeRoom:
 
 ; The scripted spawn starts: step 1, timer, count 0
 ;
-; Witness: L1 4 (c1, rzx-p1-04000, rzx-p1-08000, rzx-p1-12000).
+; Witness: L1 6 (c1, p1-rooms238, rzx-p1-04000, rzx-p1-08000, rzx-p1-12000).
 StartScriptSpawn:
   LD A,(ScriptSpawnStep)
   OR A
@@ -399,8 +403,9 @@ StartScriptSpawn:
 ; The scripted spawn's step: every few passes the next record of ScriptSpawn
 ; into a free object
 ;
-; Witness: L1 16926 (c1, p1-code, p1-cursor, p1-define, p1-gameover,
-; p1-kempston, p1-room x5, rzx-p1- x32).
+; Witness: L1 18613 (c1, p1-code, p1-cursor, p1-define, p1-gameover,
+; p1-kempston, p1-poke41241, p1-rooms238, p1-shots, p1-speedup, p1-room x5,
+; rzx-p1- x32).
 SpawnScripted:
   LD A,(ScriptSpawnStep)
   OR A
@@ -448,8 +453,9 @@ ScriptEnd:
 ; The random spawn: every SpawnPeriod passes, from a spawn side chosen at
 ; random
 ;
-; Witness: L1 16926 (c1, p1-code, p1-cursor, p1-define, p1-gameover,
-; p1-kempston, p1-room x5, rzx-p1- x32).
+; Witness: L1 18613 (c1, p1-code, p1-cursor, p1-define, p1-gameover,
+; p1-kempston, p1-poke41241, p1-rooms238, p1-shots, p1-speedup, p1-room x5,
+; rzx-p1- x32).
 SpawnRandom:
   LD A,(ScriptSpawnStep)
   OR A
@@ -494,8 +500,8 @@ SpawnPickLeft:
 
 ; A spawn at the left edge, at a free height
 ;
-; Witness: L1 165 (c1, p1-cursor, p1-kempston, p1-room14, p1-room24, p1-room27,
-; p1-room30, rzx-p1- x31).
+; Witness: L1 181 (c1, p1-cursor, p1-kempston, p1-poke41241, p1-rooms238,
+; p1-speedup, p1-room14, p1-room24, p1-room27, p1-room30, rzx-p1- x31).
 SpawnFromLeft:
   LD A,(SpawnLeft)
   OR A
@@ -524,7 +530,8 @@ SpawnLeftY:
 
 ; Make an object of SpawnKind at SpriteX/Y
 ;
-; Witness: L1 237 (c1, p1-gameover, p1-room x5, rzx-p1- x30).
+; Witness: L1 253 (c1, p1-gameover, p1-rooms238, p1-shots, p1-speedup, p1-room
+; x5, rzx-p1- x30).
 SpawnObject:
   LD A,(SpawnKind)
   LD L,A
@@ -548,8 +555,8 @@ SpawnObjectSet:
 
 ; A spawn at the right edge
 ;
-; Witness: L1 181 (c1, p1-cursor, p1-define, p1-kempston, p1-room x5, rzx-p1-
-; x28).
+; Witness: L1 193 (c1, p1-cursor, p1-define, p1-kempston, p1-poke41241,
+; p1-rooms238, p1-speedup, p1-room x5, rzx-p1- x28).
 SpawnFromRight:
   LD A,(SpawnRight)
   OR A
@@ -578,8 +585,9 @@ SpawnRightY:
 
 ; A spawn at the top, above Rex's column
 ;
-; Witness: L1 184 (c1, p1-code, p1-cursor, p1-define, p1-gameover, p1-kempston,
-; p1-room24, p1-room26, p1-room27, p1-room30, rzx-p1- x31).
+; Witness: L1 196 (c1, p1-code, p1-cursor, p1-define, p1-gameover, p1-kempston,
+; p1-rooms238, p1-shots, p1-speedup, p1-room24, p1-room26, p1-room27,
+; p1-room30, rzx-p1- x31).
 SpawnFromTop:
   LD A,(SpawnTop)
   OR A
@@ -631,7 +639,7 @@ SpawnTopX:
 
 ; Find a place with ground under it for a spawn
 ;
-; Witness: L1 2408 (c1, p1-room x5, rzx-p1- x27).
+; Witness: L1 2529 (c1, p1-speedup, p1-room x5, rzx-p1- x27).
 FindGround:
   CALL CellPointer
   LD DE,$0061
@@ -676,8 +684,8 @@ FindGroundNone:
 ; Build the room's objects from its list (ObjectListPtr $A020): [kind][X][Y]
 ; each
 ;
-; Witness: L1 75 (c1, p1-cursor, p1-define, p1-kempston, p1-room x5, rzx-p1-
-; x30).
+; Witness: L1 81 (c1, p1-cursor, p1-define, p1-kempston, p1-rooms238,
+; p1-speedup, p1-room x5, rzx-p1- x30).
 MakeObjects:
   LD HL,$5E66
   LD DE,$5E67
@@ -708,15 +716,15 @@ MakeObjectsNext:
 
 ; Make the object of the list record at IY (kind from IY+0)
 ;
-; Witness: L1 349 (c1, p1-cursor, p1-define, p1-kempston, p1-room x5, rzx-p1-
-; x30).
+; Witness: L1 385 (c1, p1-cursor, p1-define, p1-kempston, p1-rooms238,
+; p1-speedup, p1-room x5, rzx-p1- x30).
 MakeObjectIY:
   LD A,(IY+$00)
 
 ; Make an object of kind A at IX: the common sizes, then the kind's initialiser
 ;
-; Witness: L1 586 (c1, p1-cursor, p1-define, p1-gameover, p1-kempston, p1-room
-; x5, rzx-p1- x31).
+; Witness: L1 638 (c1, p1-cursor, p1-define, p1-gameover, p1-kempston,
+; p1-rooms238, p1-shots, p1-speedup, p1-room x5, rzx-p1- x31).
 MakeObject:
   LD (IX+$0E),$03
   LD (IX+$0F),$10
@@ -793,7 +801,7 @@ MakeObject:
 
 ; Foot man: SpriteFootMan $7F72, ShiftFrames
 ;
-; Witness: L1 198 (c1, p1-room x5, rzx-p1- x28).
+; Witness: L1 212 (c1, p1-rooms238, p1-speedup, p1-room x5, rzx-p1- x28).
 InitKind0:
   LD HL,ShiftFrames
   LD (IX+$11),$00
@@ -804,7 +812,8 @@ InitKind0:
 
 ; Kind 6
 ;
-; Witness: L1 43 (p1-room14, p1-room26, p1-room27, p1-room30, rzx-p1- x14).
+; Witness: L1 45 (p1-speedup, p1-room14, p1-room26, p1-room27, p1-room30,
+; rzx-p1- x14).
 InitKind6:
   LD HL,SpriteKind6
   LD (IX+$04),L
@@ -821,7 +830,7 @@ InitKind6:
 
 ; Stomper
 ;
-; Witness: L1 41 (p1-room24, p1-room30, rzx-p1- x14).
+; Witness: L1 43 (p1-rooms238, p1-room24, p1-room30, rzx-p1- x14).
 InitKind1:
   LD (IX+$10),$02
   LD (IX+$14),$08
@@ -832,7 +841,7 @@ InitKind1:
 
 ; Kind 3
 ;
-; Witness: L1 19 (c1, rzx-p1-04000, rzx-p1-08000, rzx-p1-12000).
+; Witness: L1 27 (c1, p1-rooms238, rzx-p1-04000, rzx-p1-08000, rzx-p1-12000).
 InitKind3:
   LD (IX+$14),$0F
   LD HL,ShiftFrames
@@ -841,7 +850,7 @@ InitKind3:
 
 ; Kind 4
 ;
-; Witness: L1 5 (c1, rzx-p1-04000, rzx-p1-08000, rzx-p1-12000).
+; Witness: L1 6 (c1, p1-rooms238, rzx-p1-04000, rzx-p1-08000, rzx-p1-12000).
 InitKind4:
   LD (IX+$14),$05
   LD (IX+$15),$01
@@ -851,7 +860,7 @@ InitKind4:
 
 ; Kind 5
 ;
-; Witness: L1 4 (c1, rzx-p1-04000, rzx-p1-08000, rzx-p1-12000).
+; Witness: L1 6 (c1, p1-rooms238, rzx-p1-04000, rzx-p1-08000, rzx-p1-12000).
 InitKind5:
   LD (IX+$14),$0F
   LD (IX+$15),$01
@@ -878,8 +887,8 @@ InitKind8:
 
 ; Kind $7D, the bonus pod
 ;
-; Witness: L1 5 (p1-room30, rzx-p1-52000, rzx-p1-54000, rzx-p1-56000,
-; rzx-p1-60000).
+; Witness: L1 6 (p1-speedup, p1-room30, rzx-p1-52000, rzx-p1-54000,
+; rzx-p1-56000, rzx-p1-60000).
 InitBonusPod:
   LD HL,SpriteBonusPod
   LD (IX+$04),L
@@ -890,8 +899,8 @@ InitBonusPod:
 
 ; Swing gun; also kinds 17-20 (the swing gun at four start angles)
 ;
-; Witness: L1 94 (c1, p1-cursor, p1-kempston, p1-room26, p1-room27, p1-room30,
-; rzx-p1- x19).
+; Witness: L1 98 (c1, p1-cursor, p1-kempston, p1-rooms238, p1-speedup,
+; p1-room26, p1-room27, p1-room30, rzx-p1- x19).
 InitKind9:
   LD HL,SpriteSwingGun
   LD (IX+$04),L
@@ -906,7 +915,8 @@ InitKind9:
 
 ; Kind 17: a swing gun at angle 1
 ;
-; Witness: L1 19 (p1-room26, p1-room27, p1-room30, rzx-p1- x13).
+; Witness: L1 21 (p1-rooms238, p1-speedup, p1-room26, p1-room27, p1-room30,
+; rzx-p1- x13).
 InitKind17:
   LD (IX+$09),$09
   CALL InitKind9
@@ -949,7 +959,8 @@ InitKind20:
 
 ; Shooters
 ;
-; Witness: L1 44 (c1, p1-room14, p1-room24, p1-room26, p1-room30, rzx-p1- x15).
+; Witness: L1 54 (c1, p1-rooms238, p1-speedup, p1-room14, p1-room24, p1-room26,
+; p1-room30, rzx-p1- x15).
 InitKind10:
   LD HL,SpriteKind10
   LD (IX+$04),L
@@ -964,8 +975,8 @@ InitKind10:
 
 ; Launcher
 ;
-; Witness: L1 39 (c1, p1-cursor, p1-define, p1-kempston, p1-room14, p1-room24,
-; p1-room26, p1-room30, rzx-p1- x14).
+; Witness: L1 41 (c1, p1-cursor, p1-define, p1-kempston, p1-speedup, p1-room14,
+; p1-room24, p1-room26, p1-room30, rzx-p1- x14).
 InitKind11:
   LD HL,SpriteKind11
   LD (IX+$04),L
@@ -981,7 +992,7 @@ InitKind11:
 
 ; Ramming pod; also the human's body
 ;
-; Witness: L1 28 (p1-gameover, rzx-p1- x13).
+; Witness: L1 30 (p1-gameover, p1-shots, p1-speedup, rzx-p1- x13).
 InitKind12:
   LD (IX+$14),$02
   LD (IX+$06),$00
@@ -1007,7 +1018,7 @@ InitKind13:
 
 ; Mine
 ;
-; Witness: L1 158 (p1-code, p1-room30, rzx-p1- x10).
+; Witness: L1 164 (p1-code, p1-speedup, p1-room30, rzx-p1- x10).
 InitKind14:
   LD (IX+$14),$02
   LD (IX+$06),$00
@@ -1029,7 +1040,7 @@ InitKind14:
 
 ; Blob
 ;
-; Witness: L1 45 (p1-room14, p1-room24, p1-room26, rzx-p1- x6).
+; Witness: L1 49 (p1-rooms238, p1-room14, p1-room24, p1-room26, rzx-p1- x6).
 InitKind15:
   LD (IX+$14),$04
   LD (IX+$06),$00

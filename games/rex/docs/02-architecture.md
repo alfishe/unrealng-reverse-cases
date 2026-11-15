@@ -57,9 +57,9 @@ The map of part 1, corrected by stage 2 (the stage-1 draft had room 0 "unused" a
 | `$7F72-$9479` | the sprites, pre-shifted ([the sheet](img/sprites/part1-sheet.png), [doc 6](06-rendering.md)) | DrawSprite `$B258` |
 | `$947A-$A011` | code: the entry, the waits, the main loop `$9583-$967A`, the score, the death | `c1` entered at 13 701 |
 | `$A012-$A0C3` | the variables: score `$A03E`, lives `$A063`, bombs `$A06C`, shield `$A04D`, power `$A014`, room `$A0B8`, Rex `$A0B6`/`$A0B7`, the restart point `$A059-$A05B`, the exits `$A08D-$A090`, the sweep `$A067` | [doc 7](07-objects.md) |
-| `$A0C4-$DABF` | code and tables: HUD, text, rooms, render, objects, weapons, collisions, sound, panels; ScreenLines `$AC0D`, MirrorTable `$AD5D`, RoomExits `$B133`, AnimCellList `$D962` | the listings |
+| `$A0C4-$DABF` | code and tables: HUD, text, rooms, render, objects, weapons, collisions, sound, panels; ScreenLines `$AC0D`, MirrorTable `$AD5D`, RoomExits `$B133`, SceneryCellList `$D962` | the listings |
 | `$DAC0-$DE9E` | the menu's code (TitleMenu, DEFINE, the roll call); dead in play | `c1` |
-| `$DE9F-$E19E` | CellIndexMap: for each room cell, its entry in AnimCellList | DrawRoom `$C74C` |
+| `$DE9F-$E19E` | CellIndexMap: for each room cell, its entry in SceneryCellList | DrawRoom `$C74C` |
 | `$E19F-$E4FE` | RoomGrid: the cell type of each cell (play from `$E1FF`) | DrawRoomCell `$C7FC` |
 | `$E4FF-$E7FE` | the attribute shadow (play from `$E55F`); the title screen's data before, cleared at the entry `$9485` | CopyAttrs |
 | `$E7FF-$EAFE` | buffer lines above the play area (the objects' origin `$E9FF`); never copied | ObjectBufferOrigin |
@@ -81,7 +81,7 @@ REX 2 and DEMO load 400 bytes higher (`$61A8`) and keep the same layout. Their t
 | the entry | `$947A` | `$9470` | `$8A84` |
 | ScreenLines, MirrorTable | `$AC0D`, `$AD5D` | `$ACCA`, `$AE52` | `$ACBE`, `$AE0E` |
 | RoomExits | `$B133` | `$B1A7` | `$B033` |
-| AnimCellList | `$D962` | `$D962` | `$DBF6` |
+| SceneryCellList | `$D962` | `$D962` | `$DBF6` |
 | the menu, then the work space | `$DAC0-$FFF9` | `$DAC0-$FFF9` | `$DB4D-$FFF9` zeros (no menu) |
 | the stack at the loop | `$6000` | `$6190` | |
 
@@ -160,7 +160,7 @@ and gives it back:
 | --- | --- | --- |
 | ClearBuffer `$B205` | `$FFFF`, going down | 2688 `PUSH HL` zero the back buffer |
 | BufferToScreen `$A28A` | ScreenLines `$AC0D` | `POP DE` gives each line's screen address; 30 `LDI` copy it |
-| DrawAnimCells `$B33E` | AnimCellList `$D962` | `POP HL`, `POP DE` give a cell's buffer address and its 8 bytes |
+| DrawAnimCells `$B33E` | SceneryCellList `$D962` | `POP HL`, `POP DE` give a cell's buffer address and its 8 bytes |
 
 ```
 B205  ClearBuffer:

@@ -368,7 +368,7 @@ SpraySound:
   LD DE,SfxSpray
   RET
 
-; The enemies' shot sound $D970, if channel 2 is free
+; The enemies' shot sound $D970, if channel C (the third, Channels+$10) is free
 ;
 ; As REX 1's EnemyShotSound $B562 (src/game/weapons.asm).
 ;
@@ -644,7 +644,8 @@ EndShot:
   JP NextShot
 
 ; A bullet hits a cell 4, 5 or 6: the cell's character one step on (its record
-; in AnimCellList), its attribute ($47 for a 6), the cell emptied unless 4 or 5
+; in SceneryCellList), its attribute ($47 for a 6), the cell emptied unless 4
+; or 5
 ;
 ; Witness: L1 37 (demo-cycle).
 BulletHitsCell:
@@ -665,7 +666,7 @@ BulletHitsCell:
   LD H,$00
   ADD HL,HL
   ADD HL,HL
-  LD DE,AnimCellList
+  LD DE,SceneryCellList
   ADD HL,DE
   LD (Temp2),HL
   INC HL
@@ -1008,7 +1009,7 @@ PowerBar:
   LD HL,(PowerBarPtr)
   CALL PowerBarColour
   LD HL,(PowerBarPtr)
-  LD DE,SpritePowerBar
+  LD DE,ShadowOffset
   ADD HL,DE
 
 ; The 2 x 2 cells at HL in the colour PowerLevel + 2

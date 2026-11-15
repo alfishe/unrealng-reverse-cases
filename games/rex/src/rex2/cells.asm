@@ -3,7 +3,7 @@
 ; --------------------------------------------------------------------------------------------------------------------
 
 ; Test the cells under Rex and act: the lift ($12), the restart marker (7), the
-; shield recharger (8, up to 100), the weapon stations ($0A-$0D)
+; shield recharger (8, up to 99), the weapon stations ($0A-$0D)
 ;
 ; Changed from REX 1's CellsUnderRex $9F5F (src/game/cells.asm).
 ;

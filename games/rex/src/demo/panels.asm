@@ -424,13 +424,14 @@ DevLinkReturn:
 ; overwrites it all
 WorkSpace:
   INCBIN "res/leftovers/demo-workspace.bin",$0000,169
-AnimCellList:
-  ; $DBF6 the room's animated cells: 4 bytes each (screen address, picture
-  ;   pointer), filled by DrawRoomCell
+SceneryCellList:
+  ; $DBF6 every visible scenery cell of the room, 4 bytes each (buffer
+  ;   address, picture address), filled by DrawRoomCell and redrawn each
+  ;   pass by DrawAnimCells
   INCBIN "res/leftovers/demo-workspace.bin",$00A9,681
 CellIndexMap:
-  ; $DE9F each grid cell's index into AnimCellList (DrawRoom, DrawRoomCell,
-  ;   BulletHitsCell)
+  ; $DE9F each grid cell's index into SceneryCellList (DrawRoom,
+  ;   DrawRoomCell, BulletHitsCell)
   INCBIN "res/leftovers/demo-workspace.bin",$0352,768
 RoomGrid:
   ; $E19F the room grid's origin: the cell under (x, y) at $E19F + 32 x (y

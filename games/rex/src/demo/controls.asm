@@ -89,16 +89,16 @@ l_9FA7:
 ; Witness: L1 1 (demo-cycle).
 DemoPause:
   CALL SoundSilence
-MainKeys:
-  LD BC,$7FFE             ; the fixed keys: ENTER, H, SPACE
+DemoPauseUp:
+  LD BC,$7FFE             ; wait while SPACE is held
   IN A,(C)
   BIT 0,A
-  JP Z,MainKeys
-l_9FBA:
-  LD BC,$7FFE
+  JP Z,DemoPauseUp
+DemoPauseDown:
+  LD BC,$7FFE             ; wait for SPACE pressed again
   IN A,(C)
   BIT 0,A
-  JP NZ,l_9FBA
+  JP NZ,DemoPauseDown
   CALL SoundReset
   RET
 

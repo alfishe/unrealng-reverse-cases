@@ -268,7 +268,8 @@ HitNotLast:
   JP NextBullet
 
 ; A hit: the flash picture SpriteHitFlash $8258, the combo score (ComboCount
-; $A1D4), the object killed after its hits
+; $A1D4; none for the spray), the object killed after its hits (the laser kills
+; at once)
 ;
 ; As REX 1's HitObject $D3C2 (src/game/collisions.asm).
 ;

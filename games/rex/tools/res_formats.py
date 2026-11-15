@@ -213,12 +213,24 @@ def png_to_font(raw):
 # the sprite sets: the offsets of the .ann's labels inside each part's Sprites entry (SpriteStomper, SpriteRex, ...)
 SPRITE_SETS = {
     'rex1': [0x0, 0xC0, 0x180, 0x1F8, 0x240, 0x480, 0x540, 0x600, 0x6C0, 0x720, 0x780, 0x840, 0x900, 0x980, 0xAD0,
-             0xAE8, 0xBE8, 0xC98, 0xD38, 0xD78, 0xD8D, 0xD98, 0xE18, 0xED8, 0xEF8, 0xF18, 0xF38, 0xFD8, 0xFF0, 0x10B0,
+             0xAE8, 0xBE8, 0xC98, 0xD38, 0xD78, 0xD98, 0xE18, 0xED8, 0xEF8, 0xF18, 0xF38, 0xFD8, 0xFF0, 0x10B0,
              0x1130, 0x11C0, 0x1240, 0x1260, 0x1380],
     'rex2': [0x0, 0xC0, 0x120, 0x180, 0x1A0, 0x1C0, 0x280, 0x2F8, 0x340, 0x580, 0x640, 0x700, 0x780, 0x928, 0x9C8,
              0xA08, 0xA28, 0xA48, 0xB67, 0xB88, 0xC88, 0xD68, 0xE28, 0xEA8, 0xF68, 0xFE8],
     'demo': [0x0, 0x1F8, 0x240, 0x540, 0x600, 0x6C0, 0x8C0, 0x8D8, 0xA88, 0xB28, 0xB68, 0xB88, 0xCC8, 0xCE8, 0xD08,
              0xD28, 0xDC8, 0xEA0, 0xF20],
+}
+
+# the line width the code draws a set with: the DrawSprite calls of the part 1 recordings
+# (work/docs/rxB/sprites-calls.json, the picture or the fixed frame against these sets); REX 2's and DEMO's copies of
+# the same bytes take the same width; a set missing here was never drawn in a recording and keeps guess_width
+SPRITE_WIDTHS = {
+    'rex1': {0x0: 3, 0xC0: 3, 0x180: 3, 0x240: 3, 0x480: 3, 0x540: 3, 0x600: 3, 0x6C0: 3, 0x780: 2, 0x840: 2,
+             0x980: 4, 0xAE8: 2, 0xBE8: 2, 0xD78: 2, 0xD98: 2, 0xE18: 3, 0xED8: 2, 0xEF8: 2, 0xF18: 2, 0xF38: 2,
+             0xFF0: 3, 0x10B0: 2, 0x1130: 3, 0x11C0: 2, 0x1240: 2, 0x1260: 6, 0x1380: 6},
+    'rex2': {0x1C0: 3, 0x280: 3, 0x340: 3, 0x580: 2, 0x780: 4, 0xA08: 2, 0xA28: 2},
+    'demo': {0x0: 3, 0x240: 3, 0x540: 2, 0x8D8: 2, 0xB68: 2, 0xCC8: 2, 0xCE8: 2, 0xD08: 2, 0xD28: 2, 0xDC8: 3,
+             0xEA0: 2},
 }
 
 
@@ -263,13 +275,13 @@ def guess_width(d):
     return best
 
 
-def sprites_to_png(data, starts, width=256):
+def sprites_to_png(data, starts, widths=None, width=256):
     ends = starts[1:] + [len(data)]
     sets, x, y, shelf = [], 1, 1, 0
     for s, e in zip(starts, ends):
         d = data[s:e]
-        w = guess_width(d)
-        h = len(d) // w
+        w = (widths or {}).get(s) or guess_width(d)
+        h = -(-len(d) // w)
         if x + 8 * w + 1 > width:
             x, y, shelf = 1, y + shelf + 1, 0
         sets.append([s, e - s, w, x, y])
@@ -323,9 +335,17 @@ def records_out(d, comments):
         if raw:
             lines.append('bytes ' + hexes(raw))
             del raw[:]
+    def record_at(k):
+        j = d.find(0, k + 3) if k + 3 <= len(d) else -1
+        return j if j > k + 3 and all(32 <= b < 96 for b in d[k + 3:j]) and d[k] != 0xFF else -1
     while i < len(d):
-        j = d.find(0, i + 3) if i + 3 <= len(d) else -1
-        if j > i + 3 and all(32 <= b < 96 for b in d[i + 3:j]) and d[i] != 0xFF:
+        # a weapon panel's head: [flag 0][count 1-8], then its records (WeaponPanel)
+        if raw and raw[-1] == 0 and 1 <= d[i] <= 8 and record_at(i + 1) > 0 and d[i + 1] >= 0x40:
+            raw.append(d[i])
+            i += 1
+            continue
+        j = record_at(i)
+        if j > 0:
             flush()
             lines.append('$%02X %d $%02X %s' % (d[i], d[i + 1], d[i + 2], quote(d[i + 3:j])))
             i = j + 1
@@ -514,7 +534,7 @@ for _p, _n in PART_NAMES.items():
     SINGLES.update({
         'fonts/%s.bin' % _p: ('.png', font_to_png, png_to_font),
         'chars/%s.bin' % _p: ('.png', chars_to_png, png_to_chars),
-        'sprites/%s.bin' % _p: ('.png', lambda d, p=_p: sprites_to_png(d, SPRITE_SETS[p]), png_to_sprites),
+        'sprites/%s.bin' % _p: ('.png', lambda d, p=_p: sprites_to_png(d, SPRITE_SETS[p], SPRITE_WIDTHS[p]), png_to_sprites),
         'blocks/%s.bin' % _p: _blocks,
         'tables/%s-char-flags.bin' % _p: table(['type'], ['%s: CharFlags, the cell type of each room character '
                                                           '(rooms/README.md lists the types)' % _n], 'char',

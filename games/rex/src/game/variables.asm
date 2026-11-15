@@ -56,14 +56,16 @@ SmartBombOn:
 SmartBombPtr:
   DEFB $00,$00            ; the next object to kill
 SpriteMirror:
-  DEFB $00                ; DrawSprite: bit 7 draws the picture mirrored
-                          ; (MirrorTable $AD5D)
+  DEFB $00                ; DrawSprite: bit 7 a fixed frame, SpritePicture, the
+                          ; frame list ignored (mirroring, through MirrorTable
+                          ; $AD5D, is A not 0 at the call)
 SpritePicture:
   DEFB $00,$00,$00,$00    ; DrawSprite: the picture
 ObjectHitCount:
   DEFB $00                ; the hits an object took
 KillFlashPtr:
-  DEFB $00,$00            ; the HUD attribute address of the latest kill
+  DEFB $00,$00            ; the combo row cell lit by the latest hit ($5843 + 3
+                          ; a hit; at rest $E9FF)
 ComboCount:
   DEFB $00                ; kills in a row
 ComboTimer:
@@ -75,7 +77,8 @@ RapidShotsOn:
 RapidShotsLeft:
   DEFB $00                ; its shots left
 FadeStepIndex:
-  DEFB $00                ; the screen flash's step (FadeStep $9A4C)
+  DEFB $00                ; the power pod's HUD flash step, $FF at rest
+                          ; (FadeStep $9A4C)
 SpawnTimer:
   DEFB $00                ; passes to the next random spawn
 SpawnPeriod:
@@ -97,7 +100,8 @@ ShieldDrainRate:
   DEFB $00                ; passes for one unit of energy while the shield is
                           ; on
 WeaponIcon:
-  DEFB $00                ; the HUD weapon icon shown
+  DEFB $00                ; the gun held (always 1): BestWeapon reads it as
+                          ; entry 0 before HasDoubleFire .. HasSpray
 HasDoubleFire:
   DEFB $00                ; the weapons held: double fire
 HasLaser:
@@ -146,7 +150,8 @@ SweepCount:
 SweepDir:
   DEFB $00                ; the sweep's direction
 SweepWidth:
-  DEFB $00                ; the sweep's width (8 at the start; at 1 Rex dies)
+  DEFB $00                ; the sweep's width (12 after ResetSweep; Rex dies
+                          ; when it would drop to 0)
 FireDelay:
   DEFB $00                ; passes between shots
 AnimCount1:

@@ -238,7 +238,7 @@ The ZXDB POKE file (`Rex (1988)(Martech Games).pok`, `work/candidates/pok/`), ea
 | 46661,201 | [Pt1] No gun shots | `$B645` | MoveEnemyBullets' first byte | `RET`: the enemies' shots never move |
 | 51576,201 | [Pt1] No extra enemy soldiers fire | `$C978` | SpawnScripted's first byte | `RET`: no scripted spawn |
 | 38416,58; 46372,62; 46373,20 | [Pt1] Rapid fire | `$9610`; `$B524` | `JP Z,MainRexKeys`; `SLA A` in SlotsByPower | `LD A,(nn)`: the fire latch is always cleared, so holding fire repeats; `LD A,20`: 21 shot slots whatever the power |
-| 53242,58; 53214,58 | [Pt1] Speed up | `$CFFA`; `$CFDE` | `JP Z,WalkLeftFast`, `JP Z,WalkRightFast` | `LD A,(nn)`: the jump is never taken, so the 4-pixel step (with SpeedUpTick) always runs |
+| 53242,58; 53214,58 | [Pt1] Speed up | `$CFFA`; `$CFDE` | `JP Z,WalkLeftNormal`, `JP Z,WalkRightNormal` | `LD A,(nn)`: the jump is never taken, so the 4-pixel step (with SpeedUpTick) always runs |
 | 40303,0 | [Pt2] Infinite Lives | `$9D6F` | `DEC A` in LifeLost | as part 1 |
 | 38721,0 | [Pt2] Infinite Smarts | `$9741` | `DEC A` in SmartBomb | as part 1 |
 | 39170,0 | [Pt2] Infinite Shields | `$9902` | `SUB L` in ShieldDrain | as part 1 |
@@ -253,8 +253,9 @@ Two more facts from the code: "Access code always right" keeps the test for a su
 the code: the effects were read from the listings, not run.*
 
 A sweep POKE that works on this release, from the code ([doc 4, 4.8](04-game-loop.md#48-every-delay-pause-and-timer)):
-`POKE 41241,0` turns `DEC A` at `$A119` in HudSweep into `NOP`, so the sweep's width never shrinks (known only from
-the code; not run).
+`POKE 41241,0` turns `DEC A` at `$A119` in HudSweep into `NOP`, so the sweep's width never shrinks. Witness: `p1-poke41241`
+(the POKE on a clone of the RZX state at frame 12 000, SweepWidth poked to 2, Rex immune): SweepCount runs 5 .. 1
+about 33 times in 3000 frames and SweepWidth stays 2, where `p1-gameover` (the same start, no POKE) dies at width 2.
 
 ## 3.7 The releases and the copies
 
@@ -296,6 +297,7 @@ original (3.5).
 ## 3.9 Known only from the code
 
 - Line 999 of each BASIC: the authors' disk mastering; no recording runs it (3.2).
-- Every POKE's effect (3.6), the "Infinite time" POKE hitting data, and the working sweep POKE `41241,0`.
+- Every POKE's effect (3.6) and the "Infinite time" POKE hitting data; the sweep POKE `41241,0` alone was run
+  (`p1-poke41241`).
 - REX 2 keeps no byte of REX 1: read from the BASIC's `CLEAR 24999` and the code block's range; `c2` loads REX 2
   alone and plays, which shows it does not need REX 1, not that nothing could be kept.

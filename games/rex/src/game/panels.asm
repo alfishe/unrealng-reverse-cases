@@ -5,8 +5,8 @@
 ; Draw a framed box: A attribute, D width, E height, H column, L line, C the
 ; frame's colour; the frame from the font's edge characters
 ;
-; Witness: L1 41 (c1, p1-code, p1-cursor, p1-define, p1-gameover, p1-kempston,
-; rzx-p1- x7).
+; Witness: L1 52 (c1, menu-rollcall, p1-code, p1-cursor, p1-define,
+; p1-gameover, p1-kempston, p1-speedup, rzx-p1- x7).
 PanelBox:
   PUSH IX
   LD (Temp1),A
@@ -81,8 +81,8 @@ PanelBoxRow:
 
 ; 8 lines of a box row
 ;
-; Witness: L1 166 (c1, p1-code, p1-cursor, p1-define, p1-gameover, p1-kempston,
-; rzx-p1- x7).
+; Witness: L1 209 (c1, menu-rollcall, p1-code, p1-cursor, p1-define,
+; p1-gameover, p1-kempston, p1-speedup, rzx-p1- x7).
 PanelRow:
   LD B,$08
 PanelRowLine:
@@ -104,8 +104,8 @@ PanelRowLine:
 
 ; One pixel line: the left edge, the middle B times, the right edge
 ;
-; Witness: L1 1328 (c1, p1-code, p1-cursor, p1-define, p1-gameover,
-; p1-kempston, rzx-p1- x7).
+; Witness: L1 1672 (c1, menu-rollcall, p1-code, p1-cursor, p1-define,
+; p1-gameover, p1-kempston, p1-speedup, rzx-p1- x7).
 PanelLine:
   PUSH BC
   LD A,(IX+$00)
@@ -128,8 +128,9 @@ PanelLineMiddle:
 
 ; Three rows of three: the cells of value $47 (white) take C
 ;
-; Witness: L1 4771 (c1, p1-code, p1-cursor, p1-define, p1-gameover,
-; p1-kempston, p1-room24, p1-room30, rzx-p1- x32).
+; Witness: L1 4835 (c1, p1-code, p1-cursor, p1-define, p1-gameover,
+; p1-kempston, p1-poke41241, p1-shots, p1-speedup, p1-room24, p1-room30,
+; rzx-p1- x32).
 FillShadowRow3:
   CALL FillShadowCells
   CALL FillShadowCells
@@ -138,8 +139,9 @@ FillShadowRow3:
 
 ; One row of three cells
 ;
-; Witness: L1 14313 (c1, p1-code, p1-cursor, p1-define, p1-gameover,
-; p1-kempston, p1-room24, p1-room30, rzx-p1- x32).
+; Witness: L1 14505 (c1, p1-code, p1-cursor, p1-define, p1-gameover,
+; p1-kempston, p1-poke41241, p1-shots, p1-speedup, p1-room24, p1-room30,
+; rzx-p1- x32).
 FillShadowCells:
   LD A,(DE)
   CP $47
@@ -173,8 +175,8 @@ ShadowRowEnd:
 
 ; Copy a 3 x 3 patch from DE to HL (the shadow's 32-byte rows)
 ;
-; Witness: L1 594 (c1, p1-code, p1-cursor, p1-define, p1-gameover, p1-kempston,
-; p1-room24, p1-room30, rzx-p1- x32).
+; Witness: L1 603 (c1, p1-code, p1-cursor, p1-define, p1-gameover, p1-kempston,
+; p1-poke41241, p1-shots, p1-speedup, p1-room24, p1-room30, rzx-p1- x32).
 CopyCells3:
   CALL CopyCells
   LD BC,$001E
@@ -186,8 +188,9 @@ CopyCells3:
 
 ; One row of three
 ;
-; Witness: L1 1782 (c1, p1-code, p1-cursor, p1-define, p1-gameover,
-; p1-kempston, p1-room24, p1-room30, rzx-p1- x32).
+; Witness: L1 1809 (c1, p1-code, p1-cursor, p1-define, p1-gameover,
+; p1-kempston, p1-poke41241, p1-shots, p1-speedup, p1-room24, p1-room30,
+; rzx-p1- x32).
 CopyCells:
   LD A,(DE)
   LD (HL),A
@@ -220,8 +223,9 @@ SaveAttrs:
 ; The explosion's attribute flash: the object's 3 x 3 cells in the shadow
 ; coloured from FlashAttrs $BFE7 at random
 ;
-; Witness: L1 4771 (c1, p1-code, p1-cursor, p1-define, p1-gameover,
-; p1-kempston, p1-room24, p1-room30, rzx-p1- x32).
+; Witness: L1 4835 (c1, p1-code, p1-cursor, p1-define, p1-gameover,
+; p1-kempston, p1-poke41241, p1-shots, p1-speedup, p1-room24, p1-room30,
+; rzx-p1- x32).
 FlashCells:
   CALL BufferAddress
   LD DE,$0020
@@ -251,7 +255,7 @@ FlashCells:
 
 ; IX = the first dead object record; none: IX = $03E8
 ;
-; Witness: L1 163 (p1-code, p1-room30, rzx-p1- x10).
+; Witness: L1 169 (p1-code, p1-speedup, p1-room30, rzx-p1- x10).
 FindFreeObject:
   LD IX,$5E66
   LD A,(ObjectCount)
@@ -301,7 +305,7 @@ WeaponPanel:
 ; The screen's play lines into the back buffer (the panels draw over the
 ; screen; BufferToScreen puts it back)
 ;
-; Witness: L1 6 (rzx-p1- x6).
+; Witness: L1 7 (p1-speedup, rzx-p1- x6).
 SaveScreen:
   LD IY,ScreenLines
   LD B,$A8
@@ -321,8 +325,8 @@ SaveScreenLine:
 ; Draw a picture straight on the screen from the 6 bytes after the CALL:
 ; picture word, column, line, width, height; returns after them
 ;
-; Witness: L1 804 (c1, p1-code, p1-cursor, p1-define, p1-kempston, p1-room30,
-; rzx-p1- x14).
+; Witness: L1 1326 (c1, menu-rollcall, p1-code, p1-cursor, p1-define,
+; p1-kempston, p1-room30, rzx-p1- x14).
 DrawCharBlock:
   LD (Temp1),IX
   LD (Temp2),IY
@@ -359,8 +363,8 @@ CharBlockRow:
 
 ; Fill B rows of E attributes from HL with A
 ;
-; Witness: L1 108 (c1, p1-code, p1-cursor, p1-define, p1-gameover, p1-kempston,
-; rzx-p1- x7).
+; Witness: L1 140 (c1, menu-rollcall, p1-code, p1-cursor, p1-define,
+; p1-gameover, p1-kempston, p1-speedup, rzx-p1- x7).
 FillAttrs:
   PUSH AF
   PUSH DE
@@ -397,26 +401,30 @@ UnusedD92E:
   DEFB $00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00
   DEFB $00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00
   DEFB $00,$00,$00,$00
-AnimCellList:
-  DEFB $00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00 ; the room's
-  DEFB $00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00 ; animated
-  DEFB $00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00 ; cells: 4
-  DEFB $00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00 ; bytes each
-  DEFB $00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00 ; (cell,
-  DEFB $00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00 ; character,
+SceneryCellList:
+  DEFB $00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00 ; every
+  DEFB $00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00 ; visible
+  DEFB $00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00 ; scenery
+  DEFB $00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00 ; cell of
+  DEFB $00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00 ; the room,
+  DEFB $00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00 ; 4 bytes
+  DEFB $00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00 ; each
+  DEFB $00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00 ; (buffer
+  DEFB $00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00 ; address,
   DEFB $00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00 ; picture
-  DEFB $00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00 ; pointer),
+  DEFB $00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00 ; address),
   DEFB $00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00 ; filled by
   DEFB $00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00 ; DrawRoom
-  DEFB $00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00
-  DEFB $00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00
-  DEFB $00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00
-  DEFB $00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00
-  DEFB $00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00
-  DEFB $00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00
-  DEFB $00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00
-  DEFB $00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00
-  DEFB $00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00
-  DEFB $00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00
-  DEFB $00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00
-  DEFB $00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00
+  DEFB $00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00 ; and
+  DEFB $00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00 ; redrawn
+  DEFB $00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00 ; each pass
+  DEFB $00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00 ; by
+  DEFB $00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00 ; DrawAnimCells
+  DEFB $00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00 ; (364 cells
+  DEFB $00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00 ; in room 0:
+  DEFB $00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00 ; past entry
+  DEFB $00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00         ; 255 the
+                                                                       ; one-byte
+                                                                       ; index of
+                                                                       ; CellIndexMap
+                                                                       ; wraps)

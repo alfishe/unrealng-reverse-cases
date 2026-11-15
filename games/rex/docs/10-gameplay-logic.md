@@ -778,12 +778,14 @@ press while it is shown.
 ![Screens of part 1](img/play/screens-part1.png)
 
 How to read it: a contact sheet of part 1's screens from the walkthrough (doc 1). The roulette's panel is a boxed text
-over the play area like the others; no recording took a bonus pod, so it has no screenshot.
+over the play area like the others ([doc 8, figure 8.9](08-hud-and-text.md#89-menus-and-panels-in-play)).
 
 **The point**: a slowing wheel that rewards a timed press; doing nothing never gives the best prize.
 
-Witness: BonusRoulette and the prizes (`src/game/collisions.asm`). SPEED UP is known only from the code: SpeedUpTick L1
-0 in every build.
+Witness: BonusRoulette and the prizes (`src/game/collisions.asm`): `rzx-p1-50000` (start roll 3, the player's fire on
+100 RAPID SHOTS) and `rzx-p1-56000`; `p1-speedup` takes the same pod with fire held back until SPEED UP shows (BonusRoll
+3 at frame 1701, 4 at 1716, 0 at 1730, fire at 1736): SpeedUp 1 and SpeedUpPhase 200 at 1740, RexSpeed 4 and -4 while
+it lasts, the phase 0 at 2740 (SpeedUpTick L1 200), RexSpeed 2 and -2 after.
 
 ## 10.10 The score and the extra life
 
@@ -1476,7 +1478,7 @@ Witness: the sections above.
 - The lift (cell `$12`): CellsUnderRex stops Rex and calls Land and StartJump at every cell boundary, so a lift is a
   chain of jumps. No sample was taken on a lift.
 - WalkRightKey's labels: the 2-pixel path is the normal walk, the 4-pixel path the SPEED UP one; SpeedUpTick counts
-  the 200 passes only while a walk key is held. Known only from the code (SpeedUpTick L1 0).
+  the 200 passes only while a walk key is held (`p1-speedup`, SpeedUpTick L1 200).
 - SmartBombStep does not test the alive byte: it calls KillObject on empty records too. Known only from the code.
 - ExitLeft places Rex at X `$E8`, not `$E0`.
 - BestWeapon reads WeaponIcon `$A04F` as the gun's "held" flag; it is 1 in every sample.
@@ -1516,11 +1518,11 @@ flowchart TD
 Worked example: the shield in `c1`. ShieldOn is 0 and ShieldEnergy 99 in every play sample of frames 16 300-20 470.
 The deaths refilled a shield that was already full.
 
-![Rex's first room in c1](img/play/c1-001500-room1.png)
+![Rex's first room in c1](img/play/c1-001500-room0.png)
 
 How to read it: the screenshot `c1-001500` (TTD frame 16 500), room 0 with the shield figure 99 in the HUD.
 
-**The point**: what the code can do and what the recordings showed differ: SPEED UP, the lift and part 2's pods were
-read from the code only.
+**The point**: what the code can do and what the recordings showed differ: the lift and part 2's pods were read from
+the code only.
 
 Witness: `src/game/cells.asm` (OnLadder), `src/game/rexmove.asm`, `src/game/bomb.asm`; the `c1` samples.

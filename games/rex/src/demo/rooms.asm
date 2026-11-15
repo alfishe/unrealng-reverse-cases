@@ -2,8 +2,9 @@
 ; rooms.asm: The rooms: drawing a room, the exits, the objects made, the spawners
 ; --------------------------------------------------------------------------------------------------------------------
 
-; Draw the room: silence, the map's 7 x 10 blocks into the buffer, the grid and
-; the attribute shadow; the animated cells listed
+; Draw the room: silence, the map's 7 x 10 blocks into the grid, the attribute
+; shadow and SceneryCellList (its pixel writes into the buffer are wiped by
+; BuildRoom's ClearBuffer after it; the cell list redraws them)
 ;
 ; As REX 1's DrawRoom $C745 (src/game/rooms.asm).
 ;
@@ -20,7 +21,7 @@ DrawRoom:
   LD A,$01
   LD (RoomCellPtr),A
   LD IX,BackBuffer
-  LD HL,AnimCellList
+  LD HL,SceneryCellList
   LD (RoomColumn),HL
   LD A,(Room)
   LD E,A
@@ -338,7 +339,7 @@ ReadExits:
   LD (ObjectListPtr),DE
   RET
 
-; SpawnTop $5EB7 = 1
+; SpawnTop $5EB7 = $FF
 ;
 ; As REX 1's SetSpawnTop $C948 (src/game/rooms.asm).
 ;
@@ -350,7 +351,7 @@ SetSpawnTop:
   LD (HL),$FF
   RET
 
-; SpawnRight $5EB6 = 1
+; SpawnRight $5EB6 = $FF
 ;
 ; As REX 1's SetSpawnRight $C94E (src/game/rooms.asm).
 ;
@@ -362,7 +363,7 @@ SetSpawnRight:
   LD (HL),$FF
   RET
 
-; SpawnLeft $5EB5 = 1
+; SpawnLeft $5EB5 = $FF
 ;
 ; As REX 1's SetSpawnLeft $C954 (src/game/rooms.asm).
 ;

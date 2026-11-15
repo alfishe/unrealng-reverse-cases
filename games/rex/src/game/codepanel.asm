@@ -2,9 +2,10 @@
 ; codepanel.asm: The end of part 1: the access code for part 2
 ;
 ; Room exit 99 (the lift out of the complex) ends part 1 at CodePanel. The code is 16 digits that carry the game into
-; part 2: the double fire, the score's five digits, the laser, the lives, the multiple, the score again, the spray,
-; the shield's two digits, the bombs, each written 9 - digit, then a three-digit checksum (the sum of the 13). The
-; panel shows CODE: and the digits, waits for fire and starts a new game.
+; part 2, in the places 0 double fire, 1 score thousands, 2 spray, 3 lives, 4 laser, 5 score hundreds, 6 multiple, 7
+; score units, 8 shield units, 9 score tens, 10 bombs, 11 shield tens, 12 score ten-thousands, each written 9 - digit;
+; 13-15 the checksum's units, hundreds and tens (the sum of the 13 shown digits). The panel shows CODE: and the
+; digits, waits for fire and starts a new game.
 ; --------------------------------------------------------------------------------------------------------------------
 
   ORG $A7CE
@@ -14,7 +15,7 @@
 ; Reached only from ChangeRoom $C95A when the exit leads to room 99. The digits
 ; go into CodeText $A884 at the places $A88C-$A89B. No stage 1 recording
 ; reached it; p1-code does (room 31's exit to 99, the panel shown, fire, a new
-; game in room 1).
+; game in room 0).
 ;
 ; Witness: L1 1 (p1-code).
 CodePanel:
@@ -97,8 +98,11 @@ CodeDigitsLoop:
 CodeText:
   INCBIN "res/texts/rex1-code.bin",$0000,8
 CodeDigits:
-  ; $A88C the 16 places: double fire, score, laser, lives, multiple, ...,
-  ;   the checksum's three
+  ; $A88C the 16 places: 0 double fire, 1 score thousands, 2 spray, 3
+  ;   lives, 4 laser, 5 score hundreds, 6 multiple, 7 score units, 8 shield
+  ;   units, 9 score tens, 10 bombs, 11 shield tens, 12 score
+  ;   ten-thousands, each written 9 - digit; 13-15 the checksum's units,
+  ;   hundreds and tens (the sum of the 13 shown digits)
   INCBIN "res/texts/rex1-code.bin",$0008,17
 
 ; Build the room Room $A0B8: exits and objects, the map drawn, the buffer
@@ -108,8 +112,8 @@ CodeDigits:
 ; DrawAnimCells / BufferToScreen, CopyAttrs $C8BF, MakeObjects $CB52; rooms 2,
 ; 3, 4, 6 and 20 start the scripted spawn (StartScriptSpawn $C965); ShowShield.
 ;
-; Witness: L1 74 (c1, p1-cursor, p1-define, p1-kempston, p1-room x5, rzx-p1-
-; x30).
+; Witness: L1 80 (c1, p1-cursor, p1-define, p1-kempston, p1-rooms238,
+; p1-speedup, p1-room x5, rzx-p1- x30).
 BuildRoom:
   LD A,$03
   LD (SfxExplosion),A
@@ -225,11 +229,11 @@ AttractRlc:
   INC HL
   DJNZ AttractRlc
   LD HL,AnimChar28
-  CALL RollCharLeft
+  CALL RollCharDown
   LD HL,AnimChar11
-  CALL RollCharRight
+  CALL RollCharUp
   LD HL,AnimChar26
-  CALL RollCharLeft
+  CALL RollCharDown
   CALL AnimateCells
   LD A,(PassToggle)
   XOR $01

@@ -25,8 +25,8 @@
 ; $9751. ENTER, H and SPACE are fixed keys; the other five follow the menu's
 ; choice (DEFINE, Kempston, Cursor, Sinclair).
 ;
-; Witness: L1 73 (c1, p1-cursor, p1-define, p1-kempston, p1-room x5, rzx-p1-
-; x30).
+; Witness: L1 79 (c1, p1-cursor, p1-define, p1-kempston, p1-rooms238,
+; p1-speedup, p1-room x5, rzx-p1- x30).
 MainLoop:
   CALL BuildRoom
 MainPass:
@@ -118,11 +118,11 @@ MainRlcLoop:
   INC HL
   DJNZ MainRlcLoop
   LD HL,AnimChar28
-  CALL RollCharLeft
+  CALL RollCharDown
   LD HL,AnimChar11
-  CALL RollCharRight
+  CALL RollCharUp
   LD HL,AnimChar26
-  CALL RollCharLeft
+  CALL RollCharDown
   CALL AnimateCells
   LD A,(PassToggle)
   XOR $01

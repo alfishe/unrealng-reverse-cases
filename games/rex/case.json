@@ -57,7 +57,12 @@
     "stage2/rec/p1-cursor",
     "stage2/rec/p1-kempston",
     "stage2/rec/p1-gameover",
-    "stage2/rec/p1-define"
+    "stage2/rec/p1-define",
+    "docs/rxA/rec/p1-rooms238",
+    "docs/rxA/rec/menu-rollcall",
+    "docs/integrate/rec/p1-speedup",
+    "docs/integrate/rec/p1-shots",
+    "docs/integrate/rec/p1-poke41241"
   ],
   "ref_builds": [
     [

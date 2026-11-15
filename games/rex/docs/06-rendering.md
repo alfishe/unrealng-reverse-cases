@@ -51,8 +51,8 @@ by the first room.
 
 | Address | Size | Name | What it holds |
 | --- | --- | --- | --- |
-| `$D962` | 4 a cell + 1 | AnimCellList | every visible scenery cell of the room: buffer address, picture address; `$FF` ends it |
-| `$DE9F` | 32 x 24 | CellIndexMap | a cell's 1-based index in AnimCellList (the bullets use it, 6.4) |
+| `$D962` | 4 a cell + 1 | SceneryCellList | every visible scenery cell of the room: buffer address, picture address; `$FF` ends it |
+| `$DE9F` | 32 x 24 | CellIndexMap | a cell's 1-based index in SceneryCellList (the bullets use it, 6.4) |
 | `$E19F` | 32 x 24 | RoomGrid | each cell's type from CharFlags `$62E0` ([doc 7](07-objects.md)); the play rows from RoomGridPlay `$E1FF` |
 | `$E4FF` | 32 x 24 | the attribute shadow | the room's attributes as `$5800` will hold them; the play rows from AttrShadowPlay `$E55F` |
 | `$E7FF`-`$EAFF` | | the origins | ShotBufferOrigin `$E7FF`, SparkleBufferOrigin `$E89F`, SpriteBufferOrigin `$E8FF`, ObjectBufferOrigin `$E9FF`, BufferPlayOrigin `$EAFF` |
@@ -73,7 +73,7 @@ so: screen line = Y + 8, screen column = X / 8
 
 ```mermaid
 flowchart LR
-    A["CharGraphics 63E0, the map"] --> B["DrawRoom: AnimCellList D962, RoomGrid E19F, shadow E4FF"]
+    A["CharGraphics 63E0, the map"] --> B["DrawRoom: SceneryCellList D962, RoomGrid E19F, shadow E4FF"]
     B --> C["BackBuffer EB00: 168 x 32"]
     D["sprites, shots, drones: origin + 32 Y + X / 8"] --> C
     C --> E["BufferToScreen: lines 24-191, columns 1-30"]
@@ -215,7 +215,7 @@ from the old picture to the new.
 BuildRoom `$A89D` draws a room when Rex enters it ([doc 4](04-game-loop.md)). The work is DrawRoom `$C745`:
 
 1. Clear CellIndexMap and RoomGrid (`$DE9F`, `$0660` bytes).
-2. Set RoomCellPtr `$A01D` to 1, IX to BackBuffer `$EB00` and RoomColumn `$A0B9` to AnimCellList `$D962`.
+2. Set RoomCellPtr `$A01D` to 1, IX to BackBuffer `$EB00` and RoomColumn `$A0B9` to SceneryCellList `$D962`.
 3. Point IY at the room's map: RoomMaps `$75E0` + 70 x Room (Multiply `$C8E8`, repeated `ADD`).
 4. For each of 7 block rows, for each of 10 blocks: the block's 9 characters at BlockDefs `$6CE0` + 9 x block,
    drawn by DrawBlockRow `$C7C5` at IX; then IX += 3 (the next block), and IX += `$0300` after a row (24 lines).
@@ -224,7 +224,7 @@ BuildRoom `$A89D` draws a room when Rex enters it ([doc 4](04-game-loop.md)). Th
    - the attribute CharAttrs `$6BE0` + c into the shadow (DrawRoomChar `$C893` turns the buffer address into the
      shadow address);
    - the type CharFlags `$62E0` + c into RoomGrid, at the same offset;
-   - unless c is 0, 1, `$10`, `$71`, `$81` or `$91`: a cell entry in AnimCellList (buffer address, picture address
+   - unless c is 0, 1, `$10`, `$71`, `$81` or `$91`: a cell entry in SceneryCellList (buffer address, picture address
      CharGraphics `$63E0` + 8c) and its index into CellIndexMap;
    - the 8 bytes of the picture into the buffer, 32 bytes apart (NextCellPtr `$C87F`).
 7. Back in BuildRoom: the play attributes `$5860` are zeroed, the buffer cleared (ClearBuffer), the listed cells drawn
@@ -239,7 +239,7 @@ flowchart TD
     E --> F["DrawBlockRow: 3 rows of 3 characters"]
     F --> G["DrawRoomCell: attribute to the shadow, type to the grid"]
     G --> H{"character 0, 1, $10, $71, $81, $91?"}
-    H -- "no" --> I["add buffer and picture to AnimCellList, index to CellIndexMap"]
+    H -- "no" --> I["add buffer and picture to SceneryCellList, index to CellIndexMap"]
     H -- "yes" --> J["NextCellPtr: 8 bytes to the buffer"]
     I --> J
     J --> E
@@ -250,7 +250,7 @@ flowchart TD
 ```text
 DrawRoom:
     clear CellIndexMap .. RoomGrid ($0660 bytes)
-    RoomCellPtr = 1; IX = $EB00; RoomColumn = AnimCellList
+    RoomCellPtr = 1; IX = $EB00; RoomColumn = SceneryCellList
     IY = RoomMaps + 70 * Room
     for row in 0..6:
         for block in 0..9:
@@ -264,7 +264,7 @@ DrawRoomCell(c, IX):
     [shadow] = CharAttrs[c]
     [shadow - AttrShadowPlay + RoomGridPlay] = CharFlags[c]
     if c not in (0, 1, $10, $71, $81, $91):
-        append (IX, CharGraphics + 8c) to AnimCellList; write $FF after it
+        append (IX, CharGraphics + 8c) to SceneryCellList; write $FF after it
         CellIndexMap[cell] = RoomCellPtr; RoomCellPtr += 1   # one byte: wraps after 255
     copy the 8 bytes of CharGraphics + 8c to IX, IX + 32, ... IX + 224
 ```
@@ -324,7 +324,7 @@ Its 9 characters are at `$6CE0 + 9 x 8 = $6D28`: `00 00 00 / F9 00 00 / 9C 00 00
 
 - attribute `$05` (cyan on black) to the shadow at `$E6B2` (= `$59B2` on the screen: row 13, column 19);
 - type 0 to the grid at `$E352`;
-- entry 219 of AnimCellList: buffer `$F512`, picture `$6BA8` (= `$63E0 + 8 x $F9`); CellIndexMap holds 219 for the
+- entry 219 of SceneryCellList: buffer `$F512`, picture `$6BA8` (= `$63E0 + 8 x $F9`); CellIndexMap holds 219 for the
   cell;
 - on the screen: line 104 (= 24 + (`$F512` - `$EB00`) / 32), column 19.
 
@@ -343,7 +343,7 @@ How to read:
 
 - Steps 1 and 2: the map byte and the block's 9 character codes.
 - Step 3: the 9 characters in the block's 3 x 3 layout, each drawn in its own colours, with the addresses written
-  for it. Purple marks the cells that enter AnimCellList.
+  for it. Purple marks the cells that enter SceneryCellList.
 - Step 5: the screen around the block at 3x; the yellow box is the block (lines 96-119, columns 19-21). The cyan
   marker and the green stem are `$F9` and `$9C`.
 
@@ -355,14 +355,14 @@ work/docs/rxB/p1-cursor --window 400:32000-421:6000 --listing build/game.lst --v
 D900-FFFF --pc C745-C8BE,8000-8000 --pictures 60 --title "..." --out docs/img/routines/DrawRoom.gif`.*
 
 How to read: the left pane is the buffer, filling block by block, left to right and top to bottom. The right pane is
-the listing, with the instruction that ran; the memory strip shows AnimCellList and the maps filling at the same time.
+the listing, with the instruction that ran; the memory strip shows SceneryCellList and the maps filling at the same time.
 
 Witness: DrawRoom ran from 400:32348 to about 421:0 in `p1-cursor`: about 20 frames, 0.4 s, for 630 characters (about
 2200 T a character, most of it in Multiply and the address conversion). BuildRoom began at 400:10600, CopyAttrs ran at
 421:4367.
 
 The point: DrawRoom draws every pixel of the room into the buffer, and then BuildRoom throws them away. The buffer is
-cleared before DrawAnimCells redraws the listed cells. So the screen shows only the cells of AnimCellList. Two
+cleared before DrawAnimCells redraws the listed cells. So the screen shows only the cells of SceneryCellList. Two
 consequences:
 
 - the six skipped characters never appear in play. Characters 1, `$10`, `$71`, `$81` and `$91` are visible glyphs
@@ -373,10 +373,10 @@ consequences:
 
 ## 6.4 The cell list and DrawAnimCells
 
-AnimCellList `$D962` is the room's scenery as a list. It holds every visible cell, not only the animated ones: 364
+SceneryCellList `$D962` is the room's scenery as a list. It holds every visible cell, not only the animated ones: 364
 entries in room 0. DrawAnimCells `$B33E` walks it with the stack pointer:
 
-1. Save SP in Temp2 `$A095`; SP = AnimCellList.
+1. Save SP in Temp2 `$A095`; SP = SceneryCellList.
 2. `POP HL` (the buffer address), `POP DE` (the picture address).
 3. If L is `$FF`, it is the end mark: restore SP (ReturnToStack `$B339`) and return.
 4. Copy the 8 picture bytes to HL, HL + 32, ... with `LD A,(DE)` / `LD (HL),A`. It is a load, not an `OR`.
@@ -394,7 +394,7 @@ flowchart TD
 
 ```text
 DrawAnimCells:
-    save SP; SP = AnimCellList
+    save SP; SP = SceneryCellList
     loop:
         HL = pop(); DE = pop()
         if L == $FF: restore SP; return      # the end mark: LD (IY+4),$FF after each new entry
@@ -403,7 +403,7 @@ DrawAnimCells:
 
 ```text
 B33E  ED 73 95 A0 DrawAnimCells:    LD (Temp2),SP
-B342  31 62 D9                      LD SP,AnimCellList
+B342  31 62 D9                      LD SP,SceneryCellList
 B345  E1          DrawAnimCellLoop: POP HL                  ; each listed cell
 B346  D1                            POP DE
 B347  7D                            LD A,L
@@ -463,14 +463,14 @@ changes on screen in every cell that uses it (6.5).
 
 Two limits, known only from the code:
 
-- **The list overruns CellIndexMap.** AnimCellList has `$DE9F - $D962` = 1341 bytes before CellIndexMap, room for 335
+- **The list overruns CellIndexMap.** SceneryCellList has `$DE9F - $D962` = 1341 bytes before CellIndexMap, room for 335
   entries. Room 0 lists 364, so the list ends at `$DF12`: memory of `p1-cursor` at frame 1006 shows `$FF` at `$DF12`.
   Entries 336-364 overwrite CellIndexMap's first 116 bytes: HUD rows 0-2 (unused) and the first play row from column
   0 to 18 (`$DEFF-$DF12`). DrawRoom writes those indexes early (row 0) and the list later, so the indexes are lost.
 - **The index is one byte.** RoomCellPtr `$A01D` counts in A and wraps after 255: cells 256-364 get indexes 1-109.
 
 CellIndexMap is read by BulletHitsCell (weapons.asm), which steps a hit cell of types 4, 5 and 6 to the next
-character in its AnimCellList entry (picture + 8, [doc 10](10-gameplay-logic.md)). In a room with more than 255 cells
+character in its SceneryCellList entry (picture + 8, [doc 10](10-gameplay-logic.md)). In a room with more than 255 cells
 or more than 335, a hit on such a cell can step the wrong entry. No recording shows it.
 
 ## 6.5 The animated scenery
@@ -482,9 +482,9 @@ CharGraphics in place. DrawAnimCells shows them in the next pass.
 | --- | --- | --- | --- |
 | 111 | `$6758` | each line rotated right one bit (`RRC (HL)`) | MainRrcLoop `$964A` |
 | 143 | `$6858` | each line rotated left two bits (`RLC (HL)` twice) | MainRlcLoop `$9654` |
-| 28 | `$64C0` | the 8 lines rolled down one line (the last line comes first) | RollCharLeft `$A7BA` |
-| 11 | `$6438` | the 8 lines rolled up one line (the first line goes last) | RollCharRight `$A7A9` |
-| 26 | `$64B0` | rolled down, as 28 | RollCharLeft |
+| 28 | `$64C0` | the 8 lines rolled down one line (the last line comes first) | RollCharDown `$A7BA` |
+| 11 | `$6438` | the 8 lines rolled up one line (the first line goes last) | RollCharUp `$A7A9` |
+| 26 | `$64B0` | rolled down, as 28 | RollCharDown |
 | 252-255 | `$6BC0` | 32 bytes from AnimFramesA `$AE8D` or AnimFramesB `$AEAD`, by PassToggle `$A017` | AnimateCells `$A55E` |
 | 250-251 | `$6BB0` | 16 bytes, the next frame of FramesList2 `$A602` | AnimateCells2 `$A5A7` |
 | 68 | `$6600` | 8 bytes, the next frame of FramesList1 `$A60C` | CopyFrame `$A5C4` |
@@ -538,11 +538,11 @@ CopyFrame(counter, list, char, n):
 9658  23                        INC HL
 9659  10 F9                     DJNZ MainRlcLoop
 965B  21 C0 64                  LD HL,AnimChar28
-965E  CD BA A7                  CALL RollCharLeft
+965E  CD BA A7                  CALL RollCharDown
 9661  21 38 64                  LD HL,AnimChar11
-9664  CD A9 A7                  CALL RollCharRight
+9664  CD A9 A7                  CALL RollCharUp
 9667  21 B0 64                  LD HL,AnimChar26
-966A  CD BA A7                  CALL RollCharLeft
+966A  CD BA A7                  CALL RollCharDown
 966D  CD 5E A5                  CALL AnimateCells
 9670  3A 17 A0                  LD A,(PassToggle)
 9673  EE 01                     XOR $01
@@ -1233,15 +1233,15 @@ line keeps the address arithmetic of every writer to a shift and an add; the 2 b
 - **The skipped characters.** DrawRoomCell does not list characters 0, 1, `$10`, `$71`, `$81` and `$91`. Five of them
   are visible glyphs, drawn by DrawRoom into the buffer and then cleared by BuildRoom (6.3). They are never seen in
   play.
-- **AnimCellList's overrun and the one-byte index** (6.4). A room of more than 335 listed cells writes the list into
+- **SceneryCellList's overrun and the one-byte index** (6.4). A room of more than 335 listed cells writes the list into
   CellIndexMap's first play row; more than 255 cells wrap the index. Room 0 has 364. BulletHitsCell may step the wrong
   cell after a hit on a cell of type 4, 5 or 6 in such a room. No recording shows the wrong step.
 - **DrawMirrored's fixed + 2** (6.8). Mirrored 2-byte sprites are drawn 8 pixels right of their plain position.
 - **The combo row's rest pointer** (6.10). KillFlashPtr rests at `$E9FF`, below the buffer, and FadeHudNext writes
   two bytes there every pass. No recording shows harm: nothing reads them.
 - **The power pod's flash covers only the HUD.** FadeStep `$9A4C` is started only by TakePowerPod (`$D47D`). It
-  steps the 64 attributes `$5800-$583F`, rows 0-1, not the play area ([doc 8](08-hud-and-text.md)). The source's
-  comment names the smart bomb and the bonus; neither starts it.
+  steps the 64 attributes `$5800-$583F`, rows 0-1, not the play area ([doc 8](08-hud-and-text.md)); neither the smart bomb
+  nor the bonus starts it.
 - **ClearBuffer's off-by-one** (6.6): `$FFFF` is never cleared and `$EAFF` is. Neither byte is on the screen.
 - **DrawRoom's attribute loop** (6.3) is dead in effect: BuildRoom zeroes its result before CopyAttrs.
 - **Unseen sprite labels.** The sprite area `$7F72-$947A` has labels no recording drew: the sheets of figure 6.8 are

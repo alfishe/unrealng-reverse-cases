@@ -211,7 +211,7 @@ PrintText `$A307` prints one record:
 
 1. It copies the attribute, the column and the line into Temp1 `$A093`, Temp2 `$A095` and Temp3 `$A097`.
 2. For each character, PrintChar `$A2E9` sets DE to the glyph and IY to ScreenLineTable `$ABDD` + 2 x line.
-3. The 8-line loop (labelled PrintTextAttr `$A321`) takes the screen address of each line from the table, adds the
+3. The 8-line loop (labelled PrintTextLine `$A321`) takes the screen address of each line from the table, adds the
    column, and copies one glyph byte. So the line can be any pixel line; the text need not sit on a character row.
 4. If the character is not a space, it writes the attribute at `$5800 + (line & $F8) x 4 + column`: the cell of the
    character row that holds the text's top line.
@@ -245,7 +245,7 @@ A316  32 97 A0                     LD (Temp3),A
 A319  11 03 00                     LD DE,$0003
 A31C  DD 19                        ADD IX,DE
 A31E  CD E9 A2     PrintTextChar:  CALL PrintChar          ; each character
-A321  FD 6E 00     PrintTextAttr:  LD L,(IY+$00)           ; the attributes
+A321  FD 6E 00     PrintTextLine:  LD L,(IY+$00)           ; each of the character's 8 lines
 A324  FD 66 01                     LD H,(IY+$01)
 A327  D5                           PUSH DE
 A328  3A 95 A0                     LD A,(Temp2)
@@ -258,7 +258,7 @@ A331  77                           LD (HL),A
 A332  13                           INC DE
 A333  FD 23                        INC IY
 A335  FD 23                        INC IY
-A337  10 E8                        DJNZ PrintTextAttr
+A337  10 E8                        DJNZ PrintTextLine
 A339  DD 7E 00                     LD A,(IX+$00)
 A33C  FE 20                        CP $20
 A33E  28 19                        JR Z,PrintTextNext
@@ -491,7 +491,7 @@ B970  C0                           RET NZ
 B971  2A 15 A0                     LD HL,(PowerBarPtr)
 B974  CD 7E B9                     CALL PowerBarColour
 B977  2A 15 A0                     LD HL,(PowerBarPtr)
-B97A  11 FF 8C                     LD DE,SpritePowerBar
+B97A  11 FF 8C                     LD DE,ShadowOffset
 B97D  19                           ADD HL,DE
 ```
 
@@ -526,8 +526,8 @@ L1 29648 (c1, p1-*, rzx-p1-*).
 
 Known only from the code:
 
-- The "picture" SpritePowerBar `$8CFF` that PowerBar adds is not a picture. `$8CFF` is `$E4FF - $5800`, the
-  distance from the screen's attributes to the shadow. The label should be an `EQU`.
+- The "picture" ShadowOffset `$8CFF` that PowerBar adds is not a picture. `$8CFF` is `$E4FF - $5800`, the
+  distance from the screen's attributes to the shadow, an `EQU` in the source (`ShadowOffset EQU $E4FF-$5800`).
 - PowerGain stops PowerLevel at 6, which gives attribute 8: black ink on blue paper, a dark icon. No recording
   reaches level 6.
 
@@ -610,7 +610,7 @@ ones come back from the right for 12. Every 24 passes is one sweep.
 Worked example, from the code: a sweep at width w takes 2w passes. Five sweeps at each width from 12 down to 1 take
 `10 x (12 + 11 + ... + 1) = 780` passes. At about 4.4 frames a pass that is about 3400 frames, 69 s. So Rex has about
 a minute in one room before the sweep kills him. `p1-gameover` starts with SweepWidth poked to 2: the sweep killed
-Rex before frame 500 (figure 8.9).
+Rex before frame 500 (figure 8.11).
 
 Witness: HudSweep L1 16927 (every pass of every recording); ResetSweep L1 116; RexDies through the sweep in
 `p1-gameover` only.
@@ -937,11 +937,25 @@ messages, so they are drawn apart.
 
 Worked example: the weapon panel DoubleFire `$ABA0` is `00 01 45 12 28` "DOUBLE FIRE" 0. The flag is 0 (not yet
 shown), the count 1, then one record: attribute `$45` (bright cyan), column 18, line 40. The text file
-`src/res/texts/rex1-game.txt` parses it one byte early, as attribute `$01`, column 69, line `$12` and the text
-"(DOUBLE FIRE": the `(` is the line byte `$28`.
+`src/res/texts/rex1-game.txt` keeps it so: `bytes $00 $01`, then `$45 18 $28 "DOUBLE FIRE"`.
 
-Witness: WeaponPanel L1 95 (rzx-p1- x8); BonusRoulette L1 2 (rzx-p1-50000, rzx-p1-56000); the menu and DEFINE texts
-in c1 and p1-define ([doc 5](05-controls.md)).
+![The four weapon panels in play](img/hud/weapon-panels.png)
+
+*Figure 8.8: the four weapon panels as the RZX run met their stations: DOUBLE FIRE (`rzx-p1-00000` frame 1400, room
+1), LASER (`rzx-p1-10000` frame 590, room 6), MULTIPLE (`rzx-p1-18000` frame 400, room 23), SPRAY (`rzx-p1-26000`
+frame 200, room 11); the screens from the recordings' TTD (`time_travel memory_at` `$4000`, 6912 bytes; the integration's
+`work/docs/integrate/ttdshot.py`), 2x.*
+
+How to read it: each panel is a framed box over the play area (PrintBoxed), one record each; the play under it stands
+still while WeaponPanel waits for fire.
+
+![The bonus roulette on SPEED UP](img/hud/bonus-roulette.png)
+
+*Figure 8.9: the bonus roulette showing SPEED UP, `p1-speedup` frame 1734 (BonusRoll 0 from frame 1730; fire at 1736
+gives it). The screen from the TTD as figure 8.8, 2x.*
+
+Witness: WeaponPanel L1 95 (rzx-p1- x8); BonusRoulette L1 3 (p1-speedup, rzx-p1-50000, rzx-p1-56000); the menu and
+DEFINE texts in c1 and p1-define ([doc 5](05-controls.md)).
 
 The point: all the game's words, over 200 records, are data in one format. A panel is a count and some records,
 and the flag in front makes a weapon panel appear once a game.
@@ -991,7 +1005,7 @@ flowchart TD
 
 ![The menu with the roll call](img/controls/menu.png)
 
-*Figure 8.8: the menu in `c1`, TTD frames 15200 and 15400 (T 0): MenuTexts and a RollCallTexts pair, each printed by
+*Figure 8.10: the menu in `c1`, TTD frames 15200 and 15400 (T 0): MenuTexts and a RollCallTexts pair, each printed by
 PrintBoxed in its frame. Command: `python3 tools/fig_controls.py shots --work work/docs/rxB/c1 --shot "15200=..."
 --shot "15400=..." --title "..." --out docs/img/controls/menu.png` ([doc 5](05-controls.md), figure 5.2).*
 
@@ -1062,7 +1076,7 @@ flowchart TD
 
 ![The game over panel](img/hud/game-over.png)
 
-*Figure 8.9: `p1-gameover` at frames 250 and 500 (T 0). Command: `python3 tools/fig_controls.py shots --work
+*Figure 8.11: `p1-gameover` at frames 250 and 500 (T 0). Command: `python3 tools/fig_controls.py shots --work
 work/docs/rxB/pgo --shot "250=..." --shot "500=..." --title "..." --out docs/img/hud/game-over.png`.*
 
 How to read: left, play with Lives poked to 0; the HUD still shows the old lives digit, because the poke did not call
@@ -1143,7 +1157,7 @@ flowchart TD
 
 ![The CODE panel](img/hud/code.png)
 
-*Figure 8.10: the CODE panel of `p1-code` at frame 800 (T 0) and its 16 places with what each carries. Command: `python3
+*Figure 8.12: the CODE panel of `p1-code` at frame 800 (T 0) and its 16 places with what each carries. Command: `python3
 work/docs/rxB/dumpscr.py work/docs/rxB/pcode 800 work/docs/rxB/p1-code-800.scr`, then `python3 tools/fig_hud.py code
 --scr work/docs/rxB/p1-code-800.scr --digits 8883898669979809 --out docs/img/hud/code.png`.*
 
@@ -1158,14 +1172,12 @@ Worked example (`p1-code`; CodePanel ran between frames 707 and 708). At frame 7
 - the four weapons 1: places 0, 2, 4, 6 = `8`;
 - the 13 written digits `8 8 8 3 8 9 8 6 6 9 9 7 9` sum to 98: place 13 = `8`, place 14 = `0`, place 15 = `9`.
 
-The panel reads `CODE-8883898669979809`, as figure 8.10 shows.
+The panel reads `CODE-8883898669979809`, as figure 8.12 shows.
 
-Witness: CodePanel L1 1 (`p1-code`: room 31's exit to 99, the panel, fire, a new game in room 1).
+Witness: CodePanel L1 1 (`p1-code`: room 31's exit to 99, the panel, fire, a new game in room 0).
 
 Known only from the code:
 
-- The source's header comment gives the order "double fire, the score's five digits, the laser, the lives, ...".
-  The code writes the order of the table above.
 - The checksum is the sum of the written digits, not of the values. Its three digits are not inverted, and their
   order is units, hundreds, tens.
 
@@ -1176,9 +1188,9 @@ reader; the checksum catches a typing error, not a deliberate change: any edit t
 
 - **A text off a character row** (8.3) gets the attribute of its upper row only. No record uses it.
 - **The score wraps** past 65 535 hundreds (6 553 500 points) to 0 (8.4).
-- **SpritePowerBar `$8CFF`** is the shadow-to-screen distance, not a picture (8.5).
+- **ShadowOffset `$8CFF`** is the shadow-to-screen distance, not a picture (8.5).
 - **The sweep's time limit** of about 780 passes in a room (8.6): no recording lets it run out at full width.
 - **KillFlashFade's rest writes** to `$E9FF-$EA00` (8.7).
 - **FadeStep** is started only by TakePowerPod, not by the smart bomb or a bonus (8.7).
 - **The CODE panel's order and checksum** (8.11).
-- **The weapon panel records** are [flag][count][records]; the text file reads them one byte early (8.8).
+- **The weapon panel records** are [flag][count][records] (8.8).

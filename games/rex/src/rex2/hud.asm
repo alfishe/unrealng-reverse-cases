@@ -2,7 +2,8 @@
 ; hud.asm: The HUD, the text printer, the numbers
 ; --------------------------------------------------------------------------------------------------------------------
 
-; One step of the HUD sweep; every 5 sweeps narrower; width 1 kills Rex
+; One step of the HUD sweep (none while FadeStepIndex is not $FF); every 5
+; round trips one narrower; the width dropping to 0 kills Rex
 ;
 ; As REX 1's HudSweep $A0C4 (src/game/hud.asm).
 ;
@@ -366,7 +367,7 @@ PrintTextHL:
   DJNZ PrintTextHL
   RET
 
-; Print character A at column Temp2, line Temp1 (pixels) from Font $6306
+; Print character A at column Temp2, line Temp3 (pixels) from Font $6306
 ; through ScreenLineTable $AC9A
 ;
 ; As REX 1's PrintChar $A2E9 (src/game/hud.asm).
@@ -409,8 +410,9 @@ PrintText:
   ADD IX,DE
 PrintTextChar:
   CALL PrintChar          ; each character
-PrintTextAttr:
-  LD L,(IY+$00)           ; the attributes
+PrintTextLine:
+  LD L,(IY+$00)           ; each of the character's 8 lines; the attribute
+                          ; after them
   LD H,(IY+$01)
   PUSH DE
   LD A,(Temp2)
@@ -423,7 +425,7 @@ PrintTextAttr:
   INC DE
   INC IY
   INC IY
-  DJNZ PrintTextAttr
+  DJNZ PrintTextLine
   LD A,(IX+$00)
   CP $20
   JR Z,PrintTextNext

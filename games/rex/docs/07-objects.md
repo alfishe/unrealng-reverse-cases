@@ -293,7 +293,7 @@ the first 16 (`$180` bytes) on a room change; a list holds at most 16 objects.
 | +`$10` | speed | pixels a step; a pause count for some kinds |
 | +`$11`, +`$12` | timers | by kind; a pod's life |
 | +`$13` | a counter | by kind |
-| +`$14` | hits left | the bullets it takes (7.8); the module header calls it "score" |
+| +`$14` | hits left | the bullets it takes (7.8) |
 | +`$15` | pod | the pod it leaves: `$FF` none, 0 a small power pod, else a big one (7.9) |
 | +`$16`, +`$17` | picture base | the sprite of its kind |
 
@@ -516,8 +516,7 @@ until a solid cell above (Climb). The mine layer drops a mine (kind 14) into a f
 
 Both drift by dX and dY, kept in +4 and +5. A solid cell turns them; a solid cell above kills a mine. A blob picks a
 random direction (RandomFlight: dX and dY each +1 or -1, RandomSign) and bounces at the edges of the play area
-(FlyBounce). The routine labels are crossed: the routine named Mine is kind 15's first step, and the one named Blob
-runs both kinds (7.11).
+(FlyBounce). BlobStart `$C14D` is kind 15's first step; DriftObject `$C150` runs both kinds (kind 14 enters there).
 
 ```mermaid
 stateDiagram-v2
@@ -887,14 +886,12 @@ Witness: Random runs in every pass that spawns, fires or blows up (L1 in `src/ga
 
 ## 7.11 Notes, quirks and what no recording reached
 
-- The module header of `objects.asm` names +`$14` "score"; it is the hits left (7.8).
-- The labels Mine and Blob are crossed with the kinds they run (7.6).
-- KillObject's comment names kinds 3 and 4 as the end of the scripted spawn; the code tests kind 5.
-- SmartBombMark's comment says it writes object pointers into the list at `$5D28`. The code sets the live byte (+6)
-  of the 20 enemy bullet records at `$5D22` to 2: it stops every enemy shot. The objects are killed one a pass by
+- KillObject ends the scripted spawn on kind 5 (EndScriptSpawn), which then stops the timers of kinds 3 and 4.
+- SmartBombMark marks no objects: it sets the live byte (+6) of the 20 enemy bullet records at `$5D22` to 2,
+  which stops every enemy shot. The objects are killed one a pass by
   SmartBombStep from `$5E66` (doc 10.11).
 - SmartBombStep calls KillObject for 16 records without testing their alive byte. A record cleared by MakeObjects
   has Y 0, which KillObject refuses. Known only from the code: no recording shows a smart bomb in a room with a dead
   record that kept its Y.
-- The spawn sides are set to `$FF`, not 1, as the comments of SetSpawnTop .. SetSpawnLeft say.
+- SetSpawnTop .. SetSpawnLeft set the spawn sides to `$FF`.
 - Rooms 14, 24, 26 and 27 are on the map, but no recording enters them (stage 2 NOTES).

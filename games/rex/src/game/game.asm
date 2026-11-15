@@ -3,6 +3,9 @@
 ; Written by kit/mkgame.py from src/game/game.ann and the recordings; edit game.ann, not the .asm.
 
   DEVICE ZXSPECTRUM128
+
+; Names that cannot be labels (@alias)
+ShadowOffset   EQU $E4FF-$5800  ; the distance from a screen attribute to its cell in the attribute shadow $E4FF (PowerBar adds it); not an address in the sprites
   ORG $6018
   INCLUDE "graphics.asm"  ; The graphics and the level data: the font, the characters, the blocks, the room maps and the sprites
   INCLUDE "entry.asm"  ; The entry, a new game, the waits for fire

@@ -447,7 +447,7 @@ Witness: the `c1` trace of TTD frames 17 300-17 420: 289 AY writes, 2 StartSfx, 
 - ChannelStep writes each volume twice a call (9.4).
 - The mixer never turns a tone back on (9.3). No effect needs it: A and C play only noise, B only tones.
 - SfxEnemyShot declares two steps and borrows its second from SfxLaser's first bytes (9.2).
-- EnemyShotSound's comment says "channel 2"; it tests Channels + `$10`, channel 3 (C).
+- EnemyShotSound tests Channels + `$10`, channel 3 (C): the enemy shot sounds only while C is free.
 - The shield's hit sound exists only in DEMO; REX 1 and REX 2 keep its bytes unused (9.7).
 - Known only from the code: the laser's and the spray's starts (LaserSound, SpraySound) were not in the windows traced
   for this document; their witness is the L1 count of the stage-1 builds.

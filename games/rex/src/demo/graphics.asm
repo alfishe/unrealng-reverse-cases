@@ -52,13 +52,14 @@ CharFlags:
 CharGraphics:
   INCBIN "res/chars/demo.bin",$0000,88
 AnimChar11:
-  ; $6690 character 11, rolled by RollCharLeft every pass (the main loop)
+  ; $6690 character 11, rolled one line up by RollCharUp every pass (the
+  ;   main loop)
   INCBIN "res/chars/demo.bin",$0058,120
 AnimChar26:
-  ; $6708 character 26, rolled by RollCharLeft
+  ; $6708 character 26, rolled one line down by RollCharDown
   INCBIN "res/chars/demo.bin",$00D0,16
 AnimChar28:
-  ; $6718 character 28, rolled by RollCharLeft
+  ; $6718 character 28, rolled one line down by RollCharDown
   INCBIN "res/chars/demo.bin",$00E0,320
 AnimChar68:
   ; $6858 character 68: frames from FramesChar68 (AnimateCells)

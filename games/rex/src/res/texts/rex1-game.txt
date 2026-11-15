@@ -13,12 +13,12 @@ $42 3 $28 "  SHIELD LOSS  "
 $46 3 $28 "   1000 BONUS  "
 $42 3 $28 "  ENERGY LOSS  "
 $46 3 $28 "100 RAPID SHOTS"
-bytes $00
-$01 69 $12 "(DOUBLE FIRE"
-bytes $00
-$01 69 $03 "(LASER"
-bytes $00
-$01 69 $14 "(MULTIPLE"
-bytes $00
-$01 69 $12 "(SPRAY"
+bytes $00 $01
+$45 18 $28 "DOUBLE FIRE"
+bytes $00 $01
+$45 3 $28 "LASER"
+bytes $00 $01
+$45 20 $28 "MULTIPLE"
+bytes $00 $01
+$45 18 $28 "SPRAY"
 bytes $80 $40 $20 $10 $08 $04 $02 $01

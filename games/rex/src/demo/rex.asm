@@ -39,8 +39,7 @@ ShieldFlip:
 ; Witness: L1 6753 (d1, demo-cycle).
 RexState:
   LD A,(RexPresent)
-SpritePowerBar:
-  OR A                    ; the power bar cells (PowerBar $C278)
+  OR A
   RET Z
   LD A,(Dying)
   OR A

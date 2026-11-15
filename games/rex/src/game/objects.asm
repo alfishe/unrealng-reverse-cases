@@ -1,11 +1,14 @@
 ; --------------------------------------------------------------------------------------------------------------------
 ; objects.asm: The objects: the enemies, the pods, their moves, their shots, the explosions
 ;
-; A room holds up to 31 objects in records of 24 bytes at ObjectTable $5E66 (ObjectCount $A092): +0 X, +1 Y, +2
-; direction (0 right), +3 falling, +4/+5 picture (or the swing gun's angle picture), +6 fall speed, +9 kind (bit 7: a
-; variant), +$0A/+$0B frame list, +$0C alive, +$0D/+$0E/+$0F size, +$10 speed, +$11/+$12 timers, +$13, +$14 score,
-; +$15 a pod's extra, +$16/+$17 the picture base. UpdateObjects walks them: draw (DrawObject $BAD0), the kind's own
-; behaviour, then the walk, fall and jump common to the walkers, then the collision with Rex (ObjectHitsRex $D215).
+; A room's objects are records of 24 bytes at ObjectTable $5E66 (ObjectCount $A092, masked by AND $1F to 31, but no
+; room holds more than 16: room 5; the 16 records reach $5FE5, and the stack's lowest mark $5FE2, in DrawRoomCell
+; before MakeObjects, overlaps their last 4 bytes, harmless because MakeObjects writes them afterwards): +0 X, +1 Y,
+; +2 direction (0 right), +3 falling, +4/+5 picture (or the swing gun's angle picture), +6 fall speed, +9 kind (bit 7:
+; a variant), +$0A/+$0B frame list, +$0C alive, +$0D/+$0E/+$0F size, +$10 speed, +$11/+$12 timers, +$13, +$14 hits
+; left (a bullet that brings it to 1 kills the object; the score comes from KillScores), +$15 a pod's extra, +$16/+$17
+; the picture base. UpdateObjects walks them: draw (DrawObject $BAD0), the kind's own behaviour, then the walk, fall
+; and jump common to the walkers, then the collision with Rex (ObjectHitsRex $D215).
 ;
 ; The kinds (the menu's roll call names ten of them): 0 foot man, 1 stomper, 2-7 walkers and people (4, 5, 6, 7 count
 ; as humans), 8 scanner, 9 swing gun (a turret that fires in 8 angles), 10 shooters (two shots at once), 11 launcher,
@@ -18,8 +21,9 @@
 
 ; Update every object of the room (falls into UpdateObject)
 ;
-; Witness: L1 16932 (c1, p1-code, p1-cursor, p1-define, p1-gameover,
-; p1-kempston, p1-room x5, rzx-p1- x32).
+; Witness: L1 18619 (c1, p1-code, p1-cursor, p1-define, p1-gameover,
+; p1-kempston, p1-poke41241, p1-rooms238, p1-shots, p1-speedup, p1-room x5,
+; rzx-p1- x32).
 UpdateObjects:
   LD IX,$5E66
   LD A,(ObjectCount)
@@ -28,8 +32,9 @@ UpdateObjects:
 ; One object at IX: skip a dead one; pick its picture (exploding: $6018); draw
 ; it; its behaviour
 ;
-; Witness: L1 182219 (c1, p1-code, p1-cursor, p1-define, p1-gameover,
-; p1-kempston, p1-room x5, rzx-p1- x32).
+; Witness: L1 200524 (c1, p1-code, p1-cursor, p1-define, p1-gameover,
+; p1-kempston, p1-poke41241, p1-rooms238, p1-shots, p1-speedup, p1-room x5,
+; rzx-p1- x32).
 UpdateObject:
   PUSH BC
   LD A,(IX+$0C)
@@ -81,8 +86,9 @@ ObjectShootDo:
 ; Draw the object at IX (SpriteX/Y, size, mirror, picture, frame list) and
 ; dispatch: exploding, ramming turn, shooting kinds
 ;
-; Witness: L1 77347 (c1, p1-code, p1-cursor, p1-define, p1-gameover,
-; p1-kempston, p1-room x5, rzx-p1- x32).
+; Witness: L1 86025 (c1, p1-code, p1-cursor, p1-define, p1-gameover,
+; p1-kempston, p1-poke41241, p1-rooms238, p1-shots, p1-speedup, p1-room x5,
+; rzx-p1- x32).
 DrawObject:
   LD A,(IX+$00)
   LD (SpriteX),A
@@ -129,8 +135,9 @@ DrawObjectDo:
 ; By kind: the power pod's frames, the swing gun, the shooters, the launcher,
 ; the big gun; else walk, fall, jump, the grid cell and the walk kinds' moves
 ;
-; Witness: L1 73519 (c1, p1-code, p1-cursor, p1-define, p1-gameover,
-; p1-kempston, p1-room x5, rzx-p1- x32).
+; Witness: L1 82133 (c1, p1-code, p1-cursor, p1-define, p1-gameover,
+; p1-kempston, p1-poke41241, p1-rooms238, p1-shots, p1-speedup, p1-room x5,
+; rzx-p1- x32).
 ObjectBehaviour:
   LD A,(IX+$09)
   CP $FE
@@ -152,15 +159,17 @@ ObjectBehaviour:
 
 ; ObjectHitsRex for the object at IX
 ;
-; Witness: L1 73516 (c1, p1-code, p1-cursor, p1-define, p1-gameover,
-; p1-kempston, p1-room x5, rzx-p1- x32).
+; Witness: L1 82130 (c1, p1-code, p1-cursor, p1-define, p1-gameover,
+; p1-kempston, p1-poke41241, p1-rooms238, p1-shots, p1-speedup, p1-room x5,
+; rzx-p1- x32).
 ObjectCollide:
   CALL ObjectHitsRex
 
 ; The next object record (24 bytes on), until all are done
 ;
-; Witness: L1 182217 (c1, p1-code, p1-cursor, p1-define, p1-gameover,
-; p1-kempston, p1-room x5, rzx-p1- x32).
+; Witness: L1 200522 (c1, p1-code, p1-cursor, p1-define, p1-gameover,
+; p1-kempston, p1-poke41241, p1-rooms238, p1-shots, p1-speedup, p1-room x5,
+; rzx-p1- x32).
 NextObject:
   LD DE,$0018
   ADD IX,DE
@@ -243,7 +252,8 @@ BigGunDown:
 
 ; A walker's random shot forward (1 in 16)
 ;
-; Witness: L1 507 (c1, rzx-p1-04000, rzx-p1-06000, rzx-p1-08000, rzx-p1-12000).
+; Witness: L1 580 (c1, p1-rooms238, rzx-p1-04000, rzx-p1-06000, rzx-p1-08000,
+; rzx-p1-12000).
 ShootForward:
   CALL Random
   CP $F0
@@ -260,7 +270,7 @@ ShootForward:
 
 ; A random pair of shots, one each way
 ;
-; Witness: L1 444 (c1, rzx-p1- x5).
+; Witness: L1 445 (c1, p1-rooms238, rzx-p1- x5).
 ShootBoth:
   CALL Random
   CP $F0
@@ -283,8 +293,9 @@ ShootBoth:
 
 ; Kind 11, the launcher: every few passes a shot that climbs (type $87)
 ;
-; Witness: L1 2885 (c1, p1-cursor, p1-define, p1-gameover, p1-kempston,
-; p1-room14, p1-room24, p1-room26, p1-room30, rzx-p1- x16).
+; Witness: L1 5588 (c1, p1-cursor, p1-define, p1-gameover, p1-kempston,
+; p1-poke41241, p1-shots, p1-speedup, p1-room14, p1-room24, p1-room26,
+; p1-room30, rzx-p1- x16).
 LauncherFire:
   CALL Random2
   CP $64
@@ -304,8 +315,8 @@ LauncherFire:
 
 ; Kind 10, the shooters: every few passes two shots, right and left
 ;
-; Witness: L1 3386 (c1, p1-room14, p1-room24, p1-room26, p1-room30, rzx-p1-
-; x17).
+; Witness: L1 5066 (c1, p1-rooms238, p1-speedup, p1-room14, p1-room24,
+; p1-room26, p1-room30, rzx-p1- x17).
 ShootersFire:
   CALL Random
   CP $64
@@ -329,8 +340,8 @@ ShootersFire:
 
 ; A shot from IX at X A, Y IX+1, speed 15
 ;
-; Witness: L1 178 (c1, p1-room14, p1-room24, p1-room26, p1-room30, rzx-p1-
-; x13).
+; Witness: L1 288 (c1, p1-rooms238, p1-speedup, p1-room14, p1-room24,
+; p1-room26, p1-room30, rzx-p1- x13).
 ShootFromObject:
   LD (Temp1),A
   LD A,$0F
@@ -345,8 +356,8 @@ ShootFromObject:
 ; Kind 9, the swing gun: its angle picture (SwingGunFrames $BECB), at random a
 ; shot in its angle's direction
 ;
-; Witness: L1 9826 (c1, p1-cursor, p1-kempston, p1-room26, p1-room27,
-; p1-room30, rzx-p1- x22).
+; Witness: L1 10296 (c1, p1-cursor, p1-kempston, p1-rooms238, p1-speedup,
+; p1-room26, p1-room27, p1-room30, rzx-p1- x22).
 SwingGun:
   LD E,(IX+$11)
   LD D,$00
@@ -395,7 +406,7 @@ SwingGunTurn:
 
 ; The ramming pod's turn: the turning pictures, then kind 7 again
 ;
-; Witness: L1 382 (p1-room30, rzx-p1- x18).
+; Witness: L1 394 (p1-speedup, p1-room30, rzx-p1- x18).
 RamTurn:
   LD A,(IX+$11)
   CP $04
@@ -415,8 +426,9 @@ RamTurnCount:
 ; An object explodes: the six shards drawn (DrawShard), the attribute flash; at
 ; the end it leaves a pod or the points
 ;
-; Witness: L1 3827 (c1, p1-code, p1-cursor, p1-define, p1-gameover,
-; p1-kempston, p1-room24, p1-room30, rzx-p1- x32).
+; Witness: L1 3891 (c1, p1-code, p1-cursor, p1-define, p1-gameover,
+; p1-kempston, p1-poke41241, p1-shots, p1-speedup, p1-room24, p1-room30,
+; rzx-p1- x32).
 BlowUp:
   LD HL,ShardPaths
   CALL DrawShard
@@ -505,7 +517,7 @@ BigGunShots:
 
 ; A swing gun shot up and left
 ;
-; Witness: L1 508 (p1-room26, p1-room27, p1-room30, rzx-p1- x17).
+; Witness: L1 557 (p1-speedup, p1-room26, p1-room27, p1-room30, rzx-p1- x17).
 SwingShotUpLeft:
   PUSH AF
   LD A,(IX+$00)
@@ -520,8 +532,8 @@ SwingShotUpLeft:
 
 ; A swing gun shot left
 ;
-; Witness: L1 899 (c1, p1-cursor, p1-kempston, p1-room26, p1-room27, p1-room30,
-; rzx-p1- x20).
+; Witness: L1 965 (c1, p1-cursor, p1-kempston, p1-speedup, p1-room26,
+; p1-room27, p1-room30, rzx-p1- x20).
 SwingShotLeft:
   PUSH AF
   LD A,(IX+$00)
@@ -535,8 +547,8 @@ SwingShotLeft:
 
 ; The shot's dX (HL) and speed
 ;
-; Witness: L1 2526 (c1, p1-cursor, p1-kempston, p1-room26, p1-room27,
-; p1-room30, rzx-p1- x22).
+; Witness: L1 2741 (c1, p1-cursor, p1-kempston, p1-speedup, p1-room26,
+; p1-room27, p1-room30, rzx-p1- x22).
 SwingShotSet:
   LD (IY+$07),L
   LD (IY+$08),H
@@ -547,8 +559,8 @@ SwingShotSet:
 
 ; A swing gun shot right
 ;
-; Witness: L1 736 (c1, p1-cursor, p1-kempston, p1-room26, p1-room27, p1-room30,
-; rzx-p1- x19).
+; Witness: L1 802 (c1, p1-cursor, p1-kempston, p1-speedup, p1-room26,
+; p1-room27, p1-room30, rzx-p1- x19).
 SwingShotRight:
   PUSH AF
   LD A,(IX+$00)
@@ -562,8 +574,8 @@ SwingShotRight:
 
 ; A swing gun shot up and right
 ;
-; Witness: L1 383 (c1, p1-cursor, p1-kempston, p1-room26, p1-room27, p1-room30,
-; rzx-p1- x16).
+; Witness: L1 417 (c1, p1-cursor, p1-kempston, p1-speedup, p1-room26,
+; p1-room27, p1-room30, rzx-p1- x16).
 SwingShotUpRight:
   PUSH AF
   LD A,(IX+$00)
@@ -582,8 +594,9 @@ SwingGunFrames:
 
 ; The power pod's frames (PodFrames $BF5B); a pod not taken in time goes
 ;
-; Witness: L1 17077 (c1, p1-code, p1-cursor, p1-define, p1-gameover,
-; p1-kempston, p1-room24, p1-room30, rzx-p1- x30).
+; Witness: L1 17476 (c1, p1-code, p1-cursor, p1-define, p1-gameover,
+; p1-kempston, p1-poke41241, p1-shots, p1-speedup, p1-room24, p1-room30,
+; rzx-p1- x30).
 AnimatePod:
   LD A,(IX+$10)
   INC A
@@ -656,8 +669,9 @@ PodFrames:
 ; One shard of an explosion along its path at HL: the border's speaker bit
 ; random (the explosion's crackle), the shard ORed into the buffer
 ;
-; Witness: L1 22962 (c1, p1-code, p1-cursor, p1-define, p1-gameover,
-; p1-kempston, p1-room24, p1-room30, rzx-p1- x32).
+; Witness: L1 23346 (c1, p1-code, p1-cursor, p1-define, p1-gameover,
+; p1-kempston, p1-poke41241, p1-shots, p1-speedup, p1-room24, p1-room30,
+; rzx-p1- x32).
 DrawShard:
   LD A,R
   SLA A
@@ -737,8 +751,9 @@ FlashAttrs:
 ; The kinds' moves: pods none; 8 scanner, 12/13 the ground walkers, 14 the
 ; mine, 15 the blob, 2 the mine layer's burst; the others walk right or left
 ;
-; Witness: L1 56609 (c1, p1-code, p1-cursor, p1-define, p1-gameover,
-; p1-kempston, p1-room x5, rzx-p1- x32).
+; Witness: L1 60370 (c1, p1-code, p1-cursor, p1-define, p1-gameover,
+; p1-kempston, p1-poke41241, p1-rooms238, p1-shots, p1-speedup, p1-room x5,
+; rzx-p1- x32).
 ObjectMove:
   LD A,(IX+$09)
   CP $FE
@@ -755,9 +770,9 @@ ObjectMove:
   CP $0D
   JP Z,GroundWalker
   CP $0E
-  JP Z,Blob
+  JP Z,DriftObject
   CP $0F
-  JP Z,Mine
+  JP Z,BlobStart
   CP $02
   JP Z,ObjectMoveBurst
   OR A
@@ -801,7 +816,8 @@ MineBurstLoop:
 
 ; Kinds 12 and 13: rise by the speed until a solid cell above
 ;
-; Witness: L1 3987 (p1-code, p1-gameover, p1-room30, rzx-p1- x16).
+; Witness: L1 4169 (p1-code, p1-gameover, p1-shots, p1-speedup, p1-room30,
+; rzx-p1- x16).
 Climb:
   LD A,(IX+$11)
   OR A
@@ -864,7 +880,7 @@ ClimbStep:
 
 ; A flyer's step: inside the play area move by its speed; at an edge turn
 ;
-; Witness: L1 7555 (p1-room14, p1-room24, p1-room26, rzx-p1- x7).
+; Witness: L1 7803 (p1-rooms238, p1-room14, p1-room24, p1-room26, rzx-p1- x7).
 FlyBounce:
   LD A,(IX+$01)
   CP $A0
@@ -901,7 +917,7 @@ FlyTurn:
 
 ; A random direction: dX and dY each +1 or -1
 ;
-; Witness: L1 526 (p1-room14, p1-room24, p1-room26, rzx-p1- x7).
+; Witness: L1 551 (p1-rooms238, p1-room14, p1-room24, p1-room26, rzx-p1- x7).
 RandomFlight:
   CALL RandomSign
   LD (IX+$04),A
@@ -911,7 +927,7 @@ RandomFlight:
 
 ; A = +1 or -1 at random (Signs $C149)
 ;
-; Witness: L1 1052 (p1-room14, p1-room24, p1-room26, rzx-p1- x7).
+; Witness: L1 1102 (p1-rooms238, p1-room14, p1-room24, p1-room26, rzx-p1- x7).
 RandomSign:
   CALL Random2
   AND $01
@@ -926,17 +942,18 @@ RandomSign:
 Signs:
   DEFB $FF,$01,$FF,$01
 
-; Kind 15's first step: FlyBounce, then Blob
+; Kind 15, the blob: FlyBounce, then DriftObject
 ;
-; Witness: L1 7555 (p1-room14, p1-room24, p1-room26, rzx-p1- x7).
-Mine:
+; Witness: L1 7803 (p1-rooms238, p1-room14, p1-room24, p1-room26, rzx-p1- x7).
+BlobStart:
   CALL FlyBounce
 
-; Kinds 14 and 15: drift by dX, dY; a solid cell turns it, or kills a mine
+; Kinds 14 (the mine, entered here) and 15: drift by dX, dY; a solid cell turns
+; it, or kills a mine
 ;
-; Witness: L1 12652 (p1-code, p1-room14, p1-room24, p1-room26, p1-room30,
-; rzx-p1- x16).
-Blob:
+; Witness: L1 13169 (p1-code, p1-rooms238, p1-speedup, p1-room14, p1-room24,
+; p1-room26, p1-room30, rzx-p1- x16).
+DriftObject:
   LD A,(IX+$00)
   ADD A,(IX+$04)
   LD (IX+$00),A
@@ -945,14 +962,14 @@ Blob:
   LD (IX+$01),A
   LD A,(IX+$09)
   CP $0F
-  JP Z,BlobTimer
+  JP Z,DriftTimer
   LD HL,(ObjectCellPtr)
   LD DE,$0020
   AND A
   SBC HL,DE
   CALL IsSolid
   JP Z,KillObject
-BlobTimer:
+DriftTimer:
   DEC (IX+$11)
   RET NZ
   LD A,R
@@ -961,13 +978,13 @@ BlobTimer:
   LD (IX+$11),A
   LD A,(IX+$09)
   CP $0F
-  JP Z,BlobRandom
+  JP Z,DriftRandom
   LD A,(IX+$12)
   XOR $01
   LD (IX+$12),A
   OR A
   RET Z
-BlobRandom:
+DriftRandom:
   LD A,R
   AND $07
   ADD A,$08
@@ -978,9 +995,9 @@ BlobRandom:
   LD (IX+$04),$01
   LD A,(RexX)
   CP (IX+$00)
-  JP NC,BlobDown
+  JP NC,DriftDown
   LD (IX+$04),$FF
-BlobDown:
+DriftDown:
   LD (IX+$05),$01
   LD A,(RexY)
   CP (IX+$01)
@@ -990,7 +1007,8 @@ BlobDown:
 
 ; Kinds 12 and 13: walk right or left; the mine layer drops a mine at random
 ;
-; Witness: L1 3987 (p1-code, p1-gameover, p1-room30, rzx-p1- x16).
+; Witness: L1 4169 (p1-code, p1-gameover, p1-shots, p1-speedup, p1-room30,
+; rzx-p1- x16).
 GroundWalker:
   LD A,(IX+$02)
   OR A
@@ -1013,7 +1031,7 @@ GroundWalker:
 
 ; Make a mine (kind 14) at Temp1, Temp2 in a free object record
 ;
-; Witness: L1 158 (p1-code, p1-room30, rzx-p1- x10).
+; Witness: L1 164 (p1-code, p1-speedup, p1-room30, rzx-p1- x10).
 DropMine:
   PUSH IX
   CALL FindFreeObject
@@ -1234,7 +1252,8 @@ ScannerReset:
 ; A walker's step right: a solid cell ahead turns it (or kills a person, or
 ; stops the jumper)
 ;
-; Witness: L1 10523 (p1-code, p1-gameover, p1-room x5, rzx-p1- x29).
+; Witness: L1 11394 (p1-code, p1-gameover, p1-poke41241, p1-rooms238, p1-shots,
+; p1-speedup, p1-room x5, rzx-p1- x29).
 WalkRight:
   LD HL,(ObjectCellPtr)
   LD DE,$0040
@@ -1306,7 +1325,8 @@ WalkRightFloor:
 
 ; Blocked: kinds 6 and 7 stay, the others turn
 ;
-; Witness: L1 273 (p1-code, p1-room14, p1-room24, p1-room30, rzx-p1- x28).
+; Witness: L1 290 (p1-code, p1-rooms238, p1-shots, p1-speedup, p1-room14,
+; p1-room24, p1-room30, rzx-p1- x28).
 BlockedRight:
   LD A,(IX+$09)
   CP $07
@@ -1316,7 +1336,8 @@ BlockedRight:
 
 ; Direction ^ 1
 ;
-; Witness: L1 278 (p1-code, p1-room14, p1-room24, p1-room30, rzx-p1- x28).
+; Witness: L1 295 (p1-code, p1-poke41241, p1-rooms238, p1-shots, p1-speedup,
+; p1-room14, p1-room24, p1-room30, rzx-p1- x28).
 TurnAround:
   LD A,(IX+$02)
   XOR $01
@@ -1324,8 +1345,8 @@ TurnAround:
 
 ; Kinds 6 and 7 off the edge die; 3, 4, 5 stop
 ;
-; Witness: L1 476 (p1-code, p1-gameover, p1-room14, p1-room24, p1-room26,
-; p1-room30, rzx-p1- x29).
+; Witness: L1 511 (p1-code, p1-gameover, p1-poke41241, p1-rooms238, p1-shots,
+; p1-speedup, p1-room14, p1-room24, p1-room26, p1-room30, rzx-p1- x29).
 WalkOff:
   LD A,(IX+$09)
   CP $07
@@ -1349,7 +1370,7 @@ ObjectGone:
 
 ; At the left edge: kind 0 dies, the others turn
 ;
-; Witness: L1 80 (p1-code, p1-room30, rzx-p1- x18).
+; Witness: L1 83 (p1-code, p1-poke41241, p1-speedup, p1-room30, rzx-p1- x18).
 EdgeLeft:
   LD A,(IX+$09)
   OR A
@@ -1358,8 +1379,9 @@ EdgeLeft:
 
 ; A walker's step left
 ;
-; Witness: L1 15127 (c1, p1-code, p1-gameover, p1-room14, p1-room24, p1-room26,
-; p1-room30, rzx-p1- x30).
+; Witness: L1 16822 (c1, p1-code, p1-gameover, p1-poke41241, p1-rooms238,
+; p1-shots, p1-speedup, p1-room14, p1-room24, p1-room26, p1-room30, rzx-p1-
+; x30).
 WalkLeft:
   LD HL,(ObjectCellPtr)
   LD DE,$0040
@@ -1433,7 +1455,7 @@ WalkLeftBlocked:
 
 ; At random a jump instead of the step
 ;
-; Witness: L1 226 (p1-room30, rzx-p1- x16).
+; Witness: L1 234 (p1-speedup, p1-room30, rzx-p1- x16).
 MaybeJumpRight:
   PUSH AF
   CALL Random
@@ -1445,7 +1467,7 @@ MaybeJumpRight:
 
 ; At random a jump
 ;
-; Witness: L1 297 (rzx-p1- x18).
+; Witness: L1 322 (p1-speedup, rzx-p1- x18).
 MaybeJumpLeft:
   CALL Random
   CP $80
@@ -1455,7 +1477,7 @@ MaybeJumpLeft:
 
 ; A hop: the jumper's picture $8E8A
 ;
-; Witness: L1 113 (p1-room30, rzx-p1- x16).
+; Witness: L1 118 (p1-speedup, p1-room30, rzx-p1- x16).
 StartHop:
   POP DE
 ; This entry point is used by the routines at WalkRight and WalkLeft.
@@ -1467,7 +1489,7 @@ HopTimer:
 
 ; The hop's state: picture HL, speed, timers, bit 7 of the kind
 ;
-; Witness: L1 48 (p1-room26, rzx-p1- x18).
+; Witness: L1 52 (p1-speedup, p1-room26, rzx-p1- x18).
 SetHop:
   LD (IX+$10),$00
   LD (IX+$04),L
@@ -1483,8 +1505,9 @@ SetHop:
 
 ; A kind 0 walker at random becomes a jumper (SpriteJumper $91B2)
 ;
-; Witness: L1 77346 (c1, p1-code, p1-cursor, p1-define, p1-gameover,
-; p1-kempston, p1-room x5, rzx-p1- x32).
+; Witness: L1 86024 (c1, p1-code, p1-cursor, p1-define, p1-gameover,
+; p1-kempston, p1-poke41241, p1-rooms238, p1-shots, p1-speedup, p1-room x5,
+; rzx-p1- x32).
 MaybeJumper:
   LD A,(IX+$09)
   OR A
@@ -1522,8 +1545,9 @@ MaybeJumperRoll:
 
 ; The jumper's timer; at its end it walks again
 ;
-; Witness: L1 77346 (c1, p1-code, p1-cursor, p1-define, p1-gameover,
-; p1-kempston, p1-room x5, rzx-p1- x32).
+; Witness: L1 86024 (c1, p1-code, p1-cursor, p1-define, p1-gameover,
+; p1-kempston, p1-poke41241, p1-rooms238, p1-shots, p1-speedup, p1-room x5,
+; rzx-p1- x32).
 JumperTimer:
   LD A,(IX+$09)
   AND $7F
@@ -1565,7 +1589,7 @@ ThreeReturns:
 
 ; If the timer is 0, StartFall
 ;
-; Witness: L1 174 (rzx-p1- x20).
+; Witness: L1 191 (p1-speedup, rzx-p1- x20).
 StartFallIfIdle:
   LD A,(IX+$11)
   OR A
@@ -1573,7 +1597,7 @@ StartFallIfIdle:
 
 ; An object not falling and below line 24 starts to fall (JumpSteps $D0D8)
 ;
-; Witness: L1 156 (p1-room30, rzx-p1- x21).
+; Witness: L1 163 (p1-speedup, p1-room30, rzx-p1- x21).
 StartFall:
   LD A,(IX+$06)
   OR A
@@ -1593,8 +1617,9 @@ StartFall:
 ; The jump of a walker by its jump table; kinds 8 and 12/13 their own; a solid
 ; cell above ends it
 ;
-; Witness: L1 56608 (c1, p1-code, p1-cursor, p1-define, p1-gameover,
-; p1-kempston, p1-room x5, rzx-p1- x32).
+; Witness: L1 60369 (c1, p1-code, p1-cursor, p1-define, p1-gameover,
+; p1-kempston, p1-poke41241, p1-rooms238, p1-shots, p1-speedup, p1-room x5,
+; rzx-p1- x32).
 ObjectJump:
   LD A,(IX+$09)
   CP $FE
@@ -1672,8 +1697,9 @@ JumpKind:
 ; The fall: by the fall speed until a solid cell; below line $B8 the object
 ; dies (a person counts)
 ;
-; Witness: L1 56608 (c1, p1-code, p1-cursor, p1-define, p1-gameover,
-; p1-kempston, p1-room x5, rzx-p1- x32).
+; Witness: L1 60369 (c1, p1-code, p1-cursor, p1-define, p1-gameover,
+; p1-kempston, p1-poke41241, p1-rooms238, p1-shots, p1-speedup, p1-room x5,
+; rzx-p1- x32).
 ObjectFall:
   LD A,(IX+$09)
   AND $7F
@@ -1728,8 +1754,9 @@ FallOut:
 
 ; ObjectCellPtr $A01B = the grid cell of the object at IX
 ;
-; Witness: L1 95878 (c1, p1-code, p1-cursor, p1-define, p1-gameover,
-; p1-kempston, p1-room x5, rzx-p1- x32).
+; Witness: L1 102599 (c1, p1-code, p1-cursor, p1-define, p1-gameover,
+; p1-kempston, p1-poke41241, p1-rooms238, p1-shots, p1-speedup, p1-room x5,
+; rzx-p1- x32).
 ObjectCell:
   LD A,(IX+$00)
   LD (SpriteX),A

@@ -32,8 +32,8 @@ DrainRank:
   LD (Bombs),A
   CALL ShowBombs
 
-; Mark every object of the room for the smart bomb; SmartBombOn $5EB9 = 1, 16
-; steps
+; Start the smart bomb: SmartBombOn $5EB9 = 1, 16 steps, the object pointer at
+; the table's start; every enemy bullet stopped (live byte set to 2)
 ;
 ; As REX 1's SmartBombMark $9763 (src/game/bomb.asm).
 ;

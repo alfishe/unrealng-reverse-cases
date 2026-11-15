@@ -54,17 +54,17 @@ SpawnTop       EQU $5EB7  ; the room spawns from the top
 SmartBombSteps EQU $5EB8  ; the smart bomb's steps left (16)
 SmartBombOn    EQU $5EB9  ; a smart bomb runs
 SmartBombPtr   EQU $5EBA  ; the next object to kill
-SpriteMirror   EQU $5EBC  ; DrawSprite: bit 7 draws the picture mirrored (MirrorTable $AE0E)
+SpriteMirror   EQU $5EBC  ; DrawSprite: bit 7 a fixed frame, SpritePicture, the frame list ignored (mirroring, through MirrorTable $AE0E, is A not 0 at the call)
 SpritePicture  EQU $5EBD  ; DrawSprite: the picture
 ArrowPathPtr   EQU $5EBF  ; the tutor arrow's place in ArrowPath (TutorArrow)
 ArrowMoving    EQU $5EC1  ; the arrow moves along its path (0: held at the start)
-KillFlashPtr   EQU $5EC2  ; the HUD attribute address of the latest kill
+KillFlashPtr   EQU $5EC2  ; the combo row cell lit by the latest hit (REX 1's; DEMO keeps no combo)
 ComboCount     EQU $5EC4  ; kills in a row
 ComboTimer     EQU $5EC5  ; passes left for the next kill to count in the row
 Score          EQU $5EC7  ; the score, in hundreds
 RapidShotsOn   EQU $5EC9  ; the 100 RAPID SHOTS bonus runs
 RapidShotsLeft EQU $5ECA  ; its shots left
-FadeStepIndex  EQU $5ECB  ; the screen flash's step (FadeStep $9A4C)
+FadeStepIndex  EQU $5ECB  ; the power pod's HUD flash step, $FF at rest (FadeStep $9A4C)
 SpawnTimer     EQU $5ECC  ; passes to the next random spawn
 SpawnPeriod    EQU $5ECD  ; the room's spawn period
 ScriptSpawnStep EQU $5ECE  ; the scripted spawn's step (ScriptSpawn $A9F4), 0 off
@@ -74,7 +74,7 @@ ShieldOn       EQU $5ED2  ; the shield is on
 ShieldKeyLatch EQU $5ED5  ; the down key is held (one toggle a press)
 ShieldEnergy   EQU $5ED6  ; the shield's energy, 0-99
 ShieldDrainRate EQU $5ED7  ; passes for one unit of energy while the shield is on
-WeaponIcon     EQU $5ED8  ; the HUD weapon icon shown
+WeaponIcon     EQU $5ED8  ; the gun held (always 1): BestWeapon reads it as entry 0 before HasDoubleFire .. HasSpray
 HasDoubleFire  EQU $5ED9  ; the weapons held: double fire
 HasLaser       EQU $5EDA  ; laser
 HasMultiple    EQU $5EDB  ; multiple (drones)
@@ -97,7 +97,7 @@ Lives          EQU $5EEC  ; lives left (4 at the start, up to 9)
 SweepPos       EQU $5EED  ; the HUD sweep's position
 SweepCount     EQU $5EEE  ; sweeps made at this width
 SweepDir       EQU $5EEF  ; the sweep's direction
-SweepWidth     EQU $5EF0  ; the sweep's width (8 at the start; at 1 Rex dies)
+SweepWidth     EQU $5EF0  ; the sweep's width (12 after ResetSweep; Rex dies when it would drop to 0)
 FireDelay      EQU $5EF1  ; passes between shots
 AnimCount1     EQU $5EF2  ; animation counters of the cells
 AnimCount2     EQU $5EF3
@@ -123,6 +123,9 @@ TutorCount     EQU $6082  ; passes left on this pair
 TutorFrame     EQU $6083  ; passes since the room's tutor began (the panels' clock)
 TutorRoomPtr   EQU $6085  ; the next room in TutorRooms $A2A2
 TutorDone      EQU $6087  ; room 2's tutor shown
+
+; Names that cannot be labels (@alias)
+ShadowOffset   EQU $E4FF-$5800  ; the distance from a screen attribute to its cell in the attribute shadow $E4FF (PowerBar adds it); not an address in the sprites
   ORG $61A8
   INCLUDE "graphics.asm"  ; The development link, the graphics and the level data: the font, the characters, the blocks, the room maps and the sprites
   INCLUDE "entry.asm"  ; The entry, a new demo game

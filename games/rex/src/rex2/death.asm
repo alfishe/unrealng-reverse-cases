@@ -159,8 +159,9 @@ ShrinkArea:
   LD (BossAreaPtr),HL
   RET
 
-; Rex is killed (unless Immune or already dying): Dying, the timer 50, the free
-; smart bomb (none while the boss dies), the shield off, dematerialise
+; Rex is killed (unless Immune): the sweep reset, Dying, the timer 50, the free
+; smart bomb (none while the boss dies), LosePower, ShieldEnergy refilled to
+; 99, dematerialise while lives are left (which switches the shield off)
 ;
 ; Changed from REX 1's RexDies $9BDA (src/game/death.asm).
 ;
@@ -381,8 +382,9 @@ Dematerialise:
   RET NZ
   JP SparkleClear
 
-; One step of the sparkle: random masks over Rex's 3 x 3 cells in the attribute
-; shadow; at the end the sparkle stops
+; One step of the sparkle in Rex's 3-byte box of the back buffer
+; (SparkleBufferOrigin $E89F): SparkleCount lines cleared, the next 3 ANDed
+; with random bytes; at the end the sparkle stops
 ;
 ; As REX 1's SparkleUpdate $9D71 (src/game/death.asm).
 ;

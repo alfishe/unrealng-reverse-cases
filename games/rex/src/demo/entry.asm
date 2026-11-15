@@ -253,11 +253,11 @@ MainRlcLoop:
   INC HL
   DJNZ MainRlcLoop
   LD HL,AnimChar28
-  CALL RollCharLeft
+  CALL RollCharDown
   LD HL,AnimChar11
-  CALL RollCharRight
+  CALL RollCharUp
   LD HL,AnimChar26
-  CALL RollCharLeft
+  CALL RollCharDown
   CALL AnimateCells
   LD A,(PassToggle)
   XOR $01

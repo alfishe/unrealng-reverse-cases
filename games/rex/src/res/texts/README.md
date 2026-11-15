@@ -18,5 +18,5 @@
 UTF-8 text, one record a line: `$AT COL $LINE "TEXT"`, the bytes [attribute][column][line in pixels] text, 0
 (PrintText). The text is the font's codes 32-95 as themselves (upper case, digits, `:` and `.` among them), `\"` and
 `\\` escaped; `#`, `]`, `\`, `^`, `_`, `@` and the like print the game's own pictures (fonts/README.md). Anything that
-is no such record (a `$FF` end, the zeros of DefineTaken, the weapon panels' leading flag byte) is a `bytes` line.
+is no such record (a `$FF` end, the zeros of DefineTaken, a weapon panel's head) is a `bytes` line. A weapon panel is [flag][count] then its count of records: `bytes $00 $01` and `$45 18 $28 "DOUBLE FIRE"`; WeaponPanel shows it once, while the flag is 0, and sets the flag.
 `#` lines are comments.

@@ -34,7 +34,7 @@ BasicLine20:
   DEFB $FD,$32,$34,$35,$39,$39,$0E,$00 ; CLEAR ($FD) "24599", $0E and 24599 =
   DEFB $00,$17,$60,$00,$0D             ; $6017, ENTER
 
-; Line 30: LOAD "" SCREEN$
+; Line 30: `LOAD "" SCREEN$`
 ;
 ; Loads the next Bytes file to the screen at $4000 whatever its header's start
 ; says (the header gives 40000).

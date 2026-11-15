@@ -10,8 +10,9 @@
 ; Clear the back buffer's play lines $EB00-$FFFF with PUSH (the stack from
 ; $FFFF down)
 ;
-; Witness: L1 16997 (c1, p1-code, p1-cursor, p1-define, p1-gameover,
-; p1-kempston, p1-room x5, rzx-p1- x32).
+; Witness: L1 18688 (c1, p1-code, p1-cursor, p1-define, p1-gameover,
+; p1-kempston, p1-poke41241, p1-rooms238, p1-shots, p1-speedup, p1-room x5,
+; rzx-p1- x32).
 ClearBuffer:
   LD (Temp1),SP
   LD SP,$FFFF
@@ -90,8 +91,9 @@ ClearBufferLoop:
 ; SpriteX/SpriteY, SpriteWidth/Height (written into the loop at $B2AC, $B2B0);
 ; A non-zero draws it mirrored
 ;
-; Witness: L1 96311 (c1, p1-code, p1-cursor, p1-define, p1-gameover,
-; p1-kempston, p1-room x5, rzx-p1- x32).
+; Witness: L1 106778 (c1, p1-code, p1-cursor, p1-define, p1-gameover,
+; p1-kempston, p1-poke41241, p1-rooms238, p1-shots, p1-speedup, p1-room x5,
+; rzx-p1- x32).
 DrawSprite:
   PUSH DE
   OR A
@@ -163,8 +165,8 @@ DrawSpriteByte:
 ; DrawSprite facing left: the picture's bytes right to left through MirrorTable
 ; $AD5D
 ;
-; Witness: L1 26040 (c1, p1-code, p1-cursor, p1-gameover, p1-kempston, p1-room
-; x5, rzx-p1- x32).
+; Witness: L1 30331 (c1, p1-code, p1-cursor, p1-gameover, p1-kempston,
+; p1-poke41241, p1-rooms238, p1-shots, p1-speedup, p1-room x5, rzx-p1- x32).
 DrawMirrored:
   LD A,(SpriteX)
   LD DE,$0007
@@ -246,20 +248,22 @@ DrawMirroredByte:
 
 ; LD SP,(Temp2): RET: DrawAnimCells' exit with the stack it saved
 ;
-; Witness: L1 16999 (c1, p1-code, p1-cursor, p1-define, p1-gameover,
-; p1-kempston, p1-room x5, rzx-p1- x32).
+; Witness: L1 18691 (c1, p1-code, p1-cursor, p1-define, p1-gameover,
+; p1-kempston, p1-poke41241, p1-rooms238, p1-shots, p1-speedup, p1-room x5,
+; rzx-p1- x32).
 ReturnToStack:
   LD SP,(Temp2)
   RET
 
-; Draw the room's animated cells (AnimCellList $D962) into the back buffer, the
-; stack as the list pointer
+; Draw every scenery cell of the room (SceneryCellList $D962) into the back
+; buffer, the stack as the list pointer
 ;
-; Witness: L1 17005 (c1, p1-code, p1-cursor, p1-define, p1-gameover,
-; p1-kempston, p1-room x5, rzx-p1- x32).
+; Witness: L1 18698 (c1, p1-code, p1-cursor, p1-define, p1-gameover,
+; p1-kempston, p1-poke41241, p1-rooms238, p1-shots, p1-speedup, p1-room x5,
+; rzx-p1- x32).
 DrawAnimCells:
   LD (Temp2),SP
-  LD SP,AnimCellList
+  LD SP,SceneryCellList
 DrawAnimCellLoop:
   POP HL                  ; each listed cell
   POP DE

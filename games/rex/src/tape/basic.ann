@@ -18,7 +18,7 @@ $5CE9 ; ":" CLS ($FB), ENTER
 $5CEC b BasicLine20 ; Line 20: CLEAR 24599
 > RAMTOP to $6017, one byte under the code block ($6018): the machine stack moves under the code, where the game keeps it (its own SP is set by the entry).
 $5CF0 ; CLEAR ($FD) "24599", $0E and 24599 = $6017, ENTER
-$5CFD b BasicLine30 ; Line 30: LOAD "" SCREEN$
+$5CFD b BasicLine30 ; Line 30: `LOAD "" SCREEN$`
 > Loads the next Bytes file to the screen at $4000 whatever its header's start says (the header gives 40000).
 $5D06 b BasicLine40 ; Line 40: PRINT AT 0,0;
 > Puts the print position back at the top left, so the ROM's "Bytes: ds" message of the next LOAD prints in the black top line (INK 0 on PAPER 0) and not over the picture (known only from the BASIC: the message is not visible in the recording's screens).
@@ -47,7 +47,7 @@ $5CE9 ; ":" CLS ($FB), ENTER
 $5CEC b BasicLine20 ; Line 20: CLEAR 24999
 > RAMTOP to $61A7, one byte under the code block ($61A8): the machine stack moves under the code, where the game keeps it (its own SP is set by the entry).
 $5CF0 ; CLEAR ($FD) "24999", $0E and 24999 = $61A7, ENTER
-$5CFD b BasicLine30 ; Line 30: LOAD "" SCREEN$
+$5CFD b BasicLine30 ; Line 30: `LOAD "" SCREEN$`
 > Loads the next Bytes file to the screen at $4000 whatever its header's start says (the header gives 40000).
 $5D06 b BasicLine40 ; Line 40: PRINT AT 0,0;
 > Puts the print position back at the top left, so the ROM's "Bytes: ds" message of the next LOAD prints in the black top line (INK 0 on PAPER 0) and not over the picture (known only from the BASIC: the message is not visible in the recording's screens).
@@ -76,7 +76,7 @@ $5CE9 ; ":" CLS ($FB), ENTER
 $5CEC b BasicLine20 ; Line 20: CLEAR 24999
 > RAMTOP to $61A7, one byte under the code block ($61A8): the machine stack moves under the code, where the game keeps it (its own SP is set by the entry).
 $5CF0 ; CLEAR ($FD) "24999", $0E and 24999 = $61A7, ENTER
-$5CFD b BasicLine30 ; Line 30: LOAD "" SCREEN$
+$5CFD b BasicLine30 ; Line 30: `LOAD "" SCREEN$`
 > Loads the next Bytes file to the screen at $4000 whatever its header's start says (the header gives 40000).
 $5D06 b BasicLine40 ; Line 40: PRINT AT 0,0;
 > Puts the print position back at the top left, so the ROM's "Bytes: ds" message of the next LOAD prints in the black top line (INK 0 on PAPER 0) and not over the picture (known only from the BASIC: the message is not visible in the recording's screens).

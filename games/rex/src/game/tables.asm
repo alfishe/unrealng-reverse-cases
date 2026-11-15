@@ -185,13 +185,13 @@ ShiftFrames5:
 ShiftFrames6:
   DEFB $00,$00,$00,$00,$30,$30,$30,$30
 AnimFramesA:
-  DEFB $3E,$3E,$3E,$7F,$3E,$1C,$08,$00 ; the frames of animated character 127:
-  DEFB $00,$08,$1C,$3E,$7F,$3E,$3E,$3E ; 4 x 8 bytes
+  DEFB $3E,$3E,$3E,$7F,$3E,$1C,$08,$00 ; characters 252-255 on the passes with
+  DEFB $00,$08,$1C,$3E,$7F,$3E,$3E,$3E ; PassToggle 0: 4 x 8 bytes
   DEFB $08,$1F,$3F,$7F,$3F,$1F,$08,$00
   DEFB $10,$F8,$FC,$FE,$FC,$F8,$10,$00
 AnimFramesB:
-  DEFB $00,$3E,$3E,$3E,$7F,$3E,$1C,$08 ; the frames of animated character 68: 4
-  DEFB $08,$1C,$3E,$7F,$3E,$3E,$3E,$00 ; x 8 bytes
+  DEFB $00,$3E,$3E,$3E,$7F,$3E,$1C,$08 ; characters 252-255 on the other
+  DEFB $08,$1C,$3E,$7F,$3E,$3E,$3E,$00 ; passes: 4 x 8 bytes
   DEFB $10,$3E,$7E,$FE,$7E,$3E,$10,$00
   DEFB $08,$7C,$7E,$7F,$7E,$7C,$08,$00
 

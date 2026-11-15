@@ -13,8 +13,8 @@
 
 ; The channels free, the mixer $38 (tones on, noise off), silence
 ;
-; Witness: L1 77 (c1, p1-code, p1-cursor, p1-define, p1-kempston, p1-room x5,
-; rzx-p1- x30).
+; Witness: L1 84 (c1, p1-code, p1-cursor, p1-define, p1-kempston, p1-rooms238,
+; p1-speedup, p1-room x5, rzx-p1- x30).
 SoundReset:
   LD A,$38
   LD (Mixer),A
@@ -33,8 +33,8 @@ SoundReset:
 
 ; The three volumes (registers 8-10) to 0
 ;
-; Witness: L1 52022 (c1, p1-code, p1-cursor, p1-define, p1-gameover,
-; p1-kempston, p1-room x5, rzx-p1- x30).
+; Witness: L1 52036 (c1, p1-code, p1-cursor, p1-define, p1-gameover,
+; p1-kempston, p1-rooms238, p1-speedup, p1-room x5, rzx-p1- x30).
 SoundSilence:
   LD E,$00
   LD D,$08
@@ -47,8 +47,9 @@ SoundSilence:
 
 ; Start the effect at DE (saves IX, IY, BC)
 ;
-; Witness: L1 14740 (c1, p1-code, p1-cursor, p1-define, p1-gameover,
-; p1-kempston, p1-room x5, rzx-p1- x32).
+; Witness: L1 15747 (c1, p1-code, p1-cursor, p1-define, p1-gameover,
+; p1-kempston, p1-poke41241, p1-rooms238, p1-shots, p1-speedup, p1-room x5,
+; rzx-p1- x32).
 StartSfx:
   PUSH IY
   PUSH IX
@@ -63,8 +64,9 @@ StartSfx:
 
 ; The descriptor at IY into its channel; the mixer bits for tone and noise
 ;
-; Witness: L1 14740 (c1, p1-code, p1-cursor, p1-define, p1-gameover,
-; p1-kempston, p1-room x5, rzx-p1- x32).
+; Witness: L1 15747 (c1, p1-code, p1-cursor, p1-define, p1-gameover,
+; p1-kempston, p1-poke41241, p1-rooms238, p1-shots, p1-speedup, p1-room x5,
+; rzx-p1- x32).
 StartSfxIY:
   LD A,(IY+$00)
   DEC A
@@ -131,8 +133,9 @@ SfxMixerSet:
 
 ; Register 7 = the mixer $D855
 ;
-; Witness: L1 14817 (c1, p1-code, p1-cursor, p1-define, p1-gameover,
-; p1-kempston, p1-room x5, rzx-p1- x33).
+; Witness: L1 15831 (c1, p1-code, p1-cursor, p1-define, p1-gameover,
+; p1-kempston, p1-poke41241, p1-rooms238, p1-shots, p1-speedup, p1-room x5,
+; rzx-p1- x33).
 WriteMixer:
   LD A,(Mixer)
   LD D,$07
@@ -143,8 +146,9 @@ WriteMixer:
 ; Each of the 3 channels: ChannelStep, then its tone (registers 0-5) or noise
 ; period (6)
 ;
-; Witness: L1 33856 (c1, p1-code, p1-cursor, p1-define, p1-gameover,
-; p1-kempston, p1-room x5, rzx-p1- x32).
+; Witness: L1 37230 (c1, p1-code, p1-cursor, p1-define, p1-gameover,
+; p1-kempston, p1-poke41241, p1-rooms238, p1-shots, p1-speedup, p1-room x5,
+; rzx-p1- x32).
 SoundStep:
   LD B,$03
   LD IX,Channels
@@ -189,8 +193,9 @@ SoundNextChannel:
 ; One step of the channel at IX: the volume written, the tone and volume
 ; changed, the next step; at the end the channel silent and free
 ;
-; Witness: L1 103565 (c1, p1-code, p1-cursor, p1-define, p1-gameover,
-; p1-kempston, p1-room x5, rzx-p1- x32).
+; Witness: L1 113930 (c1, p1-code, p1-cursor, p1-define, p1-gameover,
+; p1-kempston, p1-poke41241, p1-rooms238, p1-shots, p1-speedup, p1-room x5,
+; rzx-p1- x32).
 ChannelStep:
   LD A,(IX+$00)
   CP $FF
@@ -242,8 +247,9 @@ ChannelEnd:
 
 ; Register 8 + channel = the channel's volume / 16
 ;
-; Witness: L1 45766 (c1, p1-code, p1-cursor, p1-define, p1-gameover,
-; p1-kempston, p1-room x5, rzx-p1- x32).
+; Witness: L1 48180 (c1, p1-code, p1-cursor, p1-define, p1-gameover,
+; p1-kempston, p1-poke41241, p1-rooms238, p1-shots, p1-speedup, p1-room x5,
+; rzx-p1- x32).
 WriteVolume:
   LD A,(ChannelNumber)
   ADD A,$07
@@ -258,8 +264,9 @@ WriteVolume:
 
 ; AY register D = E: OUT ($FFFD),D, OUT ($BFFD),E
 ;
-; Witness: L1 320181 (c1, p1-code, p1-cursor, p1-define, p1-gameover,
-; p1-kempston, p1-room x5, rzx-p1- x33).
+; Witness: L1 328483 (c1, p1-code, p1-cursor, p1-define, p1-gameover,
+; p1-kempston, p1-poke41241, p1-rooms238, p1-shots, p1-speedup, p1-room x5,
+; rzx-p1- x33).
 SoundWrite:
   LD BC,$FFFD
   OUT (C),D

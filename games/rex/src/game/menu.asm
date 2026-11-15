@@ -89,21 +89,22 @@ MenuLoop:
   CP $FF
   JP NZ,RollCallText
 
-; Code: LD HL,RollCallSprites ($21 $67 $E0): the roll call from its first
-; sprite again, then RollCallText
+; The roll call from its first sprite again (HL = RollCallSprites), then
+; RollCallText
 ;
 ; TitleMenu's loop falls in here when the next sprite record is the list's $FF.
-; No recording stays in the menu that long (known only from the code); the kit
-; keeps it as bytes because a recording reads these bytes as data (c1, frames
-; 18550-20469, in play; the reader is not identified) and a c seed cannot win
-; over a read (work/stage2/NOTES.md, For the lead).
+; Run by menu-rollcall (the menu left alone for 5300 frames, every enemy shown
+; once). c1 also reads these bytes as data in play (frames 18550-20469; the
+; reader is not identified).
+;
+; Witness: L1 1 (menu-rollcall).
 RollCallRestart:
-  DEFB $21,$67,$E0
+  LD HL,RollCallSprites
 
 ; The next enemy's name and score (2 text records), the next record; at the
 ; list's end RollCallTextStart
 ;
-; Witness: L1 4 (c1).
+; Witness: L1 14 (c1, menu-rollcall).
 RollCallText:
   LD (RollTextPtr),HL
   LD IX,(RollTextNext)
@@ -113,20 +114,18 @@ RollCallText:
   CP $FF
   JP NZ,RollCallNext
 
-; Code: LD IX,RollCallTexts ($DD $21 $26 $DC): the names from the first again,
-; then RollCallNext
+; The names from the first again (IX = RollCallTexts), then RollCallNext
 ;
-; RollCallText falls in here at the texts' $FF; never run in the recordings
-; (known only from the code); the kit keeps it as bytes because a recording
-; reads these bytes as data (c1, frames 18550-20469, in play; the reader is not
-; identified) and a c seed cannot win over a read (work/stage2/NOTES.md, For
-; the lead).
+; Reached at the list's end. Run by menu-rollcall (the menu left alone for 5300
+; frames).
+;
+; Witness: L1 1 (menu-rollcall).
 RollCallTextStart:
-  DEFB $DD,$21,$26,$DC
+  LD IX,RollCallTexts
 
 ; Keep the text pointer, back to the menu loop
 ;
-; Witness: L1 4 (c1).
+; Witness: L1 14 (c1, menu-rollcall).
 RollCallNext:
   LD (RollTextNext),IX
   JP MenuLoop
@@ -137,7 +136,8 @@ RollCallTitle:
 
 ; The title screen ($E4FF) to the screen, the menu's attribute box
 ;
-; Witness: L1 8 (c1, p1-cursor, p1-define, p1-kempston, rzx-p1-00000).
+; Witness: L1 18 (c1, menu-rollcall, p1-cursor, p1-define, p1-kempston,
+; rzx-p1-00000).
 ShowTitle:
   LD HL,$5800
   LD B,$04
@@ -171,7 +171,7 @@ ScanKeyBit:
   LD D,A
 ScanKeyShift:
   RRCA
-  JP NC,ScanKeyNextRow
+  JP NC,ScanKeyFound
   INC E
   DJNZ ScanKeyShift
   POP BC
@@ -181,15 +181,15 @@ ScanKeyShift:
   ADD IY,DE
   DJNZ ScanKeyBit
   JP ScanKeyRow
-ScanKeyNextRow:
-  POP BC
-  PUSH DE
 ScanKeyFound:
+  POP BC                  ; a key down: its port and bit kept
+  PUSH DE
+ScanKeyRelease:
   LD C,(IX+$00)
   LD B,(IX+$01)
   IN A,(C)
   CP D
-  JP Z,ScanKeyFound
+  JP Z,ScanKeyRelease
   LD A,E
   SLA A
   SLA A
@@ -385,11 +385,11 @@ KeysConfirm:
 ; Witness: L1 1 (p1-cursor)
 ChooseCursor:
   CALL ShowTitle
-  LD HL,BackBuffer+$04FE
+  LD HL,$EFFE
 CellIndexMap:
   LD (DefinePort),HL      ; after the menu: each grid cell's index into
-                          ; AnimCellList (DrawRoom, BulletHitsCell), over this
-                          ; code and the menu's texts
+                          ; SceneryCellList (DrawRoom, BulletHitsCell), over
+                          ; this code and the menu's texts
   LD A,$47
   LD (DefineBit),A
   CALL SetFire
@@ -402,7 +402,7 @@ CellIndexMap:
   LD A,$67
   LD (DefineBit),A
   CALL SetDown
-  LD HL,BackBuffer+$0CFE
+  LD HL,$F7FE
   LD (DefinePort),HL
   CALL SetLeft
   LD IX,ConfirmCursorText
@@ -499,7 +499,8 @@ DefineFireText:
 ; Draw the roll call's sprite (RollCallSprites record at HL) frame RollFrame by
 ; DrawCharBlock, its picture and column written into the inline parameters
 ;
-; Witness: L1 446 (c1, p1-cursor, p1-define, p1-kempston, rzx-p1-00000).
+; Witness: L1 1468 (c1, menu-rollcall, p1-cursor, p1-define, p1-kempston,
+; rzx-p1-00000).
 RollCallSprite:
   LD A,(RollShow)
   OR A
@@ -536,7 +537,7 @@ RollSpriteParams:
 
 ; The next frame (8 a sprite), then the next record
 ;
-; Witness: L1 224 (c1, p1-cursor, p1-define, p1-kempston).
+; Witness: L1 746 (c1, menu-rollcall, p1-cursor, p1-define, p1-kempston).
 RollCallFrame:
   LD HL,(RollPtr)
   LD DE,$000C
@@ -587,7 +588,7 @@ RollCallPictures:
   DEFB $00,$00,$00,$00,$00,$80
 RoomGridLeft:
   DEFB $01                ; the grid's origin one byte left (CellPointer with A
-                          ; = 1)
+                          ; = 0, Rex facing right)
 RoomGrid:
   DEFB $00,$01,$00,$02,$80,$01,$00,$00,$00,$06,$40,$0E ; the room grid's
   DEFB $20,$17,$10,$2F,$08,$00,$00,$02,$80,$1B,$50,$00 ; origin: the cell under
