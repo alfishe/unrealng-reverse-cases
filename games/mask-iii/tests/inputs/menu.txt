@@ -1,0 +1,40 @@
+# menu: from work/stage1/probe/128K/loaded.szx (the original loaded with the LD-BYTES trap on the 128K, the menu up):
+# the control options 1 KEMPSTON, 2 INTERFACE 2, 3 CURSOR, each held on screen; K DEFINE KEYS (fire SPACE, up P,
+# down L, left Z, right X); P ENTER PASSWORD with the letters MASK and ENTER; 4 KEYBOARD, fire to start; then no key
+# for 6000 frames in play: what the enemies do to a Matt who stands still (energy, MISSION TERMINATED, game over).
+0 -
++200 1
++5 -
++300 2
++5 -
++300 3
++5 -
++300 K
++5 -
++300 SPACE
++5 -
++100 P
++5 -
++100 L
++5 -
++100 Z
++5 -
++100 X
++5 -
++300 P
++5 -
++300 M
++5 -
++60 A
++5 -
++60 S
++5 -
++60 K
++5 -
++300 ENTER
++5 -
++300 4
++5 -
++300 SPACE
++5 -
++6000 END

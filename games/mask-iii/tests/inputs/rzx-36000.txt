@@ -1,0 +1,4 @@
+# ZXDB mask3.rzx: frames 36000-37199 as held keys, from the state after frame 36000 (tools/rzx_script.py work/stage1/rzx/snaps/inputs.json 36000 37200)
+0 7
+520 -
+1200 END

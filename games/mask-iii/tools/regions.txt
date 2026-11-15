@@ -1,0 +1,12 @@
+# MASK III memory regions (stage 1), for kit/heatmap.py --regions
+4000 5AFF screen
+5B00 75FF three parked zone sets
+7600 84FF room maps
+8500 90FF blocks
+9100 CC5B code and variables
+CD60 DF7F sprites
+E000 E7FF live zone characters
+E800 EEFF buffers
+EF00 EFFF live zone attributes
+F000 FDFF room buffer
+FE00 FF00 IM 2 table

@@ -1,0 +1,61 @@
+# c1: after the load (the original tape at ROM speed on the 128K, the menu up): the menu idle, K DEFINE KEYS with
+# the instructions' keys (fire SPACE, up P, down L, left Z, right X), 4 KEYBOARD, fire to start, then play on the
+# first screen and beyond: walk right and left, jump (up), duck (down), fire, the masks 1-4, H pause.
+0 -
++300 K
++5 -
++60 SPACE
++5 -
++60 P
++5 -
++60 L
++5 -
++60 Z
++5 -
++60 X
++5 -
++60 4
++5 -
++60 SPACE
++5 -
++300 Z
++60 -
++40 X
++200 X SPACE
++30 X
++100 P
++30 X
++150 -
++20 SPACE
++10 -
++20 L
++30 -
++20 1
++5 -
++50 SPACE
++10 -
++30 2
++5 -
++50 SPACE
++10 -
++30 3
++5 -
++50 SPACE
++10 -
++30 4
++5 -
++50 SPACE
++10 -
++30 X
++300 X P
++30 X
++300 -
++20 H
++5 -
++100 H
++5 -
++50 Z
++400 -
++40 X SPACE
++400 -
++1000 END

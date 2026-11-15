@@ -1,0 +1,42 @@
+{
+  "image_cmd": [
+    "sh",
+    "-c",
+    "mkdir -p work/mkgame && python3 tools/image.py work/mkgame/original.bin > /dev/null"
+  ],
+  "image": "work/mkgame/original.bin",
+  "lo": "6000",
+  "hi": "FE00",
+  "device": "ZXSPECTRUM128",
+  "bases": {
+    "5": "4000",
+    "2": "8000",
+    "0": "C000"
+  },
+  "read_builds": [
+    "stage1/c1",
+    "stage1/rec/rzx-00000",
+    "stage1/rec/rzx-04000",
+    "stage1/rec/rzx-08000",
+    "stage1/rec/rzx-12000",
+    "stage1/rec/rzx-16000",
+    "stage1/rec/rzx-20000",
+    "stage1/rec/rzx-24000",
+    "stage1/rec/rzx-28000",
+    "stage1/rec/rzx-32000",
+    "stage1/rec/rzx-36000"
+  ],
+  "ref_builds": [
+    [
+      "stage1/c1",
+      "c1: power-on, the original at ROM speed on the 128K, the menu, define keys, play on the first screens"
+    ]
+  ],
+  "header": [
+    "; MASK III: VENOM Strikes Back, Gremlin Graphics 1988: $6000-$FDFF as the loader leaves it",
+    "; (tools/image.py: TZX blocks 5 and 6 of orig/MASKIII-VENOMStrikesBack.tzx.zip); entry $9100."
+  ],
+  "ref_load_end": {
+    "stage1/c1": 15019
+  }
+}
