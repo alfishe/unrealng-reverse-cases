@@ -1,0 +1,5 @@
+# menu-rollcall (docs writer rxA): REX 1 from work/stage1/probe/128K/loaded.szx (the menu, as loaded); no key for
+# 5300 frames, so the roll call shows every enemy (one each 520 frames). No POKE.
+0 -
+5300 -
+5310 END

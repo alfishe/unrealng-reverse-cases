@@ -1,0 +1,15 @@
+# p1-rooms238 (docs writer rxA): REX 1 from work/stage1/rzx/p1/at012000.szx (an RZX state in room 7; Sinclair keys
+# 6-0: 7 right). POKEs on this clone: infinite lives (40057 = 0), Rex immune (Immune $A071 = 41073 = 1); the current room's exit right (RoomRight $A08D =
+# 41101) set to room 2 and Rex at X $EF (RexX $A0B6 = 41142), so walking right leaves for room 2 (ExitRight); in room 2
+# Rex is put at X $EF again (room 2's own right exit is 3), and in room 3 RoomRight is poked to 8. Witness for the
+# rooms 2, 3 and 8, which no other recording enters.
+0 POKE 40057 0
+0 POKE 41073 1
+0 POKE 41101 2
+0 POKE 41142 239
+0 7
+300 POKE 41142 239
+600 POKE 41101 8
+600 POKE 41142 239
+900 -
+910 END
