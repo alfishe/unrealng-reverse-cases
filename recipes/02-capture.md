@@ -54,6 +54,16 @@ BIN=$UNREAL_NG/cmake-build-agent-release/bin/unreal-qt.app/Contents/MacOS/unreal
      than a pass and taps whose gap is shorter than a pass: Rex's code entry lost most 8-frame taps with 22-frame
      gaps and took every key with 30-frame holds and 40-frame gaps. Time the loop (a `--pc-log` of its key read,
      `kit/rzx_dump.py`, or the L1's frames per pass) and hold each key for more than a pass.
+   - **An RZX run replayed from its own states: on the RZX's model.** Segments cut from a published RZX
+     (`kit/rzx_dump.py --snap` states, the RZX's keys as an input script, `kit/rzx_match.py` against its screens)
+     drift when the machine is not the one the RZX was made on: its frame is another length, so the keys land on
+     other passes. Take the model from the state (`kitlib.snapshot_model`; `rs.py capture --snapshot` with no
+     `--model` does, and warns when a given `--model` differs). MASK III's ten segments ran its 48K RZX on the 128K
+     and kept in step 500-4000 frames, three of ten to their end; on the 48K eight of ten kept in step to their end
+     (`games/mask-iii/work/kitfix/rzx/`). A game whose main loop runs free of the frame can still drift, since keys
+     held a frame are not the RZX's port reads in order; a TTD recording made while unreal-ng plays the RZX itself
+     (`POST /rzx/play`) is in step by construction, but unreal-ng does not build an L1 from it yet
+     ([TODO.md](../TODO.md#for-unreal-ng), "For unreal-ng").
    - Write **a bot** that reads the game's own records (position, objects, level) from memory each frame and
      steers from them. Patterns: `games/hate/tools/autopilot.py`, `games/nether-earth/tools/bot.py`,
      `games/zynaps-128/tools/play_bot.py`.

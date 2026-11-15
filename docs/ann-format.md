@@ -125,8 +125,10 @@ numbered builds of one family by name, a run of three or more as a range (`c1-c4
 family that would take more than four items as one (`rzx x32`): `Witness: L1 90104 (c1, hiscore, lives,
 menu, timer, rzx x32).` A line that no longer agrees, say after `case.json` swaps a build, is printed:
 `witness: src/game/game.ann:134 $8040 PrintGlyph: L1 90100 (c1, rzx x32), the builds give L1 90104 (...)`;
-`mkgame.py --fix-witness` rewrites N and the list in the `.ann` (the rest of the line stays) and writes the source
-again from it (with `--install` one run leaves the `.asm` current too); a range it wrote is read back as its builds
+`mkgame.py --fix-witness` rewrites N and the list in the `.ann` (the rest of the line stays), gives a code entry
+that has no witness line yet its `> Witness: L1 N (builds).` after its last `>` line when the builds ran it and the
+`.ann` already holds witness lines (an entry no build ran gets none and is listed; any `Witness:` text counts as a
+line), and writes the source again from it (with `--install` one run leaves the `.asm` current too); a range it wrote is read back as its builds
 whatever the family's prefix (`load-l2-load-l5`, `sec-l2-s10-sec-l2-s12`); a build that `case.json` lists in both
 `read_builds` and `code_builds` counts once; a line that names a
 build mkgame did not load is kept as written and printed (`kept: NAME not among the builds`), a name a build had

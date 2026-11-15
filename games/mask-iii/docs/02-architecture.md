@@ -345,7 +345,9 @@ flowchart LR
 
 The RZX segments run the beeper path on the 128K model: the RZX's memory has `$FFFE` = 1, a value this loader never
 writes (LoaderMain writes `$FF` at `$5E12` and 0 at `$5E3E`, nothing else). The RZX was made from another load of the
-game; any non-zero value takes the beeper path. Stage 2's `c48` runs the 48K model itself.
+game, on a 48K (its state is a 48K `.z80`; unreal-ng's `POST /rzx/play` switches to the 48K for it), and the segments
+replayed it on the 128K model, the main cause of their drift
+([WALKTHROUGH 6.0](../WALKTHROUGH.md#60-the-recordings)); any non-zero value takes the beeper path. Stage 2's `c48` runs the 48K model itself.
 
 ## 2.10 The leftovers and the code no recording ran
 

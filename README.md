@@ -48,7 +48,7 @@ Each case is a full reverse of one game:
 | [Myth: History in the Making](games/myth/README.md) | System 3 Software (Neil Dodwell, Concept Animations), 1989 | 48K / 128K, tape | complete 2026-11-13 | a flip-screen action adventure across five ages, from the road to hell to the duel with Dameron; a multiload of five 33 KB stage blocks behind a Speedlock 7 loader; AY effects on the 128K |
 | [Bumpy](games/bumpy/README.md) | Loriciels (Spectrum conversion: Luis Jorge Garcia, J250), 1989 | 48K, tape | complete 2026-11-14 | a bouncing ball on the platforms of 100 single-screen levels of 6 x 6 cells, collecting objects against a timer; one ROM-speed block, beeper effects |
 | [Rex](games/rex/README.md) | Martech Games (The Light), 1988 | 48K / 128K, tape (two sides) | complete 2026-11-15 | a run-and-gun platform shooter: Rex, an armoured dinosaur, through the caves of the Tower of Zenith in two parts loaded apart, the second opened by the code the first gives; standard ROM blocks |
-| [MASK III: VENOM Strikes Back](games/mask-iii/README.md) | Gremlin Graphics, 1988 | 48K / 128K, tape | in progress (stage 1) | a flick-screen platform shooter: Matt Trakker through 16 rooms of six screens each, four zones, masks switched by keys 1-4, AY music in RAM 4 |
+| [MASK III: VENOM Strikes Back](games/mask-iii/README.md) | Gremlin Graphics, 1988 | 48K / 128K, tape | complete 2026-11-15 | a flick-screen platform shooter: Matt Trakker through 16 rooms of six screens each, four zones, masks switched by keys 1-4, AY music in RAM 4 |
 
 ### Software
 

@@ -200,8 +200,10 @@ def parse_moment(text, frame_t):
 # ---------------------------------------------------------------------------------------------------------------
 # sjasmplus listing
 
-# line number, address, the bytes column (hex pairs, its width varies with sjasmplus's layout), the source
-LINE = re.compile(r'^\s*\d+\+*\s+([0-9A-F]{4}) ((?:[0-9A-F]{2}(?: |$))*)\s*(.*)$')
+# line number, address, the bytes column (hex pairs, its width varies with sjasmplus's layout; a long DEFS / DS row
+# ends its pairs with "00..."), the source. A one-byte instruction whose text is all hex letters (DEC A: "3D  DEC A")
+# keeps its text: a pair must end at a space or the line's end
+LINE = re.compile(r'^\s*\d+\+*\s+([0-9A-F]{4}) ((?:[0-9A-F]{2}(?: |$))*(?:[0-9A-F]{2}\.\.\.)?)\s*(.*)$')
 LABEL = re.compile(r'^([A-Za-z_][\w.]*):')
 # an address name of the top file: 'Name  EQU $XXXX' (mkgame.py's @equ, @const lines); an @bank line ('; bank N')
 # names another bank's address and is left out
@@ -502,6 +504,65 @@ def memory_image(path):
         if page in pages:
             mem[base:base + 0x4000] = pages[page][:0x4000]
     return mem
+
+
+# SZX chMachineId -> unreal-ng model (POST /emulator create, re_session.py --model)
+SZX_MODELS = {0: '48K', 1: '48K', 2: '128K', 3: 'PLUS2', 4: 'PLUS2A', 5: 'PLUS3', 6: 'PLUS3', 7: 'PENTAGON',
+              10: 'SCORPION', 15: '48K', 16: '128K'}
+# .z80 version 3 hardware byte (34) -> model; version 2 differs at 3 and 4 (128K), see snapshot_model
+Z80_V3_MODELS = {0: '48K', 1: '48K', 3: '48K', 4: '128K', 5: '128K', 6: '128K', 7: 'PLUS3', 8: 'PLUS3',
+                 9: 'PENTAGON', 10: 'SCORPION', 12: 'PLUS2', 13: 'PLUS2A'}
+
+
+def snapshot_model(path):
+    """The unreal-ng model a snapshot was saved on, or None when the file does not say (an unknown machine id): an
+    SZX's machine id, a .z80's version and hardware byte (version 1: 48K; byte 37 bit 7 turns 128K into +2 and +3
+    into +2A), a .sna by its length (49179: 48K, 131103 / 147487: 128K)"""
+    data = open(path, 'rb').read(64)
+    size = os.path.getsize(path)
+    if data[:4] == b'ZXST':
+        return SZX_MODELS.get(data[6]) if len(data) > 6 else None
+    if path.lower().endswith('.z80') and len(data) >= 35:
+        if data[6] | data[7]:
+            return '48K'  # version 1: PC in the header
+        extra = data[30] | data[31] << 8
+        hw, modified = data[34], len(data) > 37 and data[37] & 0x80
+        model = ('48K' if hw < 3 else '128K') if extra == 23 else Z80_V3_MODELS.get(hw)
+        if modified and model == '128K':
+            return 'PLUS2'
+        if modified and model == 'PLUS3':
+            return 'PLUS2A'
+        return model
+    if path.lower().endswith('.sna'):
+        return {49179: '48K', 131103: '128K', 147487: '128K'}.get(size)
+    return None
+
+
+def model_from_snapshot(args, who='capture'):
+    """capture arguments with --model added from --snapshot's own model when no --model is given (re_session.py's
+    default is 48K: a 128K state does not load there); a --model that differs from the snapshot's is kept, with a
+    warning. args: the capture's argument list (the 'capture' word may be first)"""
+    def value(name):
+        for k, a in enumerate(args):
+            if a == name and k + 1 < len(args):
+                return args[k + 1]
+            if a.startswith(name + '='):
+                return a.split('=', 1)[1]
+        return None
+    snapshot, given = value('--snapshot'), value('--model')
+    if not snapshot or not os.path.isfile(snapshot):
+        return args
+    model = snapshot_model(snapshot)
+    if model is None:
+        print(f'{who}: {snapshot}: the model is not known from the file; --model {given or "48K (the default)"}',
+              flush=True)
+        return args
+    if given is None:
+        print(f'{who}: --model {model} from {snapshot}', flush=True)
+        return list(args) + ['--model', model]
+    if given.upper() != model.upper():
+        print(f'{who}: WARNING: --model {given}, but {snapshot} was saved on {model}', flush=True)
+    return args
 
 
 # ---------------------------------------------------------------------------------------------------------------

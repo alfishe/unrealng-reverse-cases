@@ -1905,6 +1905,8 @@ Witness: L1 91061 (c1, cheat, door, door3, kind6, masks, play2, rzx- x9).
 
 No play recording reached room 1's screen 2, the only screen of kind 6 (src/res/tables/rooms.csv); work/stage2/rec/kind6 POKEs EnemyKind `$BFB0` = 6 in room 0 (a cheat, said so in its script).
 
+Witness: L1 1919 (kind6).
+
 | | |
 | --- | --- |
 | Runs | not reached in `stage1/c1`; in the other recordings 1,919 runs of its first instruction, entered by a jump (`stage2/rec/kind6` 1,919) |
@@ -1946,6 +1948,8 @@ No play recording reached room 1's screen 2, the only screen of kind 6 (src/res/
 **JP SpawnKind10 `$C1F3` (room 7, screens 2 and 3)**
 
 No play recording reached room 7's screens 2-3, the only screens of kind 10; work/stage2/rec/door3 POKEs EnemyKind `$BFB0` = 10 in room 7, screen 0 (a cheat, said so in its script).
+
+Witness: L1 1 (door3).
 
 | | |
 | --- | --- |
@@ -2565,9 +2569,11 @@ Known only from the code.
 
 ### `KindEleven` (`$C6F2`)
 
-**Never run: kind 11**
+**Kind 11: kind 16's shot**
 
-Known only from the code.
+Run only in work/stage2/rec/kind6, where a POKE sets EnemyKind `$BFB0` = 6 in room 0: SpawnKind6's kind-16 objects fire kind 11 (KindSixteen `$C89B`).
+
+Witness: L1 406 (kind6).
 
 | | |
 | --- | --- |

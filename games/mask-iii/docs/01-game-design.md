@@ -19,7 +19,8 @@ The recordings it rests on ([WALKTHROUGH 6.0](../WALKTHROUGH.md#60-the-recording
 - the RZX segments `rec/rzx-00000` .. `rec/rzx-36000`: another player's complete run (ZXDB), replayed from the RZX's
   own state every 4000 frames; together they reach every room and the ending. Each segment stays in step with the
   RZX only 500-4000 frames ([WALKTHROUGH 6.0](../WALKTHROUGH.md#60-the-recordings)), then plays the RZX's keys on a
-  drifted game: the deaths, MISSION TERMINATED, the new games and the menus with HISCORE 00019090 in `rzx-08000`,
+  drifted game (mostly because the RZX is a 48K one and the segments ran on the 128K: on the 48K eight of ten stay
+  in step to their end; the committed 128K segments stay the witnesses): the deaths, MISSION TERMINATED, the new games and the menus with HISCORE 00019090 in `rzx-08000`,
   `rzx-28000` and `rzx-32000` are the replay's, not the original player's. Hiscore `$9D16` is written only by GameOver
   (`$BAF3-$BAFC`), and each segment starts again from the RZX's own state, where the player had not died: so
   `rzx-36000`'s menu shows 00000000;
@@ -426,7 +427,7 @@ is equal or greater, it is copied. The menu shows the high score.
 The ending does not update the high score: Ending `$ADF6` jumps to GameStart without the comparison. `rec/rzx-36000`
 finishes the game with 31 004 points, and its menu shows HISCORE 00000000 (the segment starts from the RZX's own state,
 where no GameOver had run). The witness of the comparison is `rec/rzx-28000`: MISSION TERMINATED at frame 750,
-HISCORE 00019090 at frame 3250. That death is the replay's, after the segment drifted from the RZX at frame 500, not
+HISCORE 00019090 at frame 3250. That death is the replay's, after the segment drifted from the RZX at frame 500 (on the 128K), not
 the original player's.
 
 ### The cheat

@@ -320,7 +320,7 @@ states alternate 2 and 1: x `$6C`, y `$4C` (state 2) at 2529; x `$6A`, y `$48` (
 
 How to read it: the screen at every changed frame. Matt walks right, jumps and lands one ledge higher, then walks on.
 Recording `rzx-00000`, TTD frames 852-894. Made by `python3 ../../kit/screen_anim.py --work work/docs/mxC/rzx-00000
---from 852 --to 894 --step 1 --delay 60 --hold 800 docs/img/play/jump.gif`.
+--from 852 --to 894 --step 1 --delay 60 --hold 800 --width 1050 docs/img/play/jump.gif`.
 
 **The point**: Matt climbs stairs by himself: a wall one character high is a step, not a wall. Only a wall at his
 head, body or legs stops him.
@@ -504,7 +504,7 @@ journey: Matt stood in the room-0 booth; one pass later the base of room 10 surr
 
 How to read it: the screen at every changed frame. Matt stands in the booth on the surface; one frame later the base
 of room 10 is drawn around him. Recording `rzx-00000`, TTD frames 2290-2330. Made by `python3
-../../kit/screen_anim.py --work work/docs/mxC/rzx-00000 --from 2290 --to 2330 --step 1 --delay 60 --hold 800
+../../kit/screen_anim.py --work work/docs/mxC/rzx-00000 --from 2290 --to 2330 --step 1 --delay 60 --hold 800 --width 1050
 docs/img/play/pod.gif`.
 
 **The point**: a pod costs nothing and takes one pass. The slow dissolve the player sees at the start belongs to the
@@ -612,7 +612,7 @@ and the energy went from 245 to 243.
 
 How to read it: the screen every second frame. The chaser sweeps in, its touch empties the bar, Matt stands for 50
 passes; MISSION TERMINATED follows after the GIF. Recording `rzx-32000`, TTD frames 640-800. Made by `python3
-../../kit/screen_anim.py --work work/docs/mxC/rzx-32000 --from 640 --to 800 --step 2 --delay 60 --hold 800
+../../kit/screen_anim.py --work work/docs/mxC/rzx-32000 --from 640 --to 800 --step 2 --delay 60 --hold 800 --width 1050
 docs/img/play/energy-out.gif`.
 
 **The point**: energy is a single budget for every hurt, and the HEALER is its only refill. The deadly floors and the
@@ -835,7 +835,7 @@ work/docs/fixB/penetrator-2516.uatr --listing build/game.lst --pc BCE0-BE3A,B210
 
 How to read it: the screen every second frame. Matt, drawn through the dissolve pattern, climbs through the walls of
 room 10 to the left. Recording `rzx-00000`, TTD frames 2505-2615. Made by `python3 ../../kit/screen_anim.py --work
-work/docs/mxC/rzx-00000 --from 2505 --to 2615 --step 2 --delay 60 --hold 800 docs/img/play/penetrator.gif`.
+work/docs/mxC/rzx-00000 --from 2505 --to 2615 --step 2 --delay 60 --hold 800 --width 1050 docs/img/play/penetrator.gif`.
 
 **The point**: the PENETRATOR is a ghost mode: no walls, no touches, no block items. Its price is the risk at the
 end: let go inside a wall and the mission ends.
@@ -927,7 +927,7 @@ AF00-AFFF --pictures 40 --delay 160 --title '...' --out docs/img/routines/MattLo
 
 How to read it: the screen every second frame. Matt flies across room 4 in hops. Recording `rzx-12000`, TTD frames
 1288-1432. Made by `python3 ../../kit/screen_anim.py --work work/docs/mxC/rzx-12000 --from 1288 --to 1432 --step 2
---delay 60 --hold 800 docs/img/play/jackrabbit.gif`.
+--delay 60 --hold 800 --width 1050 docs/img/play/jackrabbit.gif`.
 
 **The point**: the JACKRABBIT turns the jump into free flight paid by the pass. Only its current-ness matters: switch
 masks in the air and Matt drops into state 1 at once.
@@ -1025,7 +1025,7 @@ C284-C374,BC96-BCDF,C5D9-C64D,C6B8-C6F1,BF2B-BFB0,BCE0-BDD0,AE45-AE5F --view scr
 
 How to read it: the screen every second frame. Matt fires; each walker hit floats up out of the room. Recording
 `rzx-12000`, TTD frames 2084-2222. Made by `python3 ../../kit/screen_anim.py --work work/docs/mxC/rzx-12000 --from
-2084 --to 2222 --step 2 --delay 60 --hold 800 docs/img/play/lifter.gif`.
+2084 --to 2222 --step 2 --delay 60 --hold 800 --width 1050 docs/img/play/lifter.gif`.
 
 **The point**: one shot on screen at a time, power from the slot's level. The LIFTER costs eight times more and
 lifts in one hit every kind that tests +`$22` (faller, flyer, turret shot, wave, walker, riser, boss shot, kinds 11
@@ -1214,7 +1214,7 @@ docs/img/routines/Death.gif` (re-drawn from the kept trace `work/docs/mxC/rzx-04
 
 How to read it: the screen every second frame. Matt lands on the floor and sinks into it. Recording `rzx-04000`, TTD
 frames 1520-1700. Made by `python3 ../../kit/screen_anim.py --work work/docs/mxC/rzx-04000 --from 1520 --to 1700
---step 2 --delay 60 --hold 800 docs/img/play/death.gif`.
+--step 2 --delay 60 --hold 800 --width 1050 docs/img/play/death.gif`.
 
 ![rzx-28000: the moon death, MISSION TERMINATED, the high score and the menu](img/play/game-over.gif)
 
@@ -1377,7 +1377,7 @@ flew on.
 
 How to read it: the screen at every changed frame: the shot leaves Matt, the faller bursts. Recording `rzx-00000`, TTD
 frames 978-1010. Made by `python3 ../../kit/screen_anim.py --work work/docs/mxC/rzx-00000 --from 978 --to 1010 --step 1
---delay 60 --hold 800 docs/img/play/kill.gif`.
+--delay 60 --hold 800 --width 1050 docs/img/play/kill.gif`.
 
 **The point**: a kill and a touch pay the same points, so a strong touch is a trade: energy for score. Only the turret
 pays nothing either way.
@@ -1497,7 +1497,7 @@ work/docs/fixB/warp-851.uatr --listing build/game.lst --pc B9C5-BA67 --view scre
 
 How to read it: the screen every third frame. Matt crouches along the doors, dissolves on door 1 and stands in room 3.
 Recording `door`, TTD frames 700-1000. Made by `python3 ../../kit/screen_anim.py --work work/docs/mxC/door --from 700
---to 1000 --step 3 --delay 60 --hold 800 docs/img/play/door-warp.gif`.
+--to 1000 --step 3 --delay 60 --hold 800 --width 1050 docs/img/play/door-warp.gif`.
 
 **The point**: the passwords are shortcuts, not saves. Each one opens a door from the start room to a later room; the
 last one also hands Matt a LIFTER and a stronger BACKLASH.
@@ -1764,13 +1764,14 @@ Witness: the sections above.
 
 - **Only in the integration's POKE recordings** (`cheat`, `masks`, `door3`, `kind6`, each script says its POKEs):
   the cheat typed (CheatOn `$FF`), the PENETRATOR's death in a wall (Explosion, effects 16 and 17), door 3 and its
-  LIFTER bonus (WarpBonus `$BA21`), the masks no room holds, the enemy kinds 6 and 10 (objects 16, 18, 19).
+  LIFTER bonus (WarpBonus `$BA21`), the masks no room holds, the enemy kinds 6 and 10 (objects 16, 18, 19; 16's
+  shot, object kind 11, in `kind6`).
 - **Never in any recording:**
   - doors 0 and 2; the cheat's safe floor;
   - a block item taken (no loss of 25 energy);
   - a long jump on the moon;
   - the fall out of the play area as a death;
-  - enemy kinds 9 and 11;
+  - object kind 9;
   - rooms 9, 11 and 13; room 7 only in `door3` (a POKE recording, screen 0); room 1 beyond screen 1.
 - **The RZX segments start from the RZX's own states.** Each segment's first frame is a state of the RZX player, not
   the end of the previous segment: the score, the slots and the room jump between them (`run.png`).

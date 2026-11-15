@@ -2194,13 +2194,36 @@ def check_witness(seg, skip=(), fix=False, mem=None):
                 former.setdefault(alias, build_name(b))
     lines = open(seg.ann).read().split('\n')
     entry, stale, unrun = None, 0, []
+    # a code entry with no witness line at all (a new one): in an .ann that holds witness lines, --fix-witness writes
+    # "> Witness: L1 N (builds)." after the entry's description when the builds ran it; one no build ran is listed
+    uses_witness = any(WITNESS.search(x) for x in lines if x.strip().startswith('>'))
+    missing, missing_unrun, inserts = [], [], []
+    last, witnessed = None, False
+
+    def close_entry():
+        if entry is None or entry[1] != 'c' or not LO <= entry[0] < HI or witnessed or not uses_witness:
+            return
+        n, names = witness_text(builds, entry[0])
+        if not n:
+            missing_unrun.append((last + 1, entry[0], entry[2] or ''))
+            return
+        missing.append((last + 1, entry[0], entry[2] or '', n, names))
+        if fix:
+            inserts.append((last + 1, '> Witness: L1 %d (%s).' % (n, names)))
+
     for i, line in enumerate(lines):
         text = line.strip()
         if text.startswith('$'):
             m = ANNOTATION.match(text)
             if m and m.group(2):
+                close_entry()
                 entry = (int(m.group(1), 16), m.group(2), m.group(3))
+                last, witnessed = i, False
             continue
+        if text.startswith('>') and last is not None:
+            last = i  # a description line is the last entry's, inner lines between or not (ann-format 3.2)
+        if text.startswith('>') and 'Witness:' in text:
+            witnessed = True  # any witness text, "Witness: L1 18 585 passes" too
         if not text.startswith('>') or entry is None or entry[1] != 'c' or not LO <= entry[0] < HI:
             continue  # an entry outside this image (an .ann shared by several parts) is another part's
         said = says_not_run(text)
@@ -2236,6 +2259,21 @@ def check_witness(seg, skip=(), fix=False, mem=None):
         lines[i] = WITNESS.sub(sub, line)
         if fix and any(w.group(1) == '0' and not w.group(2).strip() for w in WITNESS.finditer(lines[i])):
             unrun.append((i + 1, entry[0], entry[2] or ''))
+    close_entry()
+    rel = os.path.relpath(seg.ann, ROOT)
+    for at, address, name, n, names in (missing if fix else []):
+        print('witness: %s:%d $%04X %s: no witness line, the builds run it: L1 %d (%s): written' % (
+            rel, at, address, name, n, names))
+    if missing and not fix:
+        print('witness: %s: %d code entr%s with no witness line (--fix-witness writes %s)' % (
+            rel, len(missing), 'y' if len(missing) == 1 else 'ies', 'it' if len(missing) == 1 else 'them'))
+    if fix and missing_unrun:
+        print('witness: %s: %d code entr%s with no witness line and no build ran %s (none written): %s' % (
+            rel, len(missing_unrun), 'y' if len(missing_unrun) == 1 else 'ies',
+            'it' if len(missing_unrun) == 1 else 'them', ', '.join('%d $%04X %s' % u for u in missing_unrun)))
+    for at, text in sorted(inserts, reverse=True):
+        lines.insert(at, text)
+    stale += len(inserts)
     shared = {}
     for b, r in builds.items():
         for a in r.shared:

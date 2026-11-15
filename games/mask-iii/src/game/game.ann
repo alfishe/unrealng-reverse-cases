@@ -524,9 +524,11 @@ $BFB2 b SpawnJumpPad ; Two bytes after kind 0's RET
 $BFB4 SpawnJumps1 ; kinds 1-5
 $BFC3 c SpawnJump6 ; JP SpawnKind6 $C0F7 (room 1, screen 2)
 > No play recording reached room 1's screen 2, the only screen of kind 6 (src/res/tables/rooms.csv); work/stage2/rec/kind6 POKEs EnemyKind $BFB0 = 6 in room 0 (a cheat, said so in its script).
+> Witness: L1 1919 (kind6).
 $BFC6 SpawnJumps7 ; kinds 7-9
 $BFCF c SpawnJump10 ; JP SpawnKind10 $C1F3 (room 7, screens 2 and 3)
 > No play recording reached room 7's screens 2-3, the only screens of kind 10; work/stage2/rec/door3 POKEs EnemyKind $BFB0 = 10 in room 7, screen 0 (a cheat, said so in its script).
+> Witness: L1 1 (door3).
 $BFD2 SpawnFlyer ; kind 1: a flyer from the right that homes on Matt's height (object kind 2)
 $BFF5 c SetupObject ; Copy the 12-byte template at HL into object IX
 > Witness: L1 634 (door, door3, kind6, rzx- x9).
@@ -583,8 +585,9 @@ $C6B7 c KindNine ; RET: kind 9
 > Known only from the code.
 $C6B8 ObjectShot ; hit by Matt's shot: score, explosion
 $C6D4 KindTen ; 10
-$C6F2 c KindEleven ; Never run: kind 11
-> Known only from the code.
+$C6F2 c KindEleven ; Kind 11: kind 16's shot
+> Run only in work/stage2/rec/kind6, where a POKE sets EnemyKind $BFB0 = 6 in room 0: SpawnKind6's kind-16 objects fire kind 11 (KindSixteen $C89B).
+> Witness: L1 406 (kind6).
 $C73F KindTwelve ; 12, the riser
 $C789 c KindThirteenRet ; A RET no branch reaches
 > Known only from the code.

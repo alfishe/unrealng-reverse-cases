@@ -15,7 +15,8 @@ The recordings it rests on ([WALKTHROUGH 6.0](../WALKTHROUGH.md#60-the-recording
 - `rec/rzx-04000` and `rec/rzx-16000`: two segments of the ZXDB RZX run, replayed from the RZX's own state; they run
   the beeper path (the RZX's memory has `$FFFE` = 1, a value this loader never writes: the RZX comes from another
   load, [doc 2, 2.9](02-architecture.md#29-48k-and-128k)); each segment stays in step with the RZX only
-  500-4000 frames ([WALKTHROUGH 6.0](../WALKTHROUGH.md#60-the-recordings)), then plays the RZX's keys on a drifted game;
+  500-4000 frames ([WALKTHROUGH 6.0](../WALKTHROUGH.md#60-the-recordings)), then plays the RZX's keys on a drifted game
+  (mostly the model: a 48K RZX run on the 128K; on the 48K eight of ten segments stay in step to their end);
 - `rec/rzx-28000`: a segment with a death and a new game;
 - stage 2's `c48`: the tape on the 48K model.
 
@@ -93,7 +94,7 @@ The witness is c1. The loader arrives at frame 1094 T 37 200. GameEntry runs at 
 interrupt goes through the `JR` at frame 15 021. The menu is on screen by frame 15 100 (the last picture of
 `load-c1.gif`; the menu screenshot is of frame 17 750), and the first game starts at
 about frame 18 300 (WALKTHROUGH 1). In `rec/rzx-28000` Matt dies, MISSION TERMINATED is printed and a new game
-starts, all inside one 4000-frame segment; that segment stays in step with the RZX only to frame 500, so the death
+starts, all inside one 4000-frame segment; that segment stays in step with the RZX only to frame 500 on the 128K (to its end on the 48K), so the death
 and the new game are the replay's on a drifted game, not the original player's.
 
 The point: there is no game-state variable to dispatch on. The state is where the program counter is. A game ends
@@ -575,7 +576,7 @@ The screen as a player sees it, one picture a frame:
 *`room-change-10-1.gif`: `rec/rzx-04000` frames 452-482, one frame a picture. Room 10 stays still through 465 while
 the zone is swapped. Each picture is the screen at T 0 of its frame (not at its end, as elsewhere in these documents):
 room 10 through 466, room 1 growing in 467-469 (FlushDirty writes from 466:16 361), whole in 470. `kit/screen_anim.py --work
-work/docs/mxA/r04 --from 452 --to 482 --step 1 --scale 2`.*
+work/docs/mxA/r04 --from 452 --to 482 --step 1 --width 1050`.*
 
 ![The room change against the beam, rzx-04000 frames 465-468](img/loop/beam-roomchange.png)
 

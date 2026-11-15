@@ -5,6 +5,7 @@ one path in this repository instead of a variable set on one machine.
     python3 kit/rs.py [--unreal U] capture|open|build|stages|interrupts|call|export|check|stop ...
     python3 kit/rs.py capture ... [--stop] [--expect STATE[@FRAME] ...] [--expect-ranges LO-HI[,LO-HI ...]]
                                   [--tape-seek N]
+    python3 kit/rs.py capture --snapshot S ...      (no --model: the snapshot's own model, kitlib.snapshot_model)
 
 Everything after the optional --unreal goes to re_session.py unchanged, but for these, read here first (capture):
 
@@ -28,6 +29,12 @@ Everything after the optional --unreal goes to re_session.py unchanged, but for 
               with the fast LD-BYTES trap on or off. The seek's answer is printed and kept in W/capture.json
               "tape_seek"; a case wrapper that replaces corpus.load gets it too when it ends with
               rs.main(['capture', ...]) (the seek follows its load_software call)
+
+  --snapshot S without --model: re_session.py would create its default 48K and a 128K state would not load there;
+              rs.py reads the model from the snapshot (an SZX's machine id, a .z80's hardware byte, a .sna's length)
+              and passes --model itself, printing "rs.py: --model 128K from S". A --model that differs from the
+              snapshot's is kept, with a warning. A case wrapper that calls re_session.main itself gets the same with
+              kitlib.model_from_snapshot(argv)
 
 re_session.py's docstring (python3 kit/rs.py -h) is the reference for the rest. The cases' `$RS` (docs/case-files.md)
 is this script. The checkout is found as kit/toolpaths.py finds it: --unreal, $UNREAL_NG, the unreal-ng submodule, a
@@ -123,6 +130,7 @@ def capture(args, script):
     """re_session.py's capture, imported rather than run as a script, so that the replay check can stop the scripts
     at a frame; the instance stopped afterwards when asked. Returns the exit status"""
     args, stop, expect, spans = kit_options(args)
+    args = kitlib.model_from_snapshot(args, 'rs.py')
     seek = kit_options.seek
     work = args[args.index('--work') + 1] if '--work' in args[:-1] else None
     if (stop or expect) and not work:

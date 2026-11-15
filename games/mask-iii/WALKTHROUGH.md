@@ -64,7 +64,8 @@ from frame 15 021), 30 032 T an entry, 13.8 % of the CPU over the whole recordin
 
 Callees in c1: `$9421`, `$946F`, `$C003` x7279; `$BB4C` x4031; `$AF82` x3955; `$9899` x3248; `$C000` x2; `$C00A` x1.
 In the RZX segments the beeper path runs instead: the RZX's memory has `$FFFE` = 1, a value this loader never
-writes (LoaderMain writes `$FF` at `$5E12`, 0 at `$5E3E`): the RZX comes from another load, and any non-zero value takes
+writes (LoaderMain writes `$FF` at `$5E12`, 0 at `$5E3E`): the RZX comes from another load, a 48K one (its state is a 48K
+`.z80`; the segments still ran on the 128K, section 6.0), and any non-zero value takes
 the beeper path. `rs.py interrupts --work work/stage1/rec/rzx-16000` gives 3999 entries in 4000 frames,
 2600 T an entry, 3.7 % of the CPU, callees `$949F`, `$94C8`, `$AF82`, `$BB4C` each x3999. In play the AY player
 costs about 212 T a frame (`c1-play`, [doc 4, 4.3](docs/04-game-loop.md)); the whole-recording average of 30 032 T an
@@ -131,13 +132,18 @@ cut from these recordings.
 | `stage2/rec/door3` | the same with `tests/inputs/door3.txt` | 3009 | PasswordFlags, RoomScreen and Matt's x POKEd (said): door 3 with down, room 7 and LIFTER 99 in slot 0 (WarpBonus `$BA21`, frame 969); then EnemyKind `$BFB0` POKEd to 10: SpawnKind10 at frame 1478, kinds 18 and 19 to frame 1968; later Matt dies and a new game starts |
 | `stage2/rec/kind6` | the same with `tests/inputs/kind6.txt` | 2275 | EnemyKind `$BFB0` POKEd to 6 in room 0 (said): SpawnKind6 frames 675-1891, kind 16 |
 
-The segments stay in step with the RZX (screens within 1500 bytes) for 500 to 4000 frames, then drift: the RZX's
-player used the Interface 2 stick and the game's frame (a free main loop beside the interrupt, 2.8 frames a pass) does
-not land the same keys on the same pass after a few hundred frames. Each segment still starts on the RZX's own state,
-so together they reach every room; after the drift the play is the RZX's keys on a slightly different game, and in
-some segments Matt dies and a new game starts.
+The segments stay in step with the RZX (screens within 1500 bytes) for 500 to 4000 frames, then drift; three of the
+ten stay in step to their end. The main cause is the model: the RZX and its states are 48K ones (the `.z80` header;
+unreal-ng's `POST /rzx/play` switches to the 48K for it), and these segments ran them on the 128K, whose frame is
+longer, so the RZX's keys land on other passes. Replayed on the 48K (`tools/rzx_segment.sh FROM TO PORT 48K`), eight
+of the ten stay in step to their end (`work/kitfix/rzx/seg-48K-all.txt`); `rzx-00000` (to frame 2000) and
+`rzx-04000` (2500) still drift, the second cause: the RZX's player used the Interface 2 stick and the game's frame (a
+free main loop beside the interrupt, 2.8 frames a pass) does not always land keys held a frame on the same pass. The
+committed segments are the 128K replays and stay the witnesses of what ran in them. Each segment still starts on the
+RZX's own state, so together they reach every room; after the drift the play is the RZX's keys on a slightly
+different game, and in some segments Matt dies and a new game starts.
 
-| Segment | In step to | Rooms (from `$950A` in the RZX dump) | Also reached |
+| Segment | In step to (128K) | Rooms (from `$950A` in the RZX dump) | Also reached |
 | --- | ---: | --- | --- |
 | `rzx-00000` | 4000 | 0, the pod, 10 | the teleport effect |
 | `rzx-04000` | 1500 | 10, 1 | |
@@ -155,7 +161,7 @@ SCOTT......", with 31 004 points, then the menu (its HISCORE shows 00000000). St
 passwords and doors 1 and 3, the Kempston control in play, the 48K beeper path, the cheat, and six of the ten masks in
 use (BACKLASH, LIFTER, LAVA SHOT, STREAMER, ULTRA FLASH, MIRAGE, PENETRATOR's wall death); the RZX segments use
 HEALER (`rzx-16000`, frames 271-418) and JACKRABBIT (`rzx-12000`, frames 1297-1425). Not reached yet: doors 0 and 2,
-the Cursor control in play, the cheat's safe floor, enemy kinds 9 and 11.
+the Cursor control in play, the cheat's safe floor, object kind 9.
 
 The routine animations of docs 7, 9 and 10 whose routine is a small part of a pass are drawn from a cut of a kept
 trace (`work/docs/mxC/<rec>/traces/*.uatr`): `tools/trace_cut.py IN --find PC` lists where the routine runs,

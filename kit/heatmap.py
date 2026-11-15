@@ -10,7 +10,9 @@ counts over their bytes), data reads, data writes, and a composite (red write, g
     python3 heatmap.py l1.json out.png --frames           # when each byte was last touched instead of how often
 
 regions.txt: lines "START END NAME" (hex), drawn as labelled brackets to the right of the last panel of each row
-(labels that would overlap are pushed apart and joined to their bracket by a leader).
+(labels that would overlap are pushed apart and joined to their bracket by a leader). Instead of a file, --regions
+takes the regions inline: "START-END:NAME,..." (hex, an optional $; a name holds no comma), e.g.
+--regions '4000-5AFF:screen,9100-CC5B:code and variables'.
 
 --panels picks the panels and their order (default all four), --columns how many go in a row (default 2: the four
 panels as two rows of two). The text is TrueType, 13 px in a picture up to 1050 px wide and larger in proportion in a
@@ -137,6 +139,30 @@ def spread(wanted, step, top):
     return out
 
 
+def read_regions(text):
+    """[(start, end, name)] from --regions: a file of "START END NAME" lines, or inline "START-END:NAME,..." """
+    if not text:
+        return []
+    out = []
+    if not os.path.isfile(text) and ':' in text:
+        for item in text.split(','):
+            span, sep, name = item.partition(':')
+            a, dash, b = span.strip().partition('-')
+            if not (sep and dash and name.strip()):
+                sys.exit(f'--regions: "{item}" is not START-END:NAME')
+            try:
+                out.append((int(a.strip().lstrip('$'), 16), int(b.strip().lstrip('$'), 16), name.strip()))
+            except ValueError:
+                sys.exit(f'--regions: "{item}": START and END are hex addresses')
+        return out
+    for line in open(text):
+        parts = line.split(None, 2)
+        if len(parts) < 3 or line.startswith('#'):
+            continue
+        out.append((int(parts[0], 16), int(parts[1], 16), parts[2].strip()))
+    return out
+
+
 def main():
     p = argparse.ArgumentParser(description=__doc__.split('\n\n')[0])
     p.add_argument('l1')
@@ -144,7 +170,7 @@ def main():
     p.add_argument('--cell', type=int, default=3)
     p.add_argument('--from', dest='lo', default='4000')
     p.add_argument('--to', dest='hi', default='FFFF')
-    p.add_argument('--regions')
+    p.add_argument('--regions', help='a regions file, or inline START-END:NAME,...')
     p.add_argument('--title', default='')
     p.add_argument('--frames', action='store_true')
     p.add_argument('--panels', default=','.join(PANELS), help='which panels, in order: ' + ', '.join(PANELS))
@@ -176,15 +202,7 @@ def main():
     rows = [list(range(i, min(i + columns, len(panels)))) for i in range(0, len(panels), columns)]
     inset_w = 384 * max(1, args.cell // 2) + 14 if screen else 0  # screen_view's width
     slot_w = max(max(g.width for g in grids), inset_w)
-    regions = []
-    if args.regions:
-        for line in open(args.regions):
-            parts = line.split(None, 2)
-            if len(parts) < 3 or line.startswith('#'):
-                continue
-            a, b = int(parts[0], 16), int(parts[1], 16)
-            if b >= lo and a <= hi:
-                regions.append((a, b, parts[2].strip()))
+    regions = [(a, b, name) for a, b, name in read_regions(args.regions) if b >= lo and a <= hi]
 
     def layout(size):
         """the picture's width and the fonts for a text size"""

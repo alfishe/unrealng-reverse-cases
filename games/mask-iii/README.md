@@ -1,6 +1,6 @@
 # MASK III: VENOM Strikes Back (Gremlin Graphics, 1988)
 
-State: docs written, in review (2026-11-15): docs 01-10 by three writers, docs 11 and 12 generated, integrated; the
+State: complete (2026-11-15; two review rounds, kit gaps fixed): docs 01-10 by three writers, docs 11 and 12 generated, integrated; the
 tape builds identical from the sources. 12 documents, 74 figures (PNG), 42 animations (GIF), 69 mermaid diagrams and 39
 audio files (33 short WAV, the longest 4.6 s; 6 MP3: the three tunes and three effects over 5 s; 6.7 MB),
 counted on 2026-11-15 with:

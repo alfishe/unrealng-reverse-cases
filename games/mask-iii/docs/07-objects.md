@@ -388,7 +388,7 @@ the next frames. The arrival byte is room 0's `$44`, read before the room change
 
 How to read it: the screen at every changed frame. Matt stands in the booth on the surface; one frame later the base
 of room 10 is drawn around him, in the booth of its screen 2. Recording `rzx-00000`, TTD frames 2290-2330. Made by `python3 ../../kit/screen_anim.py --work
-work/docs/mxC/rzx-00000 --from 2290 --to 2330 --step 1 --delay 60 --hold 800 docs/img/play/pod.gif`.
+work/docs/mxC/rzx-00000 --from 2290 --to 2330 --step 1 --delay 60 --hold 800 --width 1050 docs/img/play/pod.gif`.
 
 ![Teleport and DrawRoom at the pod](img/routines/Teleport.gif)
 
@@ -854,7 +854,7 @@ work/docs/fixB/faller-995.uatr`, then `python3 ../../kit/routine_anim.py --trace
 
 How to read it: the screen at every frame: the shot leaves Matt, the faller bursts. Recording `rzx-00000`, TTD frames
 978-1010. Made by `python3 ../../kit/screen_anim.py --work work/docs/mxC/rzx-00000 --from 978 --to 1010 --step 1
---delay 60 --hold 800 docs/img/play/kill.gif`.
+--delay 60 --hold 800 --width 1050 docs/img/play/kill.gif`.
 
 **The point**: the shot test runs in the object loop, not in the shot's code, so one shot with power 2 or 3 can pass
 through several enemies in one flight. A touch both hurts Matt and pays him the enemy's score.
@@ -879,7 +879,7 @@ ObjectJumps `$C326` gives 20 kinds:
 | 8 | KindChaser `$C64E` | sweeps the room right to left for `$300` passes, follows Matt's height; a touch kills (255) | `rzx-08000` 1034, `rzx-32000` 473 |
 | 9 | KindNine `$C6B7` | a `RET` | never |
 | 10 | KindTen `$C6D4` | lifted: rises 8 a pass (ObjectShot zeroed its dx), then becomes +`$11` (0, or `$40` for a turret shot) | `rzx-12000` 2118 |
-| 11 | KindEleven `$C6F2` | kind 16's shot | never |
+| 11 | KindEleven `$C6F2` | kind 16's shot | `kind6` (a POKE), 406 runs |
 | 12 | KindTwelve `$C73F` | the riser, from a block `$61` | `rzx-16000` 1142 |
 | 13 | KindThirteen `$C78A` | the guard: bobs (GuardBob `$C7F4`), ten LIFTER hits lift it, ten shots break it into parts | `rzx-00000` 1960, `rzx-24000` |
 | 14 | KindFourteen `$C81B` | the boss (always slot 1): fires kind 15 into slot 0 when Random AND `$25` = 0 and slot 0 holds no shot | `rzx-24000` 479 |
@@ -1054,9 +1054,9 @@ they touch Matt, the walker dies at its fifth touch, the turret explodes at its 
 order of two calls decides the pay: the turret explodes before it scores, so it never pays.
 
 Witness: RunKind L1 91 060 (`c1`, `cheat`, `door`, `door3`, `kind6`, `masks`, `play2`, `rzx-` x9); ObjectCell L1 1891 (`door`, `rzx-` x7); the kinds seen
-in the samples (`python3 work/docs/mxC/events.py <rec>/vars.jsonl --objects`). Kinds 9 and 11 never ran:
-known only from the code; 16, 18 and 19 ran only after the EnemyKind POKEs (KindSixteen L1 488 in `kind6`,
-KindEighteen L1 167 in `door3`).
+in the samples (`python3 work/docs/mxC/events.py <rec>/vars.jsonl --objects`). Kind 9 never ran:
+known only from the code; 11, 16, 18 and 19 ran only after the EnemyKind POKEs (KindEleven L1 406 and KindSixteen
+L1 488 in `kind6`, KindEighteen L1 167 in `door3`).
 
 ## 7.11 Notes, quirks and what is known only from the code
 
@@ -1088,4 +1088,4 @@ KindEighteen L1 167 in `door3`).
 - **A turret shot is harmless once its turret is dead, and always in slot+2.** KindTurretShot does its Damage only
   when the slot before it still holds a turret (kind 4, `$C541`). For a shot in slot+2 the slot before it is slot+1,
   the first shot or its `$40`, never kind 4: that shot can never hurt Matt, and it ends as 0, not `$40`.
-- **Kinds never run**: 9 and 11; 16, 18 and 19 (enemy kinds 6 and 10) only after a POKE (`kind6`, `door3`).
+- **Kinds never run**: 9; 11 and 16 (enemy kind 6), 18 and 19 (enemy kind 10) only after a POKE (`kind6`, `door3`).

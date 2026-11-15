@@ -4,7 +4,7 @@ off: the game's own loaders read every block from the signal) and input scripts 
 
 With --media the machine loads the tape as a user does (on a 128K the 128 menu's Tape Loader taken with ENTER, on a
 48K LOAD "" typed) and plays it for --load-frames; then the tape is paused. With --snapshot the state is loaded and
-the tape settings are set off (PRETAPE=A or B in the environment: that side is inserted, paused, before the
+the tape settings are set off (without --model the snapshot's own model, kitlib.model_from_snapshot; PRETAPE=A or B in the environment: that side is inserted, paused, before the
 recording starts). Either way the scripts run in the recording. With SEEK=N in the environment the head goes to tape
 block N before the tape plays.
 
@@ -151,5 +151,8 @@ def capture(args):
 
 
 re_session.capture = capture
-sys.argv = ['re_session.py', 'capture', *sys.argv[1:]]
+# no --model with --snapshot: the snapshot's own (kitlib.model_from_snapshot; re_session.py's default is 48K)
+sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', '..', '..', 'kit'))
+import kitlib  # noqa: E402
+sys.argv = ['re_session.py', 'capture', *kitlib.model_from_snapshot(sys.argv[1:], 'capture.py')]
 re_session.main()

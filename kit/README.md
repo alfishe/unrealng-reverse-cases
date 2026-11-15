@@ -34,7 +34,12 @@ that runs unreal-ng's `re_session.py` itself (a `work/env.sh` that sets `$RS` to
 wrapper that imports `re_session` (one that replaces `corpus.load`, Deflektor's `tools/rs_capture.py`) gets it by
 ending with `rs.main(['capture', ...])` instead of `re_session.main()`.
 
-`capture` takes four options of the kit's own, which `rs.py` takes out before `re_session.py` sees the rest:
+`capture` takes four options of the kit's own, which `rs.py` takes out before `re_session.py` sees the rest, and
+reads one of re_session.py's: `--snapshot S` with no `--model` gets the snapshot's own model (`kitlib.snapshot_model`:
+an SZX's machine id, a `.z80`'s version and hardware byte, a `.sna`'s length), printed as `rs.py: --model 128K from
+S`; re_session.py's default is 48K, where a 128K state does not load. A `--model` that differs from the snapshot's
+is kept with a warning (MASK III's RZX segments ran its 48K states on the 128K and drifted). A case wrapper that
+calls `re_session.main` itself does the same with `kitlib.model_from_snapshot(argv)` (MASK III's `tools/capture.py`):
 
 - `--stop`: the instance the capture launched is stopped when the capture is done (`re_session.py stop`). Without
   it the instance stays up, as `re_session.py` leaves it, for `build`, `call` and `export` on the live recording; a
@@ -134,7 +139,10 @@ recording it did not load, prints each
 name it drops (`menu, search ran no instruction there`; an entry no build ran stays `L1 0 ()` with no such
 clause, so a data entry is not said to run no instruction), lists the code entries left at `L1 0 ()` after it
 (`witness: src/rex2/rex2.ann: 24 code entries at L1 0 () (no build ran them): 128 $97D2 WaitFire, ...`: the line,
-the address, the name), and writes the source again from the rewritten `.ann`, so
+the address, the name), gives a code entry with no witness line (a new one) its `> Witness: L1 N (builds).` after
+its description when the builds ran it and the `.ann` already holds witness lines (`no witness line, the builds run
+it: L1 1 (door3): written`; one no build ran is listed, none written; without `--fix-witness` a run prints only
+`N code entries with no witness line (--fix-witness writes them)`), and writes the source again from the rewritten `.ann`, so
 that with `--install` one run leaves the `.ann` and the `.asm` current
 ([ann-format.md 3.2](../docs/ann-format.md#32-a-description--text)). One L1 keeps one instruction an address (the
 last bytes run there, the runs of all): mkgame prints the witnessed entries whose bytes changed in the recording, and
@@ -280,10 +288,10 @@ yellow fading through red, trails dark.
 | `writers_map.py` | code vs screen: each byte of the screen or a buffer coloured by the routine (or instruction) that wrote it, the data it read, a zoom | an access trace |
 | `beam_timeline.py` | code vs the beam: the routines along a frame's T-states (frame T, the INT marked), every screen write against the raster | an access trace |
 | `memanim.py` | memory over a longer stretch (a load, an unpack, a level set-up) | `memory_at` samples |
-| `screen_anim.py` | the screen over frames | `memory_at` samples |
+| `screen_anim.py` | the screen over frames; `--scale N` (2: 512 px) or `--width W` (1050: the figure width, the largest whole scale resized to W, one palette, `kitlib.save_gif`) | `memory_at` samples |
 | `screen_shot.py` | the screen at named moments | `memory_at` |
 | `merge_l1.py OUT.json L1 ... [--stack LO-HI]` | several L1 builds summed into one for `heatmap.py` (pages 5, 2, 0; the frames summed); `--stack` prints each build's lowest SP in that range (the lowest byte a `PUSH`, `CALL`, `RST` or an interrupt wrote: the L1's `byte_use` stack-write flag; Rex `5C00-6017`: `$5FE2` to `$5FDA` over the object records) and its lowest data write (the low mark where the stack is also written as data, `LD SP` over a buffer: Switchblade `5B00-5BFF`, Myth `FF00-FFFF`); give play windows, a load's stack counts too | `l1.json` |
-| `heatmap.py` | executed / read / written per byte over a build; `--panels` (any of `executed,read,written,composite`), `--columns` (2), TrueType text that reads at 900 px | `l1.json` |
+| `heatmap.py` | executed / read / written per byte over a build; `--panels` (any of `executed,read,written,composite`), `--columns` (2), `--regions` (a file of `START END NAME` lines, or inline `START-END:NAME,...`), TrueType text that reads at 900 px | `l1.json` |
 | `fig_budget.py` | where the CPU time goes: each routine's (or module's) own T-states as a share of all the frames, coloured by module; several `.ann` parts (page, range), HALT and the ROM apart, a panel per state | `l1.json` |
 | `zxscreen.py` | a 6912-byte screen or a 64 K image to PNG | a file |
 
