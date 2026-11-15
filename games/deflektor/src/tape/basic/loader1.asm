@@ -129,7 +129,7 @@ CopyrightText:
 ; LoadBlock IX = `$B75A`, DE = `$010F`, stage 2's first piece; `JP $B856`
 ; (LoadRest, in that piece).
 ;
-; Witness: L1 2 (c1).
+; Witness: L1 1 (c1).
 Loader1Start:
   LD HL,Attributes+767
   LD DE,Attributes+766
@@ -176,7 +176,7 @@ Loader1Start:
 ; The same plan as the ROM's LD-LEADER and LD-SYNC with its own constants. c1
 ; counted 249 pilot pairs, then 4337 pilot edges to the sync.
 ;
-; Witness: L1 2 (c1).
+; Witness: L1 1 (c1).
 FindPilot:
   LD A,(BorderColour)
   OR $08
@@ -236,7 +236,7 @@ FindPilotSync:
 ; Out: L = the byte, carry set; NC (and B wrapped) on a timeout. Called by
 ; LoadBlock for each byte and for the checksum.
 ;
-; Witness: L1 82906 (c1).
+; Witness: L1 41453 (c1).
 ReadByte:
   PUSH DE
   LD DE,$FC09             ; D = -4 (zeros counted up), E = 9 pairs
@@ -283,7 +283,7 @@ ReadByteEnd:
 ; Out: L = `$FF` and carry set (stage 2 then gives that L to ByteHook as if it
 ; were a byte: XORed into H and counted); NC on a timeout.
 ;
-; Witness: L1 60788 (c1).
+; Witness: L1 30394 (c1).
 PadPairs:
   LD B,$B0
   CALL EdgePair
@@ -298,7 +298,7 @@ PadPairs:
 ; EdgeWait twice (the second by falling into it). Called by FindPilot,
 ; ReadByte, PadPairs, LoadBlock and stage 2.
 ;
-; Witness: L1 914788 (c1).
+; Witness: L1 457394 (c1).
 EdgePair:
   CALL EdgeWait
   RET NC
@@ -315,7 +315,7 @@ EdgePair:
 ; `NOP` stand where the ROM tests SPACE and changes the border, so the screen
 ; keeps its border and BREAK does nothing.
 ;
-; Witness: L1 1857012 (c1).
+; Witness: L1 928506 (c1).
 EdgeWait:
   LD A,$19
 EdgeDelay:
@@ -356,7 +356,7 @@ EdgeLoop:
 ; `$B869`, `$74` and `$B8DD`, `$302`; LoadFiles: `$B326`, `$01D8`; `$998E`,
 ; `$1998`; `$C000`, `$4000`; `$5C00`, `$4000`; `$9C00`, `$01F0`).
 ;
-; Witness: L1 16 (c1).
+; Witness: L1 8 (c1).
 LoadBlock:
   LD B,$B0
   CALL EdgePair
@@ -401,7 +401,7 @@ LoadBlockByte:
 ; data bytes and the last load's checksum byte at the start of the third to
 ; eighth loads).
 ;
-; Witness: L1 94670 (c1).
+; Witness: L1 47335 (c1).
 ByteHook:
   LD A,H
   XOR L

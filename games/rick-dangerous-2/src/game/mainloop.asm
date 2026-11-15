@@ -22,7 +22,7 @@
 ; Evidence: c1 1, controls-keyboard 1, rzx-l5-full 2 (the start and the two
 ; GAME OVERs of the RZX level 5 run).
 ;
-; Witness: L1 42 (controls-keyboard, rzx-l5-full, c1, c48, sec-l2-s7,
+; Witness: L1 22 (controls-keyboard, rzx-l5-full, c1, c48, sec-l2-s7,
 ; sec-l2-s10-sec-l2-s12, sec-l3-s3-sec-l3-s5, sec-l3-s7-sec-l3-s9, sec-l4-s x5,
 ; sec-l5-s3, sec-l5-s5).
 NewGame:
@@ -35,7 +35,7 @@ NewGame:
 ; Evidence: 11 runs in 10 builds (c1, the four controls-*, the four load-*,
 ; rzx-l5-full 2).
 ;
-; Witness: L1 56 (box-shot, controls-cursor, controls-kempston,
+; Witness: L1 31 (box-shot, controls-cursor, controls-kempston,
 ; controls-keyboard, controls-sinclair, rzx-l5-full, sec-l1-s8, c1, c48,
 ; load-l2-load-l5, sec-l2-s7, sec-l2-s10-sec-l2-s12, sec-l3-s3-sec-l3-s5,
 ; sec-l3-s7-sec-l3-s9, sec-l4-s x5, sec-l5-s3, sec-l5-s5).
@@ -50,7 +50,7 @@ ChooseLevel:
 ;
 ; Evidence: 12 runs in 11 builds.
 ;
-; Witness: L1 58 (box-shot, controls-cursor, controls-kempston,
+; Witness: L1 32 (box-shot, controls-cursor, controls-kempston,
 ; controls-keyboard, controls-sinclair, rzx-l1-00000-poke, rzx-l5-full,
 ; sec-l1-s8, c1, c48, load-l2-load-l5, sec-l2-s7, sec-l2-s10-sec-l2-s12,
 ; sec-l3-s3-sec-l3-s5, sec-l3-s7-sec-l3-s9, sec-l4-s x5, sec-l5-s3, sec-l5-s5).
@@ -82,6 +82,11 @@ RestartJump:
 ; Evidence: read by LevelSetup in every level start (reads $7C8F-$7CAC over the
 ; builds).
 LevelStarts:
+  ; $7C8F level 1: section 0, row 0, x 0, y $00CB
+  ; $7C95 level 2: section 0, row 0, x 0, y $00CB
+  ; $7C9B level 3: section 1, row $90, x 0, y $00AB
+  ; $7CA1 level 4: section 0, row 0, x 0, y $00CB
+  ; $7CA7 level 5: section 0, row $60, x 0, y $00AB
   INCBIN "res/tables/level-starts.bin",$0000,30
 
 ; A new game's state: score 0, levels done 0, six lives; then the levels
@@ -92,7 +97,7 @@ LevelStarts:
 ;
 ; Evidence: 12 runs in 11 builds, called from StartGame ($7C89).
 ;
-; Witness: L1 58 (box-shot, controls-cursor, controls-kempston,
+; Witness: L1 32 (box-shot, controls-cursor, controls-kempston,
 ; controls-keyboard, controls-sinclair, rzx-l1-00000-poke, rzx-l5-full,
 ; sec-l1-s8, c1, c48, load-l2-load-l5, sec-l2-s7, sec-l2-s10-sec-l2-s12,
 ; sec-l3-s3-sec-l3-s5, sec-l3-s7-sec-l3-s9, sec-l4-s x5, sec-l5-s3, sec-l5-s5).
@@ -118,7 +123,7 @@ ResetGame:
 ; recordings and rzx-l3-10000-poke, rzx-l4-20000-poke (the RZX run's own
 ; loader, a TAP version at $846A).
 ;
-; Witness: L1 62 (box-shot, controls-cursor, controls-kempston,
+; Witness: L1 34 (box-shot, controls-cursor, controls-kempston,
 ; controls-keyboard, controls-sinclair, rzx-l1-00000-poke, rzx-l3-10000-poke,
 ; rzx-l4-20000-poke, rzx-l5-full, sec-l1-s8, c1, c48, load-l2-load-l5,
 ; sec-l2-s7, sec-l2-s10-sec-l2-s12, sec-l3-s3-sec-l3-s5, sec-l3-s7-sec-l3-s9,
@@ -141,7 +146,7 @@ LevelStart:
 ; Evidence: 9 runs in 9 builds (load-l2 ... load-l5,
 ; rzx-l2/l3/l4/l5-00000-poke, rzx-l5-full).
 ;
-; Witness: L1 50 (life-up, rzx-l2-00000-poke, rzx-l3-00000-poke,
+; Witness: L1 27 (life-up, rzx-l2-00000-poke, rzx-l3-00000-poke,
 ; rzx-l4-00000-poke, rzx-l5-00000-poke, rzx-l5-full, load-l2-load-l5,
 ; sec-l2-s7, sec-l2-s10-sec-l2-s12, sec-l3-s3-sec-l3-s5, sec-l3-s7-sec-l3-s9,
 ; sec-l4-s x5, sec-l5-s3, sec-l5-s5).
@@ -157,7 +162,7 @@ DecryptLevel:
 ; recordings (c1 starts a game, the RZX pieces have the infinite lives POKE),
 ; so AddLife is not executed in any recording.
 ;
-; Witness: L1 104 (box-shot, controls-cursor, controls-kempston,
+; Witness: L1 55 (box-shot, controls-cursor, controls-kempston,
 ; controls-keyboard, controls-sinclair, life-up, rzx-l1-00000-poke,
 ; rzx-l2-00000-poke, rzx-l3-00000-poke, rzx-l4-00000-poke, rzx-l5-00000-poke,
 ; rzx-l5-full, sec-l1-s8, c1, c48, load-l2-load-l5, sec-l2-s7,
@@ -178,7 +183,7 @@ LevelTune:
 ; "STOP TAPE AND PRESS FIRE", then fire; the level starts with 4 lives. Every
 ; other level start had six lives.
 ;
-; Witness: L1 2 (life-up).
+; Witness: L1 1 (life-up).
 AddLife:
   INC A
   LD (Lives),A
@@ -192,7 +197,7 @@ AddLife:
 ;
 ; Evidence: 17 runs in 15 builds.
 ;
-; Witness: L1 104 (box-shot, controls-cursor, controls-kempston,
+; Witness: L1 55 (box-shot, controls-cursor, controls-kempston,
 ; controls-keyboard, controls-sinclair, life-up, rzx-l1-00000-poke,
 ; rzx-l2-00000-poke, rzx-l3-00000-poke, rzx-l4-00000-poke, rzx-l5-00000-poke,
 ; rzx-l5-full, sec-l1-s8, c1, c48, load-l2-load-l5, sec-l2-s7,
@@ -236,7 +241,7 @@ LevelSetup:
 ; in c1 and controls-keyboard went to GAME OVER. The chord C+S+3: cheats (stage
 ; 2).
 ;
-; Witness: L1 120474 (box-shot, cheats, controls-cursor, controls-kempston,
+; Witness: L1 61980 (box-shot, cheats, controls-cursor, controls-kempston,
 ; controls-keyboard, controls-sinclair, end-congrats, fatguy-hits, life-up,
 ; long-l4, rzx-l1-00000-poke, rzx-l1-02000-poke, rzx-l1-04000-poke,
 ; rzx-l1-06000-poke, rzx-l1-08000-poke, rzx-l1-10000-poke, rzx-l1-12000-poke,
@@ -273,7 +278,7 @@ MainLoop:
 ; Evidence: cheats (stage 2: C, S and 3 held at frame 50 on the RZX run's level
 ; 5) 3 runs: the chord held 10 frames toggles three times in its first passes.
 ;
-; Witness: L1 6 (cheats).
+; Witness: L1 3 (cheats).
 CheatInfiniteKeys:
   LD A,$01                ; LD A,1 / CALL $7AAD: tune 1
   CALL StartTune
@@ -289,7 +294,7 @@ CheatInfiniteKeys:
 ;
 ; Evidence: 50 161 runs in 65 builds; the chord: cheats (stage 2).
 ;
-; Witness: L1 120436 (box-shot, cheats, controls-cursor, controls-kempston,
+; Witness: L1 61960 (box-shot, cheats, controls-cursor, controls-kempston,
 ; controls-keyboard, controls-sinclair, end-congrats, fatguy-hits, life-up,
 ; long-l4, rzx-l1-00000-poke, rzx-l1-02000-poke, rzx-l1-04000-poke,
 ; rzx-l1-06000-poke, rzx-l1-08000-poke, rzx-l1-10000-poke, rzx-l1-12000-poke,
@@ -326,7 +331,7 @@ MainLoopCheatB:
 ; RZX run's level 4 end) shows what it opens: LongLevelsTest sends the
 ; level-ending exit $82 of level 4 section 7 on to section 10.
 ;
-; Witness: L1 6 (cheats).
+; Witness: L1 3 (cheats).
 CheatExitsKeys:
   LD A,(Level5Open)       ; LD A,($8065) / AND A / JP Z,$7D5D: only with level
                           ; 5 open
@@ -376,7 +381,7 @@ CheatExitsKeys:
 ; inside TallyLives). GameOver 4 runs: c1 1 and controls-keyboard 1 (the key
 ; E), rzx-l5-full 2 (the lives lost).
 ;
-; Witness: L1 120436 (box-shot, cheats, controls-cursor, controls-kempston,
+; Witness: L1 61960 (box-shot, cheats, controls-cursor, controls-kempston,
 ; controls-keyboard, controls-sinclair, end-congrats, fatguy-hits, life-up,
 ; long-l4, rzx-l1-00000-poke, rzx-l1-02000-poke, rzx-l1-04000-poke,
 ; rzx-l1-06000-poke, rzx-l1-08000-poke, rzx-l1-10000-poke, rzx-l1-12000-poke,

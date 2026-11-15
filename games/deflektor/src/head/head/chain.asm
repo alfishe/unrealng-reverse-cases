@@ -33,7 +33,7 @@
 ; The stream overwrites the BASIC, the system variables and the loader's stack
 ; area, so nothing of the BASIC loader survives.
 ;
-; Witness: L1 2 (c1).
+; Witness: L1 1 (c1).
 ChainStart:
   LD DE,$9502
   LD HL,MoveStub
@@ -80,7 +80,7 @@ ChainSum:
 ; c1: 3642 bytes decrypted over 372 addresses (`$7BC0-$7D33`), up to 17 layers
 ; on one address.
 ;
-; Witness: L1 36 (c1).
+; Witness: L1 18 (c1).
 XorLayer:
   POP HL
   PUSH HL
@@ -129,7 +129,7 @@ ChainText:
 ; c1: 30 layers, 18 XorLayers (they decipher) and 12 sum layers (they decipher
 ; nothing), incoming A = 0 each (src/head/keys.txt).
 ;
-; Witness: L1 2 (c1).
+; Witness: L1 1 (c1).
 ChainLayers:
   LD HL,ChainText
   LD (HL),$CB
@@ -164,7 +164,7 @@ KeyByte3:
 ; (the chain's own bytes take part in the sums, so three copies give three
 ; different chains of keys).
 ;
-; Witness: L1 12 (c1).
+; Witness: L1 6 (c1).
 SumLayer1:
   LD HL,$4000
   LD D,L
@@ -185,7 +185,7 @@ SumLayer1Loop:
 ;
 ; Part of ChainLayers, cut by the sum layer that sits inside the run.
 ;
-; Witness: L1 2 (c1).
+; Witness: L1 1 (c1).
 ChainLayers2:
   RRC C
   CALL XorLayer
@@ -238,7 +238,7 @@ KeyByte11:
 ;
 ; The same eleven instructions as SumLayer1 `$7BD2`.
 ;
-; Witness: L1 6 (c1).
+; Witness: L1 3 (c1).
 SumLayer2:
   LD HL,$4000
   LD D,L
@@ -259,7 +259,7 @@ SumLayer2Loop:
 ;
 ; Part of ChainLayers, cut by the sum layer that sits inside the run.
 ;
-; Witness: L1 2 (c1).
+; Witness: L1 1 (c1).
 ChainLayers3:
   RLC B
   SRA C
@@ -306,7 +306,7 @@ KeyByte18:
 ;
 ; The same eleven instructions as SumLayer1 `$7BD2`.
 ;
-; Witness: L1 6 (c1).
+; Witness: L1 3 (c1).
 SumLayer3:
   LD HL,$4000
   LD D,L
@@ -327,7 +327,7 @@ SumLayer3Loop:
 ;
 ; Part of ChainLayers, cut by the sum layer that sits inside the run.
 ;
-; Witness: L1 2 (c1).
+; Witness: L1 1 (c1).
 ChainLayers4:
   RLC B
   CALL SumLayer3
@@ -410,7 +410,7 @@ KeyByte30:
 ;
 ; c1: the 16-bit layer over 32794 bytes, 16397 words.
 ;
-; Witness: L1 2 (c1).
+; Witness: L1 1 (c1).
 FinalSum:
   LD D,$00
   LD E,A

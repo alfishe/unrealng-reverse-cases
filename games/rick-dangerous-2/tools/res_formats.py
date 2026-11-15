@@ -1035,8 +1035,10 @@ def write(path, data):
 
 
 def install_into(files, res):
-    """the bytes of each resource as its editable file under res; every conversion checked both ways"""
-    done = set()
+    """the bytes of each resource as its editable file under res; every conversion checked both ways. Returns
+    {resource: the file written for it}: kit/mkgame.py deletes an older install's NAME.bin beside a file of another
+    name (the .bin files a group's editable file replaced)"""
+    done, written = set(), {}
     for ed, (bins, to_ed, from_ed) in GROUPS.items():
         if not all(b in files for b in bins):
             continue
@@ -1046,6 +1048,7 @@ def install_into(files, res):
             raise SystemExit('res: %s does not convert back to its bytes' % ed)
         write(os.path.join(res, ed), out)
         done |= set(bins)
+        written.update({b: os.path.join(res, ed) for b in bins})
     for name, data in files.items():
         if name in done:
             continue
@@ -1057,38 +1060,41 @@ def install_into(files, res):
             out = to_ed(data)
             if from_ed(out) != data:
                 raise SystemExit('res: %s does not convert back to its bytes' % name)
-            write(os.path.join(res, os.path.splitext(name)[0] + suffix), out)
+            written[name] = os.path.join(res, os.path.splitext(name)[0] + suffix)
         else:
-            write(os.path.join(res, name), data)
+            out = data
+            written[name] = os.path.join(res, name)
+        write(written[name], out)
+    return written
 
 
 def install(files):
-    install_into(files, RES)
+    return install_into(files, RES)
 
 
 def install_level(n, files):
     """a level part's resources, named level/NAME.bin in src/levels/levels.ann, into src/res/levels/levelN/"""
-    install_into(files, os.path.join(RES, 'levels', 'level%d' % n))
+    return install_into(files, os.path.join(RES, 'levels', 'level%d' % n))
 
 
 def install_level1(files):
-    install_level(1, files)
+    return install_level(1, files)
 
 
 def install_level2(files):
-    install_level(2, files)
+    return install_level(2, files)
 
 
 def install_level3(files):
-    install_level(3, files)
+    return install_level(3, files)
 
 
 def install_level4(files):
-    install_level(4, files)
+    return install_level(4, files)
 
 
 def install_level5(files):
-    install_level(5, files)
+    return install_level(5, files)
 
 
 def sources():

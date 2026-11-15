@@ -43,11 +43,11 @@ $5D2C ; copy the loader to $FF00 and run it
 @about LdBytes $FF02 is the 48K ROM's LD-BYTES ($0556) moved here with four changes: SCF first (always a load, the caller needs no carry), the border $0A (red, MIC) at the start instead of $0F, the return address LoadEnd $FFB2 pushed instead of SA/LD-RET $053F, and AND $02 instead of AND $07 in LD-SAMPLE, so the border stripes are red and black for the pilot and the data alike. The rest (LD-START, LD-LEADER, LD-SYNC, LD-8-BITS, LD-EDGE-2 / LD-EDGE-1 with their timing constants) is byte for byte the ROM's.
 $FF00 c LoadBlock ; Load a block with flag $FF: IX = the address, DE = the length
 > A = `$FF`, then LdBytes. Called by stage 2 for the blocks 4, 5 and (on a 128K) 6.
-> Witness: L1 8 (c x2).
+> Witness: L1 5 (c x2).
 $FF02 c LdBytes ; The ROM's LD-BYTES with red / black stripes; returns through LoadEnd
 > A = the flag byte, IX = the address, DE = the length. The carry is set by the routine itself (`SCF` at `$FF02`: a load, never a verify). The border goes to `$0A` (red); LoadEnd `$FFB2` is pushed as the return address; then the ROM's code: an edge, the leader (`$9C`/`$C6` timing), the sync, the flag byte, the data bytes with the parity in H, the stripes from C (`AND $02`: red / black).
 > Every return (an error, BREAK or the end) goes to LoadEnd, with carry set for a good load.
-> Witness: L1 11 (c x2).
+> Witness: L1 7 (c x2).
 $FF03 ; the ROM's LD-BYTES from here (INC D; EX AF,AF'; DEC D: the flag kept in A')
 $FF07 ; border red (the ROM: white), the return to LoadEnd
 $FF0F ; C = the current EAR level and the stripe colour 2
@@ -81,7 +81,7 @@ $FFD6 LoadErrorHang
 $FFD8 t TapeErrorText ; The error message: ENTER "TAPE LOADING ERROR" ENTER (20 bytes, printed by RST $10)
 @res texts/tape-error.bin
 $FFEC c LoadReturn ; POP AF and return: the end of LoadEnd
-> Witness: L1 11 (c x2).
+> Witness: L1 7 (c x2).
 $FFEE c LoaderStart ; The loader's entry: load stage 2 (TZX block 3, $080C bytes) to $609C and run it
 > From BasicCode's `JP $FFEE`. LdBytes with A = `$FF`, IX = `$609C`, DE = `$080C`, then `JP $609C` (stage 2, src/stage2). The stack is still SP = `$5D37` from BasicCode.
 > Witness: L1 5 (c x2).

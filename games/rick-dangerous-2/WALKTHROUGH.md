@@ -209,9 +209,9 @@ python3 tools/capture.py --work work/stage2/rec/NAME --snapshot START --model 12
 
 `life-up`, `box-shot` and `fatguy-hits` were made at the integration for what the docs writer listed as known only
 from the code; each POKE is in its script's header and named where the recording is a witness. `case.json` counts
-all three in `read_builds` and `code_builds`. `c48` and the tape loads (`c1`, `load-lN`) are in `code_builds` only:
-the ROM's RAM test and the tape loaders read every byte, which would make every unexecuted byte "data" for the
-static walk.
+all three in `read_builds`, with every other recording. `c1` and `c48` read from frame 13 998 and 14 243 on, where
+the game starts (`ref_load_end`): before it the ROM's RAM test and the tape load read every byte, which would make
+every unexecuted byte "data" for the static walk.
 
 Not reached: the end of both endings (`EndTextExit` `$8794`, after 2500 frames or fire), `BonusTally` `$86E0`'s
 bullet and detonator loops, the countdown bonus running out (`BonusRunOut` `$917C`), a pickup box burst by the blast

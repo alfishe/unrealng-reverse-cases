@@ -98,7 +98,7 @@ The sprite follows the state (`PickRickSprite`):
 The point: one record and five flags carry all of Rick.
 Each state is a branch of one routine, run once a pass.
 
-Witness: `UpdateRick` L1 119 409 in 74 builds (50 260 passes in 65 builds); `PickRickSprite` 46 336 runs in 62;
+Witness: `UpdateRick` L1 62 111 in 90 builds (50 260 passes in 65 builds); `PickRickSprite` 46 336 runs in 62;
 `ClimbLadder` 3737 runs in 38; `UpdateRide` 3045 runs in 6 (`src/game/rick.asm`).
 
 ## 10.2 Gravity and the jump
@@ -836,8 +836,7 @@ The other 41 came while Rick was already dying (a blast or a trap goes on touchi
 Per build, entries / deaths: `c1` 8 / 5; each `controls-*` 4 / 1; `load-l2` 12 / 2; `load-l3` 6 / 1; `load-l4` 1 / 1;
 `rzx-l3-02000-poke` 1 / 1; `rzx-l3-04000-poke` 2 / 2; `rzx-l3-06000-poke` 1 / 1; `rzx-l5-18000-poke` 1 / 1;
 `rzx-l5-20000-poke` 1 / 1; `rzx-l5-full` 16 / 13; `c48` 10 / 4; `fatguy-hits` 4 / 2.
-The listing's witness line for `$93D0` (`Witness: L1 121`) sums the same 16 builds but counts the 11 that are in both
-case.json's `read_builds` and `code_builds` twice (42 entries): 79 + 42 = 121.
+The listing's witness line for `$93D0` (`Witness: L1 79`) sums the same 16 builds.
 
 ```
 KillRick:
@@ -942,7 +941,7 @@ Only the restart point and the lives decide what follows.
 Witness: the `controls-keyboard` values (`memory_at`, every 2nd frame); the `c1` traces 16 788-16 791 (`$93B4`) and
 17 503-17 506 (`$A475`, then `DeathFall` at T 52 545 and 57 611).
 The caller counts are `KillRick`'s callers in l1q; `DeathFall` ran 895 times and set `DeathFallOver` 35 times
-(`src/game/rick.asm`); `LoseLife` L1 54 in 14 builds (`src/game/level.asm`).
+(`src/game/rick.asm`); `LoseLife` L1 35 in 15 builds (`src/game/level.asm`).
 
 ## 10.11 Lives, bullets, detonators and the score
 

@@ -24,7 +24,7 @@
 ;
 ; Ran 755 times in 43 builds (c1 62, each control recording 1).
 ;
-; Witness: L1 1539 (box-shot, controls-cursor, controls-kempston,
+; Witness: L1 816 (box-shot, controls-cursor, controls-kempston,
 ; controls-keyboard, controls-sinclair, fatguy-hits, rzx-l1-00000-poke,
 ; rzx-l1-02000-poke, rzx-l1-06000-poke, rzx-l1-08000-poke, rzx-l1-10000-poke,
 ; rzx-l1-12000-poke, rzx-l1-14000-poke, rzx-l1-18000-poke, rzx-l1-20000-poke,
@@ -85,7 +85,7 @@ BulletStore:
 ; Ran 3401 times in 34 builds: 64 passes per detonator (c1 64, each control
 ; recording 64, the RZX pieces 64 or 128).
 ;
-; Witness: L1 6994 (box-shot, controls-cursor, controls-kempston,
+; Witness: L1 3593 (box-shot, controls-cursor, controls-kempston,
 ; controls-keyboard, controls-sinclair, rzx-l1-00000-poke, rzx-l1-04000-poke,
 ; rzx-l1-08000-poke, rzx-l1-12000-poke, rzx-l1-16000-poke, rzx-l1-20000-poke,
 ; rzx-l2-00000-poke, rzx-l2-02000-poke, rzx-l2-04000-poke, rzx-l2-06000-poke,
@@ -186,7 +186,7 @@ DetonatorHitCeiling:
 ; y = (y - 1) AND $F8 (low byte), stored in DetonatorY. Ran 2632 times in 32
 ; builds.
 ;
-; Witness: L1 5426 (box-shot, controls-cursor, controls-kempston,
+; Witness: L1 2794 (box-shot, controls-cursor, controls-kempston,
 ; controls-keyboard, controls-sinclair, rzx-l1-00000-poke, rzx-l1-04000-poke,
 ; rzx-l1-08000-poke, rzx-l1-12000-poke, rzx-l1-16000-poke, rzx-l1-20000-poke,
 ; rzx-l2-00000-poke, rzx-l2-04000-poke, rzx-l2-06000-poke, rzx-l2-08000-poke,
@@ -247,7 +247,7 @@ DetonatorLaunchPad:
 ;
 ; Ran 2726 times in 34 builds.
 ;
-; Witness: L1 5614 (box-shot, controls-cursor, controls-kempston,
+; Witness: L1 2888 (box-shot, controls-cursor, controls-kempston,
 ; controls-keyboard, controls-sinclair, rzx-l1-00000-poke, rzx-l1-04000-poke,
 ; rzx-l1-08000-poke, rzx-l1-12000-poke, rzx-l1-16000-poke, rzx-l1-20000-poke,
 ; rzx-l2-00000-poke, rzx-l2-02000-poke, rzx-l2-04000-poke, rzx-l2-06000-poke,
@@ -267,7 +267,7 @@ DetonatorStoreDy:
 ; BC = 8, DE = -8: the friction (1/32 pixel a pass every pass); a special
 ; surface goes to DetonatorSurfaceFriction first. Ran 2857 times in 34 builds.
 ;
-; Witness: L1 5876 (box-shot, controls-cursor, controls-kempston,
+; Witness: L1 3019 (box-shot, controls-cursor, controls-kempston,
 ; controls-keyboard, controls-sinclair, rzx-l1-00000-poke, rzx-l1-04000-poke,
 ; rzx-l1-08000-poke, rzx-l1-12000-poke, rzx-l1-16000-poke, rzx-l1-20000-poke,
 ; rzx-l2-00000-poke, rzx-l2-02000-poke, rzx-l2-04000-poke, rzx-l2-06000-poke,
@@ -308,7 +308,7 @@ DetonatorSurfaceFriction:
 ; Moving left (negative): add 8; a carry means it reached 0
 ; (DetonatorStopLeft). Ran 2857 times in 34 builds.
 ;
-; Witness: L1 5876 (box-shot, controls-cursor, controls-kempston,
+; Witness: L1 3019 (box-shot, controls-cursor, controls-kempston,
 ; controls-keyboard, controls-sinclair, rzx-l1-00000-poke, rzx-l1-04000-poke,
 ; rzx-l1-08000-poke, rzx-l1-12000-poke, rzx-l1-16000-poke, rzx-l1-20000-poke,
 ; rzx-l2-00000-poke, rzx-l2-02000-poke, rzx-l2-04000-poke, rzx-l2-06000-poke,
@@ -340,7 +340,7 @@ DetonatorStopLeft:
 ; Ran 2533 times in 32 builds; DetonatorStop 1188 times (mostly a detonator
 ; dropped standing still, speed 0).
 ;
-; Witness: L1 5228 (box-shot, controls-cursor, controls-kempston,
+; Witness: L1 2695 (box-shot, controls-cursor, controls-kempston,
 ; controls-keyboard, controls-sinclair, rzx-l1-00000-poke, rzx-l1-04000-poke,
 ; rzx-l1-08000-poke, rzx-l1-12000-poke, rzx-l1-16000-poke, rzx-l1-20000-poke,
 ; rzx-l2-00000-poke, rzx-l2-02000-poke, rzx-l2-04000-poke, rzx-l2-06000-poke,
@@ -418,7 +418,7 @@ DetonatorStoreX:
 ; from the blast 32 times ($93B4 taken: c1 4, each control recording 4,
 ; rzx-l5-full 4, c48 8).
 ;
-; Witness: L1 6986 (box-shot, controls-cursor, controls-kempston,
+; Witness: L1 3589 (box-shot, controls-cursor, controls-kempston,
 ; controls-keyboard, controls-sinclair, rzx-l1-00000-poke, rzx-l1-04000-poke,
 ; rzx-l1-08000-poke, rzx-l1-12000-poke, rzx-l1-16000-poke, rzx-l1-20000-poke,
 ; rzx-l2-00000-poke, rzx-l2-02000-poke, rzx-l2-04000-poke, rzx-l2-06000-poke,
@@ -536,7 +536,7 @@ DetonatorYFrac:
 ; Callers: ShootBullet ($9B21) 73, UpdateRide ($958F) 15. 88 shots in 43
 ; builds.
 ;
-; Witness: L1 179 (box-shot, controls-cursor, controls-kempston,
+; Witness: L1 91 (box-shot, controls-cursor, controls-kempston,
 ; controls-keyboard, controls-sinclair, fatguy-hits, rzx-l1-00000-poke,
 ; rzx-l1-02000-poke, rzx-l1-06000-poke, rzx-l1-08000-poke, rzx-l1-10000-poke,
 ; rzx-l1-12000-poke, rzx-l1-14000-poke, rzx-l1-18000-poke, rzx-l1-20000-poke,
@@ -603,7 +603,7 @@ FireStoreDx:
 ;
 ; Ran 161 times in 39 builds.
 ;
-; Witness: L1 318 (box-shot, controls-cursor, controls-kempston,
+; Witness: L1 175 (box-shot, controls-cursor, controls-kempston,
 ; controls-keyboard, controls-sinclair, fatguy-hits, rzx-l1-00000-poke,
 ; rzx-l1-02000-poke, rzx-l1-06000-poke, rzx-l1-08000-poke, rzx-l1-10000-poke,
 ; rzx-l1-12000-poke, rzx-l1-14000-poke, rzx-l1-18000-poke, rzx-l1-20000-poke,
@@ -635,7 +635,7 @@ RickShootUp:
 ;
 ; Ran 73 times in 39 builds.
 ;
-; Witness: L1 149 (box-shot, controls-cursor, controls-kempston,
+; Witness: L1 76 (box-shot, controls-cursor, controls-kempston,
 ; controls-keyboard, controls-sinclair, fatguy-hits, rzx-l1-00000-poke,
 ; rzx-l1-02000-poke, rzx-l1-06000-poke, rzx-l1-08000-poke, rzx-l1-10000-poke,
 ; rzx-l1-12000-poke, rzx-l1-14000-poke, rzx-l1-18000-poke, rzx-l1-20000-poke,
@@ -661,7 +661,7 @@ ShootBullet:
 ; Ran 233 times in 33 builds; 56 detonators placed (DetonatorPlace), 24 dropped
 ; standing, 6 thrown left, 26 right.
 ;
-; Witness: L1 473 (box-shot, controls-cursor, controls-kempston,
+; Witness: L1 249 (box-shot, controls-cursor, controls-kempston,
 ; controls-keyboard, controls-sinclair, rzx-l1-00000-poke, rzx-l1-04000-poke,
 ; rzx-l1-08000-poke, rzx-l1-12000-poke, rzx-l1-16000-poke, rzx-l1-20000-poke,
 ; rzx-l2-00000-poke, rzx-l2-02000-poke, rzx-l2-04000-poke, rzx-l2-08000-poke,

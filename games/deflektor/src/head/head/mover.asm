@@ -15,7 +15,7 @@
 ;
 ; c1: one run.
 ;
-; Witness: L1 3 (c1).
+; Witness: L1 1 (c1).
 MoveGame:
   LD HL,$7D00
   LD DE,GameBase

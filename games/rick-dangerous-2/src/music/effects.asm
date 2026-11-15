@@ -19,6 +19,40 @@
 ; the beeper on a 48K has 11 effects (0-10), so 11-27 have no counterpart there
 ; and no call site names them.
 Effects:
+  ; $C506 0: a footstep ($9AA5): tone + noise, period 952, 1 frame; dropped
+  ;   when no voice is free
+  ; $C513 1: noise, period 450 (no call site)
+  ; $C520 2: the fuse's hiss ($9386): noise, swept; dropped when no voice
+  ;   is free
+  ; $C52D 3: tone + noise, period 1024, swept (no call site)
+  ; $C53A 4: the gun ($95A8): tone, period 0 swept up by 64 a frame
+  ; $C547 5: the bang ($937A; level 5 $F969): noise, period 250 swept down,
+  ;   32 frames
+  ; $C554 6: ammunition or detonators taken ($A5A2, $A5B2): tone, period
+  ;   534, a step of 78
+  ; $C561 7: a treasure taken ($A58F): tone, period 80, a step of 78
+  ; $C56E 8: as 7, the sweep never starts (no call site)
+  ; $C57B 9: an enemy stunned by the punch ($8C59; level 5 $F956): tone +
+  ;   noise, period 886, swept
+  ; $C588 10: a death, Rick's ($93E7) or an enemy's ($9F67), each life in
+  ;   the tally ($873E; level 5 $F96E): tone, period 61, 50 frames
+  ; $C595 11 (no call site)
+  ; $C5A2 12 (no call site)
+  ; $C5AF 13 (no call site)
+  ; $C5BC 14 (no call site)
+  ; $C5C9 15: the AY envelope (flags bit 2; no call site)
+  ; $C5D6 16: the AY envelope (no call site)
+  ; $C5E3 17: the AY envelope (no call site)
+  ; $C5F0 18 (no call site)
+  ; $C5FD 19 (no call site)
+  ; $C60A 20 (no call site)
+  ; $C617 21 (no call site)
+  ; $C624 22 (no call site)
+  ; $C631 23 (no call site)
+  ; $C63E 24 (no call site)
+  ; $C64B 25: the AY envelope (no call site)
+  ; $C658 26 (no call site)
+  ; $C665 27 (no call site)
   INCBIN "res/tunes/effects.bin",$0000,364
 
   ORG $CCC8

@@ -49,6 +49,8 @@ LevelNumber:
 ; 1-12, 13-25 sprites 0-12 mirrored (Rick's), then the level's own sprites,
 ; several mirrored; frames 1-60 are the same in all five levels.
 SpriteFrameMap:
+  ; $C21A frames 13-25: sprites 0-12 mirrored
+  ; $C227 frames 26-: sprites 13 on (frame 30 and 31 both sprite 17)
   INCBIN "res/level/frame-map.bin",$0000,95
 
 ; The level's sprites, 128 bytes each, up to the maps
@@ -63,4 +65,14 @@ SpriteFrameMap:
 ; Sprites 0-26 are the same bytes in every level (Rick, his shots, the blast,
 ; the ammunition and detonator boxes); 27 on are the level's own.
 Sprites:
+  ; $C26D sprite 0: Rick standing; 1 punch ready; 2-5 walking; 6-7
+  ;   crawling; 8 jumping or falling; 9 shooting; 10 punching; 11 throwing;
+  ;   12 riding; 13-14 climbing; 15-16 dying
+  ; $CAED sprite 17: the bullet; 18-19 the detonator (19 its flash); 20-24
+  ;   the blast
+  ; $CEED sprite 25: the ammunition box; 26 the detonator box
+  ; $CFED sprite 27: the treasure (the first sprite that differs between
+  ;   levels)
+  ; $D06D sprites 28-30: an enemy walking; 31 dying; 32-33 climbing; 34-39
+  ;   the second set (enemy kind bit 2)
   INCBIN "res/level/sprites.bin",$0000,8320

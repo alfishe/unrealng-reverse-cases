@@ -130,11 +130,15 @@ class Source:
         entries   False: its routines make no entries, its instructions and reads count (a part's or case.json's
                   "no_entries" naming the build: a recording started from a snapshot, whose jumps out of the routine
                   it started in look like routine starts)
+        load_end  with reads: the frame from which the recording runs this image (case.json "ref_load_end", a
+                  part's source "load_end"): only the bytes it still accessed from that frame on count as read, so the
+                  ROM's RAM test at power-on and a tape load, which read every byte before, stop no walk (L1
+                  byte_counts' last_frame: a byte whose last access came before is left out)
     """
 
-    def __init__(self, path, reads=False, lo=None, hi=None, roots=True, fmt='l1', optional=False):
+    def __init__(self, path, reads=False, lo=None, hi=None, roots=True, fmt='l1', optional=False, load_end=None):
         self.path, self.reads, self.lo, self.hi, self.roots, self.format = path, reads, lo, hi, roots, fmt
-        self.optional = optional
+        self.optional, self.load_end = optional, load_end
         self.same_bytes, self.skip, self.entries = False, [], True
 
     def skipped(self, a):
@@ -142,14 +146,15 @@ class Source:
 
     @staticmethod
     def parse(spec, root, read_builds=()):
-        """a source from a part file: "PATH" or {"path", "reads", "lo", "hi", "roots", "format", "optional"}"""
+        """a source from a part file: "PATH" or {"path", "reads", "lo", "hi", "roots", "format", "optional",
+        "load_end"}"""
         if isinstance(spec, str):
             spec = {'path': spec}
         path = os.path.join(root, spec['path'])
         reads = spec.get('reads', os.path.basename(os.path.dirname(path)) in read_builds)
         return Source(path, reads, hexa(spec['lo']) if 'lo' in spec else None,
                       hexa(spec['hi']) if 'hi' in spec else None, spec.get('roots', True), spec.get('format', 'l1'),
-                      spec.get('optional', False))
+                      spec.get('optional', False), spec.get('load_end'))
 
 
 EXECS = {}  # l1.json path -> {address: [(page, bytes, runs, self-modified)]}, filled by read_sources
@@ -176,6 +181,7 @@ def read_sources(sources, mem, lo, hi, bases, mode='instructions', same_bytes=Fa
     same recording cannot make a lone byte look like code), no entries. Only the pages in bases count."""
     starts, entries, reads = set(), set(), [0] * 0x10000
     rooted, reached = set(), set()  # entries only a build's root made; entries a call, jump or interrupt reaches
+    counted = set()  # the recordings whose runs this call put in EXECS: a build named twice counts once
     for src in sources:
         paths = sorted(glob.glob(src.path)) if any(c in src.path for c in '*?[') else [src.path]
         for path in paths:
@@ -186,8 +192,10 @@ def read_sources(sources, mem, lo, hi, bases, mode='instructions', same_bytes=Fa
             doc = json.load(open(path))
             wlo = lo if src.lo is None else max(lo, src.lo)
             whi = hi if src.hi is None else min(hi, src.hi)
-            if src.format == 'l1':  # the runs of each instruction, for the witness check
-                add_runs(EXECS.setdefault(path, {}), doc, bases)
+            if src.format == 'l1' and path not in counted:  # the runs of each instruction, for the witness check
+                counted.add(path)
+                EXECS[path] = {}  # this segment's pages: never added to an earlier segment's (or call's) runs
+                add_runs(EXECS[path], doc, bases)
             src_same = same_bytes or src.same_bytes
             own = set()  # this recording's instruction starts (same_bytes: its entries only there)
             if src.format == 'trace':
@@ -258,8 +266,9 @@ def read_sources(sources, mem, lo, hi, bases, mode='instructions', same_bytes=Fa
             for page in doc.get('byte_counts', []):
                 base = bases.get(page['page'])
                 if base is not None:
+                    last = page.get('last_frame') if src.load_end is not None else None
                     for i, n in enumerate(page['reads']):
-                        if n and wlo <= base + i < whi:
+                        if n and wlo <= base + i < whi and (last is None or last[i] >= src.load_end):
                             reads[base + i] += n
     if same_bytes:  # a routine whose bytes another program later put there is not one of this image's
         entries &= starts
@@ -794,11 +803,23 @@ def word_checks(lines, a, label, inner, is_data):
 INCLUDED = {}  # resource file: the numeric .inc of an @res FILE include (installed for a case without a res hook)
 
 
-def write_resources(text, mem, extents, ann, out, word_asserts=True):
+def row_comments(ann, lo, hi):
+    """the comment lines of the .ann's rows inside lo..hi-1 ($ADDR [Name] ; comment), as the source keeps them in
+    front of a resource's INCBIN: '  ; $ADDR comment', wrapped at 79 columns"""
+    out = []
+    for a in sorted(x for x in ann.inline if lo <= x < hi and ann.inline[x][1]):
+        out += textwrap.wrap('$%04X %s' % (a, ann.inline[a][1]), 75, initial_indent='  ; ',
+                             subsequent_indent='  ;   ', break_long_words=False, break_on_hyphens=False)
+    return out
+
+
+def write_resources(text, mem, extents, ann, out, word_asserts=True, comments=False):
     """The resource entries of game.ann as files under out/res and INCBIN lines in the listing: (text, {file: (lo,
     hi)}). An entry's data lines (and the labels inside it) become INCBIN slices of its file, its label and comments
     stay. A w entry's DEFW words that skool2asm wrote as labels become ASSERT lines after its INCBINs (word_checks;
-    word_asserts False: not, in code assembled under DISP, where {address} reads other bytes)"""
+    word_asserts False: not, in code assembled under DISP, where {address} reads other bytes). comments (a part's or
+    case.json's "res_comments"): the row comments the .ann gives inside the entry (each exit, record, map entry) stay
+    as comment lines before the INCBIN slice that holds their row (row_comments), not only in the .ann"""
     files = {}
     for a, name in ann.resources.items():
         if a not in extents:
@@ -871,6 +892,8 @@ def write_resources(text, mem, extents, ann, out, word_asserts=True):
         body, start = [], a
         for cut, cut_label in cuts + [(a + extents[a], None)]:
             if cut > start:
+                if comments:
+                    body += row_comments(ann, start, cut)
                 body.append('  INCBIN "res/%s",$%04X,%d' % (name, start - files[name][0], cut - start))
             if cut_label:
                 body.append(cut_label + ':')
@@ -1385,6 +1408,8 @@ class Segment:
         for src in self.sources:
             src.entries = not any(fnmatch.fnmatch(build_key(src.path), n) for n in self.no_entry_builds)
         self.entries_in_code = bool(get('entries_in_code'))
+        # res_comments: a part's, else case.json's (every part of the case)
+        self.res_comments = bool(get('res_comments', CASE.get('res_comments', False)))
         self.single = False  # set by single_part
         self.suffix = ''  # set by make_part: '-RUN' when another segment of the part has the same .ann and piece
 
@@ -1539,7 +1564,8 @@ def generate(seg, mem, args, out, top):
     text = apply_variants(text, order, ann.variants, seg.ann)
     # a commented data sub-block of several lines: SkoolKit leaves a bare ';' on the lines after the first
     text = re.sub(r'^(  DEF[BWMS] .*?)\s+;$', r'\1', text, flags=re.M)
-    text, files = write_resources(text, mem, extents, ann, out, seg.run == (seg.lo if seg.lo is not None else LO))
+    text, files = write_resources(text, mem, extents, ann, out, seg.run == (seg.lo if seg.lo is not None else LO),
+                                  seg.res_comments)
     names = [name for _, name in ann.modules]
     again = sorted({n for n in names if names.count(n) > 1})
     if again and seg.run != (seg.lo if seg.lo is not None else LO):
@@ -1607,9 +1633,24 @@ def stamps(res, files):
     return out
 
 
-def drop_stale_bins(res, files, before):
+def drop_stale_bins(res, files, before, written=None):
     """After the case's hook: a resource's NAME.bin the hook did not write, while it wrote the editable form beside
-    it (NAME.png, NAME.txt), is an older install's: the case's build would read both. It is deleted"""
+    it (NAME.png, NAME.txt), is an older install's: the case's build would read both. It is deleted.
+
+    written: what the hook returned, when it says where each resource went ({resource name: the file it wrote it
+    into}, a path relative to the case or absolute): a resource written into a file of another name (a group's
+    editable file, tunes/patterns.txt for tunes/patterns.bin, pattern-low.bin, pattern-high.bin; a single format's
+    NAME.csv) leaves no NAME.bin beside that file: an older install's is deleted, wherever the hook's folder is (a
+    level's src/res/levels/levelN/)"""
+    if isinstance(written, dict):
+        for name, path in sorted(written.items()):
+            if name not in files or not path:
+                continue
+            path = path if os.path.isabs(path) else os.path.join(ROOT, path)
+            stale = os.path.join(os.path.dirname(path), os.path.basename(name))
+            if os.path.abspath(stale) != os.path.abspath(path) and os.path.isfile(stale):
+                os.remove(stale)
+                print(f'removed {os.path.relpath(stale, ROOT)} (stale: the case writes {os.path.basename(path)})')
     for name in files:
         path = os.path.join(res, name)
         if not path.endswith('.bin') or path not in before or not os.path.exists(path):
@@ -1640,6 +1681,83 @@ def res_installer(part):
     return None
 
 
+def ann_res_names(path, piece=None):
+    """the @res file names of an .ann: its common lines and piece's (every line without a piece)"""
+    names, current = set(), None
+    for line in open(path):
+        text = line.strip()
+        old = OLD_FORM.match(text)
+        m = PIECE.match(old.group(1) if old else text)
+        if m:
+            current = m.group(1)
+            continue
+        if piece is not None and current is not None and current != piece:
+            continue
+        m = re.match(r'^@res\s+(\S+)', text)
+        if m:
+            names.add(m.group(1))
+    return names
+
+
+def res_target(part):
+    """where a part's resources go, as two parts' resources could meet there: its installer hook (res_installer) or
+    its res folder"""
+    hook = res_installer(part)
+    return ('hook', hook) if hook else ('folder', os.path.normpath(part.get('res') or os.path.join('src', 'res')))
+
+
+def part_anns(part):
+    """[(the .ann path, its piece)] of a part (its single .ann, or each segment's)"""
+    if part.get('segments'):
+        return [(os.path.join(ROOT, sp['ann']), sp.get('piece')) for sp in part['segments'] if sp.get('ann')]
+    return [(os.path.join(ROOT, part['ann']), part.get('piece'))] if part.get('ann') else []
+
+
+def case_parts():
+    """{its name: part} of every part of the case: the game (case.json, "case.json") and the part files under src/
+    (a JSON with an "image" and an "ann" or "segments", by its path)"""
+    parts = {}
+    config = os.path.join(ROOT, 'case.json')
+    if os.path.exists(config):
+        main = main_name(json.load(open(config)))
+        game = {'game': True, 'ann': os.path.join('src', main, main + '.ann')}
+        if CASE.get('res_install'):
+            game['res_install'] = CASE['res_install']
+        parts['case.json'] = game
+    for path in sorted(glob.glob(os.path.join(ROOT, 'src', '**', '*.json'), recursive=True)):
+        try:
+            spec = json.load(open(path))
+        except (OSError, ValueError):
+            continue
+        if isinstance(spec, dict) and 'image' in spec and (spec.get('ann') or spec.get('segments')):
+            parts[os.path.relpath(path, ROOT)] = spec
+    return parts
+
+
+def res_clashes(part, name, resources):
+    """@res names are the case's, not a part's: a name this part shares with another part whose resources go the same
+    way (the same installer hook or res folder) is installed twice, the later install over the earlier. Printed (on
+    stderr) at parse time, for each .ann that also names it; returns the clashing names"""
+    if not name or not resources:
+        return []  # a command line's image (--image) is no part of the case's
+    target = res_target(part)
+    found = {}
+    for other, spec in case_parts().items():
+        if other == name or res_target(spec) != target:
+            continue
+        for path, piece in part_anns(spec):
+            if not os.path.exists(path):
+                continue
+            for res in sorted(ann_res_names(path, piece) & set(resources)):
+                found.setdefault(res, []).append('%s%s (%s)' % (os.path.relpath(path, ROOT),
+                                                                ' piece ' + piece if piece else '', other))
+    for res, where in sorted(found.items()):
+        print('WARNING: @res %s is also named in %s, installed the same way (%s %s): the later install replaces the '
+              'earlier one; give one of them another name' % (res, ', '.join(where), target[0], target[1]),
+              file=sys.stderr)
+    return sorted(found)
+
+
 def install_resources(part, resources, built=()):
     """the part's resources into the case: through its installer (res_installer: the part's res_install, case.json's,
     the case's tools/res_formats.py), as bytes into its res folder, or (the case's game) as bytes into src/res. A part
@@ -1651,8 +1769,8 @@ def install_resources(part, resources, built=()):
     if hook:
         res = os.path.join(ROOT, part.get('res') or os.path.join('src', 'res'))
         before = stamps(res, files)
-        call_hook(hook, files)
-        drop_stale_bins(res, files, before)
+        written = call_hook(hook, files)
+        drop_stale_bins(res, files, before, written)
     elif part.get('res') or part.get('game'):
         for name, data in files.items():
             path = os.path.join(ROOT, part.get('res') or os.path.join('src', 'res'), name)
@@ -1820,7 +1938,12 @@ def make_part(part, args):
     for r in filter(None, results):
         for module, body in r[0]:
             open(wrote(os.path.join(out, inc + module_file(module, r[3].top) + '.asm')), 'w').write(body)
-        resources.update(r[2])
+        for res, data in r[2].items():
+            if res in resources and resources[res] != data:
+                print('WARNING: @res %s: two segments of the part give it different bytes; the later one is kept'
+                      % res, file=sys.stderr)
+            resources[res] = data
+    res_clashes(part, part.get('_name'), resources)
     for res, data in resources.items():
         path = os.path.join(out, 'res', res)
         os.makedirs(os.path.dirname(path), exist_ok=True)
@@ -1877,14 +2000,15 @@ def load_witness(seg, fix=False):
     """the runs of the segment's witness-only recordings into EXECS (the pages of its bases); a missing one is
     skipped, or with fix (the lines would lose it) an error"""
     for path in seg.witness:
-        if path in EXECS or any(os.path.abspath(path) == os.path.abspath(s.path) for s in seg.sources):
-            continue
+        if any(os.path.abspath(path) == os.path.abspath(s.path) for s in seg.sources):
+            continue  # read_sources counted it (once) for this segment
         if not os.path.exists(path):
             if fix:
                 sys.exit(f'no recording {path}: --fix-witness would drop it from the witness lines')
             print(f'witness: no recording {os.path.relpath(path, ROOT)}: its runs are left out of the check')
             continue
-        add_runs(EXECS.setdefault(path, {}), json.load(open(path)), seg.bases)
+        EXECS[path] = {}  # this segment's pages, counted once
+        add_runs(EXECS[path], json.load(open(path)), seg.bases)
 
 
 def family_text(prefix, names):
@@ -1903,14 +2027,28 @@ def family_text(prefix, names):
     return ', '.join(items) if len(items) <= 4 else '%s x%d' % (prefix, len(names))
 
 
+def witness_range(x):
+    """the names a range of family_text holds ('c1-c4', 'load-l2-load-l5', 'sec-l2-s10-sec-l2-s12': PREFIX N1 -
+    PREFIX N2, the prefix itself may hold '-' and digits), else None"""
+    for k, ch in enumerate(x):
+        if ch != '-':
+            continue
+        a = re.match(r'^(.*?)(\d+)$', x[:k])
+        b = re.match(r'^(.*?)(\d+)$', x[k + 1:])
+        if a and b and a.group(1) == b.group(1) and int(a.group(2)) < int(b.group(2)):
+            width = len(a.group(2)) if len(a.group(2)) == len(b.group(2)) else 0
+            return {'%s%0*d' % (a.group(1), width, n) for n in range(int(a.group(2)), int(b.group(2)) + 1)}
+    return None
+
+
 def witness_items(text):
-    """the build names a witness list holds: a range 'c1-c4' as c1, c2, c3, c4; 'rzx xK' stays one item"""
+    """the build names a witness list holds: a range 'c1-c4' (witness_range) as c1, c2, c3, c4; 'rzx xK' stays one
+    item"""
     out = set()
     for x in (x.strip() for x in text.split(',')):
-        m = re.match(r'^(.*?)(\d+)-(.*?)(\d+)$', x)
-        if m and m.group(1) == m.group(3) and int(m.group(2)) < int(m.group(4)):
-            width = len(m.group(2))
-            out |= {'%s%0*d' % (m.group(1), width, k) for k in range(int(m.group(2)), int(m.group(4)) + 1)}
+        names = witness_range(x) if x else None
+        if names:
+            out |= names
         elif x:
             out.add(x)
     return out
@@ -2115,6 +2253,7 @@ def single_part(part, args, mem, original, at, top, out, device, built):
         print(f'witness: {os.path.relpath(seg.ann, ROOT)} rewritten, its source written again from it')
         result = regenerate(seg, mem, args, out, top)
     modules, head, resources, ann, _, stats = result
+    res_clashes(part, part.get('_name'), resources)
     if part.get('game'):
         print(f'resources {len(resources)} files, {sum(len(v) for v in resources.values())} bytes')
     print(f'{top}: {stats}')
@@ -2182,19 +2321,25 @@ def load_case(case, config_path=None):
 
 def case_builds(config):
     """the recordings of the case's game: work/<build>/l1.json of read_builds (instructions and data reads) and
-    code_builds (instructions only), never every work/*/l1.json; a build case.json "no_roots" names (globs) as a
-    part file's {"roots": false}: a recording started from a snapshot makes no entry at its start PC"""
+    code_builds (instructions only), never every work/*/l1.json; a build in both lists is read once, as a read build
+    (its runs counted once in the witness lines); a build case.json "no_roots" names (globs) as a part file's
+    {"roots": false}: a recording started from a snapshot makes no entry at its start PC; a read build with a frame
+    in case.json "ref_load_end" reads only the bytes it still accessed from that frame on (Source load_end)"""
     rootless = config.get('no_roots', ())
     if isinstance(rootless, str):
         rootless = [rootless]
+    load_end = config.get('ref_load_end', {})
 
     def source(b, reads):
         spec = {'path': os.path.join('work', b, 'l1.json'), 'reads': reads}
         if any(fnmatch.fnmatch(b, n) for n in rootless):
             spec['roots'] = False
+        if reads and b in load_end:
+            spec['load_end'] = load_end[b]
         return spec
-    return [source(b, True) for b in config.get('read_builds', ())] + \
-        [source(b, False) for b in config.get('code_builds', ())]
+    read = list(dict.fromkeys(config.get('read_builds', ())))
+    return [source(b, True) for b in read] + \
+        [source(b, False) for b in dict.fromkeys(config.get('code_builds', ())) if b not in read]
 
 
 def game_part(config, ann):
@@ -2213,7 +2358,7 @@ def game_part(config, ann):
         list(config.get('witness_builds', ()))
     part['witness'] = [os.path.join('work', b, 'l1.json') for b in dict.fromkeys(witness)]
     for key in ('work', 'operands', 'res_install', 'mode', 'same_bytes', 'data_entries', 'overwritten', 'built',
-                'isub_as_written', 'drop_data_refs', 'no_entries', 'entries_in_code', 'witness_skip'):
+                'isub_as_written', 'drop_data_refs', 'no_entries', 'entries_in_code', 'witness_skip', 'res_comments'):
         if key in config:
             part[key] = config[key]
     return part
@@ -2319,6 +2464,8 @@ def main():
             if not segs:
                 part['ann'] = ann
         part.setdefault('name', os.path.splitext(os.path.basename(args.part))[0])
+        part['_name'] = os.path.relpath(os.path.join(ROOT, args.part) if not os.path.isabs(args.part) else
+                                        args.part, ROOT)
         return make_part(part, args)
     if args.image:
         missing = [k for k in ('org', 'ann', 'top', 'dest') if not getattr(args, k)]
@@ -2330,6 +2477,7 @@ def main():
     main = main_name(config)
     ann = os.path.abspath(args.ann) if args.ann else os.path.join(ROOT, 'src', main, main + '.ann')
     part = game_part(config, ann)
+    part['_name'] = 'case.json'  # a trial --config stands for case.json too
     if args.out:
         part['work'] = os.path.relpath(os.path.abspath(args.out), ROOT)
     return make_part(part, args)

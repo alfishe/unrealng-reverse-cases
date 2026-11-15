@@ -27,7 +27,7 @@
 ; (load-l5's first frames before its POKE was added, stage 1), load-l5 with the
 ; POKE $8065 = $FF shows level 5 and plays it.
 ;
-; Witness: L1 56 (box-shot, controls-cursor, controls-kempston,
+; Witness: L1 31 (box-shot, controls-cursor, controls-kempston,
 ; controls-keyboard, controls-sinclair, rzx-l5-full, sec-l1-s8, c1, c48,
 ; load-l2-load-l5, sec-l2-s7, sec-l2-s10-sec-l2-s12, sec-l3-s3-sec-l3-s5,
 ; sec-l3-s7-sec-l3-s9, sec-l4-s x5, sec-l5-s3, sec-l5-s5).
@@ -72,7 +72,7 @@ LevelMenu:
 ; Evidence: 82 475 runs in 2 builds (rzx-l1-00000-poke 37 177, rzx-l5-full 45
 ; 298: the RZX states sit in the level menu).
 ;
-; Witness: L1 164950 (rzx-l1-00000-poke, rzx-l5-full).
+; Witness: L1 82475 (rzx-l1-00000-poke, rzx-l5-full).
 LevelMenuWait:
   CALL ReadMenuKey
 ; This entry point is used by the routine at LevelMenu.
@@ -102,16 +102,22 @@ LevelMenuDone:
 LevelMenuText:
   INCBIN "res/texts/level-menu.bin",$0000,13
 StartLevelText:
+  ; $7FD4 "START  LEVEL"
   INCBIN "res/texts/level-menu.bin",$000D,13
 Level1Name:
+  ; $7FE1 "5  HYDE PARK LONDON": 1
   INCBIN "res/texts/level-menu.bin",$001A,20
 Level2Name:
+  ; $7FF5 "6  THE ICE CAVERNS OF FREEZIA": 2
   INCBIN "res/texts/level-menu.bin",$002E,30
 Level3Name:
+  ; $8013 "7  THE FORESTS OF VEGETABLIA": 3
   INCBIN "res/texts/level-menu.bin",$004C,29
 Level4Name:
+  ; $8030 "8  THE ATOMIC MUD MINES": 4
   INCBIN "res/texts/level-menu.bin",$0069,24
 Level5Name:
+  ; $8048 "9  THE FAT GUYS HEADQUARTERS": 5, shown only when Level5Open
   INCBIN "res/texts/level-menu.bin",$0081,29
 
 ; $FF: level 5 is open in the level menu
@@ -149,7 +155,7 @@ CheatExits:
 ; Evidence: 89 436 runs in 13 builds (callers LevelMenuWait, ControlMenuLoop,
 ; DropTextWait).
 ;
-; Witness: L1 199122 (box-shot, controls-cursor, controls-kempston,
+; Witness: L1 101980 (box-shot, controls-cursor, controls-kempston,
 ; controls-keyboard, controls-sinclair, end-congrats, rzx-l1-00000-poke,
 ; rzx-l5-23000, rzx-l5-24000-poke, rzx-l5-full, sec-l1-s8, c1, c48,
 ; load-l2-load-l5, sec-l2-s7, sec-l2-s10-sec-l2-s12, sec-l3-s3-sec-l3-s5,
@@ -182,7 +188,7 @@ MenuKeyNew:
 ;
 ; Evidence: 89 436 runs in 13 builds.
 ;
-; Witness: L1 199122 (box-shot, controls-cursor, controls-kempston,
+; Witness: L1 101980 (box-shot, controls-cursor, controls-kempston,
 ; controls-keyboard, controls-sinclair, end-congrats, rzx-l1-00000-poke,
 ; rzx-l5-23000, rzx-l5-24000-poke, rzx-l5-full, sec-l1-s8, c1, c48,
 ; load-l2-load-l5, sec-l2-s7, sec-l2-s10-sec-l2-s12, sec-l3-s3-sec-l3-s5,
@@ -227,7 +233,7 @@ NumberKeyNone:
 ; chooses 2, 3, 4, 1 and 0 in turn (tests/inputs/c1.txt), the menu from about
 ; frame 15 000 (WALKTHROUGH 1).
 ;
-; Witness: L1 42 (controls-keyboard, rzx-l5-full, c1, c48, sec-l2-s7,
+; Witness: L1 22 (controls-keyboard, rzx-l5-full, c1, c48, sec-l2-s7,
 ; sec-l2-s10-sec-l2-s12, sec-l3-s3-sec-l3-s5, sec-l3-s7-sec-l3-s9, sec-l4-s x5,
 ; sec-l5-s3, sec-l5-s5).
 ControlMenu:
@@ -293,7 +299,7 @@ ControlMenu:
 ; Evidence: 2230 runs in 10 builds; c1 sets each method in turn, controls-*
 ; each one (stage 1).
 ;
-; Witness: L1 8614 (box-shot, controls-cursor, controls-kempston,
+; Witness: L1 5182 (box-shot, controls-cursor, controls-kempston,
 ; controls-keyboard, controls-sinclair, rzx-l5-full, sec-l1-s8, c1, c48,
 ; load-l2-load-l5, sec-l2-s7, sec-l2-s10-sec-l2-s12, sec-l3-s3-sec-l3-s5,
 ; sec-l3-s7-sec-l3-s9, sec-l4-s x5, sec-l5-s3, sec-l5-s5).
@@ -329,14 +335,20 @@ ControlMenuPointer:
 ControlMenuText:
   INCBIN "res/texts/control-menu.bin",$0000,15
 KeyboardText:
+  ; $8168 "5   KEYBOARD": 1
   INCBIN "res/texts/control-menu.bin",$000F,13
 KempstonText:
+  ; $8175 "6   KEMPSTON": 2
   INCBIN "res/texts/control-menu.bin",$001C,13
 CursorText:
+  ; $8182 "7   CURSOR": 3
   INCBIN "res/texts/control-menu.bin",$0029,11
 SinclairText:
+  ; $818D "8   SINCLAIR": 4
+  ; $819A $60, $00: not read (a position left from an earlier layout?)
   INCBIN "res/texts/control-menu.bin",$0034,15
 TitleText:
+  ; $819C "RICK DANGEROUS II", at row $68 column 7
   INCBIN "res/texts/control-menu.bin",$0043,18
 
 ; $FF while a menu key is held: ReadMenuKey takes a key once per press
@@ -355,7 +367,7 @@ MenuKeyHeld:
 ;
 ; Evidence: 4731 runs in 11 builds (from DropTextFrame).
 ;
-; Witness: L1 25558 (box-shot, controls-cursor, controls-kempston,
+; Witness: L1 14323 (box-shot, controls-cursor, controls-kempston,
 ; controls-keyboard, controls-sinclair, end-congrats, rzx-l5-23000,
 ; rzx-l5-full, sec-l1-s8, c1, c48, load-l2-load-l5, sec-l2-s7,
 ; sec-l2-s10-sec-l2-s12, sec-l3-s3-sec-l3-s5, sec-l3-s7-sec-l3-s9, sec-l4-s x5,
@@ -371,7 +383,7 @@ MoveLetters:
 ;
 ; Evidence: the loop of MoveLetters (reads $7B8F-$7C4F).
 ;
-; Witness: L1 334490 (box-shot, controls-cursor, controls-kempston,
+; Witness: L1 183974 (box-shot, controls-cursor, controls-kempston,
 ; controls-keyboard, controls-sinclair, end-congrats, rzx-l5-23000,
 ; rzx-l5-24000-poke, rzx-l5-full, sec-l1-s8, c1, c48, load-l2-load-l5,
 ; sec-l2-s7, sec-l2-s10-sec-l2-s12, sec-l3-s3-sec-l3-s5, sec-l3-s7-sec-l3-s9,
@@ -397,7 +409,7 @@ MoveLettersLoop:
 ;
 ; Evidence: 57 671 runs in 12 builds.
 ;
-; Witness: L1 308930 (box-shot, controls-cursor, controls-kempston,
+; Witness: L1 169650 (box-shot, controls-cursor, controls-kempston,
 ; controls-keyboard, controls-sinclair, end-congrats, rzx-l5-23000,
 ; rzx-l5-24000-poke, rzx-l5-full, sec-l1-s8, c1, c48, load-l2-load-l5,
 ; sec-l2-s7, sec-l2-s10-sec-l2-s12, sec-l3-s3-sec-l3-s5, sec-l3-s7-sec-l3-s9,
@@ -457,7 +469,7 @@ LetterStoreY:
 ;
 ; Evidence: 41 runs in 11 builds (writes $7B8F-$7C4F).
 ;
-; Witness: L1 230 (box-shot, controls-cursor, controls-kempston,
+; Witness: L1 128 (box-shot, controls-cursor, controls-kempston,
 ; controls-keyboard, controls-sinclair, end-congrats, rzx-l5-23000,
 ; rzx-l5-full, sec-l1-s8, c1, c48, load-l2-load-l5, sec-l2-s7,
 ; sec-l2-s10-sec-l2-s12, sec-l3-s3-sec-l3-s5, sec-l3-s7-sec-l3-s9, sec-l4-s x5,
@@ -505,7 +517,7 @@ BuildLettersNext:
 ;
 ; Evidence: 97 runs in 12 builds (writes $67A7-$695D and $6CA7-$6E5D).
 ;
-; Witness: L1 651 (box-shot, controls-cursor, controls-kempston,
+; Witness: L1 351 (box-shot, controls-cursor, controls-kempston,
 ; controls-keyboard, controls-sinclair, end-congrats, rzx-l5-23000,
 ; rzx-l5-24000-poke, rzx-l5-full, sec-l1-s8, c1, c48, load-l2-load-l5,
 ; sec-l2-s7, sec-l2-s10-sec-l2-s12, sec-l3-s3-sec-l3-s5, sec-l3-s7-sec-l3-s9,
@@ -548,7 +560,7 @@ PutTextCellsNext:
 ; Evidence: 97 runs in 11 builds (callers: LevelMenu, ControlMenu, GameOver
 ; $7E8B, ShowEndTextLoop $8777).
 ;
-; Witness: L1 651 (box-shot, controls-cursor, controls-kempston,
+; Witness: L1 351 (box-shot, controls-cursor, controls-kempston,
 ; controls-keyboard, controls-sinclair, end-congrats, rzx-l5-23000,
 ; rzx-l5-full, sec-l1-s8, c1, c48, load-l2-load-l5, sec-l2-s7,
 ; sec-l2-s10-sec-l2-s12, sec-l3-s3-sec-l3-s5, sec-l3-s7-sec-l3-s9, sec-l4-s x5,
@@ -587,7 +599,7 @@ DropTextFrame:
 ;
 ; Evidence: 4732 runs in 12 builds.
 ;
-; Witness: L1 25560 (box-shot, controls-cursor, controls-kempston,
+; Witness: L1 14324 (box-shot, controls-cursor, controls-kempston,
 ; controls-keyboard, controls-sinclair, end-congrats, rzx-l5-23000,
 ; rzx-l5-24000-poke, rzx-l5-full, sec-l1-s8, c1, c48, load-l2-load-l5,
 ; sec-l2-s7, sec-l2-s10-sec-l2-s12, sec-l3-s3-sec-l3-s5, sec-l3-s7-sec-l3-s9,
@@ -634,7 +646,7 @@ DropTextFinish:
 ; Evidence: 57 671 runs in 12 builds (reads the glyphs $7080-$71AF, writes
 ; $5E00-$5F0E).
 ;
-; Witness: L1 308930 (box-shot, controls-cursor, controls-kempston,
+; Witness: L1 169650 (box-shot, controls-cursor, controls-kempston,
 ; controls-keyboard, controls-sinclair, end-congrats, rzx-l5-23000,
 ; rzx-l5-24000-poke, rzx-l5-full, sec-l1-s8, c1, c48, load-l2-load-l5,
 ; sec-l2-s7, sec-l2-s10-sec-l2-s12, sec-l3-s3-sec-l3-s5, sec-l3-s7-sec-l3-s9,
@@ -702,7 +714,7 @@ ComposeLetterLoop:
 ;
 ; Evidence: 2219 runs in 10 builds (from ControlMenuPointer).
 ;
-; Witness: L1 8558 (box-shot, controls-cursor, controls-kempston,
+; Witness: L1 5151 (box-shot, controls-cursor, controls-kempston,
 ; controls-keyboard, controls-sinclair, rzx-l5-full, sec-l1-s8, c1, c48,
 ; load-l2-load-l5, sec-l2-s7, sec-l2-s10-sec-l2-s12, sec-l3-s3-sec-l3-s5,
 ; sec-l3-s7-sec-l3-s9, sec-l4-s x5, sec-l5-s3, sec-l5-s5).

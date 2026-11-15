@@ -56,7 +56,7 @@
 ; rows 5395), shifted 108 333 (3 rows 96 247, 4 rows 13 402); mirrored rows 232
 ; 085 aligned, 551 698 shifted.
 ;
-; Witness: L1 599916 (box-shot, cheats, controls-cursor, controls-kempston,
+; Witness: L1 305889 (box-shot, cheats, controls-cursor, controls-kempston,
 ; controls-keyboard, controls-sinclair, end-congrats, fatguy-hits, life-up,
 ; long-l4, rzx-l1-00000-poke, rzx-l1-02000-poke, rzx-l1-04000-poke,
 ; rzx-l1-06000-poke, rzx-l1-08000-poke, rzx-l1-10000-poke, rzx-l1-12000-poke,
@@ -666,7 +666,7 @@ ComposeShiftedEnd:
 ; runs in 67 builds; spare cells drawn 1 689 139 times, level cells restored
 ; 196 595.
 ;
-; Witness: L1 156350 (box-shot, cheats, controls-cursor, controls-kempston,
+; Witness: L1 82387 (box-shot, cheats, controls-cursor, controls-kempston,
 ; controls-keyboard, controls-sinclair, end-congrats, fatguy-hits, life-up,
 ; long-l4, rzx-l1-00000-poke, rzx-l1-02000-poke, rzx-l1-04000-poke,
 ; rzx-l1-06000-poke, rzx-l1-08000-poke, rzx-l1-10000-poke, rzx-l1-12000-poke,
@@ -811,7 +811,7 @@ DrawLevelCellBase:
 ; Callers: ComposeSprite $7329 (9 to 16 times a sprite) and $8321 ($8340,
 ; $8352: 2 cells). 2 497 317 runs; front cells 272 993, stacked 551 496.
 ;
-; Witness: L1 6196803 (box-shot, cheats, controls-cursor, controls-kempston,
+; Witness: L1 3183729 (box-shot, cheats, controls-cursor, controls-kempston,
 ; controls-keyboard, controls-sinclair, end-congrats, fatguy-hits, life-up,
 ; long-l4, rzx-l1-00000-poke, rzx-l1-02000-poke, rzx-l1-04000-poke,
 ; rzx-l1-06000-poke, rzx-l1-08000-poke, rzx-l1-10000-poke, rzx-l1-12000-poke,
@@ -934,7 +934,7 @@ SpareCount:
 ; RZX pieces and sec-l4-*; a piece that starts inside a scroll counts its later
 ; steps only (c1 never scrolls).
 ;
-; Witness: L1 1114 (rzx-l1-02000-poke, rzx-l1-04000-poke, rzx-l1-08000-poke,
+; Witness: L1 557 (rzx-l1-02000-poke, rzx-l1-04000-poke, rzx-l1-08000-poke,
 ; rzx-l1-10000-poke, rzx-l1-12000-poke, rzx-l1-14000-poke, rzx-l1-16000-poke,
 ; rzx-l1-18000-poke, rzx-l1-22000-poke, rzx-l1-24000-poke, rzx-l2-02000-poke,
 ; rzx-l2-04000-poke, rzx-l2-06000-poke, rzx-l2-08000-poke, rzx-l2-10000-poke,
@@ -1078,7 +1078,7 @@ RedrawSpareCell:
 ; 256 + 256 in three loops on A'). Called by RedrawView $7965 only: 97 runs in
 ; 43 builds.
 ;
-; Witness: L1 279 (box-shot, controls-cursor, controls-kempston,
+; Witness: L1 149 (box-shot, controls-cursor, controls-kempston,
 ; controls-keyboard, controls-sinclair, fatguy-hits, life-up, long-l4,
 ; rzx-l1-00000-poke, rzx-l1-02000-poke, rzx-l1-06000-poke, rzx-l1-08000-poke,
 ; rzx-l1-12000-poke, rzx-l1-14000-poke, rzx-l1-20000-poke, rzx-l2-00000-poke,
@@ -1142,7 +1142,7 @@ SetAttrsLoop3:
 ; Called by ScrollDown $78B1 and ScrollUp $7911: 183 runs in 52 builds (95 +
 ; 88).
 ;
-; Witness: L1 366 (rzx-l1-02000-poke, rzx-l1-04000-poke, rzx-l1-08000-poke,
+; Witness: L1 183 (rzx-l1-02000-poke, rzx-l1-04000-poke, rzx-l1-08000-poke,
 ; rzx-l1-10000-poke, rzx-l1-12000-poke, rzx-l1-14000-poke, rzx-l1-16000-poke,
 ; rzx-l1-18000-poke, rzx-l1-22000-poke, rzx-l1-24000-poke, rzx-l2-02000-poke,
 ; rzx-l2-04000-poke, rzx-l2-06000-poke, rzx-l2-08000-poke, rzx-l2-10000-poke,
@@ -1226,7 +1226,7 @@ MarkScrollDone:
 ;
 ; 95 runs in 34 builds (81 in 30 RZX pieces, 14 in sec-l4-*).
 ;
-; Witness: L1 190 (rzx-l1-04000-poke, rzx-l1-08000-poke, rzx-l1-10000-poke,
+; Witness: L1 95 (rzx-l1-04000-poke, rzx-l1-08000-poke, rzx-l1-10000-poke,
 ; rzx-l1-12000-poke, rzx-l1-16000-poke, rzx-l1-18000-poke, rzx-l1-24000-poke,
 ; rzx-l2-02000-poke, rzx-l2-04000-poke, rzx-l2-10000-poke, rzx-l2-12000-poke,
 ; rzx-l2-14000-poke, rzx-l2-16000-poke, rzx-l3-04000-poke, rzx-l3-06000-poke,
@@ -1279,7 +1279,7 @@ ScrollDown:
 ; ($9BAD) < 96 and $88CF > 0; redraws from 2, 6 and 8 rows higher, $88CF -= 8,
 ; the objects moved 64 pixels down ($9E31, BC = 64). 88 runs in 34 builds.
 ;
-; Witness: L1 176 (rzx-l1-02000-poke, rzx-l1-04000-poke, rzx-l1-08000-poke,
+; Witness: L1 88 (rzx-l1-02000-poke, rzx-l1-04000-poke, rzx-l1-08000-poke,
 ; rzx-l1-10000-poke, rzx-l1-14000-poke, rzx-l1-16000-poke, rzx-l1-18000-poke,
 ; rzx-l1-22000-poke, rzx-l2-02000-poke, rzx-l2-04000-poke, rzx-l2-06000-poke,
 ; rzx-l2-08000-poke, rzx-l2-18000-poke, rzx-l2-20000-poke, rzx-l2-22000-poke,
@@ -1332,7 +1332,7 @@ ScrollUp:
 ; SetViewAttrs $783F. Called by the section start ($8B2D, $8B34): 97 runs in 43
 ; builds, a few per recording (c1 6).
 ;
-; Witness: L1 279 (box-shot, controls-cursor, controls-kempston,
+; Witness: L1 149 (box-shot, controls-cursor, controls-kempston,
 ; controls-keyboard, controls-sinclair, fatguy-hits, life-up, long-l4,
 ; rzx-l1-00000-poke, rzx-l1-02000-poke, rzx-l1-06000-poke, rzx-l1-08000-poke,
 ; rzx-l1-12000-poke, rzx-l1-14000-poke, rzx-l1-20000-poke, rzx-l2-00000-poke,
@@ -1358,7 +1358,7 @@ RedrawView:
 ; Callers: the level menu $7F47, the tape loader $840C, $8427, $84FF and the
 ; text printer $88C4. 47 runs in 13 builds.
 ;
-; Witness: L1 180 (box-shot, controls-cursor, controls-kempston,
+; Witness: L1 106 (box-shot, controls-cursor, controls-kempston,
 ; controls-keyboard, controls-sinclair, end-congrats, rzx-l3-10000-poke,
 ; rzx-l4-20000-poke, rzx-l5-23000, rzx-l5-full, sec-l1-s8, c1, c48,
 ; load-l2-load-l5, sec-l2-s7, sec-l2-s10-sec-l2-s12, sec-l3-s3-sec-l3-s5,
@@ -1384,7 +1384,7 @@ ClearScreen:
 ; Evidence: 3 runs in 2 builds (controls-keyboard 1, rzx-l5-full 2): after GAME
 ; OVER ($7EAD).
 ;
-; Witness: L1 40 (controls-keyboard, rzx-l5-full, sec-l2-s7,
+; Witness: L1 20 (controls-keyboard, rzx-l5-full, sec-l2-s7,
 ; sec-l2-s10-sec-l2-s12, sec-l3-s3-sec-l3-s5, sec-l3-s7-sec-l3-s9, sec-l4-s x5,
 ; sec-l5-s3, sec-l5-s5).
 LevelCellsMode:
@@ -1409,7 +1409,7 @@ LevelCellsMode:
 ; Evidence: called by MainLoopPause every pass, by the scrolls $78A5 and $7905
 ; and the section setup $8A6D.
 ;
-; Witness: L1 121734 (box-shot, cheats, controls-cursor, controls-kempston,
+; Witness: L1 62628 (box-shot, cheats, controls-cursor, controls-kempston,
 ; controls-keyboard, controls-sinclair, end-congrats, fatguy-hits, life-up,
 ; long-l4, rzx-l1-00000-poke, rzx-l1-02000-poke, rzx-l1-04000-poke,
 ; rzx-l1-06000-poke, rzx-l1-08000-poke, rzx-l1-10000-poke, rzx-l1-12000-poke,
@@ -1484,7 +1484,7 @@ DrawTableANext:
 ;
 ; Evidence: 16 runs in 11 builds (callers LevelMenu, ControlMenu, ShowEndText).
 ;
-; Witness: L1 102 (box-shot, controls-cursor, controls-kempston,
+; Witness: L1 55 (box-shot, controls-cursor, controls-kempston,
 ; controls-keyboard, controls-sinclair, end-congrats, rzx-l5-23000,
 ; rzx-l5-full, sec-l1-s8, c1, c48, load-l2-load-l5, sec-l2-s7,
 ; sec-l2-s10-sec-l2-s12, sec-l3-s3-sec-l3-s5, sec-l3-s7-sec-l3-s9, sec-l4-s x5,

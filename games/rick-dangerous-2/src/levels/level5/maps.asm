@@ -19,20 +19,35 @@
 ; rows 0-1 (a packing that costs nothing). The comment on each section gives
 ; its rows to the next map and what the limit asks for.
 Maps:
+  ; $E3ED section 0: scroll limit 104, 34 rows to the next map, rows 2-33
+  ;   shown
   INCBIN "res/level/maps.bin",$0000,272
 Section1Map:
+  ; $E4FD section 1: scroll limit 8, 10 rows to the next map, rows 2-9
+  ;   shown
   INCBIN "res/level/maps.bin",$0110,80
 Section2Map:
+  ; $E54D section 2: scroll limit 80, 28 rows to the next map, rows 2-27
+  ;   shown
   INCBIN "res/level/maps.bin",$0160,224
 Section3Map:
+  ; $E62D section 3: scroll limit 32, 14 rows to the next map, rows 2-15
+  ;   shown: rows 14-15 are section 4's rows 0-1
   INCBIN "res/level/maps.bin",$0240,112
 Section4Map:
+  ; $E69D section 4: scroll limit 8, 7 rows to the next map, rows 2-9
+  ;   shown: rows 7-9 are section 5's rows 0-2
   INCBIN "res/level/maps.bin",$02B0,56
 Section5Map:
+  ; $E6D5 section 5: scroll limit 16, 11 rows to the next map, rows 2-11
+  ;   shown: row 11 is section 6's row 0
   INCBIN "res/level/maps.bin",$02E8,88
 Section6Map:
+  ; $E72D section 6: scroll limit 104, 32 rows to the next map, rows 2-33
+  ;   shown: rows 32-33 are section 7's rows 0-1
   INCBIN "res/level/maps.bin",$0340,256
 Section7Map:
+  ; $E82D section 7: scroll limit 16, 10 rows shown up to its row 11
   INCBIN "res/level/maps.bin",$0440,96
 
 ; 317 bytes of older data (5-byte groups such as 00 00 FD 03 03), read by no

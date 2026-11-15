@@ -28,14 +28,19 @@
 Glyphs:
   INCBIN "res/graphics/glyphs.bin",$0000,80
 GlyphBolt:
+  ; $70D0 10: a ray-gun bolt (ammunition)
   INCBIN "res/graphics/glyphs.bin",$0050,8
 GlyphDetonator:
+  ; $70D8 11: a detonator
   INCBIN "res/graphics/glyphs.bin",$0058,8
 GlyphLife:
+  ; $70E0 12: Rick's head (a life)
   INCBIN "res/graphics/glyphs.bin",$0060,8
 GlyphLetters:
+  ; $70E8 13-38: A-Z
   INCBIN "res/graphics/glyphs.bin",$0068,208
 GlyphBlank:
+  ; $71B8 39: blank
   INCBIN "res/graphics/glyphs.bin",$0138,8
 
   ORG $796F
@@ -49,7 +54,7 @@ GlyphBlank:
 ; DrawScore. Called by the section start $8B16 (97) and $8767 (once): 98 runs
 ; in 44 builds.
 ;
-; Witness: L1 283 (box-shot, controls-cursor, controls-kempston,
+; Witness: L1 151 (box-shot, controls-cursor, controls-kempston,
 ; controls-keyboard, controls-sinclair, end-congrats, fatguy-hits, life-up,
 ; long-l4, rzx-l1-00000-poke, rzx-l1-02000-poke, rzx-l1-06000-poke,
 ; rzx-l1-08000-poke, rzx-l1-12000-poke, rzx-l1-14000-poke, rzx-l1-20000-poke,
@@ -116,7 +121,7 @@ ClearHudEnd:
 ; Up to six GlyphLife, the rest blank (DrawIconRow). Callers: DrawHud $79BC,
 ; the life loss $8A34, the ending's tally $8739.
 ;
-; Witness: L1 351 (box-shot, controls-cursor, controls-kempston,
+; Witness: L1 191 (box-shot, controls-cursor, controls-kempston,
 ; controls-keyboard, controls-sinclair, end-congrats, fatguy-hits, life-up,
 ; long-l4, rzx-l1-00000-poke, rzx-l1-02000-poke, rzx-l1-06000-poke,
 ; rzx-l1-08000-poke, rzx-l1-12000-poke, rzx-l1-14000-poke, rzx-l1-20000-poke,
@@ -141,7 +146,7 @@ DrawLives:
 ;
 ; Callers: DrawHud $79B9, $95A3, $A5AA.
 ;
-; Witness: L1 490 (box-shot, controls-cursor, controls-kempston,
+; Witness: L1 256 (box-shot, controls-cursor, controls-kempston,
 ; controls-keyboard, controls-sinclair, end-congrats, fatguy-hits, life-up,
 ; long-l4, rzx-l1-00000-poke, rzx-l1-02000-poke, rzx-l1-04000-poke,
 ; rzx-l1-06000-poke, rzx-l1-08000-poke, rzx-l1-10000-poke, rzx-l1-12000-poke,
@@ -169,7 +174,7 @@ DrawAmmo:
 ;
 ; Callers: DrawHud $79B6, $9B45, $A5BA.
 ;
-; Witness: L1 418 (box-shot, controls-cursor, controls-kempston,
+; Witness: L1 220 (box-shot, controls-cursor, controls-kempston,
 ; controls-keyboard, controls-sinclair, end-congrats, fatguy-hits, life-up,
 ; long-l4, rzx-l1-00000-poke, rzx-l1-02000-poke, rzx-l1-04000-poke,
 ; rzx-l1-06000-poke, rzx-l1-08000-poke, rzx-l1-12000-poke, rzx-l1-14000-poke,
@@ -198,7 +203,7 @@ DrawDetonators:
 ; B = the count (0-6: more would draw 256 - (B - 6) blanks), HL = the glyph, DE
 ; = the screen address in row 0.
 ;
-; Witness: L1 1259 (box-shot, controls-cursor, controls-kempston,
+; Witness: L1 667 (box-shot, controls-cursor, controls-kempston,
 ; controls-keyboard, controls-sinclair, end-congrats, fatguy-hits, life-up,
 ; long-l4, rzx-l1-00000-poke, rzx-l1-02000-poke, rzx-l1-04000-poke,
 ; rzx-l1-06000-poke, rzx-l1-08000-poke, rzx-l1-10000-poke, rzx-l1-12000-poke,
@@ -232,7 +237,7 @@ DrawIconBlanks:
 
 ; Draw the glyph at HL B times from DE rightwards
 ;
-; Witness: L1 7554 (box-shot, controls-cursor, controls-kempston,
+; Witness: L1 4002 (box-shot, controls-cursor, controls-kempston,
 ; controls-keyboard, controls-sinclair, end-congrats, fatguy-hits, life-up,
 ; long-l4, rzx-l1-00000-poke, rzx-l1-02000-poke, rzx-l1-04000-poke,
 ; rzx-l1-06000-poke, rzx-l1-08000-poke, rzx-l1-10000-poke, rzx-l1-12000-poke,
@@ -267,7 +272,7 @@ DrawGlyphs:
 ; Each digit 0-9 is a glyph number. Callers: DrawHud $79BF, the score adder
 ; $7EED (149).
 ;
-; Witness: L1 599 (box-shot, cheats, controls-cursor, controls-kempston,
+; Witness: L1 310 (box-shot, cheats, controls-cursor, controls-kempston,
 ; controls-keyboard, controls-sinclair, end-congrats, fatguy-hits, life-up,
 ; long-l4, rzx-l1-00000-poke, rzx-l1-02000-poke, rzx-l1-06000-poke,
 ; rzx-l1-08000-poke, rzx-l1-10000-poke, rzx-l1-12000-poke, rzx-l1-14000-poke,
@@ -314,7 +319,7 @@ DrawScoreLoop:
 ; DrawGlyphs $7A02, DrawScore $7A21 and the text printer $7F3B (the texts at
 ; rows 9-10). 4852 runs in 65 builds.
 ;
-; Witness: L1 11888 (box-shot, cheats, controls-cursor, controls-kempston,
+; Witness: L1 6406 (box-shot, cheats, controls-cursor, controls-kempston,
 ; controls-keyboard, controls-sinclair, end-congrats, fatguy-hits, life-up,
 ; long-l4, rzx-l1-00000-poke, rzx-l1-02000-poke, rzx-l1-04000-poke,
 ; rzx-l1-06000-poke, rzx-l1-08000-poke, rzx-l1-10000-poke, rzx-l1-12000-poke,
@@ -373,7 +378,7 @@ BlankGlyph:
 ; Evidence: 512 runs in 9 builds (callers $7E94 x4 GAME OVER, $8415 x20 and
 ; $8430 x18 the tape messages, a run a character).
 ;
-; Witness: L1 976 (controls-keyboard, rzx-l3-10000-poke, rzx-l4-20000-poke,
+; Witness: L1 710 (controls-keyboard, rzx-l3-10000-poke, rzx-l4-20000-poke,
 ; rzx-l5-full, c1, c48, load-l2-load-l5, sec-l2-s7, sec-l2-s10-sec-l2-s12,
 ; sec-l3-s3-sec-l3-s5, sec-l3-s7-sec-l3-s9, sec-l4-s x5, sec-l5-s3, sec-l5-s5).
 PrintText:

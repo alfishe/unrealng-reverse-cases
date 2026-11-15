@@ -17,7 +17,7 @@
 ; A = `$FF`, then LdBytes. Called by stage 2 for the blocks 4, 5 and (on a
 ; 128K) 6.
 ;
-; Witness: L1 8 (c x2).
+; Witness: L1 5 (c x2).
 LoadBlock:
   LD A,$FF
 
@@ -32,7 +32,7 @@ LoadBlock:
 ; Every return (an error, BREAK or the end) goes to LoadEnd, with carry set for
 ; a good load.
 ;
-; Witness: L1 11 (c x2).
+; Witness: L1 7 (c x2).
 LdBytes:
   SCF
   INC D                   ; the ROM's LD-BYTES from here (INC D; EX AF,AF'; DEC
@@ -215,7 +215,7 @@ TapeErrorText:
 
 ; POP AF and return: the end of LoadEnd
 ;
-; Witness: L1 11 (c x2).
+; Witness: L1 7 (c x2).
 LoadReturn:
   POP AF
   RET

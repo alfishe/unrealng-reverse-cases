@@ -19,20 +19,36 @@
 ; rows 0-1 (a packing that costs nothing). The comment on each section gives
 ; its rows to the next map and what the limit asks for.
 Maps:
+  ; $E46D section 0: scroll limit 0, 8 rows to the next map, rows 2-7
+  ;   shown; also the map of the filler entries 8, 9, 10, 11, 12, 13, 14,
+  ;   15, 16
   INCBIN "res/level/maps.bin",$0000,64
 Section1Map:
+  ; $E4AD section 1: scroll limit 112, 30 rows to the next map, rows 2-35
+  ;   shown: rows 30-35 are section 2's rows 0-5
   INCBIN "res/level/maps.bin",$0040,240
 Section2Map:
+  ; $E59D section 2: scroll limit 112, 40 rows to the next map, rows 2-35
+  ;   shown; rows 36-38 only built below the view; row 39 read by nothing
+  ;   (filler)
   INCBIN "res/level/maps.bin",$0130,320
 Section3Map:
+  ; $E6DD section 3: scroll limit 0, 8 rows to the next map, rows 2-7 shown
   INCBIN "res/level/maps.bin",$0270,64
 Section4Map:
+  ; $E71D section 4: scroll limit 104, 32 rows to the next map, rows 2-33
+  ;   shown: rows 32-33 are section 5's rows 0-1
   INCBIN "res/level/maps.bin",$02B0,256
 Section5Map:
+  ; $E81D section 5: scroll limit 104, 32 rows to the next map, rows 2-33
+  ;   shown: rows 32-33 are section 6's rows 0-1
   INCBIN "res/level/maps.bin",$03B0,256
 Section6Map:
+  ; $E91D section 6: scroll limit 8, 8 rows to the next map, rows 2-9
+  ;   shown: rows 8-9 are section 7's rows 0-1
   INCBIN "res/level/maps.bin",$04B0,64
 Section7Map:
+  ; $E95D section 7: scroll limit 8, 8 rows shown up to its row 9
   INCBIN "res/level/maps.bin",$04F0,80
 
 ; 185 zero bytes after the maps

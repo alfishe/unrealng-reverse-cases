@@ -39,7 +39,7 @@ Written by `kit/refdocs.py`.
 | Address | Name | Bytes | What | Read by | Written by |
 | --- | --- | --- | --- | --- | --- |
 | `$7A60` | `FrameCounter` | 1 | Interrupts since the last WaitFrames: incremented by the IM 2 handler `$FEFE`, cleared by WaitFrames | `WaitFrames` | `WaitFrames` |
-| `$7A76` | `Machine48K` | 1 | `$FF` on a 48K (no RAM 1: no music, beeper effects), 0 on a 128K. Set by the entry code `$7B8F`; read by CallRam1 `$7A77`, PlayEffect `$7A97`, the level start (`$7CAD`, `$7CDB`, `$7CDE`) and the main loop `$7D80` (CALL NZ the beeper step). 0 in every recording (all 128K). | `CallRam1`, `LevelTune`, `MainLoop`, `PlayEffect`, `ResetGame` +3 | `Entry48K` (code) |
+| `$7A76` | `Machine48K` | 1 | `$FF` on a 48K (no RAM 1: no music, beeper effects), 0 on a 128K. Set by the entry code `$7B8F`; read by CallRam1 `$7A77`, PlayEffect `$7A97`, the level start (`$7CAD`, `$7CDB`, `$7CDE`) and the main loop `$7D80` (CALL NZ the beeper step). `$FF` in c48 (the 48K power-on), 0 in every other recording (all 128K). | `CallRam1`, `LevelTune`, `MainLoop`, `PlayEffect`, `ResetGame` +3 | `Entry` (`stage2/rec/c48`), `Entry48K` (code) |
 | `$7C39` | `Im2HandlerSource` | 35 | The IM 2 handler as stored here; it runs at `$FEFE` (35 bytes). SetupIm2 copies these 35 bytes to `$FEFE-$FF20` (LD HL,`$7C39` / LD DE,`$FEFE` / LD BC,35 / LDIR); the code runs only there (in c1 4706 times, the IM 2 vector of every interrupt). DI; AF, BC, DE, HL, IX, IY pushed; the frame counter `$7A60` + 1; CALL `$81D4` (CountTicks); CALL `$7254` (the controls into `$7253`, the method in `$7252`); three NOPs, which CopyMusic turns into CALL `$7AB6` on a 128K (the music player, through the RAM 1 call `$7A77`); the registers popped; EI; RET. The handler lasts until its EI, so an interrupt that comes while code runs with interrupts off (the blitters, the map builder, the RAM 1 calls, the tape) is lost (WALKTHROUGH 1). After the copy the bytes here are part of the object table A (from `$7B8F`) and of the falling letters' records. | `ClearObjectTables`, `ComposeLetter`, `ComposeSprite`, `DrawSprites`, `DropText` +26 | `BuildLetters`, `ClearObjectTables`, `EnemyFalling`, `EnemyHitsAndSprite`, `EnemyPatrol` +11 |
 | `$7C5C` | `EntryDebris` | 32 of 33 | Bytes of an earlier build after the handler (not executed in any recording). Not read as code by anything: they look like the tail of the handler of an earlier build, eight bytes higher (CALL `$81DC`, CALL `$725C`, the NOPs, the pops, EI, RET) and the start of an earlier NewGame (CALL `$80B1` where this build has CALL `$80B5` at `$7C7D`). The space belongs to the object table B (`$7C20`, four 23-byte records); ClearObjectTables writes its end mark `$FF` at `$7C7C`. | `ClearObjectTables`, `DrawSprites`, `EnemyHitsAndSprite`, `EnemyVertical`, `EnemyWalk` +22 | `ClearObjectTables`, `EnemyVertical`, `SpawnFromMap`, `BuildLetters` (`stage2/rec/end-congrats`), `EnemyChaser` (`stage1/rec/rzx-l4-02000-poke`) +11 |
 | `$7C7C` | `ObjectTableBEnd` (`EntryDebris`+32) | 1 | the end mark of the object table B (`$FF` after ClearObjectTables) | `DrawSprites`, `FreeAllObjects`, `ShiftObjects`, `UpdateObjects`, `UpdateTrap` +3 | `ClearObjectTables` |
@@ -50,18 +50,18 @@ Written by `kit/refdocs.py`.
 
 | Address | Name | Bytes | What | Read by | Written by |
 | --- | --- | --- | --- | --- | --- |
-| `$7AF2` | `BeeperEffectTable` | 22 | The eleven beeper effects' addresses, by effect number (SelectBeeperEffect) | - | - |
-| `$7B08` | `BeeperEffects` | 2 of 94 | The beeper effects: one note a pass, each byte the half period in loop turns, `$FF` ends. Played by PlayBeeperStep `$7B66` on a 48K. A lower byte is a higher note; every note lasts `$600` loop turns (about 0.7 frame). | - | - |
+| `$7AF2` | `BeeperEffectTable` | 22 | The eleven beeper effects' addresses, by effect number (SelectBeeperEffect) | `SelectBeeperEffect` (`stage2/rec/c48`) | - |
+| `$7B08` | `BeeperEffects` | 2 of 94 | The beeper effects: one note a pass, each byte the half period in loop turns, `$FF` ends. Played by PlayBeeperStep `$7B66` on a 48K. A lower byte is a higher note; every note lasts `$600` loop turns (about 0.7 frame). | `PlayBeeperStep` (`stage2/rec/c48`) | - |
 | `$7B0A` | `BeeperEffect1` (`BeeperEffects`+2) | 3 | 1: two notes | - | - |
-| `$7B0D` | `BeeperEffect2` (`BeeperEffects`+5) | 2 | 2: one note | - | - |
+| `$7B0D` | `BeeperEffect2` (`BeeperEffects`+5) | 2 | 2: one note | `PlayBeeperStep` (`stage2/rec/c48`) | - |
 | `$7B0F` | `BeeperEffect3` (`BeeperEffects`+7) | 6 | 3 | - | - |
-| `$7B15` | `BeeperEffect4` (`BeeperEffects`+13) | 7 | 4: falling period, a rising sweep | - | - |
-| `$7B1C` | `BeeperEffect5` (`BeeperEffects`+20) | 13 | 5: an alternating trill | - | - |
+| `$7B15` | `BeeperEffect4` (`BeeperEffects`+13) | 7 | 4: falling period, a rising sweep | `PlayBeeperStep` (`stage2/rec/c48`) | - |
+| `$7B1C` | `BeeperEffect5` (`BeeperEffects`+20) | 13 | 5: an alternating trill | `PlayBeeperStep` (`stage2/rec/c48`) | - |
 | `$7B29` | `BeeperEffect6` (`BeeperEffects`+33) | 17 | 6: a warble | - | - |
 | `$7B3A` | `BeeperEffect7` (`BeeperEffects`+50) | 6 | 7 | - | - |
 | `$7B40` | `BeeperEffect8` (`BeeperEffects`+56) | 6 | 8: a rising period, 1-5 | - | - |
 | `$7B46` | `BeeperEffect9` (`BeeperEffects`+62) | 13 | 9 | - | - |
-| `$7B53` | `BeeperEffect10` (`BeeperEffects`+75) | 19 | 10: a long falling sweep | - | - |
+| `$7B53` | `BeeperEffect10` (`BeeperEffects`+75) | 19 | 10: a long falling sweep | `PlayBeeperStep` (`stage2/rec/c48`) | - |
 | `$7B8E` | `BeeperStepRet` | 1 | A RET after PlayBeeperStep's loop, which ends only by its RET Z: never reached. One byte `$C9` between PlayBeeperStep's JP BeeperHigh and the entry code at `$7B8F`: no instruction jumps to it, no recording reads or runs it (an older routine's end). | - | - |
 
 ## mainloop

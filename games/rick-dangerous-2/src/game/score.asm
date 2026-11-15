@@ -25,7 +25,7 @@
 ; x101, $A595 x28, $F964 x1); the RZX memory at level 5, frame 1000 holds 00 04
 ; 01 03 08 00 with "041380" on the screen (stage 1).
 ;
-; Witness: L1 316 (box-shot, cheats, life-up, rzx-l1-00000-poke,
+; Witness: L1 159 (box-shot, cheats, life-up, rzx-l1-00000-poke,
 ; rzx-l1-02000-poke, rzx-l1-06000-poke, rzx-l1-08000-poke, rzx-l1-10000-poke,
 ; rzx-l1-12000-poke, rzx-l1-14000-poke, rzx-l1-16000-poke, rzx-l1-24000-poke,
 ; rzx-l2-00000-poke, rzx-l2-02000-poke, rzx-l2-04000-poke, rzx-l2-06000-poke,
@@ -162,7 +162,7 @@ Detonators:
 ; from 0000 the borrow would leave 9999 and end at BonusRunOut; the countdown
 ; then goes on.
 ;
-; Witness: L1 24953 (cheats, rzx-l1-00000-poke, rzx-l1-06000-poke,
+; Witness: L1 12544 (cheats, rzx-l1-00000-poke, rzx-l1-06000-poke,
 ; rzx-l1-18000-poke, rzx-l1-24000-poke, rzx-l2-04000-poke, rzx-l2-06000-poke,
 ; rzx-l2-08000-poke, rzx-l2-10000-poke, rzx-l2-12000-poke, rzx-l2-18000-poke,
 ; rzx-l2-20000-poke, rzx-l2-22000-poke, rzx-l3-06000-poke, rzx-l3-08000-poke,

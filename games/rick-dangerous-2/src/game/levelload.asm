@@ -24,7 +24,7 @@
 ; one more than the level's block number, side B holding levels 1-5 in order;
 ; rzx-l3-10000-poke 1, rzx-l4-20000-poke 1 run the RZX run's version).
 ;
-; Witness: L1 18 (rzx-l3-10000-poke, rzx-l4-20000-poke, load-l2-load-l5).
+; Witness: L1 16 (rzx-l3-10000-poke, rzx-l4-20000-poke, load-l2-load-l5).
 LoadLevel:
   CALL ClearScreen
   LD HL,TapeTexts
@@ -48,7 +48,7 @@ LoadLevel:
 ;
 ; Evidence: 1 078 823 runs in 9 builds.
 ;
-; Witness: L1 1247039 (life-up, rzx-l2-00000-poke, rzx-l3-00000-poke,
+; Witness: L1 1155156 (life-up, rzx-l2-00000-poke, rzx-l3-00000-poke,
 ; rzx-l4-00000-poke, rzx-l5-00000-poke, rzx-l5-full, load-l2-load-l5,
 ; sec-l2-s7, sec-l2-s10-sec-l2-s12, sec-l3-s3-sec-l3-s5, sec-l3-s7-sec-l3-s9,
 ; sec-l4-s x5, sec-l5-s3, sec-l5-s5).
@@ -63,6 +63,7 @@ LoadLevelWaitFire:
 TapeTexts:
   INCBIN "res/texts/tape.bin",$0000,23
 StopTapeText:
+  ; $8451 "STOP TAPE AND PRESS FIRE"
   INCBIN "res/texts/tape.bin",$0017,25
 
 ; Load one bit-reversed block of 21 760 bytes into $A800
@@ -72,7 +73,7 @@ StopTapeText:
 ;
 ; Evidence: 16 runs in 6 builds.
 ;
-; Witness: L1 18 (rzx-l3-10000-poke, rzx-l4-20000-poke, load-l2-load-l5).
+; Witness: L1 16 (rzx-l3-10000-poke, rzx-l4-20000-poke, load-l2-load-l5).
 LoadLevelBlock:
   LD IX,CellFlags
   LD DE,21760
@@ -294,7 +295,7 @@ LoaderFill:
 ; (level 4) and the same 768 bytes above each base; the deciphered bytes equal
 ; the RZX run's memory (NOTES).
 ;
-; Witness: L1 50 (life-up, rzx-l2-00000-poke, rzx-l3-00000-poke,
+; Witness: L1 27 (life-up, rzx-l2-00000-poke, rzx-l3-00000-poke,
 ; rzx-l4-00000-poke, rzx-l5-00000-poke, rzx-l5-full, load-l2-load-l5,
 ; sec-l2-s7, sec-l2-s10-sec-l2-s12, sec-l3-s3-sec-l3-s5, sec-l3-s7-sec-l3-s9,
 ; sec-l4-s x5, sec-l5-s3, sec-l5-s5).

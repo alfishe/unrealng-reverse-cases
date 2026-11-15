@@ -22,7 +22,7 @@
 ; runs) asks for: off the shown part nothing is heard. Witness: 1354 runs in 47
 ; builds, c1 53; 258 times silent ($A2F5).
 ;
-; Witness: L1 3183 (cheats, long-l4, rzx-l1-00000-poke, rzx-l1-02000-poke,
+; Witness: L1 1643 (cheats, long-l4, rzx-l1-00000-poke, rzx-l1-02000-poke,
 ; rzx-l1-04000-poke, rzx-l1-08000-poke, rzx-l1-10000-poke, rzx-l1-12000-poke,
 ; rzx-l1-18000-poke, rzx-l1-22000-poke, rzx-l1-24000-poke, rzx-l2-00000-poke,
 ; rzx-l2-02000-poke, rzx-l2-04000-poke, rzx-l2-06000-poke, rzx-l2-08000-poke,
@@ -75,7 +75,7 @@ TrapEffectSkip:
 ; patches); behaviour $0C removed by its trigger 432 times ($A4C0), behaviour
 ; $1C on release 9 ($A4A7).
 ;
-; Witness: L1 347342 (box-shot, cheats, end-congrats, life-up, long-l4,
+; Witness: L1 175680 (box-shot, cheats, end-congrats, life-up, long-l4,
 ; rzx-l1-00000-poke, rzx-l1-02000-poke, rzx-l1-04000-poke, rzx-l1-06000-poke,
 ; rzx-l1-08000-poke, rzx-l1-10000-poke, rzx-l1-12000-poke, rzx-l1-14000-poke,
 ; rzx-l1-16000-poke, rzx-l1-18000-poke, rzx-l1-20000-poke, rzx-l1-22000-poke,
@@ -345,7 +345,7 @@ TrapTriggerKind:
 ; builds) and from the trigger test ($A4D1, 25 runs in 19 builds). Witness: 184
 ; runs in 42 builds.
 ;
-; Witness: L1 370 (rzx-l1-00000-poke, rzx-l1-02000-poke, rzx-l1-08000-poke,
+; Witness: L1 186 (rzx-l1-00000-poke, rzx-l1-02000-poke, rzx-l1-08000-poke,
 ; rzx-l1-10000-poke, rzx-l1-12000-poke, rzx-l1-16000-poke, rzx-l1-18000-poke,
 ; rzx-l1-20000-poke, rzx-l1-22000-poke, rzx-l1-24000-poke, rzx-l2-00000-poke,
 ; rzx-l2-02000-poke, rzx-l2-04000-poke, rzx-l2-06000-poke, rzx-l2-08000-poke,
@@ -390,7 +390,7 @@ SwitchTrapPath:
 ; tests. The first switch of a round trip ran 58 times ($A355), the set of bit
 ; 3 59 ($A523). Witness: 361 runs in 22 builds.
 ;
-; Witness: L1 722 (rzx-l1-00000-poke, rzx-l1-08000-poke, rzx-l1-10000-poke,
+; Witness: L1 361 (rzx-l1-00000-poke, rzx-l1-08000-poke, rzx-l1-10000-poke,
 ; rzx-l1-12000-poke, rzx-l1-16000-poke, rzx-l1-18000-poke, rzx-l1-20000-poke,
 ; rzx-l1-22000-poke, rzx-l1-24000-poke, rzx-l2-02000-poke, rzx-l2-04000-poke,
 ; rzx-l2-06000-poke, rzx-l2-08000-poke, rzx-l2-10000-poke, rzx-l2-20000-poke,
@@ -422,7 +422,7 @@ ArmTrapWait:
 ; c1 none); taken: a treasure 28 times ($A58D, 18 builds), ammunition 13 ($A59B
 ; 25 less $A5B0 12), detonators 12 ($A5B0, 11 builds).
 ;
-; Witness: L1 49532 (box-shot, cheats, life-up, rzx-l1-00000-poke,
+; Witness: L1 25054 (box-shot, cheats, life-up, rzx-l1-00000-poke,
 ; rzx-l1-02000-poke, rzx-l1-04000-poke, rzx-l1-06000-poke, rzx-l1-10000-poke,
 ; rzx-l1-12000-poke, rzx-l1-14000-poke, rzx-l1-16000-poke, rzx-l1-20000-poke,
 ; rzx-l1-22000-poke, rzx-l2-00000-poke, rzx-l2-04000-poke, rzx-l2-06000-poke,
@@ -553,7 +553,7 @@ PickupBurstStart:
 ; executed in any recording. Witness: 127 532 runs in 60 builds (all from
 ; $A3E8); a new frame 76 384 times.
 ;
-; Witness: L1 296189 (cheats, end-congrats, life-up, long-l4,
+; Witness: L1 149797 (cheats, end-congrats, life-up, long-l4,
 ; rzx-l1-00000-poke, rzx-l1-02000-poke, rzx-l1-04000-poke, rzx-l1-06000-poke,
 ; rzx-l1-08000-poke, rzx-l1-10000-poke, rzx-l1-12000-poke, rzx-l1-14000-poke,
 ; rzx-l1-16000-poke, rzx-l1-18000-poke, rzx-l1-20000-poke, rzx-l1-22000-poke,

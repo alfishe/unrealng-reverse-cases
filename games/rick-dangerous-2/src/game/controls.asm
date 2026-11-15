@@ -25,7 +25,7 @@
 ; frame 50): LD B,$FD / IN A,(C) / AND $1F / CP $1D / RET NZ / LD B,$F7 / IN
 ; A,(C) / AND $1F / CP $1B / RET.
 ;
-; Witness: L1 120436 (box-shot, cheats, controls-cursor, controls-kempston,
+; Witness: L1 61960 (box-shot, cheats, controls-cursor, controls-kempston,
 ; controls-keyboard, controls-sinclair, end-congrats, fatguy-hits, life-up,
 ; long-l4, rzx-l1-00000-poke, rzx-l1-02000-poke, rzx-l1-04000-poke,
 ; rzx-l1-06000-poke, rzx-l1-08000-poke, rzx-l1-10000-poke, rzx-l1-12000-poke,
@@ -75,7 +75,7 @@ TestInfiniteLivesRest:
 ; at frame 200): LD BC,$BFFE / IN A,(C) / AND $1F / CP $16 / RET NZ / LD B,$DF
 ; / IN A,(C) / AND $1F / CP $0F / RET.
 ;
-; Witness: L1 120436 (box-shot, cheats, controls-cursor, controls-kempston,
+; Witness: L1 61960 (box-shot, cheats, controls-cursor, controls-kempston,
 ; controls-keyboard, controls-sinclair, end-congrats, fatguy-hits, life-up,
 ; long-l4, rzx-l1-00000-poke, rzx-l1-02000-poke, rzx-l1-04000-poke,
 ; rzx-l1-06000-poke, rzx-l1-08000-poke, rzx-l1-10000-poke, rzx-l1-12000-poke,
@@ -120,7 +120,7 @@ TestSectionCheatRest:
 ; every pass of the menus, $7221 only when level 5 is open): IN from the half
 ; row, BIT n, RET; Z = held.
 ;
-; Witness: L1 199122 (box-shot, controls-cursor, controls-kempston,
+; Witness: L1 101980 (box-shot, controls-cursor, controls-kempston,
 ; controls-keyboard, controls-sinclair, end-congrats, rzx-l1-00000-poke,
 ; rzx-l5-23000, rzx-l5-24000-poke, rzx-l5-full, sec-l1-s8, c1, c48,
 ; load-l2-load-l5, sec-l2-s7, sec-l2-s10-sec-l2-s12, sec-l3-s3-sec-l3-s5,
@@ -135,7 +135,7 @@ TestKey0:
 ;
 ; Half row $F7FE bit 0. Called by $808D.
 ;
-; Witness: L1 147360 (box-shot, controls-cursor, controls-kempston,
+; Witness: L1 76073 (box-shot, controls-cursor, controls-kempston,
 ; controls-keyboard, controls-sinclair, end-congrats, rzx-l1-00000-poke,
 ; rzx-l5-23000, rzx-l5-24000-poke, rzx-l5-full, sec-l1-s8, c1, c48,
 ; load-l2-load-l5, sec-l2-s7, sec-l2-s10-sec-l2-s12, sec-l3-s3-sec-l3-s5,
@@ -150,7 +150,7 @@ TestKey1:
 ;
 ; Half row $F7FE bit 1. Called by $8093.
 ;
-; Witness: L1 146928 (box-shot, controls-cursor, controls-kempston,
+; Witness: L1 75831 (box-shot, controls-cursor, controls-kempston,
 ; controls-keyboard, controls-sinclair, end-congrats, rzx-l1-00000-poke,
 ; rzx-l5-23000, rzx-l5-24000-poke, rzx-l5-full, sec-l1-s8, c1, c48,
 ; load-l2-load-l5, sec-l2-s7, sec-l2-s10-sec-l2-s12, sec-l3-s3-sec-l3-s5,
@@ -165,7 +165,7 @@ TestKey2:
 ;
 ; Half row $F7FE bit 2. Called by $8099.
 ;
-; Witness: L1 146874 (box-shot, controls-cursor, controls-kempston,
+; Witness: L1 75791 (box-shot, controls-cursor, controls-kempston,
 ; controls-keyboard, controls-sinclair, end-congrats, rzx-l1-00000-poke,
 ; rzx-l5-23000, rzx-l5-24000-poke, rzx-l5-full, sec-l1-s8, c1, c48,
 ; load-l2-load-l5, sec-l2-s7, sec-l2-s10-sec-l2-s12, sec-l3-s3-sec-l3-s5,
@@ -180,7 +180,7 @@ TestKey3:
 ;
 ; Half row $F7FE bit 3. Called by $809F.
 ;
-; Witness: L1 146816 (box-shot, controls-cursor, controls-kempston,
+; Witness: L1 75749 (box-shot, controls-cursor, controls-kempston,
 ; controls-keyboard, controls-sinclair, end-congrats, rzx-l1-00000-poke,
 ; rzx-l5-23000, rzx-l5-24000-poke, rzx-l5-full, sec-l1-s8, c1, c48,
 ; load-l2-load-l5, sec-l2-s7, sec-l2-s10-sec-l2-s12, sec-l3-s3-sec-l3-s5,
@@ -197,7 +197,7 @@ TestKey4:
 ; 5 open): it ran only in load-l5 (its POKE of $8065) and the RZX level 5
 ; recordings.
 ;
-; Witness: L1 46269 (rzx-l5-23000, rzx-l5-24000-poke, rzx-l5-full, load-l5,
+; Witness: L1 23260 (rzx-l5-23000, rzx-l5-24000-poke, rzx-l5-full, load-l5,
 ; sec-l5-s3, sec-l5-s5).
 TestKey5:
   LD BC,$F7FE
@@ -212,7 +212,7 @@ TestKey5:
 ; wait for a key: the tape loader's message $8433 (over a million runs in
 ; load-l2 ... load-l5), the GAME OVER wait $7EA0 and the end text $8787.
 ;
-; Witness: L1 1278933 (controls-keyboard, end-congrats, life-up,
+; Witness: L1 1171605 (controls-keyboard, end-congrats, life-up,
 ; rzx-l2-00000-poke, rzx-l3-00000-poke, rzx-l4-00000-poke, rzx-l5-00000-poke,
 ; rzx-l5-23000, rzx-l5-24000-poke, rzx-l5-26000-poke, rzx-l5-full, c1, c48,
 ; load-l2-load-l5, sec-l2-s7, sec-l2-s10-sec-l2-s12, sec-l3-s3-sec-l3-s5,
@@ -237,7 +237,7 @@ TestFireKeys:
 ; second press and its release (the pause); c1 and controls-keyboard press P
 ; (95 582 and 129 946 runs: the waiting loops).
 ;
-; Witness: L1 575194 (box-shot, cheats, controls-cursor, controls-kempston,
+; Witness: L1 387236 (box-shot, cheats, controls-cursor, controls-kempston,
 ; controls-keyboard, controls-sinclair, end-congrats, fatguy-hits, life-up,
 ; long-l4, rzx-l1-00000-poke, rzx-l1-02000-poke, rzx-l1-04000-poke,
 ; rzx-l1-06000-poke, rzx-l1-08000-poke, rzx-l1-10000-poke, rzx-l1-12000-poke,
@@ -267,7 +267,7 @@ TestPauseKey:
 ; $FBFE bit 2. The main loop $7D2D jumps to the game's end $7E1E on Z (c1
 ; presses E at its end).
 ;
-; Witness: L1 120474 (box-shot, cheats, controls-cursor, controls-kempston,
+; Witness: L1 61980 (box-shot, cheats, controls-cursor, controls-kempston,
 ; controls-keyboard, controls-sinclair, end-congrats, fatguy-hits, life-up,
 ; long-l4, rzx-l1-00000-poke, rzx-l1-02000-poke, rzx-l1-04000-poke,
 ; rzx-l1-06000-poke, rzx-l1-08000-poke, rzx-l1-10000-poke, rzx-l1-12000-poke,
@@ -325,7 +325,7 @@ Controls:
 ; $72FA in controls-sinclair (1255) and c1 (85, its menu tour). ENTER as fire
 ; ($72A1) was never pressed.
 ;
-; Witness: L1 1607150 (box-shot, cheats, controls-cursor, controls-kempston,
+; Witness: L1 1346656 (box-shot, cheats, controls-cursor, controls-kempston,
 ; controls-keyboard, controls-sinclair, end-congrats, fatguy-hits, life-up,
 ; long-l4, rzx-l1-00000-poke, rzx-l1-02000-poke, rzx-l1-04000-poke,
 ; rzx-l1-06000-poke, rzx-l1-08000-poke, rzx-l1-10000-poke, rzx-l1-12000-poke,

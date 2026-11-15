@@ -81,7 +81,7 @@ TallyDetonators:
 ; the ending text on its screens (stage 1: the RZX run's level 5, frames 23
 ; 200-26 500).
 ;
-; Witness: L1 12 (rzx-l5-23000).
+; Witness: L1 6 (rzx-l5-23000).
 TallyLives:
   LD A,(Lives)
   AND A
@@ -115,7 +115,7 @@ TallyDone:
 ; LevelsDone ($7EF2) = 0, so Level5Open stays clear) once: "CONGRATULATIONS ...
 ; YOU HAVE COMPLETED LEVEL 4" on its screens.
 ;
-; Witness: L1 2 (end-congrats).
+; Witness: L1 1 (end-congrats).
 Congratulations:
   LD A,(Level)            ; the level's digit into the text
   ADD A,$34
@@ -131,7 +131,7 @@ Congratulations:
 ;
 ; Evidence: rzx-l5-23000 once.
 ;
-; Witness: L1 4 (end-congrats, rzx-l5-23000).
+; Witness: L1 2 (end-congrats, rzx-l5-23000).
 ShowEndText:
   CALL FontCellsMode
   PUSH HL
@@ -146,7 +146,7 @@ ShowEndText:
 ;
 ; Evidence: 6 runs in 2 builds (rzx-l5-23000 5, rzx-l5-24000-poke 1).
 ;
-; Witness: L1 26 (end-congrats, rzx-l5-23000, rzx-l5-24000-poke).
+; Witness: L1 13 (end-congrats, rzx-l5-23000, rzx-l5-24000-poke).
 ShowEndTextLoop:
   LD A,(HL)
   CP $FF
@@ -164,7 +164,7 @@ ShowEndTextLoop:
 ;
 ; Evidence: rzx-l5-23000 (the four lines).
 ;
-; Witness: L1 22 (end-congrats, rzx-l5-23000, rzx-l5-24000-poke).
+; Witness: L1 11 (end-congrats, rzx-l5-23000, rzx-l5-24000-poke).
 ShowEndTextNext:
   INC HL
   JP ShowEndTextLoop
@@ -175,7 +175,7 @@ ShowEndTextNext:
 ;
 ; Evidence: 2 runs in 2 builds (rzx-l5-23000, rzx-l5-24000-poke).
 ;
-; Witness: L1 6 (end-congrats, rzx-l5-23000, rzx-l5-24000-poke).
+; Witness: L1 3 (end-congrats, rzx-l5-23000, rzx-l5-24000-poke).
 EndTextPause:
   LD BC,2500
 
@@ -186,7 +186,7 @@ EndTextPause:
 ; Evidence: 4512 runs in 3 builds (rzx-l5-23000 2256, rzx-l5-24000-poke 2000,
 ; rzx-l5-26000-poke 256): no recording reaches the end of the wait or a key.
 ;
-; Witness: L1 11612 (end-congrats, rzx-l5-23000, rzx-l5-24000-poke,
+; Witness: L1 5806 (end-congrats, rzx-l5-23000, rzx-l5-24000-poke,
 ; rzx-l5-26000-poke).
 EndTextWait:
   PUSH BC
@@ -220,8 +220,15 @@ EndTextExit:
 ; ends the list. The digit at $87CD is written by Congratulations (Level +
 ; $34). Shown by ShowEndText.
 CongratulationsText:
+  ; $87B2 "YOU HAVE COMPLETED LEVEL 9": the digit patched
   INCBIN "res/texts/end-congratulations.bin",$0000,45
 CompletedLevelDigit:
+  ; $87CD the level, + $34
+  ; $87CF "HOWEVER TO COMPLETE THE GAME"
+  ; $87EE "PROPERLY YOU MUST COMPLETE ALL"
+  ; $880F "LEVELS IN ONE GAME STARTING"
+  ; $882D "FROM LEVEL 5": 1, the digit stored 4 higher
+  ; $883C the end of the list
   INCBIN "res/texts/end-congratulations.bin",$002D,112
 
 ; The Fat Guy's end text: records of column, row, text
@@ -230,4 +237,8 @@ CompletedLevelDigit:
 ; ROBOT STARSHIPS / WHAT WILL RICK DO NEXT", in the same records as
 ; CongratulationsText. Shown by TallyLives through ShowEndText (rzx-l5-23000).
 FatGuyEndText:
+  ; $8859 "BY DEFEATING THE FAT GUY AND"
+  ; $8878 "HIS FLEET OF ROBOT STARSHIPS"
+  ; $8897 "WHAT WILL RICK DO NEXT"
+  ; $88B0 the end of the list
   INCBIN "res/texts/end-fat-guy.bin",$0000,116

@@ -6196,7 +6196,7 @@ segment `$5D37-$5E33` of the image, run at `$FF00-$FFFC`.
 
 A = `$FF`, then LdBytes. Called by stage 2 for the blocks 4, 5 and (on a 128K) 6.
 
-Witness: L1 8 (c x2).
+Witness: L1 5 (c x2).
 
 | | |
 | --- | --- |
@@ -6212,7 +6212,7 @@ A = the flag byte, IX = the address, DE = the length. The carry is set by the ro
 
 Every return (an error, BREAK or the end) goes to LoadEnd, with carry set for a good load.
 
-Witness: L1 11 (c x2).
+Witness: L1 7 (c x2).
 
 | | |
 | --- | --- |
@@ -6268,7 +6268,7 @@ Witness: L1 647 (c x2).
 
 **POP AF and return: the end of LoadEnd**
 
-Witness: L1 11 (c x2).
+Witness: L1 7 (c x2).
 
 | | |
 | --- | --- |
@@ -6540,7 +6540,7 @@ walk), and `work/stage1/rec/menu` (`$853F`-`$85E0`), `work/stage1/rec/deaths` (`
 
 Called by InterruptHandler `$8456` every frame. Bank 4 (`$14`) at `$C000`; GlueRequests; EffectBusy `$9BA3` = AY channel A's volume (`$D0A2`), so the footstep effect waits while channel A sounds; then `$7FFD` = Last7FFD `$8450` (the paging the interrupted code had).
 
-Witness: L1 47031 (c1, deaths, gameover, menu, opt2, rooms).
+Witness: L1 44417 (c1, deaths, gameover, menu, opt2, rooms).
 
 [Animation: `AyGlue` at work](img/routines/AyGlue.gif)
 
@@ -6567,7 +6567,7 @@ Witness: L1 47031 (c1, deaths, gameover, menu, opt2, rooms).
 
 - Then EffectRequest `$8454` (`$FF` after reading it): none -> `JP PlayFrame` (the envelopes), else `JP PlayEffect` with A = the effect.
 
-Witness: L1 47031 (c1, deaths, gameover, menu, opt2, rooms).
+Witness: L1 44417 (c1, deaths, gameover, menu, opt2, rooms).
 
 | | |
 | --- | --- |
@@ -6583,7 +6583,7 @@ Witness: L1 47031 (c1, deaths, gameover, menu, opt2, rooms).
 
 Replaces `CALL $8529` (ReadInput) in ShowHighScores and TitleSequence. ReadInput, EI: Z (fire) returns Z. Else DecodeDirection `$850E`: no direction or no left / right (D = 0) returns NZ; right (D = +1) sets SoundMode `$8455` = 1 (effects), left 0 (music), and GlueSoundIcon shows it; returns NZ (A = 1).
 
-Witness: L1 7533 (c1, deaths, gameover, menu, opt2).
+Witness: L1 7514 (c1, deaths, gameover, menu, opt2).
 
 | | |
 | --- | --- |
@@ -6598,7 +6598,7 @@ Witness: L1 7533 (c1, deaths, gameover, menu, opt2).
 
 SoundMode bit 0: EffectsIconText `$8225`, else MusicIconText `$821E`, through PrintString `$837B`. Then A = 1, NZ.
 
-Witness: L1 957 (c1, deaths, gameover, menu, opt2).
+Witness: L1 956 (c1, deaths, gameover, menu, opt2).
 
 | | |
 | --- | --- |
@@ -6613,7 +6613,7 @@ Witness: L1 957 (c1, deaths, gameover, menu, opt2).
 
 DI, bank 4 (`$14`) paged and kept in Last7FFD (so the interrupt's AyGlue pages it back), EI, StoryPages `$D3D0`; then DI, bank 0 (`$10`) and Last7FFD, EI. Called by NewGame `$5C9A` before every game.
 
-Witness: L1 8 (c1, deaths, gameover, menu, opt2).
+Witness: L1 7 (c1, deaths, gameover, menu, opt2).
 
 | | |
 | --- | --- |

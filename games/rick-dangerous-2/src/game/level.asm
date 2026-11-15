@@ -38,7 +38,7 @@ SectionCounts:
 ; Evidence: 12 runs in 11 builds (level 1: reads $ECF3-$ED2C and the lists
 ; $ED32-$F1FE, writes $ED32-$F1EC).
 ;
-; Witness: L1 58 (box-shot, controls-cursor, controls-kempston,
+; Witness: L1 32 (box-shot, controls-cursor, controls-kempston,
 ; controls-keyboard, controls-sinclair, rzx-l1-00000-poke, rzx-l5-full,
 ; sec-l1-s8, c1, c48, load-l2-load-l5, sec-l2-s7, sec-l2-s10-sec-l2-s12,
 ; sec-l3-s3-sec-l3-s5, sec-l3-s7-sec-l3-s9, sec-l4-s x5, sec-l5-s3, sec-l5-s5).
@@ -135,7 +135,7 @@ ExitDirection:
 ; SetupSection $8AE6 (97). Witness: 269 runs in 62 builds; reads the maps only
 ; ($E1ED-$E9D4 over all recordings), writes $6B00-$707F.
 ;
-; Witness: L1 651 (box-shot, controls-cursor, controls-kempston,
+; Witness: L1 335 (box-shot, controls-cursor, controls-kempston,
 ; controls-keyboard, controls-sinclair, fatguy-hits, life-up, long-l4,
 ; rzx-l1-00000-poke, rzx-l1-02000-poke, rzx-l1-04000-poke, rzx-l1-06000-poke,
 ; rzx-l1-08000-poke, rzx-l1-10000-poke, rzx-l1-12000-poke, rzx-l1-14000-poke,
@@ -260,7 +260,7 @@ BuildViewSP:
 ;
 ; Evidence: 97 runs in 43 builds, all from $7965.
 ;
-; Witness: L1 279 (box-shot, controls-cursor, controls-kempston,
+; Witness: L1 149 (box-shot, controls-cursor, controls-kempston,
 ; controls-keyboard, controls-sinclair, fatguy-hits, life-up, long-l4,
 ; rzx-l1-00000-poke, rzx-l1-02000-poke, rzx-l1-06000-poke, rzx-l1-08000-poke,
 ; rzx-l1-12000-poke, rzx-l1-14000-poke, rzx-l1-20000-poke, rzx-l2-00000-poke,
@@ -289,7 +289,7 @@ RedrawAll:
 ;
 ; Evidence: 27 runs in 11 builds (callers $7F4D 11, $88CA 16).
 ;
-; Witness: L1 158 (box-shot, controls-cursor, controls-kempston,
+; Witness: L1 86 (box-shot, controls-cursor, controls-kempston,
 ; controls-keyboard, controls-sinclair, end-congrats, rzx-l5-23000,
 ; rzx-l5-full, sec-l1-s8, c1, c48, load-l2-load-l5, sec-l2-s7,
 ; sec-l2-s10-sec-l2-s12, sec-l3-s3-sec-l3-s5, sec-l3-s7-sec-l3-s9, sec-l4-s x5,
@@ -310,7 +310,7 @@ BlankView:
 ;
 ; Evidence: 469 runs in 63 builds.
 ;
-; Witness: L1 1217 (box-shot, controls-cursor, controls-kempston,
+; Witness: L1 626 (box-shot, controls-cursor, controls-kempston,
 ; controls-keyboard, controls-sinclair, end-congrats, fatguy-hits, life-up,
 ; long-l4, rzx-l1-00000-poke, rzx-l1-02000-poke, rzx-l1-04000-poke,
 ; rzx-l1-06000-poke, rzx-l1-08000-poke, rzx-l1-10000-poke, rzx-l1-12000-poke,
@@ -366,7 +366,7 @@ ClearRedraw:
 ; (rzx-l3-10000-poke: level 3 section 6's exit $82; rzx-l4-20000-poke: level 4
 ; section 7's $82, the $7D9E runs).
 ;
-; Witness: L1 2431 (end-congrats, long-l4, rzx-l1-00000-poke,
+; Witness: L1 1289 (end-congrats, long-l4, rzx-l1-00000-poke,
 ; rzx-l1-02000-poke, rzx-l1-06000-poke, rzx-l1-08000-poke, rzx-l1-12000-poke,
 ; rzx-l1-14000-poke, rzx-l1-20000-poke, rzx-l2-04000-poke, rzx-l2-08000-poke,
 ; rzx-l2-12000-poke, rzx-l2-16000-poke, rzx-l2-18000-poke, rzx-l2-20000-poke,
@@ -425,7 +425,7 @@ ExitRowTest:
 ; Evidence: long-l4 (stage 2, POKE CheatExits = $FF) once: the exit $82 at the
 ; end of level 4 section 7 took the JP Z and the level went on into section 10.
 ;
-; Witness: L1 2 (long-l4).
+; Witness: L1 1 (long-l4).
 LongLevelsTest:
   BIT 4,C
   JP Z,CheckExitRide
@@ -441,7 +441,7 @@ LongLevelsTest:
 ; Evidence: 12 runs in 7 builds; bit 5 9 times (level 2 section 5 and 7, level
 ; 4 sections 3-5, level 5 section 1), bit 6 once.
 ;
-; Witness: L1 26 (end-congrats, rzx-l2-20000-poke, rzx-l3-10000-poke,
+; Witness: L1 13 (end-congrats, rzx-l2-20000-poke, rzx-l3-10000-poke,
 ; rzx-l4-10000-poke, rzx-l4-12000-poke, rzx-l4-20000-poke, rzx-l5-06000-poke,
 ; rzx-l5-20000-poke).
 CheckExitFlags:
@@ -517,7 +517,7 @@ LevelHookOn:
 ; taken 33 times over the builds (the POKE $8A30 of the RZX pieces makes the
 ; lives infinite).
 ;
-; Witness: L1 58 (controls-cursor, controls-kempston, controls-keyboard,
+; Witness: L1 35 (controls-cursor, controls-kempston, controls-keyboard,
 ; controls-sinclair, fatguy-hits, rzx-l3-02000-poke, rzx-l3-04000-poke,
 ; rzx-l3-06000-poke, rzx-l5-18000-poke, rzx-l5-20000-poke, rzx-l5-full, c1,
 ; c48, load-l2, load-l4).
@@ -580,7 +580,7 @@ LoseLifeRestart:
 ; 27). Witness: 97 runs in 43 builds; LevelHookA called twice
 ; (rzx-l5-20000-poke).
 ;
-; Witness: L1 279 (box-shot, controls-cursor, controls-kempston,
+; Witness: L1 149 (box-shot, controls-cursor, controls-kempston,
 ; controls-keyboard, controls-sinclair, fatguy-hits, life-up, long-l4,
 ; rzx-l1-00000-poke, rzx-l1-02000-poke, rzx-l1-06000-poke, rzx-l1-08000-poke,
 ; rzx-l1-12000-poke, rzx-l1-14000-poke, rzx-l1-20000-poke, rzx-l2-00000-poke,

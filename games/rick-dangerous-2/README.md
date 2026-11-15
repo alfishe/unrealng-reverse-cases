@@ -1,6 +1,6 @@
 # Rick Dangerous 2 (Micro Style, 1990)
 
-State: docs written, in review (2026-11-14: docs 01-10 by the writer, integrated; docs 11 and 12 generated; two review
+State: complete (2026-11-14; two review rounds, kit gaps fixed): docs 01-10 by the writer, integrated; docs 11 and 12 generated; two review
 rounds next). 12 documents, 77 figures (PNG), 30 animations (GIF), 67 mermaid diagrams and 50 audio files (9 MP3, 41
 short WAV; 5.6 MB, 5 610 330 bytes; `du -sh` prints 5.4M), counted on 2026-11-14 with:
 

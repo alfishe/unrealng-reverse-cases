@@ -2145,7 +2145,7 @@ From BasicCode's `JP $B65B`.
 
 3. DI; FindPilot (no pilot within its time: `JP $0000`); H = 0, the checksum; LoadBlock IX = `$B75A`, DE = `$010F`, stage 2's first piece; `JP $B856` (LoadRest, in that piece).
 
-Witness: L1 2 (c1).
+Witness: L1 1 (c1).
 
 | | |
 | --- | --- |
@@ -2166,7 +2166,7 @@ The border to BorderColour with MIC set (`OR $08`); C = the port `$FE` level now
 
 The same plan as the ROM's LD-LEADER and LD-SYNC with its own constants. c1 counted 249 pilot pairs, then 4337 pilot edges to the sync.
 
-Witness: L1 2 (c1).
+Witness: L1 1 (c1).
 
 | | |
 | --- | --- |
@@ -2186,7 +2186,7 @@ Then D - 1 = zeros - 5 padding pairs, never tested (FILL bits). So a byte is 9 +
 
 Out: L = the byte, carry set; NC (and B wrapped) on a timeout. Called by LoadBlock for each byte and for the checksum.
 
-Witness: L1 82906 (c1).
+Witness: L1 41453 (c1).
 
 | | |
 | --- | --- |
@@ -2202,7 +2202,7 @@ Called by stage 2's HookWork (`$B784`). L holds a marker bit (2 at the hook's st
 
 Out: L = `$FF` and carry set (stage 2 then gives that L to ByteHook as if it were a byte: XORed into H and counted); NC on a timeout.
 
-Witness: L1 60788 (c1).
+Witness: L1 30394 (c1).
 
 | | |
 | --- | --- |
@@ -2215,7 +2215,7 @@ Witness: L1 60788 (c1).
 
 EdgeWait twice (the second by falling into it). Called by FindPilot, ReadByte, PadPairs, LoadBlock and stage 2.
 
-Witness: L1 914788 (c1).
+Witness: L1 457394 (c1).
 
 | | |
 | --- | --- |
@@ -2231,7 +2231,7 @@ A delay of 25 x 14 T, then EdgeNoDelay `$B714` (stage 2 calls it directly): `AND
 
 The pass is the ROM's LD-SAMPLE length (56 T); a never-taken `RET C` and a `NOP` stand where the ROM tests SPACE and changes the border, so the screen keeps its border and BREAK does nothing.
 
-Witness: L1 1857012 (c1).
+Witness: L1 928506 (c1).
 
 | | |
 | --- | --- |
@@ -2247,7 +2247,7 @@ IX = the address, DE = the length; H = the running checksum. A lead pair (EdgePa
 
 Called 8 times: by Loader1Start (`$B75A`, `$10F`) and by stage 2 (LoadRest: `$B869`, `$74` and `$B8DD`, `$302`; LoadFiles: `$B326`, `$01D8`; `$998E`, `$1998`; `$C000`, `$4000`; `$5C00`, `$4000`; `$9C00`, `$01F0`).
 
-Witness: L1 16 (c1).
+Witness: L1 8 (c1).
 
 | | |
 | --- | --- |
@@ -2265,7 +2265,7 @@ Called by LoadBlock after each byte, entered by LoadBlock's end after the checks
 
 c1: 5882 hooks ran (tools/tapesim.py run, work/ann/04-loader/hooks.py): after 8 bytes of the second load, then every 7 bytes and the hook's own count (6 data bytes and the last load's checksum byte at the start of the third to eighth loads).
 
-Witness: L1 94670 (c1).
+Witness: L1 47335 (c1).
 
 | | |
 | --- | --- |
@@ -2782,7 +2782,7 @@ image, run at `$7B52-$7CFF`.
 
 The stream overwrites the BASIC, the system variables and the loader's stack area, so nothing of the BASIC loader survives.
 
-Witness: L1 2 (c1).
+Witness: L1 1 (c1).
 
 | | |
 | --- | --- |
@@ -2798,7 +2798,7 @@ Each byte: D = A, A = 17 x D + C, XOR (HL), stored; the decrypted byte is the ne
 
 c1: 3642 bytes decrypted over 372 addresses (`$7BC0-$7D33`), up to 17 layers on one address.
 
-Witness: L1 36 (c1).
+Witness: L1 18 (c1).
 
 | | |
 | --- | --- |
@@ -2818,7 +2818,7 @@ Witness: L1 36 (c1).
 
 c1: 30 layers, 18 XorLayers (they decipher) and 12 sum layers (they decipher nothing), incoming A = 0 each (src/head/keys.txt).
 
-Witness: L1 2 (c1).
+Witness: L1 1 (c1).
 
 | | |
 | --- | --- |
@@ -2834,7 +2834,7 @@ In: A the key, B, C the step - 1. HL = `$4000`, DE = C + 1; A + B, then A + (HL)
 
 SumLayer2 `$7C15` and SumLayer3 `$7C54` are the same code at other addresses (the chain's own bytes take part in the sums, so three copies give three different chains of keys).
 
-Witness: L1 12 (c1).
+Witness: L1 6 (c1).
 
 | | |
 | --- | --- |
@@ -2848,7 +2848,7 @@ Witness: L1 12 (c1).
 
 Part of ChainLayers, cut by the sum layer that sits inside the run.
 
-Witness: L1 2 (c1).
+Witness: L1 1 (c1).
 
 | | |
 | --- | --- |
@@ -2862,7 +2862,7 @@ Witness: L1 2 (c1).
 
 The same eleven instructions as SumLayer1 `$7BD2`.
 
-Witness: L1 6 (c1).
+Witness: L1 3 (c1).
 
 | | |
 | --- | --- |
@@ -2876,7 +2876,7 @@ Witness: L1 6 (c1).
 
 Part of ChainLayers, cut by the sum layer that sits inside the run.
 
-Witness: L1 2 (c1).
+Witness: L1 1 (c1).
 
 | | |
 | --- | --- |
@@ -2890,7 +2890,7 @@ Witness: L1 2 (c1).
 
 The same eleven instructions as SumLayer1 `$7BD2`.
 
-Witness: L1 6 (c1).
+Witness: L1 3 (c1).
 
 | | |
 | --- | --- |
@@ -2904,7 +2904,7 @@ Witness: L1 6 (c1).
 
 Part of ChainLayers, cut by the sum layer that sits inside the run.
 
-Witness: L1 2 (c1).
+Witness: L1 1 (c1).
 
 | | |
 | --- | --- |
@@ -2926,7 +2926,7 @@ Witness: L1 2 (c1).
 
 c1: the 16-bit layer over 32794 bytes, 16397 words.
 
-Witness: L1 2 (c1).
+Witness: L1 1 (c1).
 
 | | |
 | --- | --- |
@@ -2958,7 +2958,7 @@ The game's own copy of these bytes is the decrypted block; the mover's last word
 
 c1: one run.
 
-Witness: L1 3 (c1).
+Witness: L1 1 (c1).
 
 | | |
 | --- | --- |

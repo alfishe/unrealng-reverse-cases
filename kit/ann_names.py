@@ -1,12 +1,14 @@
 #!/usr/bin/env python3
 """Name labels inside entries of an .ann (the l_XXXX labels of the generated source).
 
-    python3 kit/ann_names.py --case CASE [--ann FILE] CF65=SetRestart $cf8a=FreeRecordsLoop ...
+    python3 kit/ann_names.py --case CASE [--ann FILE] [--names FILE] CF65=SetRestart $cf8a=FreeRecordsLoop ...
 
 --ann defaults to the main part's CASE/src/<main>/<main>.ann (case.json "main"; src/game/game.ann in a game; a part's
 .ann is given relative to the case). Addresses in either case,
-with or without the $. The lines are read with kit/mkgame.py's grammar (docs/ann-format.md 1): a kind is a lone
-lower-case c, b, w, t or s; a one-letter name (X, Y) is a name, never a kind; the width of a data entry is not a name.
+with or without the $. --names FILE (repeatable) reads more pairs from a file: ADDR=Name items separated by spaces or
+lines, a '#' to the end of a line a comment (a list of 101 names given as $(cat names.txt) is one word in zsh).
+The lines are read with kit/mkgame.py's grammar (docs/ann-format.md 1): a kind is a lone lower-case c, b, w, t or s;
+a one-letter name (X, Y) is a name, never a kind; the width of a data entry is not a name.
 
 An address with a comment line ("$CF65 ; text") gets the name on that line; otherwise a line "$ADDR Name" goes in
 after the annotation line of the nearest address below it. A name already used, or an address that is an entry, is
@@ -31,14 +33,26 @@ def main():
     config = os.path.join(argv[1], 'case.json')
     main = main_name(json.load(open(config)) if os.path.exists(config) else {})
     ANN = os.path.join(argv[1], 'src', main, main + '.ann')
-    rest = argv[2:]
-    if rest[:1] == ['--ann']:
-        if len(rest) < 3:
-            sys.exit(__doc__)
-        ANN = os.path.join(argv[1], rest[1])
-        rest = rest[2:]
+    rest, items = argv[2:], []
+    while rest:
+        if rest[0] in ('--ann', '--names'):
+            if len(rest) < 2:
+                sys.exit(__doc__)
+            if rest[0] == '--ann':
+                ANN = os.path.join(argv[1], rest[1])
+            else:
+                for line in open(rest[1]):
+                    items += line.split('#', 1)[0].split()
+            rest = rest[2:]
+            continue
+        items.append(rest[0])
+        rest = rest[1:]
+    if not items:
+        sys.exit(__doc__)
     pairs = []
-    for arg in rest:
+    for arg in items:
+        if arg.count('=') != 1:
+            sys.exit(f'{arg}: not ADDR=Name')
         a, name = arg.split('=')
         pairs.append((int(a.lstrip('$'), 16), name))
     lines = open(ANN).read().split('\n')

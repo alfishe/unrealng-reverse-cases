@@ -16,7 +16,7 @@
 ; Inside when 0 <= x - E < C and 0 <= y - HL < B. Callers: TestEnemyHits
 ; ($8C51, 386), $A76C (the trigger boxes, 271). Witness: 657 runs in 34 builds.
 ;
-; Witness: L1 1314 (rzx-l1-02000-poke, rzx-l1-04000-poke, rzx-l1-08000-poke,
+; Witness: L1 657 (rzx-l1-02000-poke, rzx-l1-04000-poke, rzx-l1-08000-poke,
 ; rzx-l1-10000-poke, rzx-l1-16000-poke, rzx-l1-18000-poke, rzx-l1-20000-poke,
 ; rzx-l1-22000-poke, rzx-l1-24000-poke, rzx-l2-00000-poke, rzx-l2-02000-poke,
 ; rzx-l2-04000-poke, rzx-l2-06000-poke, rzx-l2-08000-poke, rzx-l2-10000-poke,
@@ -61,15 +61,15 @@ PunchHitsFar:
 ; As PunchHits. Callers: TestEnemyHits ($8C0B, 717), $A5DE (pickups, 123),
 ; $A729 (trigger boxes, 43). Witness: 883 runs in 33 builds.
 ;
-; Witness: L1 1824 (box-shot, fatguy-hits, rzx-l1-00000-poke,
-; rzx-l1-02000-poke, rzx-l1-08000-poke, rzx-l1-10000-poke, rzx-l1-12000-poke,
-; rzx-l1-24000-poke, rzx-l2-00000-poke, rzx-l2-02000-poke, rzx-l2-04000-poke,
-; rzx-l2-06000-poke, rzx-l2-10000-poke, rzx-l2-12000-poke, rzx-l2-16000-poke,
-; rzx-l2-18000-poke, rzx-l2-20000-poke, rzx-l2-22000-poke, rzx-l3-00000-poke,
-; rzx-l3-02000-poke, rzx-l3-04000-poke, rzx-l3-06000-poke, rzx-l3-10000-poke,
-; rzx-l4-00000-poke, rzx-l4-02000-poke, rzx-l4-06000-poke, rzx-l4-08000-poke,
-; rzx-l4-10000-poke, rzx-l4-12000-poke, rzx-l5-02000-poke, rzx-l5-06000-poke,
-; rzx-l5-12000-poke, rzx-l5-16000-poke, rzx-l5-20000-poke, rzx-l5-full).
+; Witness: L1 912 (box-shot, fatguy-hits, rzx-l1-00000-poke, rzx-l1-02000-poke,
+; rzx-l1-08000-poke, rzx-l1-10000-poke, rzx-l1-12000-poke, rzx-l1-24000-poke,
+; rzx-l2-00000-poke, rzx-l2-02000-poke, rzx-l2-04000-poke, rzx-l2-06000-poke,
+; rzx-l2-10000-poke, rzx-l2-12000-poke, rzx-l2-16000-poke, rzx-l2-18000-poke,
+; rzx-l2-20000-poke, rzx-l2-22000-poke, rzx-l3-00000-poke, rzx-l3-02000-poke,
+; rzx-l3-04000-poke, rzx-l3-06000-poke, rzx-l3-10000-poke, rzx-l4-00000-poke,
+; rzx-l4-02000-poke, rzx-l4-06000-poke, rzx-l4-08000-poke, rzx-l4-10000-poke,
+; rzx-l4-12000-poke, rzx-l5-02000-poke, rzx-l5-06000-poke, rzx-l5-12000-poke,
+; rzx-l5-16000-poke, rzx-l5-20000-poke, rzx-l5-full).
 BulletHits:
   LD A,(BulletX)
   SUB E
@@ -108,7 +108,7 @@ BulletHitsFar:
 ; TestEnemyHits ($8C2B, 173), $A755 (trigger boxes, 194), level 5's $F938 (14).
 ; Witness: 381 runs in 26 builds.
 ;
-; Witness: L1 762 (rzx-l1-00000-poke, rzx-l1-08000-poke, rzx-l1-12000-poke,
+; Witness: L1 381 (rzx-l1-00000-poke, rzx-l1-08000-poke, rzx-l1-12000-poke,
 ; rzx-l1-16000-poke, rzx-l2-00000-poke, rzx-l2-02000-poke, rzx-l2-06000-poke,
 ; rzx-l2-08000-poke, rzx-l2-10000-poke, rzx-l2-12000-poke, rzx-l2-14000-poke,
 ; rzx-l2-20000-poke, rzx-l4-00000-poke, rzx-l4-04000-poke, rzx-l4-10000-poke,
@@ -145,7 +145,7 @@ BlastBorrow:
 ;
 ; Evidence: 105 runs in 21 builds.
 ;
-; Witness: L1 210 (rzx-l1-00000-poke, rzx-l1-08000-poke, rzx-l1-12000-poke,
+; Witness: L1 105 (rzx-l1-00000-poke, rzx-l1-08000-poke, rzx-l1-12000-poke,
 ; rzx-l1-16000-poke, rzx-l2-06000-poke, rzx-l2-08000-poke, rzx-l2-10000-poke,
 ; rzx-l2-14000-poke, rzx-l2-20000-poke, rzx-l4-00000-poke, rzx-l4-04000-poke,
 ; rzx-l4-10000-poke, rzx-l4-16000-poke, rzx-l4-18000-poke, rzx-l5-00000-poke,
@@ -182,7 +182,7 @@ BlastHitsFar:
 ; Called by ProbePoint for the solid objects. Witness: 336 runs in 18 builds; a
 ; hit twice.
 ;
-; Witness: L1 672 (rzx-l1-00000-poke, rzx-l1-12000-poke, rzx-l2-00000-poke,
+; Witness: L1 336 (rzx-l1-00000-poke, rzx-l1-12000-poke, rzx-l2-00000-poke,
 ; rzx-l2-02000-poke, rzx-l2-04000-poke, rzx-l2-10000-poke, rzx-l2-12000-poke,
 ; rzx-l2-16000-poke, rzx-l2-22000-poke, rzx-l3-00000-poke, rzx-l3-02000-poke,
 ; rzx-l3-06000-poke, rzx-l4-02000-poke, rzx-l4-08000-poke, rzx-l4-10000-poke,
@@ -221,7 +221,7 @@ PointInObjectY:
 ; 1090 runs in 44 builds; a solid object twice (rzx-l2-12000-poke,
 ; rzx-l4-10000-poke).
 ;
-; Witness: L1 2485 (box-shot, controls-cursor, controls-kempston,
+; Witness: L1 1289 (box-shot, controls-cursor, controls-kempston,
 ; controls-keyboard, controls-sinclair, fatguy-hits, rzx-l1-00000-poke,
 ; rzx-l1-02000-poke, rzx-l1-06000-poke, rzx-l1-08000-poke, rzx-l1-10000-poke,
 ; rzx-l1-12000-poke, rzx-l1-14000-poke, rzx-l1-18000-poke, rzx-l1-20000-poke,
@@ -282,7 +282,7 @@ ProbeCell:
 ; (the blast, 324), the traps $A470 (83 559), the trigger boxes $A6FE (99 544),
 ; level 5's $F943 and $FAC8. Witness: 222 000 runs in 64 builds.
 ;
-; Witness: L1 535245 (box-shot, cheats, controls-cursor, controls-kempston,
+; Witness: L1 273377 (box-shot, cheats, controls-cursor, controls-kempston,
 ; controls-keyboard, controls-sinclair, end-congrats, fatguy-hits, life-up,
 ; long-l4, rzx-l1-00000-poke, rzx-l1-02000-poke, rzx-l1-04000-poke,
 ; rzx-l1-06000-poke, rzx-l1-08000-poke, rzx-l1-10000-poke, rzx-l1-12000-poke,
@@ -352,7 +352,7 @@ TouchRickFar:
 ;
 ; Evidence: 18 534 runs in 57 builds.
 ;
-; Witness: L1 42082 (cheats, fatguy-hits, long-l4, rzx-l1-00000-poke,
+; Witness: L1 21166 (cheats, fatguy-hits, long-l4, rzx-l1-00000-poke,
 ; rzx-l1-02000-poke, rzx-l1-04000-poke, rzx-l1-06000-poke, rzx-l1-08000-poke,
 ; rzx-l1-10000-poke, rzx-l1-12000-poke, rzx-l1-16000-poke, rzx-l1-18000-poke,
 ; rzx-l1-20000-poke, rzx-l1-22000-poke, rzx-l1-24000-poke, rzx-l2-00000-poke,
@@ -386,7 +386,7 @@ TouchRickSameY:
 ; Callers: the traps $A451 (62 770, the enemies against a trap), $A79A (the
 ; trigger boxes, 683). Witness: 63 453 runs in 52 builds.
 ;
-; Witness: L1 164733 (cheats, life-up, rzx-l1-00000-poke, rzx-l1-02000-poke,
+; Witness: L1 83903 (cheats, life-up, rzx-l1-00000-poke, rzx-l1-02000-poke,
 ; rzx-l1-04000-poke, rzx-l1-08000-poke, rzx-l1-10000-poke, rzx-l1-12000-poke,
 ; rzx-l1-16000-poke, rzx-l1-22000-poke, rzx-l1-24000-poke, rzx-l2-00000-poke,
 ; rzx-l2-02000-poke, rzx-l2-04000-poke, rzx-l2-06000-poke, rzx-l2-08000-poke,
@@ -452,7 +452,7 @@ TouchObjSameY:
 ; Callers: ProbeGround ($8ED8, $8F18), $90E6 and $912B (109 000 each), $A416,
 ; $A57D, $A7D7. Witness: 196 030 runs in 59 builds.
 ;
-; Witness: L1 460108 (box-shot, cheats, life-up, long-l4, rzx-l1-00000-poke,
+; Witness: L1 236231 (box-shot, cheats, life-up, long-l4, rzx-l1-00000-poke,
 ; rzx-l1-02000-poke, rzx-l1-04000-poke, rzx-l1-06000-poke, rzx-l1-08000-poke,
 ; rzx-l1-10000-poke, rzx-l1-12000-poke, rzx-l1-14000-poke, rzx-l1-16000-poke,
 ; rzx-l1-18000-poke, rzx-l1-20000-poke, rzx-l1-22000-poke, rzx-l1-24000-poke,
@@ -531,7 +531,7 @@ OverlapSameY:
 ; Callers: the bomb's fall $91EB ($9222 5704, $9247 202), $9320 (5610).
 ; Witness: 5812 runs in 34 builds: 108 for each bomb dropped (c1, controls-*).
 ;
-; Witness: L1 11948 (box-shot, controls-cursor, controls-kempston,
+; Witness: L1 6136 (box-shot, controls-cursor, controls-kempston,
 ; controls-keyboard, controls-sinclair, rzx-l1-00000-poke, rzx-l1-04000-poke,
 ; rzx-l1-08000-poke, rzx-l1-12000-poke, rzx-l1-16000-poke, rzx-l1-20000-poke,
 ; rzx-l2-00000-poke, rzx-l2-02000-poke, rzx-l2-04000-poke, rzx-l2-06000-poke,
@@ -644,7 +644,7 @@ ProbeRising:
 ;
 ; Evidence: 5812 runs in 34 builds.
 ;
-; Witness: L1 11948 (box-shot, controls-cursor, controls-kempston,
+; Witness: L1 6136 (box-shot, controls-cursor, controls-kempston,
 ; controls-keyboard, controls-sinclair, rzx-l1-00000-poke, rzx-l1-04000-poke,
 ; rzx-l1-08000-poke, rzx-l1-12000-poke, rzx-l1-16000-poke, rzx-l1-20000-poke,
 ; rzx-l2-00000-poke, rzx-l2-02000-poke, rzx-l2-04000-poke, rzx-l2-06000-poke,

@@ -15,7 +15,7 @@
 ; footstep effect waits while channel A sounds; then `$7FFD` = Last7FFD `$8450`
 ; (the paging the interrupted code had).
 ;
-; Witness: L1 47031 (c1, deaths, gameover, menu, opt2, rooms).
+; Witness: L1 44417 (c1, deaths, gameover, menu, opt2, rooms).
 AyGlue:
   LD A,$14
   LD BC,$7FFD
@@ -46,7 +46,7 @@ AyGlue:
 ; - Then EffectRequest `$8454` (`$FF` after reading it): none -> `JP PlayFrame`
 ; (the envelopes), else `JP PlayEffect` with A = the effect.
 ;
-; Witness: L1 47031 (c1, deaths, gameover, menu, opt2, rooms).
+; Witness: L1 44417 (c1, deaths, gameover, menu, opt2, rooms).
 GlueRequests:
   LD HL,TuneRequest
 GlueTune:
@@ -100,7 +100,7 @@ GlueEffect:
 ; = 1 (effects), left 0 (music), and GlueSoundIcon shows it; returns NZ (A =
 ; 1).
 ;
-; Witness: L1 7533 (c1, deaths, gameover, menu, opt2).
+; Witness: L1 7514 (c1, deaths, gameover, menu, opt2).
 GlueMenuInput:
   CALL ReadInput
   EI
@@ -120,7 +120,7 @@ GlueSetMode:
 ; SoundMode bit 0: EffectsIconText `$8225`, else MusicIconText `$821E`, through
 ; PrintString `$837B`. Then A = 1, NZ.
 ;
-; Witness: L1 957 (c1, deaths, gameover, menu, opt2).
+; Witness: L1 956 (c1, deaths, gameover, menu, opt2).
 GlueSoundIcon:
   LD HL,EffectsIconText
   LD A,(SoundMode)
@@ -141,7 +141,7 @@ GlueNoFire:
 ; pages it back), EI, StoryPages `$D3D0`; then DI, bank 0 (`$10`) and Last7FFD,
 ; EI. Called by NewGame `$5C9A` before every game.
 ;
-; Witness: L1 8 (c1, deaths, gameover, menu, opt2).
+; Witness: L1 7 (c1, deaths, gameover, menu, opt2).
 GlueIntro:
   DI
   LD A,$14

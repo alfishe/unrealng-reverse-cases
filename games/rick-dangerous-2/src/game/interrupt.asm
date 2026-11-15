@@ -24,7 +24,7 @@
 ; 20 the menus and texts ($7E9D, $8150, $82E4, $8743, $8784). 63 583 runs in 68
 ; builds.
 ;
-; Witness: L1 187571 (box-shot, cheats, controls-cursor, controls-kempston,
+; Witness: L1 98446 (box-shot, cheats, controls-cursor, controls-kempston,
 ; controls-keyboard, controls-sinclair, end-congrats, fatguy-hits, life-up,
 ; long-l4, rzx-l1-00000-poke, rzx-l1-02000-poke, rzx-l1-04000-poke,
 ; rzx-l1-06000-poke, rzx-l1-08000-poke, rzx-l1-10000-poke, rzx-l1-12000-poke,
@@ -66,7 +66,7 @@ FrameCounter:
 ;
 ; Set by the entry code $7B8F; read by CallRam1 $7A77, PlayEffect $7A97, the
 ; level start ($7CAD, $7CDB, $7CDE) and the main loop $7D80 (CALL NZ the beeper
-; step). 0 in every recording (all 128K).
+; step). $FF in c48 (the 48K power-on), 0 in every other recording (all 128K).
 Machine48K:
   DEFB $00
 
@@ -78,7 +78,7 @@ Machine48K:
 ; next WaitFrames puts them back. 133 677 runs in 68 builds: MusicFrameCall 127
 ; 035, PlayEffect 6585, StartTune 57.
 ;
-; Witness: L1 336977 (box-shot, cheats, controls-cursor, controls-kempston,
+; Witness: L1 177012 (box-shot, cheats, controls-cursor, controls-kempston,
 ; controls-keyboard, controls-sinclair, end-congrats, fatguy-hits, life-up,
 ; long-l4, rzx-l1-00000-poke, rzx-l1-02000-poke, rzx-l1-04000-poke,
 ; rzx-l1-06000-poke, rzx-l1-08000-poke, rzx-l1-10000-poke, rzx-l1-12000-poke,
@@ -123,7 +123,7 @@ CallRam1Call:
 ; $9AA5 (4445), $9F67, $A2F2, $A58F, $A5A2, $A5B2, $8C59, the ending's tally
 ; $873E, and level 5's own code ($F956, $F969, $F96E). 6585 runs in 66 builds.
 ;
-; Witness: L1 13756 (box-shot, cheats, controls-cursor, controls-kempston,
+; Witness: L1 7081 (box-shot, cheats, controls-cursor, controls-kempston,
 ; controls-keyboard, controls-sinclair, end-congrats, fatguy-hits, life-up,
 ; long-l4, rzx-l1-00000-poke, rzx-l1-02000-poke, rzx-l1-04000-poke,
 ; rzx-l1-06000-poke, rzx-l1-08000-poke, rzx-l1-10000-poke, rzx-l1-12000-poke,
@@ -167,7 +167,7 @@ PlayEffect:
 ; ending $874B, $9CC6, $9CDB, and the cheat keys ($7D3B, $7D55: A = 1). 57 runs
 ; in 34 builds.
 ;
-; Witness: L1 263 (box-shot, cheats, controls-cursor, controls-kempston,
+; Witness: L1 139 (box-shot, cheats, controls-cursor, controls-kempston,
 ; controls-keyboard, controls-sinclair, end-congrats, life-up,
 ; rzx-l1-00000-poke, rzx-l2-00000-poke, rzx-l2-04000-poke, rzx-l2-08000-poke,
 ; rzx-l2-10000-poke, rzx-l2-12000-poke, rzx-l2-18000-poke, rzx-l2-20000-poke,
@@ -190,7 +190,7 @@ StartTune:
 ; CallRam1 with MusicFrame $CAAF, keeps HL. Called by the IM 2 handler $FF14
 ; every interrupt: 127 035 runs in 68 builds (c1 4706).
 ;
-; Witness: L1 323115 (box-shot, cheats, controls-cursor, controls-kempston,
+; Witness: L1 169949 (box-shot, cheats, controls-cursor, controls-kempston,
 ; controls-keyboard, controls-sinclair, end-congrats, fatguy-hits, life-up,
 ; long-l4, rzx-l1-00000-poke, rzx-l1-02000-poke, rzx-l1-04000-poke,
 ; rzx-l1-06000-poke, rzx-l1-08000-poke, rzx-l1-10000-poke, rzx-l1-12000-poke,
@@ -273,7 +273,7 @@ ObjectTableBEnd:
 ; calls: $A010 x1233, $A016 x317, $A048 x13, $A05F x6; l1q's caller list gives
 ; other figures).
 ;
-; Witness: L1 3010 (rzx-l1-00000-poke, rzx-l1-02000-poke, rzx-l1-04000-poke,
+; Witness: L1 1569 (rzx-l1-00000-poke, rzx-l1-02000-poke, rzx-l1-04000-poke,
 ; rzx-l1-08000-poke, rzx-l1-16000-poke, rzx-l1-20000-poke, rzx-l1-24000-poke,
 ; rzx-l2-00000-poke, rzx-l2-20000-poke, rzx-l3-00000-poke, rzx-l3-02000-poke,
 ; rzx-l3-06000-poke, rzx-l4-02000-poke, rzx-l4-04000-poke, rzx-l4-16000-poke,
@@ -317,7 +317,7 @@ Ticks:
 ; Evidence: 127 035 runs in 68 builds, every call from $FF0E (the handler at
 ; $FEFE: the copy of $7C49); c1 4706.
 ;
-; Witness: L1 328217 (box-shot, cheats, controls-cursor, controls-kempston,
+; Witness: L1 175051 (box-shot, cheats, controls-cursor, controls-kempston,
 ; controls-keyboard, controls-sinclair, end-congrats, fatguy-hits, life-up,
 ; long-l4, rzx-l1-00000-poke, rzx-l1-02000-poke, rzx-l1-04000-poke,
 ; rzx-l1-06000-poke, rzx-l1-08000-poke, rzx-l1-10000-poke, rzx-l1-12000-poke,

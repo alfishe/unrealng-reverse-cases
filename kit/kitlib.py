@@ -114,6 +114,56 @@ def access_trace(hint=None):
     return module
 
 
+def emulator_ids(s):
+    """the ids of the instances an MCP session (unreal-ng's mcplib.Session) lists"""
+    listing = s.call('emulator_manage', {'action': 'list'}, ok=False)
+    return [e.get('id') for e in (listing.structured or {}).get('emulators', [])]
+
+
+def mute(s):
+    """the instance's mixer master muted (every instance a kit tool starts makes no sound)"""
+    s.call('invoke_api', {'method': 'PUT', 'path': '/api/v1/emulator/{id}/audio/mixer/master',
+                          'body': {'muted': True}}, ok=False)
+
+
+def slots_set(s, port_base, slot, options=None, timeout=20.0, hint=None, **params):
+    """emulator_manage slots_set (a card's options: Bumpy's Kempston card `decode=a5`) on the session's instance,
+    and the instance made usable again. unreal-ng restarts the emulator under a new id to apply it, so what a probe
+    held is gone: this waits until the list shows the new instance (an id other than the old one; the same id is
+    taken after `timeout` seconds), pauses it, takes control of it, mutes it and returns (the tool's answer, a
+    corpus.Machine on the new id: its WebAPI url for memory reads). `s` is unreal-ng's mcplib.Session, `port_base`
+    the instance's WebAPI port; `params` go to the tool too (`card=...`).
+
+        answer, m = kitlib.slots_set(lab.s, lab.port_base, 'edge.1', 'decode=a5'); lab.m, lab.url = m, m.url
+    """
+    import sys
+    import time
+    analysis = os.path.join(unreal_root(hint), 'tools', 'verification', 'analysis')
+    if analysis not in sys.path:
+        sys.path.insert(0, analysis)
+    import corpus
+    before = emulator_ids(s)
+    args = dict(params, action='slots_set', slot=slot)
+    if options is not None:
+        args['options'] = options
+    answer = s.call('emulator_manage', args, ok=False)
+    end = time.monotonic() + timeout
+    while True:
+        try:
+            ids = emulator_ids(s)
+        except OSError:  # the endpoint is busy with the restart
+            ids = []
+        if ids and (ids != before or time.monotonic() >= end):
+            break
+        if time.monotonic() >= end:
+            raise SystemExit(f'slots_set {slot}: no instance listed {timeout:.0f} s after the restart')
+        time.sleep(0.1)
+    s.call('control_execution', {'action': 'pause'}, ok=False)
+    s.call('control_execution', {'action': 'take_control'}, ok=False)
+    mute(s)
+    return answer, corpus.Machine(s, port_base)
+
+
 def instruction_times(trace):
     """Each instruction's CPU T-state counted from the trace's start"""
     units = max(1, trace.units_per_t)

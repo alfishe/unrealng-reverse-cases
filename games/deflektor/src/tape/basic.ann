@@ -77,7 +77,7 @@ $B65B c Loader1Start ; The first stage: clear the screen, copy the ROM font to $
 > 1. The attributes `$5800-$5AFF` filled with ClsAttr (0) and the pixels `$4000-$57FF` with 0, both by LDDR from the top (BC = 0 after the first LDDR gives the 0 for the second).
 > 2. LDIR the 768 bytes of RomFont `$3D00` to FontPtr's `$B326`: characters 32-127 for PrintGlyph. The fourth load replaces characters 32-90 with Deflektor's own.
 > 3. DI; FindPilot (no pilot within its time: `JP $0000`); H = 0, the checksum; LoadBlock IX = `$B75A`, DE = `$010F`, stage 2's first piece; `JP $B856` (LoadRest, in that piece).
-> Witness: L1 2 (c1).
+> Witness: L1 1 (c1).
 $B66A ; the pixels: the byte below the attributes, then LDDR $17FF more
 $B672 ; the ROM font, 3 x 256 bytes (C = 0 after the LDDR)
 $B67D ; interrupts off for the rest of the load
@@ -90,7 +90,7 @@ $B693 c FindPilot ; Find the turbo block's pilot and its sync: NC when no edge c
 > 2. Then pilot pairs (EdgePair from B = `$9C`) whose count must pass `$C6` (a pair of 2127 T pulses gives about 60): 256 - H in a row (H = the high byte of the tries left, so 249 in c1), any short pair starts again.
 > 3. The sync: single edges from B = `$C9` while the count reaches `$D4` (the rest of the pilot); the first shorter one is the first sync pulse (693 T), and `JP $B70E` waits for the second's edge. Returns with carry set.
 > The same plan as the ROM's LD-LEADER and LD-SYNC with its own constants. c1 counted 249 pilot pairs, then 4337 pilot edges to the sync.
-> Witness: L1 2 (c1).
+> Witness: L1 1 (c1).
 $B69D ; C = the EAR level now (bit 6 is compared)
 $B6A2 FindPilotStart ; HL = 2000 tries for an edge
 $B6A5 FindPilotEdge
@@ -102,7 +102,7 @@ $B6D4 c ReadByte ; Read one byte into L: 8 pairs MSB first and an invert flag, t
 > DE is kept. D = `$FC`, E = 9 pairs. Each pair is EdgePair from the B the caller or the last pair left (B = `$B0` after each); a count above `$CB` is a 1. Each bit goes into L by the next pass's `RL L`, so after 9 passes L holds bits 1-8 and the carry the ninth, the invert flag: `SBC A,A; XOR L` complements L when the flag is 1. D counts the 0 pairs from -4.
 > Then D - 1 = zeros - 5 padding pairs, never tested (FILL bits). So a byte is 9 + zeros - 5 pairs; with a 1 as long as two 0s, every byte lasts 13 short pairs. The encoder writes the form with fewer ones (tools/tapesim.py `byte_bits`), so zeros is 5 to 9 and the padding 0 to 4.
 > Out: L = the byte, carry set; NC (and B wrapped) on a timeout. Called by LoadBlock for each byte and for the checksum.
-> Witness: L1 82906 (c1).
+> Witness: L1 41453 (c1).
 $B6D5 ; D = -4 (zeros counted up), E = 9 pairs
 $B6D8 ReadByteBit ; the last pair's bit into L
 $B6DF ; a count above $CB is a 1
@@ -117,15 +117,15 @@ $B6FB ReadByteEnd
 $B6FD c PadPairs ; Stage 2's hook padding: read pairs until L's marker bit leaves bit 7, then L = $FF
 > Called by stage 2's HookWork (`$B784`). L holds a marker bit (2 at the hook's start) that every pair the hook reads moves up: here each pair shifts a 1 in with `RL L` until the marker falls out into the carry. So the hook always reads 7 pairs in all (the countdown's and the script's included), 6 long and the last short (tools/tapesim.py gives 0 when bit 7 of L is set): the time of 13 short pairs, one byte's.
 > Out: L = `$FF` and carry set (stage 2 then gives that L to ByteHook as if it were a byte: XORed into H and counted); NC on a timeout.
-> Witness: L1 60788 (c1).
+> Witness: L1 30394 (c1).
 
 $B70A c EdgePair ; Wait for two edges (one pulse pair), counting in B; NC on a timeout
 > EdgeWait twice (the second by falling into it). Called by FindPilot, ReadByte, PadPairs, LoadBlock and stage 2.
-> Witness: L1 914788 (c1).
+> Witness: L1 457394 (c1).
 $B70E c EdgeWait ; Wait 350 T, then for the next edge, counting 56 T passes in B: carry = an edge, NC = B wrapped
 > A delay of 25 x 14 T, then EdgeNoDelay `$B714` (stage 2 calls it directly): `AND A` (carry clear) and the loop. A pass: `INC B` (a wrap to 0 is the timeout: `RET Z` with NC), port `$FE` read with A = 0, XOR C, `AND $40` (EAR). An edge: C = NOT C (the new level), carry set.
 > The pass is the ROM's LD-SAMPLE length (56 T); a never-taken `RET C` and a `NOP` stand where the ROM tests SPACE and changes the border, so the screen keeps its border and BREAK does nothing.
-> Witness: L1 1857012 (c1).
+> Witness: L1 928506 (c1).
 $B710 EdgeDelay
 $B714 EdgeNoDelay ; the entry without the delay (stage 2's script and countdown pairs)
 $B715 EdgeLoop
@@ -134,7 +134,7 @@ $B722 ; an edge: the new level in C, carry set
 $B727 c LoadBlock ; Load DE bytes to IX: one lead pair, the bytes (ByteHook after each), the checksum byte against H, then on into ByteHook
 > IX = the address, DE = the length; H = the running checksum. A lead pair (EdgePair from B = `$B0`; NC: `JP $0000`). For each byte: ReadByte (NC: reset), store L at (IX), IX + 1, B + 3 (the time of this code before the next pair), ByteHook. Then ReadByte for the checksum byte and `JP NZ,$0000` unless it equals H. There is no RET: the code runs on into ByteHook, which XORs the checksum byte into H (H = 0, the next load's start), counts it in HookCount like a data byte (so the hooks keep their period across the loads) and returns to LoadBlock's caller. IX is left past the block.
 > Called 8 times: by Loader1Start (`$B75A`, `$10F`) and by stage 2 (LoadRest: `$B869`, `$74` and `$B8DD`, `$302`; LoadFiles: `$B326`, `$01D8`; `$998E`, `$1998`; `$C000`, `$4000`; `$5C00`, `$4000`; `$9C00`, `$01F0`).
-> Witness: L1 16 (c1).
+> Witness: L1 8 (c1).
 $B72F ; the first byte's pair counts from $B0
 $B731 LoadBlockByte
 $B737 ; store the byte (tools/tapesim.py reads the loads here)
@@ -146,5 +146,5 @@ $B752 c ByteHook ; After each byte: H = H XOR L; once stage 2 has armed it, ever
 > The checksum first. Then A = HookCount - 1: negative (HookCount 0, before stage 2 arms it) returns at once (`RET M`). Otherwise the routine runs on past this stage's end into Stage2 `$B75A`, which stores the count and returns until it is 0, then does the countdown and the script, reads the hook's pairs, and comes back here with L = `$FF` (counted and XORed like a byte; work/ann/04-loader.md).
 > Called by LoadBlock after each byte, entered by LoadBlock's end after the checksum byte, and jumped to by stage 2 at the end of its work (L = `$FF`).
 > c1: 5882 hooks ran (tools/tapesim.py run, work/ann/04-loader/hooks.py): after 8 bytes of the second load, then every 7 bytes and the hook's own count (6 data bytes and the last load's checksum byte at the start of the third to eighth loads).
-> Witness: L1 94670 (c1).
+> Witness: L1 47335 (c1).
 $B758 ; HookCount 0 (not armed): return; else on into stage 2 at $B75A

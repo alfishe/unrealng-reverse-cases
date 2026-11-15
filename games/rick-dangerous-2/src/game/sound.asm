@@ -84,26 +84,37 @@ BeeperEffectTable:
 ; note lasts $600 loop turns (about 0.7 frame).
 BeeperEffects:
 BeeperEffect0:
+  ; $7B08 0: one note
   INCBIN "res/tables/beeper-effects.bin",$0000,2
 BeeperEffect1:
+  ; $7B0A 1: two notes
   INCBIN "res/tables/beeper-effects.bin",$0002,3
 BeeperEffect2:
+  ; $7B0D 2: one note
   INCBIN "res/tables/beeper-effects.bin",$0005,2
 BeeperEffect3:
+  ; $7B0F 3
   INCBIN "res/tables/beeper-effects.bin",$0007,6
 BeeperEffect4:
+  ; $7B15 4: falling period, a rising sweep
   INCBIN "res/tables/beeper-effects.bin",$000D,7
 BeeperEffect5:
+  ; $7B1C 5: an alternating trill
   INCBIN "res/tables/beeper-effects.bin",$0014,13
 BeeperEffect6:
+  ; $7B29 6: a warble
   INCBIN "res/tables/beeper-effects.bin",$0021,17
 BeeperEffect7:
+  ; $7B3A 7
   INCBIN "res/tables/beeper-effects.bin",$0032,6
 BeeperEffect8:
+  ; $7B40 8: a rising period, 1-5
   INCBIN "res/tables/beeper-effects.bin",$0038,6
 BeeperEffect9:
+  ; $7B46 9
   INCBIN "res/tables/beeper-effects.bin",$003E,13
 BeeperEffect10:
+  ; $7B53 10: a long falling sweep
   INCBIN "res/tables/beeper-effects.bin",$004B,19
 
 ; 48K: play the next note of the current beeper effect, if any

@@ -35,7 +35,7 @@
 ; nearly all in the immunity-POKE builds, whose POKE replaces the call),
 ; KillRick called 18 times from here ($8C67).
 ;
-; Witness: L1 96049 (cheats, life-up, rzx-l1-00000-poke, rzx-l1-02000-poke,
+; Witness: L1 49163 (cheats, life-up, rzx-l1-00000-poke, rzx-l1-02000-poke,
 ; rzx-l1-04000-poke, rzx-l1-06000-poke, rzx-l1-08000-poke, rzx-l1-10000-poke,
 ; rzx-l1-12000-poke, rzx-l1-14000-poke, rzx-l1-16000-poke, rzx-l1-20000-poke,
 ; rzx-l1-22000-poke, rzx-l1-24000-poke, rzx-l2-00000-poke, rzx-l2-02000-poke,
@@ -125,22 +125,22 @@ EnemyTouchTest:
 ; load-l4 634, the rzx pieces, c48, cheats; none in c1 or the controls-*
 ; recordings), all from $8695.
 ;
-; Witness: L1 103355 (cheats, end-congrats, life-up, long-l4,
-; rzx-l1-00000-poke, rzx-l1-02000-poke, rzx-l1-04000-poke, rzx-l1-06000-poke,
-; rzx-l1-08000-poke, rzx-l1-10000-poke, rzx-l1-12000-poke, rzx-l1-14000-poke,
-; rzx-l1-16000-poke, rzx-l1-18000-poke, rzx-l1-20000-poke, rzx-l1-22000-poke,
-; rzx-l1-24000-poke, rzx-l2-00000-poke, rzx-l2-02000-poke, rzx-l2-04000-poke,
-; rzx-l2-06000-poke, rzx-l2-08000-poke, rzx-l2-10000-poke, rzx-l2-12000-poke,
-; rzx-l2-14000-poke, rzx-l2-16000-poke, rzx-l2-18000-poke, rzx-l2-20000-poke,
-; rzx-l2-22000-poke, rzx-l2-24000-poke, rzx-l3-00000-poke, rzx-l3-02000-poke,
-; rzx-l3-04000-poke, rzx-l3-06000-poke, rzx-l3-08000-poke, rzx-l3-10000-poke,
-; rzx-l4-00000-poke, rzx-l4-02000-poke, rzx-l4-04000-poke, rzx-l4-06000-poke,
-; rzx-l4-08000-poke, rzx-l4-10000-poke, rzx-l4-12000-poke, rzx-l4-14000-poke,
-; rzx-l4-16000-poke, rzx-l4-18000-poke, rzx-l4-20000-poke, rzx-l5-00000-poke,
-; rzx-l5-02000-poke, rzx-l5-04000-poke, rzx-l5-06000-poke, rzx-l5-10000-poke,
-; rzx-l5-12000-poke, rzx-l5-14000-poke, rzx-l5-16000-poke, rzx-l5-18000-poke,
-; rzx-l5-20000-poke, rzx-l5-22000-poke, rzx-l5-full, c48, load-l2-load-l5,
-; sec-l2-s7, sec-l2-s10-sec-l2-s12, sec-l3-s5, sec-l3-s8, sec-l4-s2, sec-l4-s6,
+; Witness: L1 52845 (cheats, end-congrats, life-up, long-l4, rzx-l1-00000-poke,
+; rzx-l1-02000-poke, rzx-l1-04000-poke, rzx-l1-06000-poke, rzx-l1-08000-poke,
+; rzx-l1-10000-poke, rzx-l1-12000-poke, rzx-l1-14000-poke, rzx-l1-16000-poke,
+; rzx-l1-18000-poke, rzx-l1-20000-poke, rzx-l1-22000-poke, rzx-l1-24000-poke,
+; rzx-l2-00000-poke, rzx-l2-02000-poke, rzx-l2-04000-poke, rzx-l2-06000-poke,
+; rzx-l2-08000-poke, rzx-l2-10000-poke, rzx-l2-12000-poke, rzx-l2-14000-poke,
+; rzx-l2-16000-poke, rzx-l2-18000-poke, rzx-l2-20000-poke, rzx-l2-22000-poke,
+; rzx-l2-24000-poke, rzx-l3-00000-poke, rzx-l3-02000-poke, rzx-l3-04000-poke,
+; rzx-l3-06000-poke, rzx-l3-08000-poke, rzx-l3-10000-poke, rzx-l4-00000-poke,
+; rzx-l4-02000-poke, rzx-l4-04000-poke, rzx-l4-06000-poke, rzx-l4-08000-poke,
+; rzx-l4-10000-poke, rzx-l4-12000-poke, rzx-l4-14000-poke, rzx-l4-16000-poke,
+; rzx-l4-18000-poke, rzx-l4-20000-poke, rzx-l5-00000-poke, rzx-l5-02000-poke,
+; rzx-l5-04000-poke, rzx-l5-06000-poke, rzx-l5-10000-poke, rzx-l5-12000-poke,
+; rzx-l5-14000-poke, rzx-l5-16000-poke, rzx-l5-18000-poke, rzx-l5-20000-poke,
+; rzx-l5-22000-poke, rzx-l5-full, c48, load-l2-load-l5, sec-l2-s7,
+; sec-l2-s10-sec-l2-s12, sec-l3-s5, sec-l3-s8, sec-l4-s2, sec-l4-s6,
 ; sec-l4-s11, sec-l4-s12, sec-l5-s3, sec-l5-s5).
 UpdateEnemy:
   LD A,(IX+$14)
@@ -171,7 +171,7 @@ UpdateEnemy:
 ; EnemyPatrol $A09D 27 221); KillEnemy from here 48 times (the bullet 43, the
 ; blast 5).
 ;
-; Witness: L1 96049 (cheats, life-up, rzx-l1-00000-poke, rzx-l1-02000-poke,
+; Witness: L1 49163 (cheats, life-up, rzx-l1-00000-poke, rzx-l1-02000-poke,
 ; rzx-l1-04000-poke, rzx-l1-06000-poke, rzx-l1-08000-poke, rzx-l1-10000-poke,
 ; rzx-l1-12000-poke, rzx-l1-14000-poke, rzx-l1-16000-poke, rzx-l1-20000-poke,
 ; rzx-l1-22000-poke, rzx-l1-24000-poke, rzx-l2-00000-poke, rzx-l2-02000-poke,
@@ -293,7 +293,7 @@ EnemyWalkSprites:
 ; (Points50) when the enemy's y is $40-$FF, so a blast kill gives 100 with
 ; TestEnemyHits' 50.
 ;
-; Witness: L1 606 (cheats, life-up, rzx-l1-00000-poke, rzx-l1-02000-poke,
+; Witness: L1 304 (cheats, life-up, rzx-l1-00000-poke, rzx-l1-02000-poke,
 ; rzx-l1-04000-poke, rzx-l1-08000-poke, rzx-l1-10000-poke, rzx-l1-12000-poke,
 ; rzx-l1-16000-poke, rzx-l1-24000-poke, rzx-l2-00000-poke, rzx-l2-02000-poke,
 ; rzx-l2-04000-poke, rzx-l2-06000-poke, rzx-l2-08000-poke, rzx-l2-10000-poke,
@@ -339,7 +339,7 @@ KillEnemyDir:
 ;
 ; Evidence: 3308 runs in 47 builds, all from UpdateEnemy ($9EB3).
 ;
-; Witness: L1 7298 (cheats, end-congrats, life-up, long-l4, rzx-l1-00000-poke,
+; Witness: L1 3678 (cheats, end-congrats, life-up, long-l4, rzx-l1-00000-poke,
 ; rzx-l1-02000-poke, rzx-l1-04000-poke, rzx-l1-08000-poke, rzx-l1-10000-poke,
 ; rzx-l1-12000-poke, rzx-l1-16000-poke, rzx-l1-18000-poke, rzx-l1-24000-poke,
 ; rzx-l2-00000-poke, rzx-l2-02000-poke, rzx-l2-04000-poke, rzx-l2-06000-poke,
@@ -409,7 +409,7 @@ EnemyFallSet:
 ; Evidence (l1q index): 9734 runs in 25 builds (c48 142, load-l2 582, load-l3
 ; 279, the rzx pieces); a new direction 317 times ($A021).
 ;
-; Witness: L1 18465 (rzx-l1-00000-poke, rzx-l1-02000-poke, rzx-l1-04000-poke,
+; Witness: L1 9734 (rzx-l1-00000-poke, rzx-l1-02000-poke, rzx-l1-04000-poke,
 ; rzx-l1-08000-poke, rzx-l1-16000-poke, rzx-l1-20000-poke, rzx-l1-24000-poke,
 ; rzx-l2-00000-poke, rzx-l3-00000-poke, rzx-l3-02000-poke, rzx-l3-06000-poke,
 ; rzx-l4-16000-poke, rzx-l4-18000-poke, rzx-l5-04000-poke, rzx-l5-06000-poke,
@@ -448,7 +448,7 @@ EnemyWanderTurn:
 ; Evidence (l1q index): 12 139 runs in 40 builds; the turn branches only in
 ; rzx-l2-20000-poke and rzx-l4-02000/04000-poke (13 runs).
 ;
-; Witness: L1 24057 (cheats, life-up, rzx-l1-02000-poke, rzx-l1-08000-poke,
+; Witness: L1 12209 (cheats, life-up, rzx-l1-02000-poke, rzx-l1-08000-poke,
 ; rzx-l1-10000-poke, rzx-l1-12000-poke, rzx-l1-20000-poke, rzx-l1-22000-poke,
 ; rzx-l2-00000-poke, rzx-l2-02000-poke, rzx-l2-04000-poke, rzx-l2-06000-poke,
 ; rzx-l2-10000-poke, rzx-l2-14000-poke, rzx-l2-18000-poke, rzx-l2-20000-poke,
@@ -501,7 +501,7 @@ EnemyChaseDone:
 ; Evidence (l1q index): 27 224 runs in 52 builds (load-l3, load-l4, the rzx
 ; pieces).
 ;
-; Witness: L1 53535 (rzx-l1-02000-poke, rzx-l1-06000-poke, rzx-l1-08000-poke,
+; Witness: L1 27224 (rzx-l1-02000-poke, rzx-l1-06000-poke, rzx-l1-08000-poke,
 ; rzx-l1-12000-poke, rzx-l1-14000-poke, rzx-l1-16000-poke, rzx-l1-22000-poke,
 ; rzx-l1-24000-poke, rzx-l2-02000-poke, rzx-l2-04000-poke, rzx-l2-06000-poke,
 ; rzx-l2-08000-poke, rzx-l2-12000-poke, rzx-l2-14000-poke, rzx-l2-16000-poke,
@@ -555,7 +555,7 @@ EnemyPatrolWalk:
 ; Evidence: 37 765 runs in 55 builds; the landing 34 085, the ceiling snap 16
 ; (rzx-l5-14000-poke only), the climb 786 (13 builds).
 ;
-; Witness: L1 96057 (cheats, life-up, rzx-l1-00000-poke, rzx-l1-02000-poke,
+; Witness: L1 49167 (cheats, life-up, rzx-l1-00000-poke, rzx-l1-02000-poke,
 ; rzx-l1-04000-poke, rzx-l1-06000-poke, rzx-l1-08000-poke, rzx-l1-10000-poke,
 ; rzx-l1-12000-poke, rzx-l1-14000-poke, rzx-l1-16000-poke, rzx-l1-20000-poke,
 ; rzx-l1-22000-poke, rzx-l1-24000-poke, rzx-l2-00000-poke, rzx-l2-02000-poke,
@@ -755,7 +755,7 @@ EnemyClimbOn:
 ; Evidence: 37 763 runs in 55 builds; the wall turn on the right 144 runs (27
 ; builds).
 ;
-; Witness: L1 96053 (cheats, life-up, rzx-l1-00000-poke, rzx-l1-02000-poke,
+; Witness: L1 49165 (cheats, life-up, rzx-l1-00000-poke, rzx-l1-02000-poke,
 ; rzx-l1-04000-poke, rzx-l1-06000-poke, rzx-l1-08000-poke, rzx-l1-10000-poke,
 ; rzx-l1-12000-poke, rzx-l1-14000-poke, rzx-l1-16000-poke, rzx-l1-20000-poke,
 ; rzx-l1-22000-poke, rzx-l1-24000-poke, rzx-l2-00000-poke, rzx-l2-02000-poke,

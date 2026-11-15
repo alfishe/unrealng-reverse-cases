@@ -75,6 +75,13 @@ FatGuyStartLoop:
 ; body; +2/+3 the sprite address; +4/+5 the path after the kill; +6/+7 the
 ; animation after the kill.
 FatGuyParts:
+  ; $F83C part 0, the body: size 0 x 0, sprite 45, path $F864, animation
+  ;   $F8C5
+  ; $F844 part 1: at x - 24, y + 21, sprite 40, path $F879, animation $F8C7
+  ; $F84C part 2: at x, y + 21, sprite 41, path $F88E, animation $F8C9
+  ; $F854 part 3: at x - 24, y + 42, sprite 42, path $F8A3, animation $F8CB
+  ; $F85C part 4: at x, y + 42, sprite 44 (43 and 44 every other pass while
+  ;   he lives), path $F8B4, animation $F8C5
   INCBIN "res/level/fat-guy.bin",$0000,40
 
 ; The paths the five parts fly off on after the kill (the trap path format)
@@ -84,6 +91,11 @@ FatGuyParts:
 ; right, until UpdateTrap frees them off the view or at the loop point (+6 bit
 ; 5).
 FatGuyPiecePaths:
+  ; $F864 part 0
+  ; $F879 part 1
+  ; $F88E part 2
+  ; $F8A3 part 3
+  ; $F8B4 part 4
   INCBIN "res/level/fat-guy.bin",$0028,97
 
 ; The pieces' animation: frames $22-$25 (sprites 20-23, the blast), looped
@@ -477,6 +489,7 @@ FatGuyPlacePart:
 ; $1D, $1C, $0C), back ($FC, $FD, $EE, $FF), 24 still, a loop down and left and
 ; back ($F0 ... $10), then 0 and the jump to FatGuyPath ($FB30).
 FatGuyPath:
+  ; $FB30 0: the loop back to FatGuyPath
   INCBIN "res/level/fat-guy-path.bin",$0000,63
 
 ; 461 zero bytes to the block's end $FCFF

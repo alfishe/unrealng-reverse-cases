@@ -75,7 +75,7 @@ what the generator does with it, the part files); every file of a case and the c
 | `toolpaths.py` | finds sjasmplus, the SkoolKit venv, unreal-ng and its `re_session.py` (above) |
 | `rs.py ARGS` | runs unreal-ng's `re_session.py` with ARGS (`open`, `build`, `stop`, ...; above); checks `capture --inputs` scripts and splits their `W+O` chords; `capture --stop` stops the instance after it, `capture --expect STATE[@FRAME]` checks that the replay reaches the live run's state |
 | `z80sim.py` (a module) | SkoolKit's simulator for a case's tools: `run(memory, start, stop, registers)` gives the memory after the run, `simulator(memory, registers)` one for several runs. `CSimulator` (SkoolKit's C one, about 50 times faster) works on its own copy of the memory: read and poke through `sim.memory`, never the bytearray passed in (`python3 kit/z80sim.py --self-test` shows it); the pure Python `Simulator` works in that bytearray itself. SkoolKit is found as `toolpaths.py` finds the venv |
-| `ann_names.py --case C ADDR=Name ...` | names labels inside entries of `game.ann` |
+| `ann_names.py --case C [--ann F] [--names FILE] ADDR=Name ...` | names labels inside entries of `game.ann` (or F); `--names FILE` reads the pairs from a file, `ADDR=Name` a line or several on a line, `#` comments (a list of 101 names is one word as `$(cat names.txt)` in zsh) |
 | `input_vars.py --work W --inputs S --start F` | the bytes that follow the held directions and fire over a scripted recording: a first guess at the player's coordinates (a 16-bit coordinate, or one that moves only now and then, scores low: confirm in the code that reads the controls) |
 | `refdocs.py --case C` | docs 11 and 12 from `game.ann`, the parts of `ref_parts` and the recordings (below); doc 12 links `docs/img/routines/<Label>.gif` and every `<Label>-<what>.gif` |
 | `check_docs.py --case C` | mermaid renders (every diagram in one `mmdc` run: one headless browser, not one a diagram; each on its own only when that run fails, to name the broken one), links and `#anchors` resolve (GitHub slugs), no `$` in prose, every figure in `docs/img` and its subfolders is linked; the resource READMEs (`src/res/README.md`, `src/res/**/README.md`) are read for their links too: a figure they link counts, a broken link of theirs is a problem |
@@ -92,7 +92,7 @@ what the generator does with it, the part files); every file of a case and the c
 | `device` | sjasmplus `DEVICE` |
 | `bases` | L1 page -> Z80 base of each bank of the image |
 | `read_builds` | the `work/<build>` whose instructions and data reads count; the only recordings mkgame reads with `code_builds` |
-| `code_builds` | the `work/<build>` whose instructions count but not the reads (over a depacker's input), optional |
+| `code_builds` | the `work/<build>` whose instructions count but not the reads (over a depacker's input), optional; a build in both lists is read once, as a read build (its witness runs counted once) |
 | `no_roots` | builds of `read_builds` / `code_builds` (globs) read as a part file's `{"roots": false}`: a routine that is only the recording's root (a snapshot start's PC) is no entry, optional |
 | `no_entries` | `true` (no recording's routine entries), or a list of builds (globs) whose routines make no entries while their instructions and reads count: a recording started from a snapshot, whose returns and jumps out of the routine it began in look like routine starts (Rick Dangerous: its 45 zone, spot, ending, 48K and integration recordings), optional |
 | `same_bytes`, `overwritten` | as a part file's, with per-build forms: `same_bytes` a list of builds (only their instructions need all bytes the image's), `overwritten` items `[LO, HI, BUILD or [BUILDS]]` (that build's start state holds other code bytes there: its instructions, entries and witness runs there do not count, the walk is free; Rick Dangerous `["ABD8", "ABDB", "stage1/ending"]`), optional |
@@ -104,7 +104,8 @@ what the generator does with it, the part files); every file of a case and the c
 | `witness_names` | `{build: name}` for a witness list: a windowed copy of a recording under its recording's name (Battle Command `{"stage1/c1g": "c1"}`), optional |
 | `ref_parts` | part files (`"src/bank3/bank3.json"` or `[path, title]`) docs 11 and 12 cover after the game, a section each (a part of segments a section a segment with an `.ann`, "Title: segment title"), optional; a part file's `ref_builds` (else the case's) are its first builds, its other `l1` sources the others (`other_builds` overrides them; `[]` for none) |
 | `ref_skip_moves` | `true`: doc 11's readers and writers leave out the block moves, the bytes an L1 loop copies (a read and a write stride of step 1 or -1 over as many bytes, 16 or more in a range: `LDIR`, `LDDR`, an in-place decryption; not an `LDIR` fill, whose destination is its source a byte on) or loads (a write stride alone whose store wrote code a recording later ran, an L1 arrival's writer: a tape loader, a depacker of code); doc 12's Reads and Writes keep them. A part file's own key for a part. Optional |
-| `ref_load_end` | `{build: frame}`: the frame from which a recording that loads the game (`stage1/c1`) runs the game's image; its routines first run before it (a loader at the game's addresses) write no entry's "Written by" (Switchblade: the tape loader at `$FF00`, whose block writes fell to DrawMeter `$FF7C`), optional |
+| `ref_load_end` | `{build: frame}`: the frame from which a recording that loads the game (`stage1/c1`) runs the game's image; its routines first run before it (a loader at the game's addresses) write no entry's "Written by" (Switchblade: the tape loader at `$FF00`, whose block writes fell to DrawMeter `$FF7C`); for mkgame's walk, a read build with a frame here reads only the bytes it still accessed from that frame on (L1 `byte_counts` `last_frame`: the ROM's RAM test and the tape load read every byte before; a part file's source: `load_end`), so the recording can be a read build (Rick Dangerous 2: `c1` 13 998, `c48` 14 243), optional |
+| `res_comments` | `true`: the row comments inside `@res` entries stay in the sources as comment lines before their `INCBIN` slice (every part of the case; a part file may set its own), optional |
 | `overlay` | a buffer laid over code once play starts (`lo`, `hi`, `name`, `why`), optional |
 | `header`, `data_note` | the first comment lines of `game.asm`; a sentence for doc 11, optional |
 
@@ -117,7 +118,8 @@ hiscore, rzx x29`; numbered builds of one family by name, a run of three or more
 a family that would take more than four items as one, `rzx x29`), and prints each stale line
 (`witness: src/game/game.ann:134 $8040 PrintGlyph: L1 90100 (c1, rzx x32), the builds give L1 90104 (...)`);
 `--fix-witness` rewrites them in the `.ann` (a name a build had before `witness_names` renamed it, its own name or
-its path, is that build's: printed as "renamed (witness_names): c1g is c1" and rewritten), keeps a line that names a
+its path, is that build's: printed as "renamed (witness_names): c1g is c1" and rewritten; a range it wrote is read
+back whatever the family's prefix, `load-l2-load-l5`, `sec-l2-s10-sec-l2-s12`), keeps a line that names a
 recording it did not load, prints each
 name it drops (`menu, search ran no instruction there`; an entry no build ran stays `L1 0 ()` with no such
 clause, so a data entry is not said to run no instruction), and writes the source again from the rewritten `.ann`, so
@@ -140,7 +142,11 @@ else the case's `tools/res_formats.py`; a part with resources and none of these 
 installed`), and deletes only the modules the old `game.asm`
 included that the `.ann` no longer has (a hand-written `.asm` beside them stays) and a resource's `src/res/NAME.bin`
 left by an earlier install when the case's `res_formats.py` now writes its editable form (`NAME.png`, `NAME.txt`)
-and not the bytes. Each run also removes from its work folder (`work/mkgame`, a part's `work/...`, and its `top`
+and not the bytes; a hook that returns `{resource: the file it wrote}` also gets the `NAME.bin` beside a file of
+another name deleted (the `.bin` files a group's editable file replaces, in the hook's own folder: Rick Dangerous 2's
+`tunes/patterns.txt`). `@res` names are the case's: a name another part also gives, its resources installed the same
+way (one hook, one `res` folder), is printed at parse time (`WARNING: @res NAME is also named in ...`): the later
+install would replace the earlier one. Each run also removes from its work folder (`work/mkgame`, a part's `work/...`, and its `top`
 subfolder) the `.asm`, `.ctl`, `.skool` and `-image.bin` files an older run wrote and this one no longer does (a module
 or an entry renamed: `removed work/stage2/mkmusic/code.asm (an older run's: this one no longer writes it)`).
 

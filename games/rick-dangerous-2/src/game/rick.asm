@@ -33,7 +33,7 @@
 ; Callers: UpdateRick ($9654, $9693) and RickMoveX ($9979), when RickCrawling
 ; is set. Ran 7666 times in 43 builds (c1 40, the RZX level pieces).
 ;
-; Witness: L1 15400 (rzx-l1-02000-poke, rzx-l1-04000-poke, rzx-l1-06000-poke,
+; Witness: L1 7720 (rzx-l1-02000-poke, rzx-l1-04000-poke, rzx-l1-06000-poke,
 ; rzx-l1-08000-poke, rzx-l1-10000-poke, rzx-l1-12000-poke, rzx-l1-14000-poke,
 ; rzx-l1-16000-poke, rzx-l1-18000-poke, rzx-l1-20000-poke, rzx-l1-22000-poke,
 ; rzx-l1-24000-poke, rzx-l2-02000-poke, rzx-l2-06000-poke, rzx-l2-08000-poke,
@@ -217,7 +217,7 @@ CeilingOverCrawl:
 ; UpdateRide $94CB, $9550) and by the enemies ($A0DE, $A102, $A1FB, $A289): 166
 ; 811 runs in 65 builds, the routine every recording runs most in this range.
 ;
-; Witness: L1 414834 (box-shot, cheats, controls-cursor, controls-kempston,
+; Witness: L1 212695 (box-shot, cheats, controls-cursor, controls-kempston,
 ; controls-keyboard, controls-sinclair, end-congrats, fatguy-hits, life-up,
 ; long-l4, rzx-l1-00000-poke, rzx-l1-02000-poke, rzx-l1-04000-poke,
 ; rzx-l1-06000-poke, rzx-l1-08000-poke, rzx-l1-10000-poke, rzx-l1-12000-poke,
@@ -359,7 +359,7 @@ BodyNarrowRowLoop:
 ; Ran 174 475 times in 65 builds (callers $8FB8, $8FF5, $906A, $908E: the four
 ; ends of the two box tests).
 ;
-; Witness: L1 430228 (box-shot, cheats, controls-cursor, controls-kempston,
+; Witness: L1 220412 (box-shot, cheats, controls-cursor, controls-kempston,
 ; controls-keyboard, controls-sinclair, end-congrats, fatguy-hits, life-up,
 ; long-l4, rzx-l1-00000-poke, rzx-l1-02000-poke, rzx-l1-04000-poke,
 ; rzx-l1-06000-poke, rzx-l1-08000-poke, rzx-l1-10000-poke, rzx-l1-12000-poke,
@@ -408,7 +408,7 @@ ObjectScanInit:
 ; Part of TestBoxObjects: HL steps through the $7B8F records 24 bytes at a time
 ; (BC = 24) until one whose kind byte +0 is negative.
 ;
-; Witness: L1 2945010 (box-shot, cheats, controls-cursor, controls-kempston,
+; Witness: L1 1509437 (box-shot, cheats, controls-cursor, controls-kempston,
 ; controls-keyboard, controls-sinclair, end-congrats, fatguy-hits, life-up,
 ; long-l4, rzx-l1-00000-poke, rzx-l1-02000-poke, rzx-l1-04000-poke,
 ; rzx-l1-06000-poke, rzx-l1-08000-poke, rzx-l1-10000-poke, rzx-l1-12000-poke,
@@ -437,7 +437,7 @@ ObjectScanLoop:
 ; Part of TestBoxObjects; also the way back from PlatformScanNext and
 ; SolidScanNext.
 ;
-; Witness: L1 2524296 (box-shot, cheats, controls-cursor, controls-kempston,
+; Witness: L1 1293804 (box-shot, cheats, controls-cursor, controls-kempston,
 ; controls-keyboard, controls-sinclair, end-congrats, fatguy-hits, life-up,
 ; long-l4, rzx-l1-00000-poke, rzx-l1-02000-poke, rzx-l1-04000-poke,
 ; rzx-l1-06000-poke, rzx-l1-08000-poke, rzx-l1-10000-poke, rzx-l1-12000-poke,
@@ -472,7 +472,7 @@ ObjectScanNext:
 ;
 ; Ran 360 933 times in 65 builds.
 ;
-; Witness: L1 858411 (box-shot, cheats, controls-cursor, controls-kempston,
+; Witness: L1 438551 (box-shot, cheats, controls-cursor, controls-kempston,
 ; controls-keyboard, controls-sinclair, end-congrats, fatguy-hits, life-up,
 ; long-l4, rzx-l1-00000-poke, rzx-l1-02000-poke, rzx-l1-04000-poke,
 ; rzx-l1-06000-poke, rzx-l1-08000-poke, rzx-l1-10000-poke, rzx-l1-12000-poke,
@@ -547,7 +547,7 @@ PlatformScanNext:
 ; Ran 86 440 times in 41 builds (levels 2-5 and level 1's RZX pieces: the
 ; levels with block objects).
 ;
-; Witness: L1 208417 (life-up, long-l4, rzx-l1-00000-poke, rzx-l1-02000-poke,
+; Witness: L1 108278 (life-up, long-l4, rzx-l1-00000-poke, rzx-l1-02000-poke,
 ; rzx-l1-12000-poke, rzx-l1-16000-poke, rzx-l1-18000-poke, rzx-l2-00000-poke,
 ; rzx-l2-02000-poke, rzx-l2-04000-poke, rzx-l2-06000-poke, rzx-l2-08000-poke,
 ; rzx-l2-10000-poke, rzx-l2-12000-poke, rzx-l2-14000-poke, rzx-l2-16000-poke,
@@ -646,7 +646,7 @@ PlatformDy:
 ; witness line's 121 counts the 11 builds that are in both case.json's
 ; read_builds and code_builds twice (42 entries).
 ;
-; Witness: L1 121 (controls-cursor, controls-kempston, controls-keyboard,
+; Witness: L1 79 (controls-cursor, controls-kempston, controls-keyboard,
 ; controls-sinclair, fatguy-hits, rzx-l3-02000-poke, rzx-l3-04000-poke,
 ; rzx-l3-06000-poke, rzx-l5-18000-poke, rzx-l5-20000-poke, rzx-l5-full, c1,
 ; c48, load-l2-load-l4).
@@ -687,7 +687,7 @@ KillRickStoreDrift:
 ;
 ; Ran 895 times in 14 builds; DeathFallOver set 35 times.
 ;
-; Witness: L1 1778 (controls-cursor, controls-kempston, controls-keyboard,
+; Witness: L1 1051 (controls-cursor, controls-kempston, controls-keyboard,
 ; controls-sinclair, fatguy-hits, rzx-l3-02000-poke, rzx-l3-04000-poke,
 ; rzx-l3-06000-poke, rzx-l5-18000-poke, rzx-l5-20000-poke, rzx-l5-full, c1,
 ; c48, load-l2-load-l4).
@@ -774,7 +774,7 @@ RideMode:
 ; Ran 3045 times in 6 builds: rzx-l2-20000-poke, rzx-l2-22000-poke,
 ; rzx-l4-10000-poke, rzx-l4-12000-poke, rzx-l5-06000-poke, rzx-l5-08000-poke.
 ;
-; Witness: L1 6090 (rzx-l2-20000-poke, rzx-l2-22000-poke, rzx-l4-10000-poke,
+; Witness: L1 3045 (rzx-l2-20000-poke, rzx-l2-22000-poke, rzx-l4-10000-poke,
 ; rzx-l4-12000-poke, rzx-l5-06000-poke, rzx-l5-08000-poke).
 UpdateRide:
   LD HL,(RickDy)
@@ -950,7 +950,7 @@ RideFire:
 ; (TestCrawlBox when crawling, else TestBodyBox, with C = RickDy's high byte);
 ; then RickLandOrFall.
 ;
-; Witness: L1 120719 (box-shot, cheats, controls-cursor, controls-kempston,
+; Witness: L1 62111 (box-shot, cheats, controls-cursor, controls-kempston,
 ; controls-keyboard, controls-sinclair, end-congrats, fatguy-hits, life-up,
 ; long-l4, rzx-l1-00000-poke, rzx-l1-02000-poke, rzx-l1-04000-poke,
 ; rzx-l1-06000-poke, rzx-l1-08000-poke, rzx-l1-10000-poke, rzx-l1-12000-poke,
@@ -1044,7 +1044,7 @@ RickProbeDone:
 ;
 ; Ran 46 352 times in 62 builds.
 ;
-; Witness: L1 112914 (box-shot, cheats, controls-cursor, controls-kempston,
+; Witness: L1 58053 (box-shot, cheats, controls-cursor, controls-kempston,
 ; controls-keyboard, controls-sinclair, end-congrats, fatguy-hits, life-up,
 ; long-l4, rzx-l1-00000-poke, rzx-l1-02000-poke, rzx-l1-04000-poke,
 ; rzx-l1-06000-poke, rzx-l1-08000-poke, rzx-l1-10000-poke, rzx-l1-12000-poke,
@@ -1107,7 +1107,7 @@ PlatformProbeDone:
 ;
 ; Ran 43 705 times in 62 builds.
 ;
-; Witness: L1 107620 (box-shot, cheats, controls-cursor, controls-kempston,
+; Witness: L1 55406 (box-shot, cheats, controls-cursor, controls-kempston,
 ; controls-keyboard, controls-sinclair, end-congrats, fatguy-hits, life-up,
 ; long-l4, rzx-l1-00000-poke, rzx-l1-02000-poke, rzx-l1-04000-poke,
 ; rzx-l1-06000-poke, rzx-l1-08000-poke, rzx-l1-10000-poke, rzx-l1-12000-poke,
@@ -1259,7 +1259,7 @@ WeakJumpLevel1:
 ; levels (2, 4): RickCrouchCheck with the jump speed -6.0. Ran 719 times in 10
 ; builds (levels 2 and 4 mostly); the launch 5 times (rzx-l5-16000-poke).
 ;
-; Witness: L1 4062 (long-l4, rzx-l2-02000-poke, rzx-l2-04000-poke,
+; Witness: L1 2031 (long-l4, rzx-l2-02000-poke, rzx-l2-04000-poke,
 ; rzx-l2-08000-poke, rzx-l2-14000-poke, rzx-l4-00000-poke, rzx-l4-02000-poke,
 ; rzx-l4-06000-poke, rzx-l4-08000-poke, rzx-l4-16000-poke, rzx-l5-16000-poke,
 ; sec-l4-s1, sec-l4-s6).
@@ -1364,7 +1364,7 @@ PunchStoreY:
 ;
 ; Ran 13 698 times in 61 builds.
 ;
-; Witness: L1 27940 (controls-cursor, controls-kempston, controls-keyboard,
+; Witness: L1 14098 (controls-cursor, controls-kempston, controls-keyboard,
 ; controls-sinclair, end-congrats, long-l4, rzx-l1-00000-poke,
 ; rzx-l1-02000-poke, rzx-l1-04000-poke, rzx-l1-06000-poke, rzx-l1-08000-poke,
 ; rzx-l1-10000-poke, rzx-l1-12000-poke, rzx-l1-14000-poke, rzx-l1-16000-poke,
@@ -1417,7 +1417,7 @@ RickGrabLadder:
 ; Ran 45 590 times in 62 builds; the mud branch 34 + 253 times (level 4), the
 ; ice 133 + 104 (level 2).
 ;
-; Witness: L1 111389 (box-shot, cheats, controls-cursor, controls-kempston,
+; Witness: L1 57253 (box-shot, cheats, controls-cursor, controls-kempston,
 ; controls-keyboard, controls-sinclair, end-congrats, fatguy-hits, life-up,
 ; long-l4, rzx-l1-00000-poke, rzx-l1-02000-poke, rzx-l1-04000-poke,
 ; rzx-l1-06000-poke, rzx-l1-08000-poke, rzx-l1-10000-poke, rzx-l1-12000-poke,
@@ -1527,7 +1527,7 @@ RickNoWalk:
 ;
 ; Ran 45 592 times in 62 builds; the left edge 1230 times, the right edge 33.
 ;
-; Witness: L1 111393 (box-shot, cheats, controls-cursor, controls-kempston,
+; Witness: L1 57255 (box-shot, cheats, controls-cursor, controls-kempston,
 ; controls-keyboard, controls-sinclair, end-congrats, fatguy-hits, life-up,
 ; long-l4, rzx-l1-00000-poke, rzx-l1-02000-poke, rzx-l1-04000-poke,
 ; rzx-l1-06000-poke, rzx-l1-08000-poke, rzx-l1-10000-poke, rzx-l1-12000-poke,
@@ -1622,7 +1622,7 @@ MoveXStore:
 ;
 ; Ran 46 336 times in 62 builds.
 ;
-; Witness: L1 112880 (box-shot, cheats, controls-cursor, controls-kempston,
+; Witness: L1 58036 (box-shot, cheats, controls-cursor, controls-kempston,
 ; controls-keyboard, controls-sinclair, end-congrats, fatguy-hits, life-up,
 ; long-l4, rzx-l1-00000-poke, rzx-l1-02000-poke, rzx-l1-04000-poke,
 ; rzx-l1-06000-poke, rzx-l1-08000-poke, rzx-l1-10000-poke, rzx-l1-12000-poke,
@@ -1766,6 +1766,7 @@ WalkFrameStore:
 WalkFrames:
   INCBIN "res/tables/rick-walk-frames.bin",$0000,10
 CrawlFrames:
+  ; $9AB3 sprites 6 and 7
   INCBIN "res/tables/rick-walk-frames.bin",$000A,4
 
 ; Climb: up or down 2 pixels a pass on an even y, then the common tests
@@ -1777,7 +1778,7 @@ CrawlFrames:
 ;
 ; Ran 3737 times in 38 builds.
 ;
-; Witness: L1 7474 (rzx-l1-00000-poke, rzx-l1-02000-poke, rzx-l1-04000-poke,
+; Witness: L1 3737 (rzx-l1-00000-poke, rzx-l1-02000-poke, rzx-l1-04000-poke,
 ; rzx-l1-06000-poke, rzx-l1-08000-poke, rzx-l1-12000-poke, rzx-l1-14000-poke,
 ; rzx-l1-16000-poke, rzx-l1-18000-poke, rzx-l1-22000-poke, rzx-l2-00000-poke,
 ; rzx-l2-02000-poke, rzx-l2-04000-poke, rzx-l2-06000-poke, rzx-l2-08000-poke,
@@ -1822,7 +1823,7 @@ ClimbStoreStep:
 ;
 ; Ran 767 times in 52 builds.
 ;
-; Witness: L1 1535 (box-shot, controls-cursor, controls-kempston,
+; Witness: L1 805 (box-shot, controls-cursor, controls-kempston,
 ; controls-keyboard, controls-sinclair, fatguy-hits, rzx-l1-00000-poke,
 ; rzx-l1-02000-poke, rzx-l1-04000-poke, rzx-l1-06000-poke, rzx-l1-08000-poke,
 ; rzx-l1-10000-poke, rzx-l1-12000-poke, rzx-l1-14000-poke, rzx-l1-16000-poke,
