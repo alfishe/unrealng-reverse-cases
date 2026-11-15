@@ -1,0 +1,62 @@
+# c1: after the load of REX 1 (side 1 at ROM speed, 128K): the menu with its roll call, 1 DEFINE with the
+# instructions' keys (up I = jump, down J = shield, left Q, right W, fire O), confirm Y, PHASE ONE, fire to begin,
+# then play on level 1: walk right firing, jumps, the shield, a smart bomb (SPACE), the pause (H).
+0 -
++600 1
++10 -
++40 I
++10 -
++40 J
++10 -
++40 Q
++10 -
++40 W
++10 -
++40 O
++10 -
++60 Y
++10 -
++400 O
++10 -
++150 W
++120 W O
++20 W
++60 W I
++30 W O
++40 W
++80 O
++20 -
++40 W
++100 W I
++40 W O
++30 W
++100 J
++60 W O
++60 W
++60 SPACE
++10 W
++100 W I
++30 W
++80 W O
++40 H
++10 -
++150 O
++10 W
++200 W O
++30 W I
++40 W
++150 Q
++60 Q O
++30 W
++200 W I
++40 W O
++60 W
++200 W O
++40 W I
++40 W
++300 W O
++60 W
++300 W I
++40 W
++300 -
++600 END

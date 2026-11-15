@@ -1,0 +1,11 @@
+{
+  "image_cmd": ["sh", "-c", "python3 tools/image.py work/mkgame/original.bin --part 1"],
+  "image": "work/mkgame/original.bin",
+  "lo": "6018",
+  "hi": "FFFA",
+  "device": "ZXSPECTRUM128",
+  "bases": {"5": "4000", "2": "8000", "0": "C000"},
+  "read_builds": ["stage1/c1"],
+  "ref_builds": [["stage1/c1", "c1: power-on, side 1 of the original at ROM speed on the 128K, the menu and play on level 1"]],
+  "header": ["; Rex, Martech Games 1988 (The Light): part 1 (REX 1), $6018-$FFF9 as the ROM loader leaves it", "; (tools/image.py: side 1 blocks 4 and 6 of orig/Rex.tzx.zip); entry $947A."]
+}
