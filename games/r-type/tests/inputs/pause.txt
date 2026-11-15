@@ -1,0 +1,11 @@
+# pause: from c1's play start (play.szx, level 1, keys O P Q A M N), no POKE: 60 frames of flight right and
+# up, CAPS SHIFT + 1 held 10 frames (GAME PAUSED), 150 frames with no key, CAPS SHIFT + 2 held 10 frames, 80
+# frames of play
+# Start: work/stage1/c1/play.szx
+0 P
+30 Q
+60 CS 1
+70 -
+220 CS 2
+230 -
+310 END
