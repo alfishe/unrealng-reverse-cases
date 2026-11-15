@@ -205,6 +205,6 @@ RoomObjectLists:
 ; part 1), then the word of the room's object list
 ;
 ; ReadExits $C8EF reads Room x 6. Room 0's record has no exits but room 1 to
-; the right; the game starts in room 1.
+; the right; the game starts in room 0.
 RoomExits:
   INCBIN "res/rooms/rex1-exits.bin",$0000,210

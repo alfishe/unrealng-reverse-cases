@@ -22,7 +22,7 @@ The recordings it rests on (WALKTHROUGH 6.0; all on the 128K):
 | `p1-cursor` | the same | 3 CURSOR: walk, jump, the shield (6 at 1001 and 1087), fire, H at 1253, fire at 1359, SPACE at 1405, ENTER at 1851 |
 | `p1-kempston` | the same | 2 KEMPSTON: the stick right, left, up, down, fire |
 | `rzx-p1-00000` | the RZX run's first segment | 4 SINCLAIR (another player's choice) |
-| `c2` | power-on, REX 2 from block 6 | the code screen: a wrong code (ENTER at script frame 1560), part 1's code (ENTER at 3220) |
+| `c2` | power-on, REX 2 from block 7 (the emulator's SEEK=6, which does not count the text block) | the code screen: a wrong code (ENTER at script frame 1560), part 1's code (ENTER at 3220) |
 | `demo-cycle` | `work/stage1/d1/start.szx` | DEMO's input scripts; SPACE (DemoPause) at 30000 and 30106 |
 
 Conventions:
@@ -54,7 +54,8 @@ The game reads the keyboard and the Kempston port, and nothing else. There is no
 | all 8 half-rows | all 40 keys | ScanKey `$DBAE` | DEFINE; REX 2's code |
 | `$001F` | Kempston bits 0-4 | the readers with KEMPSTON | every pass |
 
-Every `IN` of the three parts is `IN A,(C)` with the full 16-bit port in BC. The game never uses `IN A,(n)`.
+Every `IN` the three parts run is `IN A,(C)` with the full 16-bit port in BC. Only the development link, which never
+runs ([doc 2, 2.5](02-architecture.md#25-the-leftovers)), has `IN A,(n)`: `IN A,($3F)` and `IN A,($1F)`.
 
 ![What each choice reads](img/controls/keys.png)
 
@@ -87,8 +88,8 @@ TitleMenu `$DAC0` runs once, from GameEntry, before the first game:
 4. MenuLoop `$DB11` waits for a key 1-4 while the roll call turns.
 
 One poll of MenuLoop draws the roll call's sprite (RollCallSprite `$E00B`), waits `Delay $07D0`, and reads `$F7FE`
-four times. Key 4 is tested first, key 1 last. A choice jumps (`JP Z`) to its routine; MenuLoop is never called
-again.
+four times. Key 4 is tested first, key 1 last. A choice jumps (`JP Z`) to its routine. N at the confirm comes back through MenuAgain `$DEEC`,
+which jumps to `$DAEE` (the title restored, the roll call reset) and falls into MenuLoop again.
 
 The roll call shows the ten enemies of part 1, one at a time, with their score:
 
@@ -185,8 +186,8 @@ An enemy and a blank title take about 10.4 s.
 
 Witness: MenuLoop (c1, p1-*, rzx-p1-00000); RollCallText L1 4 (c1).
 
-Known only from the code: after the tenth enemy, RollCallRestart `$DB6E` and RollCallTextStart `$DB85` start the
-list again. No recording stays in the menu for the 104 s that takes, so both are kept as bytes.
+After the tenth enemy, RollCallRestart `$DB6E` and RollCallTextStart `$DB85` start the list again, about 104 s in.
+Witness: `menu-rollcall` (the menu left alone for 5310 frames) runs each of them once (its L1).
 
 The point: the menu is the only place where keys 1-4 are read. The roll call is driven by the poll count, not by a
 clock. A poll is slow (about 5 frames), so a tap of 1-4 shorter than about 6 frames can be missed.
@@ -296,8 +297,7 @@ DE93  32 AE A0                     LD (ControlXor),A
 DE96  C3 D2 DE                     JP Confirm
 ```
 
-CURSOR has a quirk. Its two `LD HL` operands are `$EFFE` and `$F7FE`, but the listing names them
-`BackBuffer+$04FE` and `BackBuffer+$0CFE`, because BackBuffer is `$EB00`. They are ports, not buffer addresses. Left
+CURSOR has a quirk. Its two `LD HL` operands are the ports `$EFFE` and `$F7FE`. Left
 is set last: ChooseCursor loads `$F7FE` and calls SetLeft without a new DefineBit. The `$67` left in DefineBit from
 down (key 6, bit 4) is reused. On `$F7FE`, bit 4 is key 5. So "5 = left" works because the two half-rows mirror each
 other.
@@ -450,7 +450,8 @@ Witness: ScanKey L1 35 over c1, p1-define and c2; DefineKeys (c1, p1-define).
 
 Known only from the code:
 
-- CAPS SHIFT and 0 both have the name `-` in KeyNames. Once one is chosen, the other is refused as "taken".
+- In REX 1, CAPS SHIFT and 0 both have the name `-` in KeyNames `$A9CC`. Once one is chosen, the other is refused as
+  "taken". REX 2's KeyNames `$AE2A` names 0 as `0`, so the two are apart there (5.10).
 - ENTER can be defined. It then also restarts the game at every pass, because MainKeys tests ENTER first (5.7).
 - ScanKey compares the whole byte, bits 5-7 included. If the EAR bit (bit 6) changes while a key is held, ScanKey
   takes the key at once. An emulator that feeds tape noise into bit 6 can do this.
@@ -710,12 +711,13 @@ flowchart TD
     C --> D[WaitFireOrAttract]
     D --> E{Temp1}
     E -- 1: fire --> F[Materialise Rex, MainLoop]
-    E -- 0: 50000 polls --> G[Attract A915: AttractRooms, 200 passes each]
+    E -- "0: 50000 polls (2 x 50000 since PHASE ONE)" --> G[Attract A915: AttractRooms, 199 passes each]
     G -->|fire| A
 ```
 
 A poll costs about 495 T: 385 T of delay, 74 T of ReadFire, and the count. 50 000 polls are about 24.7 million T,
-about 350 frames or 7 s. The timing is known only from the code. The attract mode itself runs once in `c1`
+about 350 frames or 7 s. The attract mode needs both waits to run out: about 700 frames, 14 s from PHASE ONE. The
+timing is known only from the code. The attract mode itself runs once in `c1`
 (Attract L1 1).
 
 WaitFire `$97EA` (after GAME OVER and after the CODE panel) has no timeout. It waits for fire down, then for fire up:
@@ -726,9 +728,10 @@ pass. WaitFireOrAttract itself is a plain return with Temp1; NewGame does the ju
 
 ## 5.10 REX 2: the code entry
 
-REX 2 has the same menu, readers and ScanKey (`src/rex2/menu.asm`). Before the menu, MenuCode asks for the code that
-part 1 printed on its CODE panel ([doc 8](08-hud-and-text.md) shows how part 1 makes it). EnterCode `$DB27` calls
-ReadCode `$DD1F`:
+REX 2 has the same menu, readers and ScanKey (`src/rex2/menu.asm`), with one change: its KeyNames `$AE2A` names key 0
+as `0`, not `-` as REX 1 does, so the digit 0 of a code can be typed (the RZX's code has one, at place 14). Before
+the menu, MenuCode asks for the code that part 1 printed on its CODE panel ([doc 8](08-hud-and-text.md) shows how
+part 1 makes it). EnterCode `$DB27` calls ReadCode `$DD1F`:
 
 - up to 16 keys, read by ScanKey, each echoed with a `?` cursor after it (CodeTexts `$DCA7` + `$4E`);
 - CAPS (`-`) deletes one character (CodeDelete);
@@ -933,11 +936,11 @@ in each room, so the same script replays the same demo every time. DEMO reads no
 
 ## 5.12 Known only from the code
 
-- CAPS and 0 share the name `-`: whichever is defined first blocks the other (5.5).
+- In REX 1, CAPS and 0 share the name `-`: whichever is defined first blocks the other (5.5; not in REX 2).
 - ENTER can be defined as a control; it then restarts the game every pass (5.5).
 - A change of the EAR bit ends ScanKey's wait early (5.5).
 - KEMPSTON with no interface: every control reads pressed if the bus floats `$FF` (5.6).
-- N at the confirm (MenuAgain `$DEEC`) and the roll call's restart after ten enemies (5.2, 5.4).
-- The attract timeout's length, about 7 s (5.9).
+- N at the confirm (MenuAgain `$DEEC`) (5.4).
+- The attract timeout's length, two waits of about 7 s, 14 s (5.9).
 - REX 2: the CAPS deletion, letters in a code, the bombs limit, GrowthsKilled set from the score (5.10).
 - DEMO: a long SPACE press pauses again (5.11).

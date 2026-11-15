@@ -67,7 +67,7 @@ Witness: L1 1 (c1).
 
 **A new game: every variable reset, the HUD, PHASE ONE and PRESS FIRE TO BEGIN, the wait for fire, Rex materialises**
 
-Also the target of ENTER in the main loop (restart), of the game over and of the attract mode. InitDrones `$A628`; border black; Lives `$A063` = 4, Bombs `$A06C` = 3, ResetPower `$BA49`, ShieldEnergy `$A04D` = 99, the weapons held `$A050-$A053` = 0, the score, HumansKilled `$A089` and the extra life count 0, the random seeds `$A0A1` = `$0313`, `$A0A3` = `$11`; Rex at X `$A0`, Y `$60` in room 1 facing right, the restart point the same. Then ClearScreen `$A3AE`, DrawHud `$A1A5`, ShowLives `$99BB`, SaveAttrs `$CF8F`, the texts PhaseOneText `$AAAE` and PressFireText `$AB25` (PrintBoxed `$A13E`) each followed by WaitFireOrAttract `$97C3`; SoundReset `$D5AE` and Materialise `$9D1F`. Falls into MainLoop.
+Also the target of ENTER in the main loop (restart), of the game over and of the attract mode. InitDrones `$A628`; border black; Lives `$A063` = 4, Bombs `$A06C` = 3, ResetPower `$BA49`, ShieldEnergy `$A04D` = 99, the weapons held `$A050-$A053` = 0, the score, HumansKilled `$A089` and the extra life count 0, the random seeds `$A0A1` = `$0313`, `$A0A3` = `$11`; Rex at X `$A0`, Y `$60` in room 0 facing right, the restart point the same. Then ClearScreen `$A3AE`, DrawHud `$A1A5`, ShowLives `$99BB`, SaveAttrs `$CF8F`, the texts PhaseOneText `$AAAE` and PressFireText `$AB25` (PrintBoxed `$A13E`) each followed by WaitFireOrAttract `$97C3`; SoundReset `$D5AE` and Materialise `$9D1F`. Falls into MainLoop.
 
 Witness: L1 9 (c1, p1-code, p1-cursor, p1-define, p1-kempston, rzx-p1-00000, rzx-p1-64000).
 
@@ -302,9 +302,9 @@ Witness: L1 1016 (c1, p1-code, p1-cursor, p1-define, p1-gameover, p1-kempston, p
 
 ### `KillHuman` (`$98A7`)
 
-**A person killed: HumansKilled `$A089` + 1, the human's picture SpriteHuman `$92F2`, the panel of a kill**
+**A person killed: HumansKilled `$A089` + 1, nothing else**
 
-For kinds 0, 7, 6, 12, 4 and 5. The object becomes a falling body; FindFreeObject `$D858` and the human's initialiser (`$CDA2`, `$CE67`) set up its picture.
+For kinds 0, 7, 6, 12, 4 and 5 (KillObject calls it for each). The big gun's KillScore `$98AF` follows it in memory.
 
 Witness: L1 155 (c1, p1-speedup, p1-room24, p1-room30, rzx-p1- x27).
 
@@ -1609,7 +1609,7 @@ Witness: L1 0 ().
 
 ### `EnemyShotA` (`$B589`)
 
-**An enemy shot at X A, speed 15**
+**An enemy shot at X A, its Y 15 below the object's**
 
 Witness: L1 16 (rzx-p1-20000, rzx-p1-56000).
 
@@ -1620,7 +1620,7 @@ Witness: L1 16 (rzx-p1-20000, rzx-p1-56000).
 
 ### `EnemyShot` (`$B58E`)
 
-**An enemy shot from IX: X Temp1, Y IX+1, speed A, kind EnemyShotKind `$A054` (bit 7: an enemy's)**
+**An enemy shot from IX: X Temp1, Y IX+1 plus A (Temp4, the Y offset SetupShot adds), kind EnemyShotKind `$A054` (bit 7: an enemy's)**
 
 Witness: L1 4018 (c1, p1-cursor, p1-define, p1-gameover, p1-kempston, p1-poke41241, p1-rooms238, p1-shots, p1-speedup, p1-room x5, rzx-p1- x32).
 
@@ -1635,7 +1635,7 @@ Witness: L1 4018 (c1, p1-cursor, p1-define, p1-gameover, p1-kempston, p1-poke412
 
 ### `RexShot` (`$B5A5`)
 
-**A shot from Rex: his X, Y and facing, speed 17, type the weapon**
+**A shot from Rex: his X, Y + 17 (Temp4) and facing, type the weapon**
 
 Witness: L1 7094 (c1, p1-code, p1-cursor, p1-define, p1-kempston, p1-shots, p1-speedup, p1-room x5, rzx-p1- x32).
 
@@ -1924,7 +1924,7 @@ Witness: L1 32786 (c1, p1-code, p1-cursor, p1-define, p1-gameover, p1-kempston, 
 
 ### `PowerGain` (`$B98E`)
 
-**A power pod: PowerCount `$A018` counts, every few the PowerLevel + 1 up to 6, the bar redrawn, the fire faster**
+**A power pod: PowerCount `$A018` counts, every 120 the PowerLevel + 1 up to 5 (at 5 GainRank raises WeaponRank and sets the level back to 1; at rank 5 nothing), the fire faster**
 
 Witness: L1 212 (p1-speedup, p1-room30, rzx-p1- x27).
 
@@ -1966,7 +1966,7 @@ Witness: L1 2009 (c1, p1-code, p1-cursor, p1-define, p1-gameover, p1-kempston, p
 
 ### `LosePower` (`$BA3D`)
 
-**A death: PowerDrain once**
+**A death or ENERGY LOSS: PowerDrain(50) twice; each drain that would go below 0 puts the count back and drops one level, so 0, 1 or 2 levels go**
 
 Witness: L1 42 (c1, p1-cursor, p1-define, p1-gameover, p1-kempston, p1-room24, p1-room30, rzx-p1- x18).
 
@@ -2031,7 +2031,7 @@ Witness: L1 80 (c1, p1-cursor, p1-define, p1-kempston, p1-rooms238, p1-speedup, 
 
 ### `Attract` (`$A915`)
 
-**The attract mode: each room of AttractRooms shown 200 passes with its objects moving (no Rex); fire starts a game**
+**The attract mode: each room of AttractRooms shown 199 passes (AttractTimer 200, decremented before the test) with its objects moving (no Rex); fire starts a game**
 
 Entered from WaitFireOrAttract `$97C3`'s timeout. AttractFlag `$A0C2` = 1 while it runs.
 
@@ -2220,7 +2220,7 @@ Witness: L1 200522 (c1, p1-code, p1-cursor, p1-define, p1-gameover, p1-kempston,
 
 ### `BigGun` (`$BB74`)
 
-**Kind 16: hangs above line `$90`; at random fires shots and drops a mine (DropMine `$C1F4`)**
+**Kind 16 (`$90`): bobs between Y `$40` and `$78` by IX+`$12`; 1 pass in 16 (R AND 15 = 0) a volley, one shot per BigGunShots byte (the byte is the shot's Y offset); above Y `$90` at Random `$F0` and over a mine (DropMine `$C1F4`)**
 
 Witness: L1 814 (rzx-p1-22000, rzx-p1-24000).
 
@@ -2294,7 +2294,7 @@ Witness: L1 5066 (c1, p1-rooms238, p1-speedup, p1-room14, p1-room24, p1-room26, 
 
 ### `ShootFromObject` (`$BCC6`)
 
-**A shot from IX at X A, Y IX+1, speed 15**
+**A shot from IX at X A, Y IX+1 + 15**
 
 Witness: L1 288 (c1, p1-rooms238, p1-speedup, p1-room14, p1-room24, p1-room26, p1-room30, rzx-p1- x13).
 
@@ -3511,7 +3511,7 @@ Witness: L1 49 (p1-rooms238, p1-room14, p1-room24, p1-room26, rzx-p1- x6).
 
 ### `InitKind16` (`$CE3E`)
 
-**The big gun**
+**The big gun: kind `$90` (bit 7 set), speed IX+`$12` = 2, 6 x 48, hits Weapon x 50 + 16**
 
 Witness: L1 1 (rzx-p1-22000).
 
@@ -3525,7 +3525,7 @@ Witness: L1 1 (rzx-p1-22000).
 
 ### `KillHumanPicture` (`$CE67`)
 
-**The human's picture offset by Weapon (Weapon x 50 + 16) into IX+`$14` and HumanPicture `$A022`**
+**The big gun's hits by the weapon held (Weapon x 50 + 16) into IX+`$14` and HumanPicture `$A022` (written, never read)**
 
 Witness: L1 2 (rzx-p1-22000, rzx-p1-24000).
 
@@ -4045,7 +4045,7 @@ Witness: L1 76 (p1-speedup, p1-room30, rzx-p1- x20).
 
 ### `HitObjectHard` (`$D41F`)
 
-**A hit on an armoured object: the flash, more hits needed**
+**A bullet on a kind 6 (the hit foot man): the flash renewed, hits back to 2 (not with the spray); BulletLoop then skips it, so a kind 6 never loses hits**
 
 Witness: L1 90 (p1-speedup, p1-room30, rzx-p1- x13).
 
@@ -6362,7 +6362,7 @@ Witness: L1 0 ().
 
 #### `EnemyShotA` (`$B5CF`)
 
-**An enemy shot at X A, speed 15 (nothing calls it in part 2)**
+**An enemy shot at X A, its Y 15 below the object's (nothing calls it in part 2)**
 
 Witness: L1 0 ().
 
@@ -6372,7 +6372,7 @@ Witness: L1 0 ().
 
 #### `EnemyShot` (`$B5D4`)
 
-**An enemy shot from IX: X Temp1, Y IX+1, speed A, kind EnemyShotKind `$A1ED` (bit 7: an enemy's)**
+**An enemy shot from IX: X Temp1, Y IX+1 plus A (Temp4, the Y offset SetupShot adds), kind EnemyShotKind `$A1ED` (bit 7: an enemy's)**
 
 As REX 1's EnemyShot `$B58E` (src/game/weapons.asm).
 
@@ -6388,7 +6388,7 @@ Witness: L1 1147 (c2, p2-room20, rzx-p2- x19).
 
 #### `RexShot` (`$B5EB`)
 
-**A shot from Rex: his X, Y and facing, speed 17, type the weapon**
+**A shot from Rex: his X, Y + 17 (Temp4) and facing, type the weapon**
 
 As REX 1's RexShot `$B5A5` (src/game/weapons.asm).
 
@@ -6718,7 +6718,7 @@ Witness: L1 20424 (c2, p2-room20, rzx-p2- x21).
 
 #### `PowerGain` (`$BA09`)
 
-**A power pod: PowerCount `$A1B1` counts, every few the PowerLevel + 1 up to 6, the bar redrawn, the fire faster**
+**A power pod: PowerCount `$A1B1` counts, every 120 the PowerLevel + 1 up to 5 (at 5 GainRank raises WeaponRank and sets the level back to 1; at rank 5 nothing), the fire faster**
 
 As REX 1's PowerGain `$B98E` (src/game/weapons.asm).
 
@@ -6768,7 +6768,7 @@ Witness: L1 1038 (c2, p2-room20, rzx-p2- x21).
 
 #### `LosePower` (`$BAB8`)
 
-**A death: PowerDrain once**
+**A death or ENERGY LOSS: PowerDrain(50) twice; each drain that would go below 0 puts the count back and drops one level, so 0, 1 or 2 levels go**
 
 Changed from REX 1's LosePower `$BA3D` (src/game/weapons.asm).
 
@@ -6816,7 +6816,7 @@ Witness: L1 32 (c2, p2-room20, rzx-p2- x17).
 
 #### `Attract` (`$A98E`)
 
-**The attract mode: each room of AttractRooms shown 200 passes with its objects moving (no Rex, no conveyor rolls); fire starts a game**
+**The attract mode: each room of AttractRooms shown 199 passes (AttractTimer 200, decremented before the test) with its objects moving (no Rex, no conveyor rolls); fire starts a game**
 
 Changed from REX 1's Attract `$A915` (src/game/codepanel.asm).
 
@@ -11151,7 +11151,7 @@ Witness: L1 0 ().
 
 #### `EnemyShotA` (`$BEA8`)
 
-**An enemy shot at X A, speed 15**
+**An enemy shot at X A, its Y 15 below the object's**
 
 As REX 1's EnemyShotA `$B589` (src/game/weapons.asm).
 
@@ -11166,7 +11166,7 @@ Witness: L1 2092 (d1, demo-cycle).
 
 #### `EnemyShot` (`$BEAD`)
 
-**An enemy shot from IX: X Temp1, Y IX+1, speed A, kind EnemyShotKind `$5EDD` (bit 7: an enemy's)**
+**An enemy shot from IX: X Temp1, Y IX+1 plus A (Temp4, the Y offset SetupShot adds), kind EnemyShotKind `$5EDD` (bit 7: an enemy's)**
 
 As REX 1's EnemyShot `$B58E` (src/game/weapons.asm).
 
@@ -11183,7 +11183,7 @@ Witness: L1 2420 (d1, demo-cycle).
 
 #### `RexShot` (`$BEC4`)
 
-**A shot from Rex: his X, Y and facing, speed 17, type the weapon**
+**A shot from Rex: his X, Y + 17 (Temp4) and facing, type the weapon**
 
 As REX 1's RexShot `$B5A5` (src/game/weapons.asm).
 
@@ -11487,7 +11487,7 @@ Witness: L1 12910 (d1, demo-cycle).
 
 #### `PowerGain` (`$C29B`)
 
-**A power pod: PowerCount `$5EA1` counts, every few the PowerLevel + 1 up to 6, the bar redrawn, the fire faster**
+**A power pod: PowerCount `$5EA1` counts, every 120 the PowerLevel + 1 up to 5 (at 5 GainRank raises WeaponRank and sets the level back to 1; at rank 5 nothing), the fire faster**
 
 As REX 1's PowerGain `$B98E` (src/game/weapons.asm).
 
@@ -13100,7 +13100,7 @@ Witness: L1 14 (demo-cycle).
 
 #### `HitObjectHard` (`$D688`)
 
-**A hit on an armoured object (kind 6): the flash, more hits needed**
+**A bullet on a kind 6 (the hit foot man): the flash renewed, more hits needed**
 
 Changed from REX 1's HitObjectHard `$D41F` (src/game/collisions.asm).
 

@@ -21,7 +21,7 @@ The recordings it rests on (WALKTHROUGH 6.0; all on the 128K):
 | `p1-cursor` | `work/stage1/probe/128K/loaded.szx` (the menu), CURSOR | room 0 built (frames 400-421), one pass traced (1009:50000-1013:40000), the shield on |
 | `c1` | power-on, REX 1 from the tape | room 0 on screen (`screens/001500.scr`) |
 | `rzx-p1-00000` ... `rzx-p1-64000` | another player's RZX run, 17 segments | the sprite calls (frames 600-605 and 1600-1605 of each); DrawMirrored and the shards (`rzx-p1-00000` 603, 1604), the shots (`rzx-p1-08000` 1603), the drones (`rzx-p1-20000` 603), the sparkle (`rzx-p1-36000` 1602) |
-| `p1-room14/24/26/27/30`, `p1-code` | stage 2 room probes | the sprite calls (frames 400-405 and 900-905) |
+| `p1-room14/24/26/27/30`, `p1-code` | stage 2 room probes, made with POKEs (infinite lives, the room exits and RexX; WALKTHROUGH) | the sprite calls (frames 400-405 and 900-905) |
 
 Conventions:
 
@@ -176,12 +176,12 @@ The three big writers cost most of the pass. Their costs, from the instructions 
 
 | Routine | Work | T | Frames | Trace |
 | --- | --- | --- | --- | --- |
-| DrawAnimCells | 364 cells x 306 T | 111 400 | 1.57 | 1010:8613 to 1011:51063 |
-| BufferToScreen | 168 lines x 518 T | 87 000 | 1.23 | 1011:51063 to 1013:5065 |
+| DrawAnimCells | 364 cells x 306 T, plus the loop | 113 400 | 1.60 | 1010:8613 to 1011:51063 |
+| BufferToScreen | 168 lines x 518 T, plus contention | 96 200 | 1.36 | 1011:51063 to 1013:5465 |
 | ClearBuffer | 42 x (64 x 11 + 13) T | 30 100 | 0.42 | 1013:5512 to 1013:35688 |
-| all three | | 228 500 | 3.22 | of a pass of about 4.4 frames |
+| all three | | 239 700 | 3.38 | of a pass of about 4.4 frames |
 
-There is no wait for the beam anywhere. The copy starts wherever the pass has got to, and runs for 1.23 frames. So
+There is no wait for the beam anywhere. The copy starts wherever the pass has got to, and runs for 1.36 frames. So
 the beam overtakes it, and one frame in each pass shows a tear: the lines above the crossing come from the new
 pass, the lines below from the old.
 
@@ -198,12 +198,22 @@ How to read:
 - The red steps are BufferToScreen's writes: the screen line it wrote at that T.
 - Frame 1010 and most of 1011 are blue: DrawAnimCells. ClearBuffer is the yellow at the start of 1013.
 
-Worked example, the tear line. BufferToScreen ends line 167 (screen line 191) at 1013:5065, and a line takes 518 T.
-In frame 1012's terms that is T 70 908 + 5065 = 75 973. So screen line S (24 + n) is finished at
-`75 973 - 518 x (191 - S)`. The beam shows line S at `16 212 + 228 x S` (the paper starts at T 16 212 on the 128K, 228
-T a line). The two meet where `75 973 - 518 x (191 - S) = 16 212 + 228 x S`, which gives S = 135. So frame 1012 shows
-the new pass on lines 24-134 and the old pass on lines 136-191. In the figure, the red steps cross the diagonal at
-line 135, T 47 000. Frame 1011 shows only old lines: the copy began (1011:51063) after the beam had passed line 153.
+Worked example, the tear line. A line costs 518 T by the instructions, but only while the beam is in the border: the
+`LDI` writes go to bank 5, and while the beam draws the paper the ULA delays them (contention). On the trace a line
+written during the paper takes 573-627 T (lines 24-31: 1011:51 149 to 1011:56 164, 5015 T for 8 lines), one written
+during the border 518 T (lines 186-191 at the top of frame 1013). The beam shows line S at `16 212 + 228 x S` (the
+paper starts at T 16 212 on the 128K, 228 T a line). The trace gives each line's last write in frame 1012:
+
+| Screen line | Last write (frame 1012) | Beam reaches it |
+| ---: | ---: | ---: |
+| 139 | T 47 209 | T 47 904 |
+| 140 | T 47 837 | T 48 132 |
+| 141 | T 48 476 | T 48 360 |
+| 142 | T 49 104 | T 48 588 |
+
+So frame 1012 shows the new pass on lines 24-140, line 141 is written while the beam draws it, and lines 142-191 show
+the old pass. In the figure, the red steps cross the diagonal at line ~141, T ~48 400. With the uncontended 518 T a line
+the crossing would be at line 135: the contention moves the tear 6 lines down. Frame 1011 shows only old lines: the copy began (1011:51063) after the beam had passed line 153.
 Frame 1013 shows only new lines.
 
 The point: Rex has no frame sync and no double buffer on screen. Each pass gives one torn frame, at a line that
@@ -466,7 +476,7 @@ Two limits, known only from the code:
 - **The list overruns CellIndexMap.** SceneryCellList has `$DE9F - $D962` = 1341 bytes before CellIndexMap, room for 335
   entries. Room 0 lists 364, so the list ends at `$DF12`: memory of `p1-cursor` at frame 1006 shows `$FF` at `$DF12`.
   Entries 336-364 overwrite CellIndexMap's first 116 bytes: HUD rows 0-2 (unused) and the first play row from column
-  0 to 18 (`$DEFF-$DF12`). DrawRoom writes those indexes early (row 0) and the list later, so the indexes are lost.
+  0 to 19 (`$DEFF-$DF12`, the end mark included). DrawRoom writes those indexes early (row 0) and the list later, so the indexes are lost.
 - **The index is one byte.** RoomCellPtr `$A01D` counts in A and wraps after 255: cells 256-364 get indexes 1-109.
 
 CellIndexMap is read by BulletHitsCell (weapons.asm), which steps a hit cell of types 4, 5 and 6 to the next
@@ -876,7 +886,7 @@ the way: a byte `$03` becomes `$C0`, `$60` becomes `$06`.
 How to read: the view is 18 buffer lines around Rex. Each row is written from its right end to the left. The memory
 strip shows MirrorTable `$AD5D` read once for every byte (blue).
 
-The cost: 127 T a byte against 46: a mirrored Rex costs about 7000 T, twice the plain one.
+The cost: 127 T a byte against 46: a mirrored Rex costs about 7400 T (16 lines x (3 x 127 + 83)), twice the plain one.
 
 The `+ 2` is fixed, so the box is right only for 3-byte sprites:
 
@@ -937,7 +947,7 @@ How to read:
 What the sheets show:
 
 - Rex has two pictures, SpriteRex `$80F2` (standing and walking) and SpriteRexJump `$8F62` (in the air and falling,
-  DrawRex `$96C4`). SpriteRex's four copies are four walk poses, picked by X & 7: Rex walks because he moves.
+  chosen at `$96C4` in DrawRex). SpriteRex's four copies are four walk poses, picked by X & 7: Rex walks because he moves.
   SpriteRexJump's four copies are pure shifts.
 - The explosion that objects show when killed is drawn from `$6018`, a copy the menu makes of ExplosionPicture `$E336`
   over the development-link stub ([doc 2](02-architecture.md)).
@@ -1179,7 +1189,8 @@ A2DE  C9                           RET
 Worked example: the first line. `POP DE` gives `$4060` (line 24, the first line of character row 3), `INC DE` gives
 `$4061`. HL goes from `$EAFF` to `$EB00`. The 30 `LDI` copy `$EB00-$EB1D` to `$4061-$407E`. HL ends at `$EB1E`; the
 `INC HL` makes it `$EB1F`, and the next line's `INC HL` `$EB20`. A line costs 10 + 6 + 6 + 30 x 16 + 6 + 10 = 518 T,
-as the trace's steps of 518 T at `$A2D7` show (1013:4547, 1013:5065).
+as the trace's steps of 518 T at `$A2D7` show for the last lines, written during the border (1013:4419, 1013:4937,
+1013:5455). In the paper area a line takes 573-627 T: the writes to bank 5 wait for the ULA (6.2).
 
 ![BufferToScreen in one pass](img/routines/BufferToScreen.gif)
 
@@ -1225,7 +1236,7 @@ Two kinds of attribute write happen in play:
   cells from FlashAttrs `$BFE7` at random, through FillShadowCells `$CF47`; CopyCells3 `$CF6E` copies the shadow back
   over them afterwards. Witness: FlashCells L1 4771.
 
-The point: the screen is written in one place, in one order, by a copy that costs 1.23 frames. The 32-byte buffer
+The point: the screen is written in one place, in one order, by a copy that costs 1.36 frames. The 32-byte buffer
 line keeps the address arithmetic of every writer to a shift and an add; the 2 bytes of margin per line are the price.
 
 ## 6.12 Known only from the code

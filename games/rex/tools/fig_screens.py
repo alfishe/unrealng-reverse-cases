@@ -37,7 +37,7 @@ SHEETS = {
         (PLAY + 'rzx-p2-01000-room0.png', 'room 0: rzx-p2-00000 1000'),
         (PLAY + 'c2-004250-part2.png', 'room 0, score carried: c2 4250'),
         (PLAY + 'rzx-p2-21000-play.png', 'the tower: rzx-p2-20000 1000'),
-        (PLAY + 'c1-004000-game-over.png', 'GAME OVER, part 1: c1 4000'),
+        (PLAY + 'c1-004000-game-over.png', 'GAME OVER (part 1\'s): c1 4000'),
         (PLAY + 'rzx-p2-41500-ending.png', 'the ending: rzx-p2-40000 1500'),
     ]),
     'screens-demo': ('DEMO (side 2): the tutor', [

@@ -225,7 +225,7 @@ TTD frames 16 342 (room 0) and 16 940 (room 1: SpawnRight `$FF`, period 30, kind
 
 ## 7.3 The cell types
 
-Every character of the room grid has a type, CharFlags `$6506` + character code (`src/res/tables/rex1-char-flags.csv`).
+Every character of the room grid has a type, CharFlags `$62E0` + character code (REX 2: `$6506`; `src/res/tables/rex1-char-flags.csv`).
 The movers do not look at pixels; they look at the type of the cell they would enter.
 
 | Type | Meaning | Tested by |
@@ -279,7 +279,7 @@ the first 16 (`$180` bytes) on a room change; a list holds at most 16 objects.
 | Byte | Field | Values |
 | --- | --- | --- |
 | +0 | X | pixels from the left |
-| +1 | Y | pixels from the top of the play area |
+| +1 | Y | the sprite Y of doc 6.1: screen line Y + 8, the play area from Y 16 |
 | +2 | direction | 0 right, else left (a spawn from the top puts R here: any value) |
 | +3 | jump or explosion step | a walker's jump flag; BlowUp counts its pictures here |
 | +4, +5 | picture, or the jump step pointer, or a flyer's dX and dY | by kind |
@@ -372,7 +372,7 @@ Witness: MakeObjects in the `c1` trace of TTD frame 16 957; the samples of frame
 | 2, 3 | | 100 | | walkers |
 | 4 | | 200 | | a walker; a person |
 | 5 | | 300 | | a walker; a person; its death ends the scripted spawn |
-| 6 | | 100 | 2 | a walker, also the "hit" state of a foot man (7.8); a person |
+| 6 | | 100 | 2 | the "hit" state of a foot man (7.8): bullets do not hurt it while it is kind 6; a person |
 | 7 | | 100 | | a walker; a person |
 | 8 | SCANNER | 600 | 16 | stalks Rex: rises and sinks to his height, walks his way |
 | 9 | SWING GUN | 600 | 10 | a turret: eight angle pictures, a shot in its angle at random |
@@ -382,20 +382,23 @@ Witness: MakeObjects in the `c1` trace of TTD frame 16 957; the samples of frame
 | 13 | MINE LAYER | 1000 | | walks the ground, drops mines at random |
 | 14 | MINE | none | | drifts by dX, dY; a solid cell turns it, a solid cell above kills it |
 | 15 | BLOB | 200 | | flies at random, bounces at the edges |
-| 16 | the big gun | 100 | | hangs above line `$90`, fires at set times and drops mines |
+| 16 | the big gun | 1000 | weapon x 50 + 16 | always `$90`; bobs between Y `$40` and `$78`, fires volleys, drops mines; two lives (7.9) |
 | 17-20 | | | | list kinds only: a swing gun at four start angles |
 | `$FE` | power pod | | | flashes, gives power when touched (doc 10.8) |
 | `$FD` | bomb pod | | | gives a smart bomb |
 | `$FC` | bonus pod | | | starts the bonus roulette (doc 10.9) |
 | `$FF` | the points sign | | | a killed object while it explodes |
 
-The scores are KillScores `$994E`[kind AND `$0F`] x 100 (`src/res/tables/rex1-kill-scores.csv`), so the big gun
-scores KillScores[0]. They agree with the roll call's ten names (`src/res/texts/rex1-roll-call.txt`). The hits are the
+The scores are KillScores `$994E`[kind AND `$0F`] x 100 (`src/res/tables/rex1-kill-scores.csv`), except the big gun:
+its kind is always `$90` (InitKind16 `$CE3E` sets bit 7), and KillObject sends `$90` to KillScore `$98AF`, 1000
+points (7.9). They agree with the roll call's ten names (`src/res/texts/rex1-roll-call.txt`). The hits are the
 +`$14` byte where the samples show it. The six persons (0, 4, 5, 6, 7, 12) add one to HumansKilled `$A089` when
 killed; the game over panel prints it.
 
-Bit 7 of the kind marks a variant. UpdateObject draws a variant with its own picture, and a variant shoots more: at
-random (Random `$F0` and over) where the plain kind waits for its timer.
+Bit 7 of the kind marks a variant. For a foot man UpdateObject `$BA97` reads it: a variant (`$80`) fires at Random
+`$F0` and over (1 pass in 16), a plain one at `$FE` and over (1 in 128), and neither while +`$12` = 2. A big gun is
+always a variant (`$90`). Other kinds (the scanner, the ramming pod) set and clear the bit as a state flag of their
+own.
 
 **The point**: ten names on the menu, seventeen kinds in the code; the unnamed walkers 2-7 are the people and the
 helpers of the scripted rooms.
@@ -492,8 +495,11 @@ each with 16 hits left.
 The swing gun (9) shows one of eight angle pictures (SwingGunFrames `$BECB`: offsets
 `$00 $20 $40 $60 $80 $60 $40 $20`) and at random fires a shot in its angle's direction (SwingShotUpLeft .. SwingShotUpRight). The shooters (10)
 fire two shots every few passes, right and left (ShootersFire). The launcher (11) fires a shot that climbs, type `$87`
-(LauncherFire). The big gun (16) hangs above line `$90`, fires at the times of BigGunShots
-(`$10 $20 $22 $19 $1D $31 $34`, `$FF` ends) and drops a mine (DropMine `$C1F4`). Walkers fire too: ShootForward (1 in 16) and ShootBoth (a pair,
+(LauncherFire). The big gun (16, BigGun `$BB74`) bobs between Y `$40` and `$78` by +`$12` pixels a pass (2, then 1
+after its first kill). One pass in 16 (R AND 15 = 0) it fires a volley: one shot per byte of BigGunShots
+(`$10 $20 $22 $19 $1D $31 $34`, `$FF` ends), the byte being the shot's Y offset (Temp4, added to its Y by SetupShot),
+so seven shots down its height; four, from the fourth byte, once +`$12` = 1. Above Y `$90`, with +`$11` and +`$13` both
+0, Random `$F0` and over drops a mine (DropMine `$C1F4`). Walkers fire too: ShootForward (1 in 16) and ShootBoth (a pair,
 one each way).
 
 ```mermaid
@@ -504,13 +510,44 @@ stateDiagram-v2
     Wait --> Exploding: the last hit
 ```
 
-A shot goes into one of the 20 enemy bullet records at `$5D22` (ShootFromObject: the object's X and Y, speed 15). A
+A shot goes into one of the 20 enemy bullet records at `$5D22` (ShootFromObject: the object's X, its Y plus 15). A
 full table drops the shot.
+
+The big gun has a state machine of its own: two lives (7.9).
+
+```mermaid
+stateDiagram-v2
+    [*] --> Gun: InitKind16, kind $90, speed 2, hits weapon x 50 + 16
+    Gun --> Gun: 1 pass in 16, a volley of 7 shots
+    Gun --> Gun: Random $F0 and over, a mine
+    Gun --> Human: first kill, 1000 points, five points signs
+    Human --> Human: speed 1, volleys of 4 shots
+    Human --> RammingPod: second kill, 1000 points, five points signs
+    RammingPod --> Exploding: the last of its 8 hits
+    Exploding --> [*]
+```
+
+In `rzx-p1-24000` the big gun is record 0: it moves 2 lines a step before (Y 80, 78, 76, 74 at frames 598-613), the
+first kill runs KillScore at 668:55693 (+`$13` 0 to 1 at 668:60892, five ShowPoints passes, back at 668:66563; the
+1000 points in doc 08, 8.4), and the record goes on as the human picture at 1 line a step (Y 72, 71, 70, 69 at
+frames 1596-1607). The second kill is known only from the code.
 
 ### The ground walkers (kinds 12, 13)
 
 The ramming pod (12) and the mine layer (13) walk right or left on the ground (GroundWalker) and climb by their speed
 until a solid cell above (Climb). The mine layer drops a mine (kind 14) into a free record at random (DropMine).
+
+```mermaid
+stateDiagram-v2
+    [*] --> Walk: on the ground
+    Walk --> Walk: right or left by its speed
+    Walk --> Climb: a wall ahead
+    Climb --> Walk: a solid cell above
+    Walk --> DropMine: mine layer, at random
+    DropMine --> Walk: kind 14 in a free record
+    Walk --> Exploding: the last hit
+    Exploding --> [*]
+```
 
 ### The mine and the blob (kinds 14, 15)
 
@@ -723,7 +760,8 @@ for each of the 30 bullets b:
     if not (obj.x < b.x <= obj.x + w): continue
     if obj.kind is a pod: continue
     b.live = 0 if Weapon == laser else 2           # the laser shot ends; other shots stop (SfxHitWall if channel C is free)
-    if obj.kind == 6: HitObjectHard
+    if obj.kind == 6: HitObjectHard(); continue  # the flash renewed, hits back to 2: no hit taken
+    if obj.hits == 0: continue
     obj.hits -= 1
     if obj.hits == 1:
         if obj.kind & $7F != 0: KillObject
@@ -740,8 +778,11 @@ flowchart TD
     Xb -- no --> N
     Xb -- yes --> P{"a pod?"}
     P -- yes --> N
-    P -- no --> S["bullet stops; hits - 1"]
-    S --> L{"hits = 1?"}
+    P -- no --> S["bullet stops"]
+    S --> K6{"kind 6?"}
+    K6 -- yes --> HH["HitObjectHard: flash, hits 2"] --> N
+    K6 -- no --> Dh["hits - 1"]
+    Dh --> L{"hits = 1?"}
     L -- no --> N
     L -- yes --> K{"kind 0?"}
     K -- no --> KO["KillObject"]
@@ -786,8 +827,23 @@ It refuses an object above line `$10` or at line `$B0` and below. Otherwise:
 5. SfxExplosion starts on channel C (doc 9);
 6. the kind becomes `$FF`, the direction 0, Y = (Y - 8) AND `$F8`.
 
-The big gun's variant (`$90`) takes another path, KillScore: 1000 points and a new object made from it. Known only
-from the code here: none of the recordings sampled for this document holds the big gun.
+The big gun (`$90`) takes another path, KillScore `$98AF`, and has two lives:
+
+```text
+KillScore(gun):                        # kind $90, every kill
+    AddScore(10)                       # 1000 points
+    gun.hits = Weapon * 50 + 16        # KillHumanPicture $CE67: the hits depend on the weapon held
+    gun.speed12 = 1; ObjectCount = 15; gun.picture = SpriteHuman ($92F2)
+    first = (gun[+$13] == 0); gun[+$13] += 1
+    if gun[+$13] == 2:                 # the second kill
+        InitKind12(); gun.kind = $0C; gun.hits = 8   # a ramming pod
+    repeat 5:                          # five points signs around it
+        r = FindFreeObject(); ShowPoints(r)
+        r.pod = $FF if first else Random & 1
+        r.x = gun.x + Random & 31; r.y = (gun.y + Random & 31) & $F8
+```
+
+Smart bombs skip it (SmartBombStep tests `$90`, doc 10.11). Witness: the first kill in `rzx-p1-24000` (7.6, the guns).
 
 For the next 8 passes BlowUp `$BD6B` draws six shards along ShardPaths, flashes the cells' attributes (FlashCells:
 `$02 $03 $06 $42 $43 $46 $06 $02`) and steps the picture. Each shard also writes the border port (doc 9.6). At the end:
@@ -894,4 +950,5 @@ Witness: Random runs in every pass that spawns, fires or blows up (L1 in `src/ga
   has Y 0, which KillObject refuses. Known only from the code: no recording shows a smart bomb in a room with a dead
   record that kept its Y.
 - SetSpawnTop .. SetSpawnLeft set the spawn sides to `$FF`.
-- Rooms 14, 24, 26 and 27 are on the map, but no recording enters them (stage 2 NOTES).
+- Rooms 14, 24, 26 and 27 are on the map, but no route of the RZX runs enters them; only the POKE recordings
+  `p1-room14`, `p1-room24`, `p1-room26` and `p1-room27` reach them (WALKTHROUGH, stage 2 NOTES).

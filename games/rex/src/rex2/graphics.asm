@@ -2,12 +2,13 @@
 ; graphics.asm: The development link, the graphics and the level data: the font, the characters, the blocks, the room maps and the sprites
 ;
 ; The tape loads part 2's code block at $61A8, 400 bytes above part 1's. Its first bytes are the authors' development
-; link, here complete and never overwritten: DevLink $61A8 talks to a host over ports $1F, $3F, $5F and $7F (commands
-; $B4-$BA: poke a block, send a block, page $7FFD, set a breakpoint, return), with the machine's state saved at $62F8.
-; No instruction of the game reaches it. Then come the same tables as part 1, 550 bytes higher ($226): the font (Font
-; $6306, characters 32-95, found at $6206 + 8 x code), the cell type, picture and attribute of the 256 room characters
-; (CharFlags $6506, CharGraphics $6606, CharAttrs $6E06), the 256 blocks of 3 x 3 characters (BlockDefs $6F06), the
-; room maps (RoomMaps $7806, 70 bytes a room; rooms 0-25 are used, RoomExits $B1A7) and the sprites ($8198-$946F).
+; link, here complete and never overwritten: DevLink $61A8 talks to a host over ports $1F, $3F, $5F, $7F and $7FFD
+; (commands $B4-$BA: poke a block, send a block, page $7FFD, set a breakpoint, return), with the machine's state saved
+; at $62F8. No instruction of the game reaches it. Then come the same tables as part 1, 550 bytes higher ($226): the
+; font (Font $6306, characters 32-95, found at $6206 + 8 x code), the cell type, picture and attribute of the 256 room
+; characters (CharFlags $6506, CharGraphics $6606, CharAttrs $6E06), the 256 blocks of 3 x 3 characters (BlockDefs
+; $6F06), the room maps (RoomMaps $7806, 70 bytes a room; rooms 0-25 are used, RoomExits $B1A7) and the sprites
+; ($8198-$946F).
 ;
 ; The sprites are stored pre-shifted as in part 1 (a frame list of 8 offsets picks the copy for X & 7; DrawSprite
 ; $B296 ORs it into the back buffer). Part 2's enemies are new: kinds 1-5 and 9 have their own pictures and behaviours
@@ -17,15 +18,16 @@
 ; Leftover: the development link's code: pages the link in, saves every
 ; register, then serves the host's commands until a return
 ;
-; Ports $7F, $3F and $5F drive a parallel link; DevLinkGet $62C3 and DevLinkPut
-; $62D3 move one byte with a handshake on port $3F, data on $1F. Commands: $B5
-; sets the return address ($62BE) and $CD00 ($62BC), $B4 pokes a block
-; (address, length, bytes), $B6 pages $7FFD, $B7/$BA send the 26 saved bytes at
-; $62E4 or a block, $B8/$B9 receive. $B5/$BA end by restoring the registers and
-; calling DebugHook $D6C6. No instruction of the game reaches $61A8 (known only
-; from the code; z80dasm of the bytes); the kit keeps it as bytes because
-; recording c2 reads these bytes once. Kept as a documented leftover
-; (src/res/leftovers/README.md).
+; OUT to $7F, $3F, $5F, $1F (DevLinkPut) and $7FFD; IN from $3F and $1F;
+; DevLinkGet $62C3 and DevLinkPut $62D3 move one byte with a handshake on port
+; $3F, data on $1F. Commands: $B4 pokes a block (address, length, bytes); $B5
+; sets the return address ($62BE) and $CD00 ($62BC); $B6 sends a block
+; (address, length; $624E); $B7 pages $7FFD ($6234); $B8 sends the 26 saved
+; bytes at $62E4; $B9 receives 26 bytes there; $BA sets $62BC and $62BE from
+; the host. $B5/$BA end by restoring the registers and calling DebugHook $D6C6.
+; No instruction of the game reaches $61A8 (known only from the code; z80dasm
+; of the bytes); the kit keeps it as bytes because recording c2 reads these
+; bytes once. Kept as a documented leftover (src/res/leftovers/README.md).
 DevLink:
   INCBIN "res/leftovers/rex2-devlink.bin",$0000,283
 DevLinkGet:

@@ -300,7 +300,7 @@ when its attribute is written, after its 8 lines. The memory strip is the attrib
 
 Worked example: PressFireText `$AB25` is `44 04 70` then "PRESS FIRE" and 0. The attribute `$44` is bright green ink
 on black. The column is 4 and the line `$70` = 112, the top of character row 14. The `P` is code `$50`: glyph
-`$5FE0 + $280 = $6260`. Its lines go to ScreenLineTable[112..119] + 4, the first at `$4884`. Its attribute goes to
+`$5FE0 + $280 = $6260`. Its lines go to ScreenLineTable[112..119] + 4, the first at `$48C4` (ScreenLineTable[`$70`] at `$ACBD` is `$48C0`). Its attribute goes to
 `$5800 + ($70 & $F8) x 4 + 4 = $5800 + $1C0 + 4 = $59C4`. The space after PRESS gets no attribute.
 
 Witness: PrintText L1 128, PrintChar L1 1674, PrintTextHL L1 121, PrintBoxed L1 41 (c1, p1-code, p1-cursor,
@@ -450,7 +450,7 @@ says the same: "PINK:LOW UP TO WHITE: HIGH". It runs every pass unless FadeStepI
 
 **The bombs.** ShowBombs `$A1C9` picks a row of BombIcons `$A202` by Bombs (0-3). Each row holds three offsets from
 SpriteHudIcons: `$C0` a full bomb (`$8CCA`), `$A0` an empty one (`$8CAA`, the same picture as a dark weapon).
-DrawBombIcons writes column 25, 27 and 29 into HudIconParams `$A1F3` before each DrawCharBlock.
+DrawBombIcons writes column 25, 27 and 29 into HudIconParams+2 (`$A1F3`; HudIconParams `$A1F1`) before each DrawCharBlock.
 
 ```text
 ShowShield: ToDigits(E); PrintDigits(line 0, column 21, 2)
@@ -528,8 +528,11 @@ Known only from the code:
 
 - The "picture" ShadowOffset `$8CFF` that PowerBar adds is not a picture. `$8CFF` is `$E4FF - $5800`, the
   distance from the screen's attributes to the shadow, an `EQU` in the source (`ShadowOffset EQU $E4FF-$5800`).
-- PowerGain stops PowerLevel at 6, which gives attribute 8: black ink on blue paper, a dark icon. No recording
-  reaches level 6.
+- PowerLevel never reaches 6, so attribute 8 (black ink on blue paper) is never shown. PowerGain `$B98E` tests
+  level + 1 = 6 before the store and jumps to GainRank instead: below the top rank that raises WeaponRank and sets
+  the level to 1; at the top rank (WeaponRank 4 + 1 = 5, `RET Z`) nothing is stored, the level stays 5 and PowerCount
+  keeps wrapping by 120. No instruction stores 6 (the writers of PowerLevel are `$B9B0`, `$B9D4`, `$BA0D`, `$BA37`,
+  `$BA52`).
 
 The point: the icons are drawn by one block routine whose parameters live in the code after the call. The power
 level needs no picture at all: it is the attribute of the active weapon's icon.
@@ -563,7 +566,7 @@ HudSweep:
             if SweepCount == 0:
                 SweepCount = 5; SweepWidth -= 1
                 if SweepWidth == 0: RexDies()
-                attr[$582C + SweepWidth] = $04; shadow[$E52C + SweepWidth] = $04
+                attr[$582C + SweepWidth] = $04; shadow[$E52B + SweepWidth] = $04   # the shadow of $582C + W
 ```
 
 ```text
@@ -632,7 +635,7 @@ Row 2 of the HUD shows "100 200 300 ... 900" (the red pictures of the font, 8.2)
 
 So the value just scored shows white, and the ones before it fade through the colours to black in 7 passes.
 
-FadeStep `$9A4C` is a short flash of HUD rows 0-1 (`$5800-$583F`, 64 cells). TakePowerPod `$D47D` starts it with
+FadeStep `$9A4C` is a short flash of HUD rows 0-1 (`$5800-$583F`, 64 cells). TakePowerPod `$D46C` starts it (the store at `$D47D`) with
 FadeStepIndex 0. FadeSteps `$9AB3` is `01 x 6, 00 x 5, 02 x 6, FF`: six passes of ink + 1 (to 7 at most), five of
 ink - 1 (to 0 at least), six of "step toward the shadow" (ink + 1 until it equals SaveAttrs' copy). While it runs,
 HudSweep and PowerBar wait.
@@ -967,7 +970,7 @@ DefineTexts; [doc 5](05-controls.md) shows them working (5.2, 5.5). In play, fou
 
 | Panel | Printed by | When | The play area after it |
 | --- | --- | --- | --- |
-| PHASE ONE, then PRESS FIRE / TO BEGIN | NewGame `$955E`, `$956A` | a new game | the first room is built |
+| PHASE ONE, then PRESS FIRE / TO BEGIN | NewGame `$9498` (at `$955E` and `$956A`) | a new game | the first room is built |
 | a weapon panel | WeaponPanel `$D871` | the first time a weapon is taken | BufferToScreen, CopyAttrs |
 | the bonus roulette | BonusRoulette `$D4B6` | a bonus pod | restored the same way |
 | GAME OVER | GameOver `$9CBF` | no life left | NewGame |

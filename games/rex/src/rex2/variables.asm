@@ -11,7 +11,8 @@ Weapon:
   DEFB $00                ; the weapon in use: 0 gun, 1 double fire, 2 laser, 3
                           ; multiple (drones), 4 spray
 PowerLevel:
-  DEFB $00                ; the weapon's power, 1-6 (the power bar)
+  DEFB $00                ; the weapon's power, 1-5 (the power bar; PowerGain
+                          ; never stores 6)
 PowerBarPtr:
   DEFB $00,$00            ; the HUD address of the power bar's end
 PassToggle:

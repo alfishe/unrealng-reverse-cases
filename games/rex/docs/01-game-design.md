@@ -28,7 +28,8 @@ The tape holds three programs, each a separate load ([doc 3](03-build-and-load.m
 | DEMO | side 2 | the "Tutor Mode": mission "REVIEW ORDERS" | 4 rooms of REX 1's (4, 1, 0, 2) | none: it plays itself and starts again |
 
 The two levels are joined by a code. REX 1 prints a 16-digit access code when Rex leaves its last room. REX 2 asks
-for it before it starts, and takes from it the score, lives, shield, bombs and weapons Rex had (1.7).
+for it before it starts, and takes from it the score, lives, shield, bombs and the weapons Rex owned (1.7); Rex
+starts REX 2 with the laser at power level 3 whatever the code says.
 
 ```mermaid
 flowchart LR
@@ -76,7 +77,8 @@ The screens of part 1, in the order a player meets them:
   call box in the top left, which shows one enemy after another with its score (1.6).
 - **DEFINE** ([`c1` frame 750](img/play/c1-000750-define.png)): PRESS UP, DOWN, LEFT, RIGHT, FIRE in turn.
 - **PHASE ONE** ([`c1` frame 1000](img/play/c1-001000-phase-one.png)): the mission, then PRESS FIRE TO BEGIN. About
-  7 s without fire starts the attract mode, which shows eight rooms ([doc 4, 4.8](04-game-loop.md#48-every-delay-pause-and-timer)).
+  14 s without fire (two waits of about 7 s, one after PHASE ONE and one after PRESS FIRE) starts the attract mode,
+  which shows eight rooms ([doc 4, 4.8](04-game-loop.md#48-every-delay-pause-and-timer)).
 - **Play** ([`c1` frame 1500](img/play/c1-001500-room0.png), room 0; [`rzx-p1-30000` frame 1000](img/play/rzx-p1-31000-play.png),
   room 13). The HUD shows the weapons held, the score (7 digits), the shield, the lives, the power bar and the
   smart bombs; the sweep runs along its attribute row ([doc 8](08-hud-and-text.md)).
@@ -90,7 +92,8 @@ The screens of part 1, in the order a player meets them:
 
 *REX 2 from its load to its end. How to read it: as above. The point: part 2 opens with the code, not the roll call;
 a code that does not check prints INVALID CODE, TRY AGAIN; the right code puts the score of part 1 back on the HUD
-(`c2` frame 4250: 0100300). Command: `python3 tools/fig_screens.py`.*
+(`c2` frame 4250: 0100300). The GAME OVER tile is part 1's (`c1` 4000): no recording loses REX 2's last life; part
+2's panel is the same but for its third box. Command: `python3 tools/fig_screens.py`.*
 
 The screens of part 2:
 
@@ -100,7 +103,8 @@ The screens of part 2:
 - **PHASE TWO** ([`rzx-p2-00000` frame 500](img/play/rzx-p2-00500-phase-two.png)).
 - **Play**: [room 0 at `rzx-p2-00000` frame 1000](img/play/rzx-p2-01000-room0.png), [the same room with the score
   carried, `c2` frame 4250](img/play/c2-004250-part2.png), [the tower, `rzx-p2-20000` frame 1000](img/play/rzx-p2-21000-play.png).
-- **GAME OVER**: the same three boxes; the third reads BIO GROWTHS KILLED.
+- **GAME OVER**: the same three boxes; the third reads BIO GROWTHS KILLED (known only from the code and its text: no
+  recording reaches it).
 - **The ending** ([`rzx-p2-40000` frame 1500](img/play/rzx-p2-41500-ending.png)): "WITH THE BIG SQUIDGY THING
   DESTROYED REX CAN GO HOME AND HAVE A NICE CUP OF TEA AND PUT HIS FEET UP".
 
@@ -202,15 +206,18 @@ What ours adds: the room numbers, the one-way exits, and the five rooms off ever
 - Rex dies when an enemy or a shot touches him without the shield, when he falls out of a room with no exit below,
   and when the sweep runs out.
 - A death runs 50 passes of flying shards (about 4.4 s), fires a smart bomb for free (the room is empty when he comes
-  back), takes the weapon's power down a step and refills the shield to 99.
+  back), drains the power count twice by 50 (0, 1 or 2 power levels lost, as the count allows; LosePower) and refills
+  the shield to 99.
 - Rex comes back at the last restart marker he touched (the cell type `$07`; `RestartRoom $A05B`). The restart may
   be in an earlier room: the RZX run's "room 17 to room 11" moves are such restarts.
 - No life left: GAME OVER, HI-SCORE (the best score of the session, kept while the program runs) and HUMANS KILLED.
 
 ### The shield
 
-Down switches the shield on and off. While it is on, shots and enemies do not hurt Rex, and `ShieldEnergy $A04D` loses one unit
-every 4 passes (99 units: about 400 passes, 30 s). At 0 the shield goes off. The recharger cell (`$08`) gives a unit
+Down switches the shield on and off. While it is on, shots and enemies do not kill Rex, and `ShieldEnergy $A04D` loses one unit
+every 4 passes (99 units: 2 + 4 x 99, about 400 passes, 35 s at 4.4 frames a pass). Hits drain it too: 5 units an
+enemy shot, the object's hits left x 4 for an enemy touched (which dies), 20 for the roulette's SHIELD LOSS. Below 0 the
+shield goes off. The recharger cell (`$08`) gives a unit
 a pass while Rex stands on it. Witness: `p1-define` (the shield drains), the RZX runs.
 
 ### The sweep: the room's time limit
@@ -230,16 +237,18 @@ Rex).
 | multiple | the station in room 23 | Rex's shot and one from each drone that follows him |
 | spray | the station in room 11 | 8 shots in a fan |
 
-- The weapon power (`PowerLevel $A014`, 1-6) sets how many shots may be in the air. Firing uses it up; the power pods
+- The weapon power (`PowerLevel $A014`, 1-5) sets how many shots may be in the air. Firing uses it up; the power pods
   the enemies leave raise it. The power bar shows it in colours from pink (low) to white (high), as DEMO says.
 - At the lowest level the weapon falls back to the best one held.
 - A station gives its weapon once a game and stops the game with its panel until fire (the long passes of
   [doc 4, 4.7](04-game-loop.md#47-the-long-passes-the-weapon-stations)).
-- REX 2 has no stations: its weapons are the ones the code says.
+- REX 2 has no stations: the code says which weapons Rex owns; StartWeapon `$BAC6` always puts the laser in his hands
+  at power level 3 and rank 2.
 
 ### Smart bombs
 
-Rex starts with 3. SPACE fires one: every object in the room dies, one a pass over 16 steps, while the screen flashes.
+Rex starts with 3. SPACE fires one: over 16 passes it visits the room's 16 object records, one a pass, and kills each but the pods
+(`$FE`, `$FD`, `$FC`) and the big gun (`$90`), while the screen flashes.
 A bomb pod gives one more, up to 3. A death fires one free.
 
 ### Pods
@@ -250,7 +259,7 @@ A killed enemy may leave a pod, which Rex takes by touching it:
 | --- | --- | --- |
 | power | `$FE` | power, twice for a big one |
 | bomb | `$FD` | a smart bomb, up to 3 |
-| bonus | `$FC` | a roulette that slows to a stop on one of: SPEED UP (200 passes of double speed), SHIELD LOSS (20 units), 1000 BONUS, ENERGY LOSS (a power step), 100 RAPID SHOTS |
+| bonus | `$FC` | a roulette that slows to a stop on one of: SPEED UP (200 passes of double speed), SHIELD LOSS (20 units), 1000 BONUS, ENERGY LOSS (two drains of 50 from the power count: 0-2 levels lost, as at a death), 100 RAPID SHOTS |
 
 Witnesses: the power pod in 27 RZX segments; the bomb pod in `rzx-p1-52000` and `rzx-p1-54000`; the roulette in
 `rzx-p1-50000` and `rzx-p1-56000`; SPEED UP in `p1-speedup` (the same RZX state, fire pressed while SPEED UP showed:
@@ -261,7 +270,7 @@ SpeedUpPhase 200 at frame 1740 down to 0 at 2740, Rex walking 4 pixels a pass me
 Each enemy scores its kind's entry of `KillScores $994E` times 100. The score is held in hundreds and shown with
 two zeros added. The full table is in 1.6. People killed (the foot man, the four "person" walkers and the ramming
 pod) are counted in `HumansKilled $A089` and printed at game over. REX 2 counts every kill but kind 0 as BIO GROWTHS
-KILLED.
+KILLED, starting from the score the code carries (in hundreds, `94E7`), not from 0.
 
 ### Difficulty
 
@@ -294,7 +303,7 @@ tools/fig_rollcall.py` (from `work/docs/rxA/rec/menu-rollcall`, the menu left al
 | 13 | MINE LAYER | 1000 | | walks and drops mines |
 | 14 | MINE | no score | | drifts; a solid cell turns it |
 | 15 | BLOB | 200 | | drifts and bounces |
-| 16 | the big gun | 100 | | hangs above line `$90`; fires and drops mines |
+| 16 | the big gun | 1000 | | always kind `$90`; bobs, fires volleys and drops mines; two lives; KillScore `$98AF` adds 10 hundreds |
 
 *REX 1's kinds, from `src/game/objects.asm` and `src/res/tables/rex1-kill-scores.csv`. How to read it: "a person"
 marks the kinds counted as HUMANS KILLED. The point: the score rewards the turrets, the launcher and the mine
@@ -321,6 +330,7 @@ The asm of the inversion and the checksum, in REX 1:
 ```
 A845  LD B,$0D                ; 13 places
 A847  LD E,$00                ; the sum
+...                           ; (A849 LD (Temp1),HL)
 A84C  LD HL,CodeDigits
 A84F  CodeDigitsLoop:
 A84F  LD C,(HL)               ; the value as an ASCII digit
@@ -349,8 +359,8 @@ encode (REX 1, CodePanel):
     shown[13], shown[15], shown[14] = units, tens, hundreds of s
 
 decode (REX 2, EnterCode):
-    s = sum(typed[0..12])
-    if s % 256 == 0 or s != typed[14]*100 + typed[15]*10 + typed[13]: INVALID CODE
+    s = sum(typed[0..12])          # DE from 0; at most 13 x 9 = 117, so D stays 0
+    if s % 256 == 0 or s != typed[14]*100 + typed[15]*10 + typed[13]: INVALID CODE   # OR E; SBC HL,DE
     value[p] = 9 - typed[p]; rebuild score, lives, weapons, shield, bombs
     if bombs >= 4: INVALID CODE
 ```
@@ -368,7 +378,7 @@ flowchart TD
     B -->|"yes"| P["PHASE TWO with Rex's state"]
 ```
 
-*REX 2's check of the code (`EnterCode $DB27`, `CodeSumLoop $DBDF`). The point: the checksum catches a mistyped
+*REX 2's check of the code (`EnterCode $DB27`, `CodeSumLoop $DBAA`, the test `$DBDF`). The point: the checksum catches a mistyped
 digit; nothing checks the lives or the shield, so a code built by hand with 9 lives and full weapons passes. Witness:
 `c2` (a bad code at frame 1750, the RZX's code at frame 3250).*
 
@@ -407,3 +417,4 @@ the animations of [doc 10](10-gameplay-logic.md).*
 - The time-out of the attract wait at a weapon panel.
 - That nothing checks the lives or the shield of a typed code (no hand-made code was typed).
 - REX 2's bomb pod and bonus pod: the code is there; no REX 2 run takes one.
+- REX 2's GAME OVER panel (BIO GROWTHS KILLED): no recording loses REX 2's last life.

@@ -1055,7 +1055,8 @@ InitKind15:
   LD DE,SpriteKind15
   RET
 
-; The big gun
+; The big gun: kind $90 (bit 7 set), speed IX+$12 = 2, 6 x 48, hits Weapon x 50
+; + 16
 ;
 ; Witness: L1 1 (rzx-p1-22000).
 InitKind16:
@@ -1072,8 +1073,8 @@ InitKind16:
   LD (IX+$12),$02
   RET
 
-; The human's picture offset by Weapon (Weapon x 50 + 16) into IX+$14 and
-; HumanPicture $A022
+; The big gun's hits by the weapon held (Weapon x 50 + 16) into IX+$14 and
+; HumanPicture $A022 (written, never read)
 ;
 ; Witness: L1 2 (rzx-p1-22000, rzx-p1-24000).
 KillHumanPicture:

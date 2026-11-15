@@ -31,7 +31,7 @@
 @equ $5B94 RoomLeft ; left
 @equ $5E9B FireLatch ; 1 while fire is held (one shot a press for the slow weapons)
 @equ $5E9C Weapon ; the weapon in use: 0 gun, 1 double fire, 2 laser, 3 multiple (drones), 4 spray
-@equ $5E9D PowerLevel ; the weapon's power, 1-6 (the power bar)
+@equ $5E9D PowerLevel ; the weapon's power, 1-5 (the power bar; PowerGain never stores 6)
 @equ $5E9E PowerBarPtr 2 ; the HUD address of the power bar's end
 @equ $5EA0 PassToggle ; flips every pass (the animations run every other pass)
 @equ $5EA1 PowerCount ; power pods towards the next power level
@@ -764,7 +764,7 @@ $BE25 c FindShotSlot ; IY = a free slot among Rex's bullets (as many as the powe
 > As REX 1's FindShotSlot $B506 (src/game/weapons.asm).
 > Witness: L1 1157 (d1, demo-cycle).
 $BE2F RouletteGive ; give the prize shown
-$BE3E SlotsByPower ; power x 4 + 1 slots
+$BE3E SlotsByPower ; E = power x 4 + 1; FindSlot searches E - 1 = power x 4 slots (the other weapons 29 of the 30)
 $BE47 c FindSlot ; Search E slots from IY for a free one; the shot's sound by weapon (gun $D967, laser $D979, spray $D982; the enemies' $D970)
 > As REX 1's FindSlot $B528 (src/game/weapons.asm).
 > Witness: L1 4507 (d1, demo-cycle).
@@ -788,13 +788,13 @@ $BE9D c EnemyShotFrom ; An enemy shot from IX's X - 16
 $BEA5 c EnemyShotFromX ; LD A,(IX+0) then into EnemyShotA: no instruction reaches these 3 bytes (leftover, as REX 1's $B586)
 > Known only from the code.
 > Witness: L1 0 ().
-$BEA8 c EnemyShotA ; An enemy shot at X A, speed 15
+$BEA8 c EnemyShotA ; An enemy shot at X A, its Y 15 below the object's
 > As REX 1's EnemyShotA $B589 (src/game/weapons.asm).
 > Witness: L1 2092 (d1, demo-cycle).
-$BEAD c EnemyShot ; An enemy shot from IX: X Temp1, Y IX+1, speed A, kind EnemyShotKind $5EDD (bit 7: an enemy's)
+$BEAD c EnemyShot ; An enemy shot from IX: X Temp1, Y IX+1 plus A (Temp4, the Y offset SetupShot adds), kind EnemyShotKind $5EDD (bit 7: an enemy's)
 > As REX 1's EnemyShot $B58E (src/game/weapons.asm).
 > Witness: L1 2420 (d1, demo-cycle).
-$BEC4 c RexShot ; A shot from Rex: his X, Y and facing, speed 17, type the weapon
+$BEC4 c RexShot ; A shot from Rex: his X, Y + 17 (Temp4) and facing, type the weapon
 > As REX 1's RexShot $B5A5 (src/game/weapons.asm).
 > Witness: L1 718 (d1, demo-cycle).
 $BEE0 c SetupShot ; Fill the slot at IY: live, type A, Y Temp2 + Temp4, X Temp1 + 16, direction Temp3 (left: dX -1, -8 pixels), the grid pointer
@@ -864,7 +864,7 @@ $C278 c PowerBar ; Draw the power bar: its end colour flashes by FadeStepIndex
 $C28B c PowerBarColour ; The 2 x 2 cells at HL in the colour PowerLevel + 2
 > Changed from REX 1's PowerBarColour $B97E (src/game/weapons.asm).
 > Witness: L1 12910 (d1, demo-cycle).
-$C29B c PowerGain ; A power pod: PowerCount $5EA1 counts, every few the PowerLevel + 1 up to 6, the bar redrawn, the fire faster
+$C29B c PowerGain ; A power pod: PowerCount $5EA1 counts, every 120 the PowerLevel + 1 up to 5 (at 5 GainRank raises WeaponRank and sets the level back to 1; at rank 5 nothing), the fire faster
 > As REX 1's PowerGain $B98E (src/game/weapons.asm).
 > Witness: L1 474 (d1, demo-cycle).
 $C2B1 AttractShow ; build and show it
@@ -1254,7 +1254,7 @@ $D634 c HitObject ; A hit: the flash picture, the object turned and paused; no c
 > Changed from REX 1's HitObject $D3C2 (src/game/collisions.asm).
 > Witness: L1 14 (demo-cycle).
 $D641 TurnAround ; Direction ^ 1
-$D688 c HitObjectHard ; A hit on an armoured object (kind 6): the flash, more hits needed
+$D688 c HitObjectHard ; A bullet on a kind 6 (the hit foot man): the flash renewed, more hits needed
 > Changed from REX 1's HitObjectHard $D41F (src/game/collisions.asm).
 > Witness: L1 10 (demo-cycle).
 $D6CC c TakePowerPod ; The power pod ($FE): PowerGain, twice for a big one, the pod sound

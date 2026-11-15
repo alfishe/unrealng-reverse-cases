@@ -3,7 +3,7 @@
 ;
 ; Fire shoots the current Weapon $A013: 0 the gun, 1 double fire (two shots, up and down), 2 laser (one long shot), 3
 ; multiple (Rex's shot plus one from each drone), 4 spray (8 shots fanned by SprayDirections $B436). PowerLevel $A014
-; (1-6) sets how many shots may be in the air (FindShotSlot) and is used up by firing (PowerDrain $B9EF) and gained by
+; (1-5) sets how many shots may be in the air (FindShotSlot) and is used up by firing (PowerDrain $B9EF) and gained by
 ; power pods (PowerGain $B98E); at 1 the weapon falls back to the best one held (BestWeapon $B9D7). The power bar in
 ; the HUD shows it.
 ;
@@ -293,7 +293,8 @@ FindShotSlot:
   JP Z,SlotsByPower
   JP FindSlot
 SlotsByPower:
-  LD A,(PowerLevel)       ; power x 4 + 1 slots
+  LD A,(PowerLevel)       ; E = power x 4 + 1; FindSlot searches E - 1 = power
+                          ; x 4 slots (the other weapons 29 of the 30)
   SLA A
   SLA A
   INC A
@@ -387,15 +388,15 @@ EnemyShotFrom:
 EnemyShotFromX:
   LD A,(IX+$00)
 
-; An enemy shot at X A, speed 15
+; An enemy shot at X A, its Y 15 below the object's
 ;
 ; Witness: L1 16 (rzx-p1-20000, rzx-p1-56000).
 EnemyShotA:
   LD (Temp1),A
   LD A,$0F
 
-; An enemy shot from IX: X Temp1, Y IX+1, speed A, kind EnemyShotKind $A054
-; (bit 7: an enemy's)
+; An enemy shot from IX: X Temp1, Y IX+1 plus A (Temp4, the Y offset SetupShot
+; adds), kind EnemyShotKind $A054 (bit 7: an enemy's)
 ;
 ; Witness: L1 4018 (c1, p1-cursor, p1-define, p1-gameover, p1-kempston,
 ; p1-poke41241, p1-rooms238, p1-shots, p1-speedup, p1-room x5, rzx-p1- x32).
@@ -409,7 +410,7 @@ EnemyShot:
   SET 7,A
   JP SetupShot
 
-; A shot from Rex: his X, Y and facing, speed 17, type the weapon
+; A shot from Rex: his X, Y + 17 (Temp4) and facing, type the weapon
 ;
 ; Witness: L1 7094 (c1, p1-code, p1-cursor, p1-define, p1-kempston, p1-shots,
 ; p1-speedup, p1-room x5, rzx-p1- x32).
@@ -1006,8 +1007,9 @@ Fill2x2:
   LD (HL),A
   RET
 
-; A power pod: PowerCount $A018 counts, every few the PowerLevel + 1 up to 6,
-; the bar redrawn, the fire faster
+; A power pod: PowerCount $A018 counts, every 120 the PowerLevel + 1 up to 5
+; (at 5 GainRank raises WeaponRank and sets the level back to 1; at rank 5
+; nothing), the fire faster
 ;
 ; Witness: L1 212 (p1-speedup, p1-room30, rzx-p1- x27).
 PowerGain:
@@ -1112,7 +1114,8 @@ DrainRank:
   LD (PowerLevel),A
   JP BestWeapon
 
-; A death: PowerDrain once
+; A death or ENERGY LOSS: PowerDrain(50) twice; each drain that would go below
+; 0 puts the count back and drops one level, so 0, 1 or 2 levels go
 ;
 ; Witness: L1 42 (c1, p1-cursor, p1-define, p1-gameover, p1-kempston,
 ; p1-room24, p1-room30, rzx-p1- x18).

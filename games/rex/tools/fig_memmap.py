@@ -43,8 +43,9 @@ PLAY = [
     (0x5B00, 0x5B5F, 'untouched', SYSTEM),
     (0x5B60, 0x5D21, "Rex's bullets: 30 records of 15 bytes", BUF),
     (0x5D22, 0x5E4D, "the enemies' bullets: 20 records of 15", BUF),
+    (0x5E4E, 0x5E65, "the drones' table: 8 records of 3 bytes", BUF),
     (0x5E66, 0x5FE5, 'objects: up to 16 records of 24 bytes', BUF),
-    (0x5FE6, 0x5FFF, 'stack: SP $6000 in the loop', SYSTEM),
+    (0x5FE2, 0x5FFF, 'stack: SP $6000, low mark $5FE2', SYSTEM),
     (0x6018, 0x60D7, 'ExplosionPicture, over the stub', SPRITE),
     (0x60E0, 0x9479, 'the tables and sprites, as loaded (read only)', DATA),
     (0x947A, 0xDABF, 'code, variables, tables, as loaded', CODE),
@@ -52,8 +53,8 @@ PLAY = [
     (0xDE9F, 0xE19E, 'CellIndexMap', BUF),
     (0xE19F, 0xE4FE, 'RoomGrid: the cell types of the room', BUF),
     (0xE4FF, 0xE7FE, 'attribute shadow (was title data)', BUF),
-    (0xE7FF, 0xEAFE, 'buffer lines above the play area', BUF),
-    (0xEAFF, 0xFFFE, 'back buffer: 168 lines of 32 bytes', BUF),
+    (0xE7FF, 0xEAFF, 'lines above the play area: origins', BUF),
+    (0xEB00, 0xFFFF, 'BackBuffer: 168 lines of 32 bytes (cleared $EAFF-$FFFE)', BUF),
 ]
 
 

@@ -451,7 +451,7 @@ Rex has five weapons. The gun is always held. The other four are taken at their 
 
 | Weapon | Number | A shot | Power cost |
 | --- | ---: | --- | --- |
-| gun | 0 | one bullet ahead; up to power x 4 + 1 bullets at once | none |
+| gun | 0 | one bullet ahead; up to power x 4 bullets at once (FindShotSlot; the double fire too, the other weapons 29) | none |
 | double fire | 1 | two bullets ahead, 19 lines apart (FireDouble) | 1 a press |
 | laser | 2 | a long beam (type 7); it passes through and kills at once | 1 a press |
 | multiple | 3 | Rex's shot plus one from each of power + 3 drones circling him | 1 a press |
@@ -549,14 +549,14 @@ the rank drops, the level becomes 5 and BestWeapon picks the weaker weapon. A de
 
 ```text
 PowerGain(a):                                 # a = $26 (38)
-    if PowerLevel == 6: return
+    if PowerLevel == 6: return                # never true: 6 is never stored
     PowerCount += a
     if PowerCount < 120: return
-    PowerCount -= 120; PowerLevel += 1
-    if PowerLevel == 6:                       # GainRank
-        if WeaponRank == 4: return
+    PowerCount -= 120
+    if PowerLevel + 1 == 6:                   # GainRank, the level not stored
+        if WeaponRank == 4: return            # the top rank: the level stays 5
         WeaponRank += 1; PowerLevel = 1; BestWeapon()
-    else: FireDelay = PowerLevel * 4 + 4; InitDrones()
+    else: PowerLevel += 1; FireDelay = PowerLevel * 4 + 4; InitDrones()
 PowerDrain(a):
     if PowerLevel == 0: return
     PowerCount -= a
@@ -783,7 +783,8 @@ over the play area like the others ([doc 8, figure 8.9](08-hud-and-text.md#89-me
 **The point**: a slowing wheel that rewards a timed press; doing nothing never gives the best prize.
 
 Witness: BonusRoulette and the prizes (`src/game/collisions.asm`): `rzx-p1-50000` (start roll 3, the player's fire on
-100 RAPID SHOTS) and `rzx-p1-56000`; `p1-speedup` takes the same pod with fire held back until SPEED UP shows (BonusRoll
+100 RAPID SHOTS) and `rzx-p1-56000`; `p1-speedup` (from the RZX state at frame 50 000, the RZX's keys, then POKEs from frame 1800: infinite lives,
+Immune; WALKTHROUGH) takes the same pod with fire held back until SPEED UP shows (BonusRoll
 3 at frame 1701, 4 at 1716, 0 at 1730, fire at 1736): SpeedUp 1 and SpeedUpPhase 200 at 1740, RexSpeed 4 and -4 while
 it lasts, the phase 0 at 2740 (SpeedUpTick L1 200), RexSpeed 2 and -2 after.
 
@@ -945,7 +946,9 @@ Rex dies by:
 - a fall off the bottom with no room below (RexFall, 10.3);
 - the HUD sweep at its end (10.13).
 
-RexDies does nothing while Immune is set or Rex is already dying. It resets the sweep, sets Dying and DeathTimer 50,
+RexDies tests only Immune. Its callers keep it from a second run during a death: EnemyBulletsHitRex and
+ObjectHitsRex return while Dying, the main pass skips RexFall while Dying, and the sweep starts again at width 12. It
+resets the sweep, sets Dying and DeathTimer 50,
 fires the free smart bomb, takes power (LosePower) and refills the shield to 99. With lives left it starts the
 dematerialise (SfxDematerialise; the shield goes off).
 
@@ -958,7 +961,7 @@ The game over keeps a new high score and prints GAME OVER, HI-SCORE and HUMANS K
 
 ```text
 RexDies:
-    if Immune or Dying: return
+    if Immune: return                         # the callers test Dying
     ResetSweep(); Dying = 1; DeathTimer = 50; DeathShardPtr = DeathShards
     SmartBombFree(); LosePower(); ShieldEnergy = 99
     if Lives != 0: Dematerialise()
@@ -1028,9 +1031,9 @@ Witness: RexDies, LifeLost, GameOver (`src/game/death.asm`); the `c1` samples of
 
 ## 10.13 The HUD sweep
 
-The top row of the HUD has a light that runs left and right (HudSweep). It is a timer against camping in a room.
+Row 1 of the HUD (`$582B`, columns 12-23) has a light that runs left and right (HudSweep). It is a timer against camping in a room.
 The light moves one cell a pass, from 0 to SweepWidth and back. Every 5 round trips the width shrinks by one; the
-cell it loses turns red. When the width would reach 0 (the trips at width 1 done), Rex dies.
+cell it loses turns green (`$04`, doc 8.6). When the width would reach 0 (the trips at width 1 done), Rex dies.
 
 ResetSweep (width 12, count 5) runs at every room build and every death. The sweep stops while the screen flash runs
 (FadeStepIndex not `$FF`).
@@ -1109,9 +1112,9 @@ Doc 7.5 lists the seventeen kinds and doc 7.6 their state machines. As rules of 
 
 | Group | Kinds | Threat | How it dies |
 | --- | --- | --- | --- |
-| walkers and people | 0-7, 12 | a touch | 1-2 hits; a foot man shot in the front turns (kind 6) and needs 2 more |
+| walkers and people | 0-7, 12 | a touch | 1-2 hits; a foot man shot in the front turns into kind 6, the hit state, which bullets do not hurt (doc 7.8) |
 | stalkers | 8 scanner, 15 blob | a touch; the scanner follows Rex's height | 16 hits; a hit pauses the scanner 4 passes |
-| guns | 9 swing gun, 10 shooters, 11 launcher, 16 big gun | enemy bullets (20 at `$5D22`), the launcher's climbing shot | 8-10 hits; a big pod |
+| guns | 9 swing gun, 10 shooters, 11 launcher, 16 big gun | enemy bullets (20 at `$5D22`), the launcher's climbing shot, the big gun's volleys | 8-10 hits, a big pod; the big gun weapon x 50 + 16 hits, two kills of 1000 points, then a ramming pod (doc 7.9) |
 | mines | 13 mine layer, 14 mine | a touch; the mines drift | the layer 1000 points; a mine scores nothing |
 
 The room is a hazard too. A fall with no exit below kills (10.3). The sweep kills (10.13). Cells of type 4, 5 and 6
@@ -1479,7 +1482,9 @@ Witness: the sections above.
   chain of jumps. No sample was taken on a lift.
 - WalkRightKey's labels: the 2-pixel path is the normal walk, the 4-pixel path the SPEED UP one; SpeedUpTick counts
   the 200 passes only while a walk key is held (`p1-speedup`, SpeedUpTick L1 200).
-- SmartBombStep does not test the alive byte: it calls KillObject on empty records too. Known only from the code.
+- SmartBombStep does not test the alive byte: it calls KillObject on empty records too. A record cleared by
+  MakeObjects has Y 0, and KillObject refuses Y under `$10`, so an empty record does nothing. It skips the pods and
+  the big gun (`$90`). Known only from the code.
 - ExitLeft places Rex at X `$E8`, not `$E0`.
 - BestWeapon reads WeaponIcon `$A04F` as the gun's "held" flag; it is 1 in every sample.
 - The access code checksum is written units, tens, hundreds into places 13, 15, 14.

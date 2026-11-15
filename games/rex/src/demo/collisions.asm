@@ -249,7 +249,7 @@ TurnAround:
   CALL AddScore
   RET
 
-; A hit on an armoured object (kind 6): the flash, more hits needed
+; A bullet on a kind 6 (the hit foot man): the flash renewed, more hits needed
 ;
 ; Changed from REX 1's HitObjectHard $D41F (src/game/collisions.asm).
 ;

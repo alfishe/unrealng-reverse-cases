@@ -178,8 +178,9 @@ NextObject:
   JP NZ,UpdateObject
   RET
 
-; Kind 16: hangs above line $90; at random fires shots and drops a mine
-; (DropMine $C1F4)
+; Kind 16 ($90): bobs between Y $40 and $78 by IX+$12; 1 pass in 16 (R AND 15 =
+; 0) a volley, one shot per BigGunShots byte (the byte is the shot's Y offset);
+; above Y $90 at Random $F0 and over a mine (DropMine $C1F4)
 ;
 ; Witness: L1 814 (rzx-p1-22000, rzx-p1-24000).
 BigGun:
@@ -338,7 +339,7 @@ ShootersFire:
   CALL ShootFromObject
   JP ObjectCollide
 
-; A shot from IX at X A, Y IX+1, speed 15
+; A shot from IX at X A, Y IX+1 + 15
 ;
 ; Witness: L1 288 (c1, p1-rooms238, p1-speedup, p1-room14, p1-room24,
 ; p1-room26, p1-room30, rzx-p1- x13).

@@ -297,7 +297,9 @@ SfxShield:
   INCBIN "res/sound/rex1-effects.bin",$0039,4
 SfxShieldTone:
   ; $D7A0 its period word: $04B0 + a random 0-31, written by DrawRex each
-  ;   time it starts
+  ;   time it starts; the block's last nine bytes, $D7A5-$D7AD, are a full
+  ;   descriptor (DEMO's shield-hit sound, SfxShieldHit) that nothing
+  ;   refers to
   INCBIN "res/sound/rex1-effects.bin",$003D,14
 SfxMaterialise:
   ; $D7AE Rex appears

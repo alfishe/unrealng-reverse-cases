@@ -35,8 +35,9 @@ read it:
   menu, cyan the buffers and records.
 
 The point: in play, the 9530 bytes of the menu become the room's work space: the cell index, the cell grid, the
-attribute shadow and the back buffer. The level data stays read only; the records of bullets and objects sit below
-the code, between the screen and the stack. Command: `python3 tools/fig_memmap.py`.*
+attribute shadow and the back buffer. The level data stays read only; the records of bullets, drones and objects sit below
+the code, between the screen and the stack; the stack's box starts at its low mark `$5FE2`, 4 bytes into the last
+object record (2.4). Command: `python3 tools/fig_memmap.py`.*
 
 The map of part 1, corrected by stage 2 (the stage-1 draft had room 0 "unused" and `$5B60` as one buffer):
 
@@ -45,8 +46,9 @@ The map of part 1, corrected by stage 2 (the stage-1 draft had room 0 "unused" a
 | `$4000-$5AFF` | the screen: the HUD in character rows 0-2, the room in rows 3-23 (attributes from `$5860`) | BufferToScreen `$A28A`, CopyAttrs `$C8BF` |
 | `$5B60-$5D21` | Rex's bullets: 30 records of 15 bytes | MoveBullets `$B64E`; cleared by BuildRoom `$A8AE` |
 | `$5D22-$5E4D` | the enemies' bullets: 20 records of 15 bytes | MoveEnemyBullets `$B645` |
+| `$5E4E-$5E65` | the drones' table: 8 records of 3 bytes (the multiple weapon; the angle at +2) | InitDrones `$A628`, UpdateDrones `$A639` |
 | `$5E66-$5FE5` | the room's objects: 24-byte records; a room's list holds up to 16 (room 5), the count is 5 bits | UpdateObjects `$BA5C`; ReadExits `$C8EF` (`AND $1F`) |
-| `$5FE6-$5FFF` | the stack: the main loop at `SP` = `$6000`, the low mark `$5FE2` | 2.4 |
+| `$5FE2-$5FFF` | the stack: the main loop at `SP` = `$6000`, the low mark `$5FE2` (4 bytes into the last object record; harmless, 2.4) | 2.4 |
 | `$6018-$60DF` | the development link stub (102 bytes) and its tail; from the menu on, ExplosionPicture `$6018-$60D7` | 2.5 |
 | `$60E0-$62DF` | Font: characters 32-95 | PrintChar |
 | `$62E0-$63DF` | CharFlags: the cell type of each room character | DrawRoomCell `$C80A` |
@@ -62,8 +64,8 @@ The map of part 1, corrected by stage 2 (the stage-1 draft had room 0 "unused" a
 | `$DE9F-$E19E` | CellIndexMap: for each room cell, its entry in SceneryCellList | DrawRoom `$C74C` |
 | `$E19F-$E4FE` | RoomGrid: the cell type of each cell (play from `$E1FF`) | DrawRoomCell `$C7FC` |
 | `$E4FF-$E7FE` | the attribute shadow (play from `$E55F`); the title screen's data before, cleared at the entry `$9485` | CopyAttrs |
-| `$E7FF-$EAFE` | buffer lines above the play area (the objects' origin `$E9FF`); never copied | ObjectBufferOrigin |
-| `$EAFF-$FFFE` | the back buffer: 168 lines of 32 bytes; cleared by `PUSH`, sprites ORed in, scenery written, copied to the screen | [doc 4, 4.4](04-game-loop.md#44-the-three-routines-that-borrow-the-stack) |
+| `$E7FF-$EAFF` | buffer lines above the play area (the origins, ObjectBufferOrigin `$E9FF`, BufferPlayOrigin `$EAFF`); never copied | ObjectBufferOrigin |
+| `$EB00-$FFFF` | the back buffer (BackBuffer): 168 lines of 32 bytes; cleared by `PUSH` one byte low (`$EAFF-$FFFE`), sprites ORed in, scenery written, columns 0-29 copied to the screen | [doc 4, 4.4](04-game-loop.md#44-the-three-routines-that-borrow-the-stack) |
 
 *The point: one image, no paging, no unpacking. The play state is the variables block and the buffers; the level is
 read where it was loaded.*
@@ -126,7 +128,7 @@ reach every byte of a room; nothing is packed. Witness: `rzx-p1-08000` frames 11
 
 *What part 1 executed, read and wrote over the 33 RZX segments `rzx-p1-*` (64 813 frames of play), one row a
 256-byte page from `$4000` (top) to `$FFFF`. How to read it: brighter is more often; the composite (bottom right)
-shows writes red, reads green, execution blue. The point: the code runs in `$9000-$DFFF`; the level tables below
+shows writes red, reads green, execution blue; the brackets on the right name the regions of the table in 2.2. The point: the code runs in `$9000-$DFFF`; the level tables below
 `$9000` are read, and written only where the animated characters rotate; the writes go to the buffers at the top,
 the records under `$6000`, the screen and the variables. Command: `python3 kit/heatmap.py
 work/stage1/heat/p1-l1.json docs/img/arch/heatmap-part1.png --cell 2 --from 4000 --to FFFF --regions
@@ -184,8 +186,8 @@ What the tape holds and no instruction of the game reaches (`src/res/leftovers/R
 
 | Leftover | Where | What it is | Witness |
 | --- | --- | --- | --- |
-| the development link stub | REX 1 `$6018-$607D` (102 bytes) and 98 bytes after it | the start of the authors' link to their development machine: ports `$3F`, `$1F`, `$7FFD` | the menu copies ExplosionPicture `$E336` over `$6018-$60D7` before it could run |
-| the development link | REX 2 `$61A8-$6305`, DEMO `$61A8-$6337` | the complete link: pages it in, saves every register at `$62E4`, serves the host's commands `$B4-$BA` (poke a block, send a block, page `$7FFD`, receive), returns through DebugHook | no instruction reaches `$61A8` (known only from the code) |
+| the development link stub | REX 1 `$6018-$607D` (102 bytes) and 98 bytes after it | the start of the authors' link to their development machine: `OUT` to `$7F`, `$3F`, `$5F`, `$7FFD`; `IN` from `$3F`, `$1F` | the menu copies ExplosionPicture `$E336` over `$6018-$60D7` before it could run |
+| the development link | REX 2 `$61A8-$6305`, DEMO `$61A8-$6337` | the complete link: pages it in, saves every register at `$62E4`, serves the host's commands `$B4-$BA` (poke a block, send a block, page `$7FFD`, send or receive the 26 saved bytes), returns through DebugHook; `OUT` to `$7F`, `$3F`, `$5F`, `$1F`, `$7FFD`, `IN` from `$3F`, `$1F` | no instruction reaches `$61A8` (known only from the code) |
 | DebugHook | REX 2 `$D6C6`, REX 1 `UnusedD92E` | `POP BC`, `RET`, then zeros: the routine the link calls | known only from the code |
 | the weapon stations' code | REX 2: GiveDoubleFire `$A8F6` to GiveSpray `$A908`, WeaponPanel `$D609` | REX 1's code kept; no block of REX 2's rooms holds a station cell (`$0A-$0D`) | stage 2: the cell types of all 26 rooms |
 | 9 room slots | REX 2: rooms 26-34 in RoomExits `$B1A7` and RoomMaps | slots of REX 1's 35-room table, no exit leads to them | `src/res/rooms/README.md` |
@@ -195,10 +197,11 @@ What the tape holds and no instruction of the game reaches (`src/res/leftovers/R
 ```mermaid
 flowchart LR
     H["the authors' host"] -->|"ports $7F, $3F, $5F: handshake; $1F: data"| L["DevLink $61A8"]
+    H -->|"$B9: receive 26 bytes at $62E4"| L
     L -->|"$B4: poke a block"| M["memory"]
-    L -->|"$B6: page $7FFD"| P["128K paging"]
-    L -->|"$B7, $BA: send 26 saved bytes or a block"| H
-    L -->|"$B5, $BA: return"| D["DebugHook: POP BC, RET"]
+    L -->|"$B7: page $7FFD"| P["128K paging"]
+    L -->|"$B6: send a block; $B8: send the 26 saved bytes"| H
+    L -->|"$B5, $BA: set the return, restore, return"| D["DebugHook: POP BC, RET"]
 ```
 
 *The development link as REX 2 and DEMO keep it (`src/rex2/graphics.asm`). The point: the game was built on another
@@ -341,11 +344,12 @@ which `p1-code` runs).*
 
 No part tests the model:
 
-- every `IN` is `IN A,(C)` on a keyboard row or the Kempston port `$001F`; there is no `IN` from `$FFFD`;
+- every `IN` the game runs is `IN A,(C)` on a keyboard row or the Kempston port `$001F`; there is no `IN` from `$FFFD`
+  (only the development link, which never runs, has `IN A,($3F)` and `IN A,($1F)`);
 - no write to `$7FFD` outside the development link, which never runs (2.5);
 - all three parts load below `$FFFF` into the 48K's RAM; on the 128K, bank 0 at `$C000` is that RAM.
 
-The sound is where the models differ. `SoundWrite` (`$D75C` in part 1) writes the AY blindly through `$FFFD` and
+The sound is where the models differ. `SoundWrite` (`$D759` in part 1) writes the AY blindly through `$FFFD` and
 `$BFFD`. On a 48K those writes reach no device, so the game is silent but for the explosion's beeper crackle
 (`OUT ($FE),A` in `DrawShard $BF66`). Everything else runs the same. Witness: the 128K recordings; the 48K was not run
 (stage 2 leftover 6: the code has no path the model could change). The effects are in [doc 9](09-sound.md).

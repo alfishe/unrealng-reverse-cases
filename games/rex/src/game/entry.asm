@@ -4,8 +4,9 @@
 ; The BASIC's RANDOMIZE USR 38010 lands at GameEntry: interrupts off for good (the game never waits for a frame: one
 ; pass of the main loop is as long as its work), the title and menu (TitleMenu $DAC0), then the high score 10 and
 ; NewGame. NewGame resets every variable (4 lives, 3 smart bombs, shield 99), clears the screen, draws the HUD, prints
-; PHASE ONE and PRESS FIRE TO BEGIN and waits for fire; no fire for 50000 polls starts the attract mode (Attract
-; $A915). Rex then materialises in room 1 and the main loop runs.
+; PHASE ONE and PRESS FIRE TO BEGIN and waits for fire after each; only the second wait's result is tested, so the
+; attract mode (Attract $A915) starts when both run out (2 x 50000 polls, about 14 s). Rex then materialises in room 0
+; and the main loop runs.
 ; --------------------------------------------------------------------------------------------------------------------
 
 ; The code block's entry (USR 38010): DI, the menu, the high score, then
@@ -37,7 +38,7 @@ GameEntry:
 ; the attract mode. InitDrones $A628; border black; Lives $A063 = 4, Bombs
 ; $A06C = 3, ResetPower $BA49, ShieldEnergy $A04D = 99, the weapons held
 ; $A050-$A053 = 0, the score, HumansKilled $A089 and the extra life count 0,
-; the random seeds $A0A1 = $0313, $A0A3 = $11; Rex at X $A0, Y $60 in room 1
+; the random seeds $A0A1 = $0313, $A0A3 = $11; Rex at X $A0, Y $60 in room 0
 ; facing right, the restart point the same. Then ClearScreen $A3AE, DrawHud
 ; $A1A5, ShowLives $99BB, SaveAttrs $CF8F, the texts PhaseOneText $AAAE and
 ; PressFireText $AB25 (PrintBoxed $A13E) each followed by WaitFireOrAttract

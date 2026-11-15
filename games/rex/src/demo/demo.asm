@@ -36,7 +36,7 @@ RoomDown       EQU $5B93  ; down
 RoomLeft       EQU $5B94  ; left
 FireLatch      EQU $5E9B  ; 1 while fire is held (one shot a press for the slow weapons)
 Weapon         EQU $5E9C  ; the weapon in use: 0 gun, 1 double fire, 2 laser, 3 multiple (drones), 4 spray
-PowerLevel     EQU $5E9D  ; the weapon's power, 1-6 (the power bar)
+PowerLevel     EQU $5E9D  ; the weapon's power, 1-5 (the power bar; PowerGain never stores 6)
 PowerBarPtr    EQU $5E9E  ; the HUD address of the power bar's end
 PassToggle     EQU $5EA0  ; flips every pass (the animations run every other pass)
 PowerCount     EQU $5EA1  ; power pods towards the next power level

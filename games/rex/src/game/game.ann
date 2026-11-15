@@ -93,12 +93,12 @@ $91D2 SpriteKind16 ; kind 16 (the big gun)
 $92F2 SpriteHuman ; a human killed ($98C1)
 
 @module entry ; The entry, a new game, the waits for fire
-@about The BASIC's RANDOMIZE USR 38010 lands at GameEntry: interrupts off for good (the game never waits for a frame: one pass of the main loop is as long as its work), the title and menu (TitleMenu $DAC0), then the high score 10 and NewGame. NewGame resets every variable (4 lives, 3 smart bombs, shield 99), clears the screen, draws the HUD, prints PHASE ONE and PRESS FIRE TO BEGIN and waits for fire; no fire for 50000 polls starts the attract mode (Attract $A915). Rex then materialises in room 1 and the main loop runs.
+@about The BASIC's RANDOMIZE USR 38010 lands at GameEntry: interrupts off for good (the game never waits for a frame: one pass of the main loop is as long as its work), the title and menu (TitleMenu $DAC0), then the high score 10 and NewGame. NewGame resets every variable (4 lives, 3 smart bombs, shield 99), clears the screen, draws the HUD, prints PHASE ONE and PRESS FIRE TO BEGIN and waits for fire after each; only the second wait's result is tested, so the attract mode (Attract $A915) starts when both run out (2 x 50000 polls, about 14 s). Rex then materialises in room 0 and the main loop runs.
 $947A c GameEntry ; The code block's entry (USR 38010): DI, the menu, the high score, then NewGame
 > Clears ControlXor $A0AE (keys, not Kempston) and AttractFlag $A0C2, calls TitleMenu $DAC0, clears the attribute shadow $E4FF-$E7FE (the title screen's bytes, no longer needed) and sets HiScore $A08B = 10. Falls into NewGame.
 > Witness: L1 1 (c1).
 $9498 c NewGame ; A new game: every variable reset, the HUD, PHASE ONE and PRESS FIRE TO BEGIN, the wait for fire, Rex materialises
-> Also the target of ENTER in the main loop (restart), of the game over and of the attract mode. InitDrones $A628; border black; Lives $A063 = 4, Bombs $A06C = 3, ResetPower $BA49, ShieldEnergy $A04D = 99, the weapons held $A050-$A053 = 0, the score, HumansKilled $A089 and the extra life count 0, the random seeds $A0A1 = $0313, $A0A3 = $11; Rex at X $A0, Y $60 in room 1 facing right, the restart point the same. Then ClearScreen $A3AE, DrawHud $A1A5, ShowLives $99BB, SaveAttrs $CF8F, the texts PhaseOneText $AAAE and PressFireText $AB25 (PrintBoxed $A13E) each followed by WaitFireOrAttract $97C3; SoundReset $D5AE and Materialise $9D1F. Falls into MainLoop.
+> Also the target of ENTER in the main loop (restart), of the game over and of the attract mode. InitDrones $A628; border black; Lives $A063 = 4, Bombs $A06C = 3, ResetPower $BA49, ShieldEnergy $A04D = 99, the weapons held $A050-$A053 = 0, the score, HumansKilled $A089 and the extra life count 0, the random seeds $A0A1 = $0313, $A0A3 = $11; Rex at X $A0, Y $60 in room 0 facing right, the restart point the same. Then ClearScreen $A3AE, DrawHud $A1A5, ShowLives $99BB, SaveAttrs $CF8F, the texts PhaseOneText $AAAE and PressFireText $AB25 (PrintBoxed $A13E) each followed by WaitFireOrAttract $97C3; SoundReset $D5AE and Materialise $9D1F. Falls into MainLoop.
 > Witness: L1 9 (c1, p1-code, p1-cursor, p1-define, p1-kempston, rzx-p1-00000, rzx-p1-64000).
 
 @module mainloop ; The main loop: one pass a frame of play, the keys
@@ -164,17 +164,17 @@ $97ED WaitFireDown ; wait for fire pressed
 $97F3 WaitFireUp ; wait for fire released
 
 @module score ; The kills, the score, the lives and the shield figure
-@about A killed object (KillObject $981F, from a bullet, the smart bomb, a collision or a fall) scores KillScores $994E[kind] x 100 points (AddScore $9A27), turns into the points sign (ShowPoints $97FD) and, for the six kinds that are people (0 foot man, 4, 5, 6, 7 and 12), adds one to HumansKilled $A089 and leaves the human's picture (KillHuman $98A7). The game over panel prints HumansKilled. Every 100 x 100 points (ExtraLifeCount $A076) gives a life, at most 9.
+@about A killed object (KillObject $981F, from a bullet, the smart bomb, a collision or a fall) scores KillScores $994E[kind] x 100 points (AddScore $9A27), turns into the points sign (ShowPoints $97FD) and, for the six kinds that are people (0 foot man, 4, 5, 6, 7 and 12), adds one to HumansKilled $A089 (KillHuman $98A7). The big gun ($90) goes to KillScore $98AF instead: 1000 points and two lives. The game over panel prints HumansKilled. Every 100 x 100 points (ExtraLifeCount $A076) gives a life, at most 9.
 $97FD c ShowPoints ; Turn the object at IX into the points sign: picture SpritePoints $81B2, kind $FF (no collisions), at rest
 > Witness: L1 5 (rzx-p1-24000).
 $981F c KillObject ; Kill the object at IX: its score, the kill flash in the HUD, the explosion sound; people add to HumansKilled
 > The kill flash: KillFlashPtr $A039 = the next cell of the HUD's combo row ($5843 + 3 a hit, at rest $E9FF), timer $A03C. Kind 14 (the mine) scores nothing. Kind 5 also ends the scripted spawn (EndScriptSpawn $9968). Then KillHuman $98A7 or ShowPoints $97FD.
 > Witness: L1 1016 (c1, p1-code, p1-cursor, p1-define, p1-gameover, p1-kempston, p1-shots, p1-speedup, p1-room24, p1-room30, rzx-p1- x32).
-$98A7 c KillHuman ; A person killed: HumansKilled $A089 + 1, the human's picture SpriteHuman $92F2, the panel of a kill
-> For kinds 0, 7, 6, 12, 4 and 5. The object becomes a falling body; FindFreeObject $D858 and the human's initialiser ($CDA2, $CE67) set up its picture.
+$98A7 c KillHuman ; A person killed: HumansKilled $A089 + 1, nothing else
+> For kinds 0, 7, 6, 12, 4 and 5 (KillObject calls it for each). The big gun's KillScore $98AF follows it in memory.
 > Witness: L1 155 (c1, p1-speedup, p1-room24, p1-room30, rzx-p1- x27).
-$98AF KillScore ; the kind's score
-$990A KillHumanMake ; the human's body in a free record
+$98AF KillScore ; the big gun ($90): 1000 points, hits by weapon, speed 1, the human picture; the second kill makes it a ramming pod (kind $0C, 8 hits); five points signs each time
+$990A KillHumanMake ; five points signs in free records around the big gun (FindFreeObject $D858, ShowPoints $97FD): X + Random & 31, Y + Random & 31; pod $FF on the first kill, else Random & 1
 $990E KillHumanSet ; its picture and size
 $9928 KillHumanLive ; alive
 $994E b KillScores 16 ; The score of each object kind, in hundreds: kind 0 1, 1 2, 2 1, 3 1, 4 2, 5 3, 6 1, 7 1, 8 6, 9 6, 10 5, 11 8, 12 3, 13 10, 14 0, 15 2, then 1s
@@ -298,7 +298,7 @@ $9FEE c Recharge ; The recharger ($08): ShieldEnergy + 1 up to 99 while the shie
 $A012 b Variables 16 ; The variables $A012-$A0C3 (178 bytes, all zero on the tape)
 @var $A012 FireLatch ; 1 while fire is held (one shot a press for the slow weapons)
 @var $A013 Weapon ; the weapon in use: 0 gun, 1 double fire, 2 laser, 3 multiple (drones), 4 spray
-@var $A014 PowerLevel ; the weapon's power, 1-6 (the power bar)
+@var $A014 PowerLevel ; the weapon's power, 1-5 (the power bar; PowerGain never stores 6)
 @var $A015 PowerBarPtr 2 ; the HUD address of the power bar's end
 @var $A017 PassToggle ; flips every pass (the animations run every other pass)
 @var $A018 PowerCount ; power pods towards the next power level
@@ -592,7 +592,7 @@ $A8FD BuildRoomScript ; the scripted spawn
 $A903 BuildRoomShield ; the shield figure
 $A90C b AttractRooms 9 ; The attract mode's rooms: 6, 17, 1, 20, 10, 23, 29, 32, then $FF (again)
 @res tables/rex1-attract-rooms.bin
-$A915 c Attract ; The attract mode: each room of AttractRooms shown 200 passes with its objects moving (no Rex); fire starts a game
+$A915 c Attract ; The attract mode: each room of AttractRooms shown 199 passes (AttractTimer 200, decremented before the test) with its objects moving (no Rex); fire starts a game
 > Entered from WaitFireOrAttract $97C3's timeout. AttractFlag $A0C2 = 1 while it runs.
 > Witness: L1 1 (c1).
 $A91A AttractRoom ; the next room of the list
@@ -641,7 +641,7 @@ $AEAD AnimFramesB ; characters 252-255 on the other passes: 4 x 8 bytes
 $AECD b RoomObjectLists 16 ; The rooms' object lists: a header [spawn sides: bit 7 top, 6 right, 5 left][spawn period][spawn kind] (ReadExits $C8EF), then up to 16 records [kind][X][Y] (MakeObjects $CB52), $FF ends
 @res rooms/rex1-objects.bin
 $B133 b RoomExits 6 ; The exits of the rooms 0-34: up, right, down, left (0 none, 99 the end of part 1), then the word of the room's object list
-> ReadExits $C8EF reads Room x 6. Room 0's record has no exits but room 1 to the right; the game starts in room 1.
+> ReadExits $C8EF reads Room x 6. Room 0's record has no exits but room 1 to the right; the game starts in room 0.
 @res rooms/rex1-exits.bin
 
 @module render ; The renderer: the back buffer, the sprites, the animated cells
@@ -670,7 +670,7 @@ $B33E c DrawAnimCells ; Draw every scenery cell of the room (SceneryCellList $D9
 $B345 DrawAnimCellLoop ; each listed cell
 
 @module weapons ; The weapons: firing, the bullets, the power level
-@about Fire shoots the current Weapon $A013: 0 the gun, 1 double fire (two shots, up and down), 2 laser (one long shot), 3 multiple (Rex's shot plus one from each drone), 4 spray (8 shots fanned by SprayDirections $B436). PowerLevel $A014 (1-6) sets how many shots may be in the air (FindShotSlot) and is used up by firing (PowerDrain $B9EF) and gained by power pods (PowerGain $B98E); at 1 the weapon falls back to the best one held (BestWeapon $B9D7). The power bar in the HUD shows it.
+@about Fire shoots the current Weapon $A013: 0 the gun, 1 double fire (two shots, up and down), 2 laser (one long shot), 3 multiple (Rex's shot plus one from each drone), 4 spray (8 shots fanned by SprayDirections $B436). PowerLevel $A014 (1-5) sets how many shots may be in the air (FindShotSlot) and is used up by firing (PowerDrain $B9EF) and gained by power pods (PowerGain $B98E); at 1 the weapon falls back to the best one held (BestWeapon $B9D7). The power bar in the HUD shows it.
 @about Rex's bullets live in 30 records of 15 bytes at $5B60, the enemies' in 20 at $5D22: [X][Y][grid pointer][flags][dX][dY][live][speed][..][type][count][..]. MoveBullets steps them by type: the gun's bullet, the long laser beam, a spray dot, an enemy shot; a bullet that meets a solid cell stops, and the cells 4, 5 and 6 are damaged (BulletHitsCell $B707).
 $B372 c FireWeapon ; Fire: a shot of the current weapon if a slot is free (once a press, only while Rex is present)
 > Witness: L1 2704 (c1, p1-code, p1-cursor, p1-define, p1-kempston, p1-shots, p1-speedup, p1-room x5, rzx-p1- x32).
@@ -694,7 +694,7 @@ $B4EA c SetShotSpeed ; A shot's speed A into its record (dY x 32 added to the gr
 > Witness: L1 8801 (c1, p1-code, p1-cursor, p1-kempston, p1-shots, p1-speedup, p1-room26, p1-room27, p1-room30, rzx-p1- x25).
 $B506 c FindShotSlot ; IY = a free slot among Rex's bullets (as many as the power level allows for the gun and double fire); none: IY = $03E8
 > Witness: L1 10408 (c1, p1-code, p1-cursor, p1-define, p1-kempston, p1-shots, p1-speedup, p1-room x5, rzx-p1- x32).
-$B51F SlotsByPower ; power x 4 + 1 slots
+$B51F SlotsByPower ; E = power x 4 + 1; FindSlot searches E - 1 = power x 4 slots (the other weapons 29 of the 30)
 $B528 c FindSlot ; Search E slots from IY for a free one; the shot's sound by weapon (gun $D763, laser $D775, spray $D77E; the enemies' $D76C)
 > Witness: L1 15464 (c1, p1-code, p1-cursor, p1-define, p1-gameover, p1-kempston, p1-poke41241, p1-rooms238, p1-shots, p1-speedup, p1-room x5, rzx-p1- x32).
 $B52A FindSlotLoop ; each slot
@@ -712,11 +712,11 @@ $B57E c EnemyShotFrom ; An enemy shot from IX's X - 16
 $B586 c EnemyShotFromX ; LD A,(IX+0) then into EnemyShotA: no instruction reaches these 3 bytes (leftover)
 > Known only from the code.
 > Witness: L1 0 ().
-$B589 c EnemyShotA ; An enemy shot at X A, speed 15
+$B589 c EnemyShotA ; An enemy shot at X A, its Y 15 below the object's
 > Witness: L1 16 (rzx-p1-20000, rzx-p1-56000).
-$B58E c EnemyShot ; An enemy shot from IX: X Temp1, Y IX+1, speed A, kind EnemyShotKind $A054 (bit 7: an enemy's)
+$B58E c EnemyShot ; An enemy shot from IX: X Temp1, Y IX+1 plus A (Temp4, the Y offset SetupShot adds), kind EnemyShotKind $A054 (bit 7: an enemy's)
 > Witness: L1 4018 (c1, p1-cursor, p1-define, p1-gameover, p1-kempston, p1-poke41241, p1-rooms238, p1-shots, p1-speedup, p1-room x5, rzx-p1- x32).
-$B5A5 c RexShot ; A shot from Rex: his X, Y and facing, speed 17, type the weapon
+$B5A5 c RexShot ; A shot from Rex: his X, Y + 17 (Temp4) and facing, type the weapon
 > Witness: L1 7094 (c1, p1-code, p1-cursor, p1-define, p1-kempston, p1-shots, p1-speedup, p1-room x5, rzx-p1- x32).
 $B5C1 c SetupShot ; Fill the slot at IY: live, type A, Y Temp2 + Temp4, X Temp1 + 16, direction Temp3 (left: dX -1, -8 pixels), the grid pointer
 > Witness: L1 13750 (c1, p1-code, p1-cursor, p1-define, p1-gameover, p1-kempston, p1-poke41241, p1-rooms238, p1-shots, p1-speedup, p1-room x5, rzx-p1- x32).
@@ -771,7 +771,7 @@ $B97E c PowerBarColour ; A = PowerLevel + 2 (the bar's colour)
 > Witness: L1 32766 (c1, p1-code, p1-cursor, p1-define, p1-gameover, p1-kempston, p1-poke41241, p1-rooms238, p1-shots, p1-speedup, p1-room x5, rzx-p1- x32).
 $B983 c Fill2x2 ; Write A into a 2 x 2 patch at HL
 > Witness: L1 32786 (c1, p1-code, p1-cursor, p1-define, p1-gameover, p1-kempston, p1-poke41241, p1-rooms238, p1-shots, p1-speedup, p1-room x5, rzx-p1- x32).
-$B98E c PowerGain ; A power pod: PowerCount $A018 counts, every few the PowerLevel + 1 up to 6, the bar redrawn, the fire faster
+$B98E c PowerGain ; A power pod: PowerCount $A018 counts, every 120 the PowerLevel + 1 up to 5 (at 5 GainRank raises WeaponRank and sets the level back to 1; at rank 5 nothing), the fire faster
 > Witness: L1 212 (p1-speedup, p1-room30, rzx-p1- x27).
 $B9C0 GainRank
 $B9D7 c BestWeapon ; Weapon = the best one held (WeaponRank $A06E), WeaponIcon updated
@@ -781,7 +781,7 @@ $B9EA BestNext
 $B9EF c PowerDrain ; A shot of a special weapon: PowerCount down; at 0 the PowerLevel - 1, the bar redrawn; at 1 BestWeapon
 > Witness: L1 2009 (c1, p1-code, p1-cursor, p1-define, p1-gameover, p1-kempston, p1-shots, p1-speedup, p1-room x5, rzx-p1- x32).
 $BA11 DrainRank
-$BA3D c LosePower ; A death: PowerDrain once
+$BA3D c LosePower ; A death or ENERGY LOSS: PowerDrain(50) twice; each drain that would go below 0 puts the count back and drops one level, so 0, 1 or 2 levels go
 > Witness: L1 42 (c1, p1-cursor, p1-define, p1-gameover, p1-kempston, p1-room24, p1-room30, rzx-p1- x18).
 $BA3F LosePowerDo
 $BA49 c ResetPower ; Weapon 0, PowerLevel 1, the bar's pointer, WeaponRank 0
@@ -810,7 +810,7 @@ $BB66 c ObjectCollide ; ObjectHitsRex for the object at IX
 > Witness: L1 82130 (c1, p1-code, p1-cursor, p1-define, p1-gameover, p1-kempston, p1-poke41241, p1-rooms238, p1-shots, p1-speedup, p1-room x5, rzx-p1- x32).
 $BB69 c NextObject ; The next object record (24 bytes on), until all are done
 > Witness: L1 200522 (c1, p1-code, p1-cursor, p1-define, p1-gameover, p1-kempston, p1-poke41241, p1-rooms238, p1-shots, p1-speedup, p1-room x5, rzx-p1- x32).
-$BB74 c BigGun ; Kind 16: hangs above line $90; at random fires shots and drops a mine (DropMine $C1F4)
+$BB74 c BigGun ; Kind 16 ($90): bobs between Y $40 and $78 by IX+$12; 1 pass in 16 (R AND 15 = 0) a volley, one shot per BigGunShots byte (the byte is the shot's Y offset); above Y $90 at Random $F0 and over a mine (DropMine $C1F4)
 > Witness: L1 814 (rzx-p1-22000, rzx-p1-24000).
 $BBA5 BigGunMove
 $BBBB BigGunShot
@@ -825,7 +825,7 @@ $BC65 c LauncherFire ; Kind 11, the launcher: every few passes a shot that climb
 > Witness: L1 5588 (c1, p1-cursor, p1-define, p1-gameover, p1-kempston, p1-poke41241, p1-shots, p1-speedup, p1-room14, p1-room24, p1-room26, p1-room30, rzx-p1- x16).
 $BC92 c ShootersFire ; Kind 10, the shooters: every few passes two shots, right and left
 > Witness: L1 5066 (c1, p1-rooms238, p1-speedup, p1-room14, p1-room24, p1-room26, p1-room30, rzx-p1- x17).
-$BCC6 c ShootFromObject ; A shot from IX at X A, Y IX+1, speed 15
+$BCC6 c ShootFromObject ; A shot from IX at X A, Y IX+1 + 15
 > Witness: L1 288 (c1, p1-rooms238, p1-speedup, p1-room14, p1-room24, p1-room26, p1-room30, rzx-p1- x13).
 $BCDD c SwingGun ; Kind 9, the swing gun: its angle picture (SwingGunFrames $BECB), at random a shot in its angle's direction
 > Witness: L1 10296 (c1, p1-cursor, p1-kempston, p1-rooms238, p1-speedup, p1-room26, p1-room27, p1-room30, rzx-p1- x22).
@@ -1087,9 +1087,9 @@ $CDD8 c InitKind14 ; Mine
 > Witness: L1 164 (p1-code, p1-speedup, p1-room30, rzx-p1- x10).
 $CE13 c InitKind15 ; Blob
 > Witness: L1 49 (p1-rooms238, p1-room14, p1-room24, p1-room26, rzx-p1- x6).
-$CE3E c InitKind16 ; The big gun
+$CE3E c InitKind16 ; The big gun: kind $90 (bit 7 set), speed IX+$12 = 2, 6 x 48, hits Weapon x 50 + 16
 > Witness: L1 1 (rzx-p1-22000).
-$CE67 c KillHumanPicture ; The human's picture offset by Weapon (Weapon x 50 + 16) into IX+$14 and HumanPicture $A022
+$CE67 c KillHumanPicture ; The big gun's hits by the weapon held (Weapon x 50 + 16) into IX+$14 and HumanPicture $A022 (written, never read)
 > Witness: L1 2 (rzx-p1-22000, rzx-p1-24000).
 
 @module panels ; The panels: the framed box, the attribute shadow
@@ -1200,7 +1200,7 @@ $D3B1 c HitNotLast ; A hit that is not the object's last: a kind 8 pauses (its t
 > Witness: L1 951 (c1, p1-code, p1-gameover, p1-poke41241, p1-shots, p1-speedup, p1-room24, p1-room30, rzx-p1- x30).
 $D3C2 c HitObject ; A hit: the flash picture SpriteHitFlash $8632, the combo score (ComboCount $A03B; none for the spray, Weapon 4), the object killed after its hits (the laser, Weapon 2, kills at once)
 > Witness: L1 76 (p1-speedup, p1-room30, rzx-p1- x20).
-$D41F c HitObjectHard ; A hit on an armoured object: the flash, more hits needed
+$D41F c HitObjectHard ; A bullet on a kind 6 (the hit foot man): the flash renewed, hits back to 2 (not with the spray); BulletLoop then skips it, so a kind 6 never loses hits
 > Witness: L1 90 (p1-speedup, p1-room30, rzx-p1- x13).
 $D46C c TakePowerPod ; The power pod ($FE): PowerGain twice if it is a big one, the pod sound
 > Witness: L1 139 (p1-speedup, p1-room30, rzx-p1- x27).
@@ -1262,7 +1262,7 @@ $D77E SfxSpray ; the spray
 $D787 SfxHitWall ; a bullet meeting a wall
 $D790 SfxExplosion ; an object killed (noise)
 $D79C SfxShield ; the shield's hum while it is on (DrawRex)
-$D7A0 SfxShieldTone ; its period word: $04B0 + a random 0-31, written by DrawRex each time it starts
+$D7A0 SfxShieldTone ; its period word: $04B0 + a random 0-31, written by DrawRex each time it starts; the block's last nine bytes, $D7A5-$D7AD, are a full descriptor (DEMO's shield-hit sound, SfxShieldHit) that nothing refers to
 $D7AE SfxMaterialise ; Rex appears
 $D7BA SfxDematerialise ; Rex vanishes
 $D7C6 SfxBigPod ; a big power pod

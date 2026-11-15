@@ -5,10 +5,10 @@
 @isub $BAA1 LD DE,ShadowOffset
 
 @module graphics ; The development link, the graphics and the level data: the font, the characters, the blocks, the room maps and the sprites
-@about The tape loads part 2's code block at $61A8, 400 bytes above part 1's. Its first bytes are the authors' development link, here complete and never overwritten: DevLink $61A8 talks to a host over ports $1F, $3F, $5F and $7F (commands $B4-$BA: poke a block, send a block, page $7FFD, set a breakpoint, return), with the machine's state saved at $62F8. No instruction of the game reaches it. Then come the same tables as part 1, 550 bytes higher ($226): the font (Font $6306, characters 32-95, found at $6206 + 8 x code), the cell type, picture and attribute of the 256 room characters (CharFlags $6506, CharGraphics $6606, CharAttrs $6E06), the 256 blocks of 3 x 3 characters (BlockDefs $6F06), the room maps (RoomMaps $7806, 70 bytes a room; rooms 0-25 are used, RoomExits $B1A7) and the sprites ($8198-$946F).
+@about The tape loads part 2's code block at $61A8, 400 bytes above part 1's. Its first bytes are the authors' development link, here complete and never overwritten: DevLink $61A8 talks to a host over ports $1F, $3F, $5F, $7F and $7FFD (commands $B4-$BA: poke a block, send a block, page $7FFD, set a breakpoint, return), with the machine's state saved at $62F8. No instruction of the game reaches it. Then come the same tables as part 1, 550 bytes higher ($226): the font (Font $6306, characters 32-95, found at $6206 + 8 x code), the cell type, picture and attribute of the 256 room characters (CharFlags $6506, CharGraphics $6606, CharAttrs $6E06), the 256 blocks of 3 x 3 characters (BlockDefs $6F06), the room maps (RoomMaps $7806, 70 bytes a room; rooms 0-25 are used, RoomExits $B1A7) and the sprites ($8198-$946F).
 @about The sprites are stored pre-shifted as in part 1 (a frame list of 8 offsets picks the copy for X & 7; DrawSprite $B296 ORs it into the back buffer). Part 2's enemies are new: kinds 1-5 and 9 have their own pictures and behaviours (ObjectBehaviour $BD27); their names are not in the game (part 2 has no roll call), so the labels name them by kind.
 $61A8 b DevLink 16 ; Leftover: the development link's code: pages the link in, saves every register, then serves the host's commands until a return
-> Ports $7F, $3F and $5F drive a parallel link; DevLinkGet $62C3 and DevLinkPut $62D3 move one byte with a handshake on port $3F, data on $1F. Commands: $B5 sets the return address ($62BE) and $CD00 ($62BC), $B4 pokes a block (address, length, bytes), $B6 pages $7FFD, $B7/$BA send the 26 saved bytes at $62E4 or a block, $B8/$B9 receive. $B5/$BA end by restoring the registers and calling DebugHook $D6C6. No instruction of the game reaches $61A8 (known only from the code; z80dasm of the bytes); the kit keeps it as bytes because recording c2 reads these bytes once. Kept as a documented leftover (src/res/leftovers/README.md).
+> OUT to $7F, $3F, $5F, $1F (DevLinkPut) and $7FFD; IN from $3F and $1F; DevLinkGet $62C3 and DevLinkPut $62D3 move one byte with a handshake on port $3F, data on $1F. Commands: $B4 pokes a block (address, length, bytes); $B5 sets the return address ($62BE) and $CD00 ($62BC); $B6 sends a block (address, length; $624E); $B7 pages $7FFD ($6234); $B8 sends the 26 saved bytes at $62E4; $B9 receives 26 bytes there; $BA sets $62BC and $62BE from the host. $B5/$BA end by restoring the registers and calling DebugHook $D6C6. No instruction of the game reaches $61A8 (known only from the code; z80dasm of the bytes); the kit keeps it as bytes because recording c2 reads these bytes once. Kept as a documented leftover (src/res/leftovers/README.md).
 @res leftovers/rex2-devlink.bin
 $62C3 DevLinkGet ; code: E = a byte from the host (port $1F) after the handshake on port $3F
 $62D3 DevLinkPut ; code: a byte to the host (port $1F), then the handshake on port $3F
@@ -301,7 +301,7 @@ $A187 c Recharge ; The recharger ($08): ShieldEnergy + 1 up to 99 while the shie
 $A1AB b FireLatch ; 1 while fire is held (one shot a press for the slow weapons)
 > As REX 1's FireLatch $A012 (src/game/variables.asm).
 @var $A1AC Weapon ; the weapon in use: 0 gun, 1 double fire, 2 laser, 3 multiple (drones), 4 spray
-@var $A1AD PowerLevel ; the weapon's power, 1-6 (the power bar)
+@var $A1AD PowerLevel ; the weapon's power, 1-5 (the power bar; PowerGain never stores 6)
 @var $A1AE PowerBarPtr ; the HUD address of the power bar's end
 @var $A1B0 PassToggle ; flips every pass (the animations run every other pass)
 @var $A1B1 PowerCount ; power pods towards the next power level
@@ -648,7 +648,7 @@ $A939 c BuildRoom ; Build the room Room $A251: exits and objects, the map drawn,
 > Witness: L1 32 (c2, p2-room20, rzx-p2- x17).
 $A986 b AttractRooms 9 ; The attract mode's rooms: 6, 17, 1, 20, 10, 23, 29, 32, then $FF (again)
 > As REX 1's AttractRooms $A90C (src/game/codepanel.asm).
-$A98E c Attract ; The attract mode: each room of AttractRooms shown 200 passes with its objects moving (no Rex, no conveyor rolls); fire starts a game
+$A98E c Attract ; The attract mode: each room of AttractRooms shown 199 passes (AttractTimer 200, decremented before the test) with its objects moving (no Rex, no conveyor rolls); fire starts a game
 > Changed from REX 1's Attract $A915 (src/game/codepanel.asm).
 > Witness: L1 3 (c2).
 $A993 AttractRoom ; the next room of the list
@@ -755,7 +755,7 @@ $B530 c SetShotSpeed ; A shot's speed A into its record (dY x 32 added to the gr
 $B54C c FindShotSlot ; IY = a free slot among Rex's bullets (as many as the power level allows for the gun and double fire); none: IY = $03E8
 > As REX 1's FindShotSlot $B506 (src/game/weapons.asm).
 > Witness: L1 6432 (c2, p2-room20, rzx-p2- x21).
-$B565 SlotsByPower ; power x 4 + 1 slots
+$B565 SlotsByPower ; E = power x 4 + 1; FindSlot searches E - 1 = power x 4 slots (the other weapons 29 of the 30)
 $B56E c FindSlot ; Search E slots from IY for a free one; the shot's sound by weapon (gun $D4FB, laser $D50D, spray $D516; the enemies' $D504)
 > As REX 1's FindSlot $B528 (src/game/weapons.asm).
 > Witness: L1 7579 (c2, p2-room20, rzx-p2- x21).
@@ -777,12 +777,12 @@ $B5C4 c EnemyShotFrom ; An enemy shot from IX's X - 16 (REX 1's; nothing calls i
 > Witness: L1 0 ().
 $B5CC c EnemyShotFromX ; LD A,(IX+0) then into EnemyShotA: no instruction reaches these 3 bytes (leftover)
 > Witness: L1 0 ().
-$B5CF c EnemyShotA ; An enemy shot at X A, speed 15 (nothing calls it in part 2)
+$B5CF c EnemyShotA ; An enemy shot at X A, its Y 15 below the object's (nothing calls it in part 2)
 > Witness: L1 0 ().
-$B5D4 c EnemyShot ; An enemy shot from IX: X Temp1, Y IX+1, speed A, kind EnemyShotKind $A1ED (bit 7: an enemy's)
+$B5D4 c EnemyShot ; An enemy shot from IX: X Temp1, Y IX+1 plus A (Temp4, the Y offset SetupShot adds), kind EnemyShotKind $A1ED (bit 7: an enemy's)
 > As REX 1's EnemyShot $B58E (src/game/weapons.asm).
 > Witness: L1 1147 (c2, p2-room20, rzx-p2- x19).
-$B5EB c RexShot ; A shot from Rex: his X, Y and facing, speed 17, type the weapon
+$B5EB c RexShot ; A shot from Rex: his X, Y + 17 (Temp4) and facing, type the weapon
 > As REX 1's RexShot $B5A5 (src/game/weapons.asm).
 > Witness: L1 4167 (c2, p2-room20, rzx-p2- x21).
 $B607 c SetupShot ; Fill the slot at IY: live, type A, Y Temp2 + Temp4, X Temp1 + 16, direction Temp3 (left: dX -1, -8 pixels), the grid pointer
@@ -861,7 +861,7 @@ $B9F9 c PowerBarColour ; A = PowerLevel + 2 (the bar's colour)
 $B9FE c Fill2x2 ; Write A into a 2 x 2 patch at HL
 > As REX 1's Fill2x2 $B983 (src/game/weapons.asm).
 > Witness: L1 20424 (c2, p2-room20, rzx-p2- x21).
-$BA09 c PowerGain ; A power pod: PowerCount $A1B1 counts, every few the PowerLevel + 1 up to 6, the bar redrawn, the fire faster
+$BA09 c PowerGain ; A power pod: PowerCount $A1B1 counts, every 120 the PowerLevel + 1 up to 5 (at 5 GainRank raises WeaponRank and sets the level back to 1; at rank 5 nothing), the fire faster
 > As REX 1's PowerGain $B98E (src/game/weapons.asm).
 > Witness: L1 78 (rzx-p2- x14).
 $BA3B GainRank ; 
@@ -874,7 +874,7 @@ $BA6A c PowerDrain ; A shot of a special weapon: PowerCount down; at 0 the Power
 > As REX 1's PowerDrain $B9EF (src/game/weapons.asm).
 > Witness: L1 1038 (c2, p2-room20, rzx-p2- x21).
 $BA8C DrainRank ; 
-$BAB8 c LosePower ; A death: PowerDrain once
+$BAB8 c LosePower ; A death or ENERGY LOSS: PowerDrain(50) twice; each drain that would go below 0 puts the count back and drops one level, so 0, 1 or 2 levels go
 > Changed from REX 1's LosePower $BA3D (src/game/weapons.asm).
 > Witness: L1 36 (c2, p2-room20, rzx-p2- x14).
 $BABA LosePowerDo ; 
@@ -1415,7 +1415,7 @@ $D516 SfxSpray ; the spray
 $D51F SfxHitWall ; a bullet meeting a wall
 $D528 SfxExplosion ; an object killed (noise)
 $D534 SfxShield ; the shield's hum while it is on (DrawRex)
-$D538 SfxShieldTone ; its period word: $04B0 + a random 0-31, written by DrawRex
+$D538 SfxShieldTone ; its period word: $04B0 + a random 0-31, written by DrawRex; the block's last nine bytes, $D53D-$D545, are a full descriptor (DEMO's shield-hit sound) that nothing refers to
 $D546 SfxMaterialise ; Rex appears
 $D552 SfxDematerialise ; Rex vanishes
 $D55E SfxBigPod ; a big power pod (TakePowerPod)

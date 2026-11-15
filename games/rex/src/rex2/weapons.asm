@@ -273,7 +273,8 @@ FindShotSlot:
   JP Z,SlotsByPower
   JP FindSlot
 SlotsByPower:
-  LD A,(PowerLevel)       ; power x 4 + 1 slots
+  LD A,(PowerLevel)       ; E = power x 4 + 1; FindSlot searches E - 1 = power
+                          ; x 4 slots (the other weapons 29 of the 30)
   SLA A
   SLA A
   INC A
@@ -371,15 +372,16 @@ EnemyShotFrom:
 EnemyShotFromX:
   LD A,(IX+$00)
 
-; An enemy shot at X A, speed 15 (nothing calls it in part 2)
+; An enemy shot at X A, its Y 15 below the object's (nothing calls it in part
+; 2)
 ;
 ; Witness: L1 0 ().
 EnemyShotA:
   LD (Temp1),A
   LD A,$0F
 
-; An enemy shot from IX: X Temp1, Y IX+1, speed A, kind EnemyShotKind $A1ED
-; (bit 7: an enemy's)
+; An enemy shot from IX: X Temp1, Y IX+1 plus A (Temp4, the Y offset SetupShot
+; adds), kind EnemyShotKind $A1ED (bit 7: an enemy's)
 ;
 ; As REX 1's EnemyShot $B58E (src/game/weapons.asm).
 ;
@@ -394,7 +396,7 @@ EnemyShot:
   SET 7,A
   JP SetupShot
 
-; A shot from Rex: his X, Y and facing, speed 17, type the weapon
+; A shot from Rex: his X, Y + 17 (Temp4) and facing, type the weapon
 ;
 ; As REX 1's RexShot $B5A5 (src/game/weapons.asm).
 ;
@@ -1035,8 +1037,9 @@ Fill2x2:
   LD (HL),A
   RET
 
-; A power pod: PowerCount $A1B1 counts, every few the PowerLevel + 1 up to 6,
-; the bar redrawn, the fire faster
+; A power pod: PowerCount $A1B1 counts, every 120 the PowerLevel + 1 up to 5
+; (at 5 GainRank raises WeaponRank and sets the level back to 1; at rank 5
+; nothing), the fire faster
 ;
 ; As REX 1's PowerGain $B98E (src/game/weapons.asm).
 ;
@@ -1146,7 +1149,8 @@ DrainRank:
   LD (PowerLevel),A
   JP BestWeapon
 
-; A death: PowerDrain once
+; A death or ENERGY LOSS: PowerDrain(50) twice; each drain that would go below
+; 0 puts the count back and drops one level, so 0, 1 or 2 levels go
 ;
 ; Changed from REX 1's LosePower $BA3D (src/game/weapons.asm).
 ;

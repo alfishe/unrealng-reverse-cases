@@ -137,7 +137,7 @@ channel's 8 bytes and sets the mixer:
 | +6 | noise flag |
 | +7 | the volume x 16 |
 
-Channels `$D832` holds A, B and C one after the other; Mixer `$D855` keeps register 7's value; ChannelNumber `$D856`
+Channels `$D832` holds A, B and C one after the other; Mixer `$D855` keeps register 7's value; ChannelNumber `$D857`
 is SoundStep's loop count.
 
 ```asm
@@ -383,7 +383,7 @@ flowchart LR
 
 Worked example: the first burst, TTD frame 17 355. The six values are `$E8`, `$08`, `$20`, `$40`, `$58` and `$78`, at
 T 2342, 3559, 4776, 5993, 7210 and 8427. Their speaker bits are 0, 0, 0, 0, 1, 1 and their MIC bits 1, 1, 0, 0, 1, 1.
-Eight bursts follow, at TTD frames 17 355, 17 359 .. 17 383, one a pass: 48 writes in all.
+Eight bursts in all, at TTD frames 17 355, 17 359 .. 17 383, one a pass: 48 writes in all.
 
 **The point**: the crackle is a side effect of the shard drawing, timed by the drawing's own length, not a sound
 routine.
@@ -403,7 +403,7 @@ REX 2's 14 descriptors are REX 1's bytes (`src/res/sound/rex2-effects.txt`). DEM
 DEMO plays SfxShieldHit when an enemy bullet meets the shield (ShieldHitSound, `src/demo/score.asm`): channel B,
 volume 15, period `$E20` (31 Hz), 2 calls ([WAV](audio/demo-SfxShieldHit.wav); its louder shield hum:
 [WAV](audio/demo-SfxShield.wav)). REX 1 and REX 2 keep the same nine bytes right after their shield descriptor, at
-`$D7A3`, and never use them: the shield-hit sound was cut from the two game parts, its descriptor left in place.
+`$D7A5-$D7AD` (the tail of the 14-byte SfxShieldTone block `$D7A0`), and nothing refers to `$D7A5`: the shield-hit sound was cut from the two game parts, its descriptor left in place.
 
 Worked example: DEMO `$D9A9` `02 00 01 FF 20 4E | 02 0A F6`. Channel B, tone, one step, volume 15 and 15/16, period
 `$4E20` played as `$E20`. Step: 2 calls, period + 10, volume - 10/16. It ran 3 times in `d1` and `demo-cycle` (L1).

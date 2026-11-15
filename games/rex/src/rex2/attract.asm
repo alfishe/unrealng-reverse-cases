@@ -47,8 +47,9 @@ BuildRoom:
 AttractRooms:
   DEFB $05,$11,$01,$14,$0A,$17,$13,$FF
 
-; The attract mode: each room of AttractRooms shown 200 passes with its objects
-; moving (no Rex, no conveyor rolls); fire starts a game
+; The attract mode: each room of AttractRooms shown 199 passes (AttractTimer
+; 200, decremented before the test) with its objects moving (no Rex, no
+; conveyor rolls); fire starts a game
 ;
 ; Changed from REX 1's Attract $A915 (src/game/codepanel.asm).
 ;

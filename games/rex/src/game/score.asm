@@ -3,9 +3,9 @@
 ;
 ; A killed object (KillObject $981F, from a bullet, the smart bomb, a collision or a fall) scores KillScores
 ; $994E[kind] x 100 points (AddScore $9A27), turns into the points sign (ShowPoints $97FD) and, for the six kinds that
-; are people (0 foot man, 4, 5, 6, 7 and 12), adds one to HumansKilled $A089 and leaves the human's picture (KillHuman
-; $98A7). The game over panel prints HumansKilled. Every 100 x 100 points (ExtraLifeCount $A076) gives a life, at most
-; 9.
+; are people (0 foot man, 4, 5, 6, 7 and 12), adds one to HumansKilled $A089 (KillHuman $98A7). The big gun ($90) goes
+; to KillScore $98AF instead: 1000 points and two lives. The game over panel prints HumansKilled. Every 100 x 100
+; points (ExtraLifeCount $A076) gives a life, at most 9.
 ; --------------------------------------------------------------------------------------------------------------------
 
   ORG $97FD
@@ -92,12 +92,10 @@ KillObject:
   LD (IX+$03),$00
   RET
 
-; A person killed: HumansKilled $A089 + 1, the human's picture SpriteHuman
-; $92F2, the panel of a kill
+; A person killed: HumansKilled $A089 + 1, nothing else
 ;
-; For kinds 0, 7, 6, 12, 4 and 5. The object becomes a falling body;
-; FindFreeObject $D858 and the human's initialiser ($CDA2, $CE67) set up its
-; picture.
+; For kinds 0, 7, 6, 12, 4 and 5 (KillObject calls it for each). The big gun's
+; KillScore $98AF follows it in memory.
 ;
 ; Witness: L1 155 (c1, p1-speedup, p1-room24, p1-room30, rzx-p1- x27).
 KillHuman:
@@ -107,7 +105,10 @@ KillHuman:
   RET
 ; This entry point is used by the routine at KillObject.
 KillScore:
-  LD DE,$000A             ; the kind's score
+  LD DE,$000A             ; the big gun ($90): 1000 points, hits by weapon,
+                          ; speed 1, the human picture; the second kill makes
+                          ; it a ramming pod (kind $0C, 8 hits); five points
+                          ; signs each time
   CALL AddScore
   CALL KillHumanPicture
   LD (IX+$12),$01
@@ -137,7 +138,10 @@ KillScore:
   LD (IX+$09),$0C
   LD (IX+$14),$08
 KillHumanMake:
-  PUSH IX                 ; the human's body in a free record
+  PUSH IX                 ; five points signs in free records around the big
+                          ; gun (FindFreeObject $D858, ShowPoints $97FD): X +
+                          ; Random & 31, Y + Random & 31; pod $FF on the first
+                          ; kill, else Random & 1
   LD B,$05
 KillHumanSet:
   PUSH BC                 ; its picture and size

@@ -313,7 +313,8 @@ HitObject:
   CALL AddScore
   RET
 
-; A hit on an armoured object: the flash, more hits needed
+; A bullet on a kind 6 (the hit foot man): the flash renewed, hits back to 2
+; (not with the spray); BulletLoop then skips it, so a kind 6 never loses hits
 ;
 ; Witness: L1 90 (p1-speedup, p1-room30, rzx-p1- x13).
 HitObjectHard:

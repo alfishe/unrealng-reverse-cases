@@ -291,7 +291,9 @@ SfxShield:
   ; $D534 the shield's hum while it is on (DrawRex)
   INCBIN "res/sound/rex2-effects.bin",$0039,4
 SfxShieldTone:
-  ; $D538 its period word: $04B0 + a random 0-31, written by DrawRex
+  ; $D538 its period word: $04B0 + a random 0-31, written by DrawRex; the
+  ;   block's last nine bytes, $D53D-$D545, are a full descriptor (DEMO's
+  ;   shield-hit sound) that nothing refers to
   INCBIN "res/sound/rex2-effects.bin",$003D,14
 SfxMaterialise:
   ; $D546 Rex appears

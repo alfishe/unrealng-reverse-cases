@@ -23,11 +23,10 @@ stateDiagram-v2
     GameEntry --> TitleMenu: DI, CALL TitleMenu
     TitleMenu --> NewGame: a control chosen, keys 1-4
     NewGame --> PhaseOne: variables reset, HUD drawn
-    PhaseOne --> PressFire: fire
-    PhaseOne --> Attract: no fire in about 7 s
+    PhaseOne --> PressFire: fire, or no fire in about 7 s
     PressFire --> MainLoop: fire, Materialise
-    PressFire --> Attract: no fire in about 7 s
-    Attract --> Attract: 200 passes a room, 8 rooms
+    PressFire --> Attract: no fire in about 7 s more (14 s in all)
+    Attract --> Attract: 199 passes a room, 8 rooms
     Attract --> NewGame: fire
     MainLoop --> Pass: BuildRoom
     Pass --> Pass: JP MainPass
@@ -65,7 +64,8 @@ The transitions, with their code:
 | BASIC | `RANDOMIZE USR 38010` | GameEntry `$947A` | `c1` frame 13 701 |
 | GameEntry | always | TitleMenu `$DAC0` | `CALL TitleMenu`; it returns once a control is chosen |
 | NewGame `$9498` | PHASE ONE, then PRESS FIRE | MainLoop `$9583` | `WaitFireOrAttract $97C3` twice, then `Materialise` |
-| either wait | 50 000 polls without fire | Attract `$A915` | `WaitFireOrAttract` returns `Temp1` = 0 |
+| the first wait (PHASE ONE) | 50 000 polls without fire | PRESS FIRE | `Temp1` = 0 is not tested: the program goes on |
+| the second wait (PRESS FIRE) | 50 000 polls more without fire | Attract `$A915` | `9576 LD A,(Temp1)`, `957A JP Z,Attract` |
 | a pass | Rex crosses an edge with an exit | MainLoop | `ExitRight $D0B1` and its three siblings: `POP BC`, `JP ChangeRoom $C95A` |
 | a pass | the exit is 99 | CodePanel `$A7CE` | `ChangeRoom`: `CP $63`, `JP Z,CodePanel` |
 | a pass | a hit without the shield, or the sweep at 0 | Dying | `RexDies $9BDA` |
@@ -79,7 +79,8 @@ The transitions, with their code:
 
 - The menu runs `MenuCode` and `EnterCode $DB27` before the keys 1-4. A bad code prints INVALID CODE and goes back to
   `MenuCode` (`c2` frame 1750).
-- NewGame `$948E` takes the score, lives, bombs, shield and weapons from the code.
+- NewGame `$948E` takes the score, lives, bombs, shield and the weapons owned from the code; StartWeapon `$BAC6`
+  always starts with the laser at power level 3 and rank 2.
 - There is no exit 99. The game ends when the big squidgy thing in room 25 dies (`BossExplodes $99E3`), then the
   ending text (`rzx-p2-40000`).
 
@@ -260,7 +261,8 @@ scenery is the foreground. Witness: `rzx-p1-08000` frames 1161-1165 (the animati
 ![MainPass: one pass in room 5, the back buffer filling and emptying](img/routines/MainLoop.gif)
 
 *MainPass at work: one pass of REX 1 in room 5, `rzx-p1-08000` from 1161:58511 to 1165:60804 (285 925 T, 4.03
-frames), 90 pictures. How to read it: the left panel is the back buffer `$EB00-$FFFF` as 168 lines of 32 bytes; the
+frames), 90 pictures. How to read it: the left panel is the back buffer `$EB00-$FFFF` as 168 lines of 32 bytes
+(BufferToScreen copies columns 0-29 of each); the
 right panel lists the routine running and the bytes it touched. The point: the buffer fills with the sprites (step
 1), the scenery covers it (DrawAnimCells), the copy takes it to the screen, then `PUSH` clears it from the bottom up.
 Command: `python3 ../../kit/routine_anim.py --work work/docs/rxA/p1-08000 --window 1161:58511-1165:60804 --listing
@@ -274,7 +276,7 @@ list with three changes:
 - while the boss dies Rex cannot walk (`MainBossCheck`), only jump and fall;
 - all the animated characters are in `AnimateCells` (REX 1 rotates characters 111 and 143 inline).
 
-**DEMO's pass** (`$8BEF`) adds `TutorArrow` before the draw, `HeatStep` after the fades, and `TutorPanels` and
+**DEMO's pass** (`$8BEF`) adds `TutorArrow` before the draw, `HeatStep` between `KillFlashFade` and `FadeStep`, and `TutorPanels` and
 `TutorStep` after the sweep. Its keys come from `TutorStep`'s script, not from the keyboard.
 
 ## 4.4 The three routines that borrow the stack
@@ -283,7 +285,8 @@ The three heavy steps of every pass use `SP` as a fast pointer. Each first saves
 `Temp2 $A095`, and puts it back at the end. This is safe only because no interrupt can come (4.2).
 
 **ClearBuffer `$B205`** zeroes the 5376 bytes of the buffer with 2688 `PUSH HL`: 42 rounds of 64 pushes, from `SP` =
-`$FFFF` down. The buffer starts at `$EAFF` (`BufferPlayOrigin`, column 0 of line 0), so the last push ends on it.
+`$FFFF` down, so it zeroes `$EAFF-$FFFE`: BackBuffer `$EB00-$FFFF` shifted one byte down, from `BufferPlayOrigin`
+`$EAFF`. The byte at `$FFFF` is never cleared and `$EAFF` is; neither is copied to the screen.
 
 ```
 B205  ClearBuffer:
@@ -299,8 +302,9 @@ B251  DJNZ ClearBufferLoop
 ```
 
 **BufferToScreen `$A28A`** copies the buffer's 168 lines to the screen. `SP` walks `ScreenLines $AC0D`, the screen
-address of each play line (line 24 on), and `POP DE` gives each target. Each line skips the buffer's columns 0 and 31
-and copies the 30 between with `LDI`. `BC` = `$13B0` = 168 x 30 counts the bytes; `JP PE` loops until it is 0.
+address of each play line (line 24 on), and `POP DE` gives each target. Each line copies the buffer's columns 0-29
+(`$EB00` + 32 x line on) to screen columns 1-30 with `LDI` and skips buffer columns 30 and 31. `BC` = `$13B0` =
+168 x 30 counts the bytes; `JP PE` loops until it is 0.
 
 ```
 A28A  BufferToScreen:
@@ -310,11 +314,11 @@ A291  LD HL,BufferPlayOrigin  ; $EAFF
 A294  LD BC,$13B0             ; 168 lines x 30 bytes
 A297  BufferLine:
 A297  POP DE                  ; the line's screen address
-A298  INC DE                  ; skip column 0
-A299  INC HL
+A298  INC DE                  ; skip screen column 0
+A299  INC HL                  ; HL = $EB00 + 32 x line
 A29A  LDI                     ; x 30
 ...
-A2D6  INC HL                  ; skip column 31
+A2D6  INC HL                  ; skip column 30; A299 skips 31
 A2D7  JP PE,BufferLine
 A2DA  LD SP,(Temp1)
 A2DE  RET
@@ -352,7 +356,7 @@ Worked example, room 5 in `rzx-p1-08000` (memory at frame 1161): the list at `$D
 
 ```mermaid
 flowchart LR
-    O["UpdateObjects: sprites ORed"] --> B[("back buffer $EAFF-$FFFE")]
+    O["UpdateObjects: sprites ORed"] --> B[("back buffer $EB00-$FFFF")]
     A["DrawAnimCells: 362 cells, LD"] --> B
     B --> T["BufferToScreen: 168 x 30 LDI"]
     T --> S[("screen $4060-$57FF")]
@@ -566,8 +570,8 @@ flowchart TD
 ```
 
 *The station's panel. The point: the panel holds the pass, so the game is frozen while it shows. The RZX player
-pressed fire 19 to 77 frames into the wait. Unlike PHASE ONE's wait, the time-out here only closes the panel
-(`WaitFireOrAttract`'s result is not looked at). Witness: the four passes above; the panel in room 1 at
+pressed fire 19 to 77 frames into the wait. As after PHASE ONE, the time-out here only closes the panel
+(`WaitFireOrAttract`'s result is not looked at); only the wait after PRESS FIRE tests it. Witness: the four passes above; the panel in room 1 at
 `rzx-p1-00000` frame 1400 ([doc 1, 1.3](01-game-design.md#13-the-screens)).*
 
 ## 4.8 Every delay, pause and timer
@@ -581,7 +585,7 @@ from the instruction timings; the loops run above `$8000`, in memory the 128K do
 | `WaitFireOrAttract $97C3` | PHASE ONE, PRESS FIRE, the stations | 50 000 polls of 495 T (`DJNZ` x 30 and `ReadFire`) | 24 750 000 | 349 frames, 7.0 s |
 | `WaitFire $97EA` | GAME OVER, the code panel | fire up, then fire down | | until fire |
 | `Pause $A4E7` (REX 2 `$A68F`) | H in a pass | `ReadFire` until fire | | until fire |
-| Attract `$A915` | after a wait times out | 200 passes a room (`AttractTimer`) | | about 880 frames, 18 s a room |
+| Attract `$A915` | after both NewGame waits time out (2 x 349 frames, 14 s) | 199 passes a room (`AttractTimer` 200, decremented before the test) | | about 880 frames, 18 s a room |
 | `DeathAnimation $9AC5` | while `Dying` = 1 | 50 passes (`DeathTimer`) | | about 220 frames, 4.4 s |
 | `HudSweep $A0C4` | every pass | 5 round trips a width, 12 widths | 780 passes | about 3400 frames, 69 s a room |
 | DEMO's tutor panels | `TutorPanels` | counts of 33 000, 65 000, 20 000 and 40 000 passes or polls | | |
@@ -593,13 +597,14 @@ to 2: Rex dies, game over); `p1-cursor` (H pauses, fire resumes); `rzx-p1-*` (th
 ```mermaid
 flowchart LR
     W["WaitFireOrAttract"] -->|"fire"| G["play"]
-    W -->|"50 000 polls"| AT["Attract: BuildRoom, 200 passes"]
+    W -->|"the second wait (PRESS FIRE) runs out: 2 x 50 000 polls"| AT["Attract: BuildRoom, 199 passes"]
     AT -->|"next of 6, 17, 1, 20, 10, 23, 29, 32"| AT
     AT -->|"fire"| N["NewGame"]
 ```
 
 *The attract mode. How to read it: Attract walks `AttractRooms $A90C` (6, 17, 1, 20, 10, 23, 29, 32, then `$FF`
-wraps). Each room plays 200 passes without Rex. The point: the attract mode shows eight rooms from all over the map.
+wraps). Each room plays 199 passes without Rex (the timer is loaded with 200 and decremented before its test). The
+point: the attract mode shows eight rooms from all over the map.
 Witness: `c1`.*
 
 **The sweep is the room's timer.** A marker runs back and forth along the HUD's attribute row at `$582B`. Each time it

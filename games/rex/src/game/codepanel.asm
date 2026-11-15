@@ -165,8 +165,9 @@ BuildRoomShield:
 AttractRooms:
   INCBIN "res/tables/rex1-attract-rooms.bin",$0000,9
 
-; The attract mode: each room of AttractRooms shown 200 passes with its objects
-; moving (no Rex); fire starts a game
+; The attract mode: each room of AttractRooms shown 199 passes (AttractTimer
+; 200, decremented before the test) with its objects moving (no Rex); fire
+; starts a game
 ;
 ; Entered from WaitFireOrAttract $97C3's timeout. AttractFlag $A0C2 = 1 while
 ; it runs.

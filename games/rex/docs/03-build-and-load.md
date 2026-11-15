@@ -62,7 +62,8 @@ with the ROM and runs it; the two parts are two programs on the same side, and s
 
 ## 3.2 The BASIC loaders
 
-The three programs differ only in their `CLEAR` and their entry (`tools/basic_list.py` on the blocks' data):
+The three programs differ only in their `CLEAR`, their entry and the names in line 999 (`tools/basic_list.py` on the
+blocks' data; 151, 151 and 150 bytes):
 
 | Line | REX 1 | REX 2 | DEMO |
 | --- | --- | --- | --- |
@@ -79,8 +80,9 @@ Line 999 never runs (the program starts at line 1 and line 60 does not return). 
 put together from a disk ("make1", "make2", "maked") and saved to tape with `SAVE ... LINE 1` (known only from the
 BASIC's text; no recording runs it; which interface is not known).
 
-The entries were checked in the code: REX 1's `$947A` starts with `DI` and clears the game's variables
-(`work/stage1/zdis.py` on block 6).
+The entries were checked in the code: REX 1's `$947A` starts with `DI`, clears ControlXor and AttractFlag, runs the
+menu (TitleMenu) and sets the high score; NewGame, which it falls into, clears the rest (`work/stage1/zdis.py` on
+block 6).
 
 ```mermaid
 flowchart TD
@@ -92,7 +94,7 @@ flowchart TD
     L999["999 SAVE 't:', SAVE 'REX 1' LINE 1, LOAD 'a:', LOAD 'make1'"] -.->|"never runs"| X["the authors' mastering"]
 ```
 
-*REX 1's BASIC, line by line (REX 2's and DEMO's differ only in lines 20 and 60). How to read it: the solid arrows
+*REX 1's BASIC, line by line (REX 2's and DEMO's differ only in lines 20, 60 and 999). How to read it: the solid arrows
 are the order the program runs; line 999 is reached by no path. The point: the loader is the ROM's: three `LOAD`
 statements and a `USR`. `CLEAR` puts the BASIC's stack just under the code block, where the game keeps it (doc 2,
 2.4). Witness: `c1` (the BASIC's `CLS` by frame 660, the screen by 2620, the code from 3070, the entry at 13 701).*
@@ -163,10 +165,14 @@ DC58  RET
 94ED  LD (Lives),A
 94F0  LD A,(CodeBombs)
 94F3  LD (Bombs),A
-94F6  CALL StartWeapon        ; the weapons the code holds
+94F6  CALL StartWeapon        ; the laser, level 3, rank 2, whatever the code says
 94F9  LD A,(CodeShield)
 94FC  LD (ShieldEnergy),A
 ```
+
+The code gives which weapons Rex owns (EnterCode sets HasDoubleFire, HasLaser and the others), not the one in hand:
+StartWeapon `$BAC6` always sets Weapon 2 (the laser), PowerLevel 3 and WeaponRank 2. The kill count BIO GROWTHS
+KILLED starts from the code's score (`94E7`), not from 0.
 
 ```mermaid
 sequenceDiagram
