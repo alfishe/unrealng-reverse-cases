@@ -16,7 +16,7 @@
 ; Room 11 shows MAYHEM, 3 TRANSMOGRIFY, 7 VALKYR, 10 PETALS OF DOOM, built by
 ; BuildMessage $ADBF and scrolled by ShowMessage $B0FF.
 ;
-; Witness: L1 79 (c1, door, play2, rzx- x9).
+; Witness: L1 86 (c1, cheat, door, door3, kind6, masks, play2, rzx- x9).
 RoomMessage:
   LD A,(RoomScreen)
   AND A
@@ -57,7 +57,7 @@ Messages:
 
 ; Copy the password text after PASSWORD IS
 ;
-; Witness: L1 20 (door, rzx- x5).
+; Witness: L1 23 (door, door3, rzx- x5).
 BuildMessage:
   PUSH AF
 l_ADC0:
@@ -77,7 +77,7 @@ l_ADCD:
 
 ; Zone 2: every PENETRATOR (kind 1) slot becomes EMPTY
 ;
-; Witness: L1 79 (c1, door, play2, rzx- x9).
+; Witness: L1 86 (c1, cheat, door, door3, kind6, masks, play2, rzx- x9).
 MoonMasks:
   LD A,(ZoneSlots)
   CP $02
@@ -97,6 +97,10 @@ l_ADEF:
   JP DrawAllSlots
 
 ; Room 15, screen 5: YOU HAVE FOUND SCOTT, WELL DONE, then GameStart
+;
+; Jumps to GameStart without the high-score test of GameOver: the score of a
+; won game is not kept (rzx-36000: 31 004 points, then the menu shows HISCORE
+; 00000000).
 ;
 ; Witness: L1 1 (play2).
 Ending:
@@ -125,7 +129,7 @@ Score:
 
 ; Score + DE (BCD)
 ;
-; Witness: L1 78 (rzx- x9).
+; Witness: L1 84 (kind6, rzx- x9).
 AddScore:
   PUSH HL
   LD HL,Score+$0003
@@ -153,7 +157,7 @@ AddScore:
 
 ; The score's eight digits (Digits $D3A0) at $5077
 ;
-; Witness: L1 12988 (c1, door, play2, rzx- x9).
+; Witness: L1 15175 (c1, cheat, door, door3, kind6, masks, play2, rzx- x9).
 DrawScore:
   LD L,$77
   EXX
@@ -174,7 +178,7 @@ l_AE68:
 
 ; One digit
 ;
-; Witness: L1 103905 (c1, door, play2, rzx- x9).
+; Witness: L1 121401 (c1, cheat, door, door3, kind6, masks, play2, rzx- x9).
 DrawDigit:
   EXX
   AND $0F
@@ -223,7 +227,7 @@ EnergyShown:
 
 ; The 8-cell energy bar at $506D, partial cells from EnergyParts
 ;
-; Witness: L1 12983 (c1, door, play2, rzx- x9).
+; Witness: L1 15170 (c1, cheat, door, door3, kind6, masks, play2, rzx- x9).
 DrawEnergyBar:
   LD A,(Energy)
   SRL A
@@ -265,7 +269,7 @@ l_AEDC:
 
 ; Fill a cell's three lines with C
 ;
-; Witness: L1 1240 (c1, door, play2, rzx- x9).
+; Witness: L1 1360 (c1, cheat, door, door3, kind6, masks, play2, rzx- x9).
 FillCell:
   PUSH HL
   PUSH BC
@@ -329,7 +333,7 @@ CurrentSlot:
 
 ; Blink the slot in use and redraw its charges
 ;
-; Witness: L1 13169 (c1, door, play2, rzx- x9).
+; Witness: L1 15390 (c1, cheat, door, door3, kind6, masks, play2, rzx- x9).
 DrawCurrentSlot:
   LD IX,(CurrentSlot)
   LD H,$50
@@ -345,7 +349,7 @@ DrawCurrentSlot:
 
 ; Print the BCD bytes at HL
 ;
-; Witness: L1 13293 (c1, door, play2, rzx- x10).
+; Witness: L1 15546 (c1, cheat, door, door3, kind6, masks, play2, rzx- x10).
 PrintBcd:
   PUSH AF
   RRCA
@@ -357,7 +361,7 @@ PrintBcd:
 
 ; Two digits
 ;
-; Witness: L1 26585 (c1, door, play2, rzx- x10).
+; Witness: L1 31091 (c1, cheat, door, door3, kind6, masks, play2, rzx- x10).
 PrintBcdByte:
   AND $0F
   ADD A,$30
@@ -368,7 +372,7 @@ PrintBcdByte:
 
 ; Interrupt: scroll the message line (row 23) one step
 ;
-; Witness: L1 38512 (c1, door, play2, rzx- x10).
+; Witness: L1 45122 (c1, cheat, door, door3, kind6, masks, play2, rzx- x10).
 Scroller:
   LD A,(ScrollerLeft)
   AND A
@@ -428,7 +432,7 @@ l_AFB5:
 
 ; The next character's glyph into $AF15
 ;
-; Witness: L1 1978 (c1, door, play2, rzx- x9).
+; Witness: L1 2728 (c1, cheat, door, door3, kind6, masks, play2, rzx- x9).
 ScrollerNextChar:
   LD HL,(ScrollerPtr)
   LD A,(HL)
@@ -445,7 +449,7 @@ ScrollerNextChar:
 
 ; The four slots' icons and charges
 ;
-; Witness: L1 31 (c1, door, play2, rzx- x9).
+; Witness: L1 38 (c1, cheat, door, door3, kind6, masks, play2, rzx- x9).
 DrawAllSlots:
   LD A,(PassCounter)
   PUSH AF
@@ -473,7 +477,10 @@ l_B00B:
 
 ; A mask icon (MaskIcons $D580 + 32 x kind) at slot IX
 ;
-; Witness: L1 13169 (c1, door, play2, rzx- x9).
+; While PassCounter bit 3 is set the current slot gets icon 0 (EMPTY, 32 zero
+; bytes, a blank): the blink of the slot in use.
+;
+; Witness: L1 15390 (c1, cheat, door, door3, kind6, masks, play2, rzx- x9).
 DrawIcon:
   PUSH AF
   PUSH HL
@@ -561,7 +568,7 @@ l_B040:
 
 ; Keys 1-4 (port $F7FE) choose the slot, not while dying
 ;
-; Witness: L1 12988 (c1, door, play2, rzx- x9).
+; Witness: L1 15175 (c1, cheat, door, door3, kind6, masks, play2, rzx- x9).
 MaskKeys:
   LD A,(Dying)
   AND A
@@ -603,7 +610,7 @@ l_B0AD:
 
 ; Scroll the name of mask kind A
 ;
-; Witness: L1 72 (c1, rzx- x9).
+; Witness: L1 79 (c1, door3, masks, rzx- x9).
 ShowMaskName:
   LD HL,MaskNameShown
   CP (HL)
@@ -643,7 +650,7 @@ MessageState:
 
 ; Start scrolling the message at HL
 ;
-; Witness: L1 19 (c1, door, play2, rzx- x8).
+; Witness: L1 25 (c1, cheat, door, door3, kind6, masks, play2, rzx- x8).
 ShowMessage:
   LD A,$FF
   LD (MaskNameShown),A
@@ -664,16 +671,20 @@ l_B111:
 
 ; Matt pressing down (state 4) takes the pick-up under him
 ;
-; Witness: L1 1230 (c1, door, play2, rzx- x9).
+; Witness: L1 1254 (c1, door, door3, play2, rzx- x9).
 CheckPickupsDown:
   LD IX,PickupRecords
   CALL CheckPickups
   LD IX,PickupRecords+$0008
 
-; Take the mask at Matt's place: a slot with that kind or an empty one, 99
-; charges, its level
+; Take the mask at Matt's place into a slot with 99 charges and its kind's
+; level
 ;
-; Witness: L1 2460 (c1, door, play2, rzx- x9).
+; The slot: the current one if EMPTY (its name shown), else the first EMPTY
+; slot, else the current one, whose mask is replaced (there is no test for a
+; slot of the same kind: rzx-16000 frame 49, BLASTER replaced by HEALER).
+;
+; Witness: L1 2508 (c1, door, door3, play2, rzx- x9).
 CheckPickups:
   LD A,(IX+$01)
   INC A
@@ -750,7 +761,7 @@ MaskNames:
 ; Take A charges (BCD) from the slot in use; at none it becomes EMPTY; carry
 ; when there were not enough
 ;
-; Witness: L1 593 (c1, rzx- x9).
+; Witness: L1 649 (c1, cheat, door3, masks, rzx- x9).
 UseCharge:
   EX AF,AF'
   LD A,(CheatOn)
@@ -820,7 +831,7 @@ l_B260:
 
 ; Draw the pick-up icons into the character map, keeping the backgrounds
 ;
-; Witness: L1 13174 (c1, door, play2, rzx- x9).
+; Witness: L1 15361 (c1, cheat, door, door3, kind6, masks, play2, rzx- x9).
 PlacePickups:
   LD DE,PickupSaves
   LD IX,PickupRecords
@@ -831,7 +842,7 @@ PlacePickups:
 
 ; One icon
 ;
-; Witness: L1 39522 (c1, door, play2, rzx- x9).
+; Witness: L1 46083 (c1, cheat, door, door3, kind6, masks, play2, rzx- x9).
 PlaceOnePickup:
   LD A,(IX+$01)
   INC A
@@ -882,7 +893,7 @@ l_B2C1:
 
 ; The backgrounds back
 ;
-; Witness: L1 13172 (c1, door, play2, rzx- x9).
+; Witness: L1 15357 (c1, cheat, door, door3, kind6, masks, play2, rzx- x9).
 RestorePickups:
   LD DE,PickupSaves
   LD IX,PickupRecords
@@ -891,7 +902,7 @@ RestorePickups:
 
 ; One
 ;
-; Witness: L1 26344 (c1, door, play2, rzx- x9).
+; Witness: L1 30714 (c1, cheat, door, door3, kind6, masks, play2, rzx- x9).
 RestoreOnePickup:
   LD A,(IX+$01)
   INC A
@@ -918,7 +929,7 @@ l_B2EE:
 
 ; The deadly floor and the items under Matt
 ;
-; Witness: L1 12990 (c1, door, play2, rzx- x9).
+; Witness: L1 15178 (c1, cheat, door, door3, kind6, masks, play2, rzx- x9).
 Hazards:
   CALL DeadlyFloor
   CALL TakeBlockItem
@@ -930,7 +941,7 @@ DeathFlag:
 
 ; Matt on character $EA ($ED in zone 3) dies
 ;
-; Witness: L1 12990 (c1, door, play2, rzx- x9).
+; Witness: L1 15178 (c1, cheat, door, door3, kind6, masks, play2, rzx- x9).
 DeadlyFloor:
   LD A,(CheatOn)
   AND A
@@ -964,7 +975,7 @@ l_B32B:
 
 ; Zone 2: the character under Matt from $FE up kills
 ;
-; Witness: L1 162 (rzx-28000).
+; Witness: L1 522 (door3, rzx-28000).
 MoonFloor:
   LD HL,(MattPlace+$0002)
   LD DE,$0081
@@ -978,7 +989,10 @@ MoonFloor:
 
 ; A block-$1B item touched: block $47 in the map, an object, energy - $19
 ;
-; Witness: L1 12990 (c1, door, play2, rzx- x9).
+; The y test has only one bound (Matt's y + 20 at least the item's y). No
+; recording took an item: the effect is known only from the code.
+;
+; Witness: L1 15178 (c1, cheat, door, door3, kind6, masks, play2, rzx- x9).
 TakeBlockItem:
   LD A,(PenetratorOn)
   AND A
@@ -1021,7 +1035,7 @@ l_B36E:
   LD E,A
   LD D,$00
   ADD HL,DE
-  LD DE,Zone1CharsLow+$00C0
+  LD DE,CharMap+$0040
   ADD HL,DE
   XOR A
   LD (HL),A
@@ -1079,7 +1093,7 @@ PenetratorOn:
 ; Z when Matt's shot overlaps object IX (not an explosion, not kind 10); +$22 =
 ; the shot's power
 ;
-; Witness: L1 77932 (c1, door, play2, rzx- x9).
+; Witness: L1 91060 (c1, cheat, door, door3, kind6, masks, play2, rzx- x9).
 ShotHits:
   LD A,(MattShot)
   AND A
@@ -1131,7 +1145,7 @@ l_BCDD:
 ; 5, effect kind - 5, power = the slot's level) for a charge, LIFTER 8 charges;
 ; LIFTER's shot sets +$22 = $FF. JACKRABBIT also jumps far (MattLongJump).
 ;
-; Witness: L1 12988 (c1, door, play2, rzx- x9).
+; Witness: L1 15176 (c1, cheat, door, door3, kind6, masks, play2, rzx- x9).
 FireMask:
   LD A,(Dying)
   AND A
@@ -1208,7 +1222,7 @@ l_BD79:
 
 ; Matt's shot gone
 ;
-; Witness: L1 79 (c1, door, play2, rzx- x9).
+; Witness: L1 86 (c1, cheat, door, door3, kind6, masks, play2, rzx- x9).
 ShotOff:
   XOR A
   LD (MattShot),A
@@ -1216,7 +1230,7 @@ ShotOff:
 
 ; Matt's shot: x + dx; gone off $38-$C3 or in a wall
 ;
-; Witness: L1 12990 (c1, door, play2, rzx- x9).
+; Witness: L1 15178 (c1, cheat, door, door3, kind6, masks, play2, rzx- x9).
 MoveShot:
   LD IX,MattShot
   LD A,(IX+$03)
@@ -1260,7 +1274,7 @@ l_BDC9:
 
 ; Fire released after PENETRATOR: Matt inside a wall dies (Explosion, GameOver)
 ;
-; Witness: L1 1021 (c1, door, rzx- x8).
+; Witness: L1 1143 (c1, door, door3, masks, rzx- x8).
 EndPenetrator:
   LD A,(PenetratorOn)
   AND A
@@ -1295,13 +1309,10 @@ l_BE02:
   LD (DissolveCount),A
   RET
 
-; Extra charges of the next PENETRATOR step (kind 8 sets $10)
-;
-; Copied into an object by SetupObject $BFF5: +$14/+$15, +$16/+$17, +$1E, +$18,
-; +$1A, +5, +6, +$19, +$21, +$20 (bit 7 set: a random colour 1-7). Also
-; src/res/tables/enemies.csv.
+; Extra charges of the next PENETRATOR step: KindChaser $C68E sets 16 while
+; PenetratorOn
 PenetratorCost:
-  INCBIN "res/tables/enemies.bin",$0000,1
+  DEFB $00
 
 ; Penetrator
 ;
@@ -1327,50 +1338,33 @@ l_BE1E:
   AND A
   RET NZ
   JP EndPenetrator
-; This entry point is used by the routine at HeldMasks.
+
+; UltraFlash
+;
+; Used by the routine at HeldMasks.
 UltraFlash:
   RET                     ; RET: ULTRA FLASH does nothing when fired
-; This entry point is used by the routine at HeldMasks.
+
+; Mirage
+;
+; Used by the routine at HeldMasks.
 Mirage:
   RET                     ; RET: MIRAGE does nothing when fired
 
-; EnemyTemplates
+; 20 records of 12 bytes: score (BCD word), picture, damage, animation, mask,
+; width, height, mode, hits, colour
+;
+; Copied into an object by SetupObject $BFF5: +$14/+$15, +$16/+$17, +$1E, +$18,
+; +$1A, +5, +6, +$19, +$21, +$20 (bit 7 set: a random colour 1-7). Byte 10, the
+; hits: 255 = never shot down (template 13, kind 10). Also
+; src/res/tables/enemies.csv.
 EnemyTemplates:
-  DEFB $33,$00,$60,$D2,$0A,$00,$03,$02 ; 20 records of 12 bytes: score (BCD
-  DEFB $02,$04,$01,$FF,$00,$02,$E0,$D2 ; word), picture, damage, animation,
-  DEFB $32,$00,$03,$03,$02,$02,$01,$FF ; mask, width, height, mode, hits,
-  DEFB $00,$05,$A0,$D7,$64,$03,$03,$03 ; colour
-  DEFB $02,$02,$05,$05,$10,$00,$60,$D8
-  DEFB $0A,$00,$07,$01,$01,$05,$01,$FF
-  DEFB $50,$01,$A0,$D8,$32,$00,$07,$02
-  DEFB $02,$04,$01,$FF,$00,$01,$60,$D9
-  DEFB $03,$00,$07,$02,$02,$04,$0A,$04
-  DEFB $00,$50,$E0,$D9,$FF,$00,$00,$08
-  DEFB $03,$06,$1E,$02,$00,$05,$A0,$DA
-  DEFB $32,$00,$03,$02,$03,$02,$01,$FF
-  DEFB $00,$01,$60,$D2,$14,$00,$03,$02
-  DEFB $02,$04,$01,$FF,$00,$10,$C0,$DB
-  DEFB $64,$00,$00,$04,$04,$06,$0A,$04
-  DEFB $00,$10,$E0,$DE,$FF,$00,$00,$04
-  DEFB $04,$06,$0A,$05,$50,$00,$60,$DF
-  DEFB $1E,$00,$00,$02,$02,$06,$02,$05
-  DEFB $00,$80,$60,$DB,$FF,$00,$00,$04
-  DEFB $03,$06,$05,$07,$00,$10,$80,$DE
-  DEFB $3C,$00,$00,$02,$02,$06,$FF,$07
-  DEFB $00,$02,$A0,$DE,$28,$00,$00,$02
-  DEFB $02,$06,$FF,$07,$00,$05,$C0,$DE
-  DEFB $3C,$00,$00,$02,$02,$06,$FF,$07
-  DEFB $00,$00,$40,$D4,$00,$00,$03,$02
-  DEFB $02,$04,$00,$FF,$00,$00,$C0,$D4
-  DEFB $00,$00,$03,$03,$02,$02,$00,$FF
-  DEFB $00,$00,$40,$DC,$00,$00,$03,$03
-  DEFB $03,$07,$00,$FF,$00,$00,$60,$DD
-  DEFB $00,$00,$03,$03,$03,$07,$00,$FF
+  INCBIN "res/tables/enemies.bin",$0000,240
 
 ; An empty object gets the screen's enemy kind (EnemyKind), every pass for
 ; kinds 5, 6, 8-10, else at random
 ;
-; Witness: L1 77933 (c1, door, play2, rzx- x9).
+; Witness: L1 91061 (c1, cheat, door, door3, kind6, masks, play2, rzx- x9).
 Spawn:
   LD A,(IX+$00)
   AND $7F
@@ -1474,8 +1468,9 @@ l_BFC0:
 
 ; JP SpawnKind6 $C0F7 (room 1, screen 2)
 ;
-; No recording reached room 1's screen 2, the only screen of kind 6
-; (src/res/tables/rooms.csv): known only from the code.
+; No play recording reached room 1's screen 2, the only screen of kind 6
+; (src/res/tables/rooms.csv); work/stage2/rec/kind6 POKEs EnemyKind $BFB0 = 6
+; in room 0 (a cheat, said so in its script).
 SpawnJump6:
   JP SpawnKind6
 
@@ -1493,8 +1488,9 @@ l_BFCC:
 
 ; JP SpawnKind10 $C1F3 (room 7, screens 2 and 3)
 ;
-; No recording reached room 7's screens 2-3, the only screens of kind 10: known
-; only from the code.
+; No play recording reached room 7's screens 2-3, the only screens of kind 10;
+; work/stage2/rec/door3 POKEs EnemyKind $BFB0 = 10 in room 7, screen 0 (a
+; cheat, said so in its script).
 SpawnJump10:
   JP SpawnKind10
 
@@ -1519,7 +1515,7 @@ SpawnFlyer:
 
 ; Copy the 12-byte template at HL into object IX
 ;
-; Witness: L1 569 (door, rzx- x9).
+; Witness: L1 634 (door, door3, kind6, rzx- x9).
 SetupObject:
   LD A,(HL)
   LD (IX+$14),A
@@ -1663,9 +1659,11 @@ SpawnChaser:
   LD HL,EnemyTemplates+$0048
   JP SetupObject
 
-; Kind 6 (room 1, screen 2): object kind 16, not run in the recordings
+; Kind 6 (room 1, screen 2): object kind 16
 ;
-; Known only from the code.
+; Run only with the EnemyKind POKE of work/stage2/rec/kind6 (frames 675-1891).
+;
+; Witness: L1 1919 (kind6).
 SpawnKind6:
   LD A,(IX+$1F)
   AND A
@@ -1743,7 +1741,7 @@ SpawnGuard:
 
 ; Set +$1F of the six objects
 ;
-; Witness: L1 2 (rzx-00000, rzx-24000).
+; Witness: L1 3 (kind6, rzx-00000, rzx-24000).
 MarkOnce:
   LD IY,Enemies
   LD DE,$0026
@@ -1770,7 +1768,7 @@ SpawnBoss:
   LD (IX+$03),$01
   LD IX,Enemies+$0026
   LD (IX+$03),$A4
-  LD HL,Zone1CharsLow+$00D9
+  LD HL,CharMap+$0059
   LD C,$00
   LD DE,$0020
 l_C1CE:
@@ -1797,10 +1795,11 @@ l_C1D7:
 SpawnPad:
   DEFB $00,$00
 
-; Kind 10 (room 7, screens 2-3): a group of objects of kinds 18 and 19, not run
-; in the recordings
+; Kind 10 (room 7, screens 2-3): a group of objects of kinds 18 and 19
 ;
-; Known only from the code.
+; Run only with the EnemyKind POKE of work/stage2/rec/door3 (frame 1478).
+;
+; Witness: L1 1 (door3).
 SpawnKind10:
   LD A,(IX+$23)
   CP $01
@@ -1860,7 +1859,7 @@ TurretStem:
 ; Object IX becomes an explosion (kind 3, 4 steps, template HL) with a random
 ; effect 11-14
 ;
-; Witness: L1 243 (door, rzx- x9).
+; Witness: L1 272 (door, kind6, rzx- x9).
 Explode:
   LD (IX+$10),$04
   LD (IX+$00),$03
@@ -1872,7 +1871,7 @@ Explode:
 
 ; The six objects: spawn, Matt's shot, the kind's routine; then ReviveObjects
 ;
-; Witness: L1 12990 (c1, door, play2, rzx- x9).
+; Witness: L1 15178 (c1, cheat, door, door3, kind6, masks, play2, rzx- x9).
 RunObjects:
   LD IX,Enemies
   LD B,$06
@@ -1905,7 +1904,7 @@ l_C2B1:
 
 ; Score + the object's +$14/+$15
 ;
-; Witness: L1 78 (rzx- x9).
+; Witness: L1 84 (kind6, rzx- x9).
 AwardScore:
   LD D,(IX+$15)
   LD E,(IX+$14)
@@ -1913,7 +1912,7 @@ AwardScore:
 
 ; Energy - the object's +$1E (not below 0)
 ;
-; Witness: L1 74 (door, rzx- x9).
+; Witness: L1 133 (door, door3, kind6, rzx- x9).
 Damage:
   LD A,(Energy)
   SUB (IX+$1E)
@@ -1925,7 +1924,7 @@ Damage:
 
 ; Z when object IX overlaps Matt (never while PENETRATOR is on)
 ;
-; Witness: L1 10278 (door, rzx- x9).
+; Witness: L1 12174 (door, door3, kind6, rzx- x9).
 TouchesMatt:
   LD A,(PenetratorOn)
   AND A
@@ -1968,7 +1967,7 @@ l_C312:
 
 ; JP the routine of kind +0 & $3F through ObjectJumps
 ;
-; Witness: L1 77932 (c1, door, play2, rzx- x9).
+; Witness: L1 91060 (c1, cheat, door, door3, kind6, masks, play2, rzx- x9).
 RunKind:
   LD A,(IX+$00)
   AND $3F
@@ -1985,8 +1984,9 @@ RunKind:
 ; JP of kinds 0-19: 0 HangLoop, 1 faller, 2 flyer, 3 explosion, 4 turret, 5
 ; turret shot, 6 wave, 7 walker, 8 chaser, 9-19 the rest
 ;
-; Kinds 9, 11, 16, 18 and 19 never ran in a recording. Known for those only
-; from the code.
+; Kinds 9 and 11 never ran in a recording (known for those only from the code);
+; kinds 16, 18 and 19 ran only after an EnemyKind POKE (work/stage2/rec/kind6,
+; door3).
 ObjectJumps:
   JP HangLoop
 
@@ -2022,17 +2022,18 @@ l_C33B:
 l_C33E:
   JP KindChaser
 
-; data_C341
-data_C341:
-  DEFB $C3,$B7,$C6
+; KindNineJump
+KindNineJump:
+  DEFB $C3,$B7,$C6        ; JP KindNine: kind 9's slot; no recording spawned
+                          ; kind 9, so its bytes stay data
 
 ; l_C344
 l_C344:
   JP KindTen
 
-; data_C347
-data_C347:
-  DEFB $C3,$F2,$C6
+; l_C347
+l_C347:
+  JP KindEleven
 
 ; l_C34A
 l_C34A:
@@ -2050,21 +2051,25 @@ l_C350:
 l_C353:
   JP KindFifteen
 
-; data_C356
-data_C356:
-  DEFB $C3,$9B,$C8
+; l_C356
+l_C356:
+  JP KindSixteen
 
 ; l_C359
 l_C359:
   JP KindSeventeen
 
-; data_C35C
-data_C35C:
-  DEFB $C3,$80,$C9,$C3,$B8,$C9
+; l_C35C
+l_C35C:
+  JP KindEighteen
+
+; l_C35F
+l_C35F:
+  JP l_C9B8
 
 ; y + dy, then x + dx
 ;
-; Witness: L1 4336 (door, rzx- x9).
+; Witness: L1 4423 (door, kind6, rzx- x9).
 MoveXY:
   LD A,(IX+$04)
   ADD A,(IX+$1C)
@@ -2160,7 +2165,7 @@ l_C3FB:
 
 ; Carry when the object's corners touch a solid character
 ;
-; Witness: L1 11213 (c1, rzx- x9).
+; Witness: L1 12137 (c1, cheat, door3, kind6, masks, rzx- x9).
 HitsWall:
   LD A,(IX+$1D)
   AND A
@@ -2183,7 +2188,7 @@ HitsWall:
   LD E,A
   LD D,$00
   ADD HL,DE
-  LD DE,Zone1CharsLow+$00C0
+  LD DE,CharMap+$0040
   ADD HL,DE
   CALL IsSolid
   RET C
@@ -2217,7 +2222,10 @@ l_C447:
 ;
 ; Used by the routine at l_C332.
 KindTurret:
-  LD A,(IX+$21)           ; 4: bobs, now and then fires a turret shot (kind 5)
+  LD A,(IX+$21)           ; 4: bobs, now and then fires a turret shot (kind 5);
+                          ; killed, Explode runs before AwardScore, so the
+                          ; explosion template's score 0 is added: a turret
+                          ; never scores
   AND A
   JP Z,l_C4D7
   LD A,(IX+$18)
@@ -2320,7 +2328,7 @@ ObjectCell:
   LD E,A
   LD D,$00
   ADD HL,DE
-  LD DE,Zone1CharsLow+$00C1
+  LD DE,CharMap+$0041
   ADD HL,DE
   RET
 
@@ -2328,7 +2336,8 @@ ObjectCell:
 ;
 ; Used by the routine at l_C335.
 KindTurretShot:
-  LD A,(IX+$21)           ; 5
+  LD A,(IX+$21)           ; 5: damages Matt only while the slot before it holds
+                          ; a turret: the shot of a dead turret is harmless
   AND A
   JR Z,l_C54E
   LD A,(IX+$22)
@@ -2794,9 +2803,11 @@ l_C889:
   LD (IX+$1C),$00
   RET
 
-; Never run: kind 16
+; Kind 16 (SpawnKind6's object)
 ;
-; Known only from the code.
+; Run only in work/stage2/rec/kind6 (an EnemyKind POKE), frames 675-1891.
+;
+; Witness: L1 488 (kind6).
 KindSixteen:
   LD A,(IX+$21)
   AND A
@@ -2911,9 +2922,11 @@ l_C973:
 l_C97D:
   JP Explode
 
-; Never run: kinds 18 and 19 (SpawnKind10's group)
+; Kinds 18 and 19 (SpawnKind10's group)
 ;
-; Known only from the code.
+; Run only in work/stage2/rec/door3 (an EnemyKind POKE), frames 1478-1968.
+;
+; Witness: L1 167 (door3).
 KindEighteen:
   LD A,(IX+$22)
   AND A
@@ -2940,12 +2953,28 @@ l_C9A5:
   JP Z,Damage
   RET
 
-; data_C9B8
-data_C9B8:
-  DEFB $DD,$7E,$04,$DD,$77,$1C,$DD,$7E
-  DEFB $F6,$DD,$77,$04,$DD,$35,$03,$CD
-  DEFB $D9,$C2,$CC,$CA,$C2,$DD,$7E,$1B
-  DEFB $A7,$C8,$DD,$7E,$03,$FE,$38,$D0
-  DEFB $DD,$21,$8B,$A4,$11,$26,$00,$06
-  DEFB $06,$DD,$36,$00,$80,$DD,$19,$10
-  DEFB $F8,$C9
+; l_C9B8
+;
+; Used by the routine at l_C35F.
+l_C9B8:
+  LD A,(IX+$04)
+  LD (IX+$1C),A
+  LD A,(IX-$0A)
+  LD (IX+$04),A
+  DEC (IX+$03)
+  CALL TouchesMatt
+  CALL Z,Damage
+  LD A,(IX+$1B)
+  AND A
+  RET Z
+  LD A,(IX+$03)
+  CP $38
+  RET NC
+  LD IX,Enemies
+  LD DE,$0026
+  LD B,$06
+l_C9E1:
+  LD (IX+$00),$80
+  ADD IX,DE
+  DJNZ l_C9E1
+  RET

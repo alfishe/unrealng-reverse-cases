@@ -37,7 +37,7 @@ def draw_screen(mem, room, screen, scale=1):
             for cy in range(4):
                 for cx in range(4):
                     ch = mem[0x8500 + 16 * blk + cy * 4 + cx]
-                    attr = mem[0xEF00 + ch]
+                    attr = mem[0xEF00 + ch] & 0x47  # the game masks the attribute (AND $47 in FlushDirty at $A24D): paper always black
                     br = bool(attr & 0x40)
                     ink, paper = colour(attr & 7, br), colour((attr >> 3) & 7, br)
                     for y in range(8):

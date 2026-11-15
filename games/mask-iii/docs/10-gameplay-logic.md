@@ -135,11 +135,11 @@ states 5 and 6. State 1 is the walk, in MattStep itself; states 2-12 go through 
 | State | Routine | What Matt does | Leaves to |
 | ---: | --- | --- | --- |
 | 1 | MattWalk `$B460` | walks, turns, starts the others | 2-8, 10 |
-| 2 | MattRise `$B75B` | steps up: x + dx, y - 4, two passes | 1 |
-| 3 | MattArc `$B775` | steps down: x + dx, y + 4, two passes | 1 |
+| 2 | MattStepUp `$B75B` | steps up: x + dx, y - 4, two passes | 1 |
+| 3 | MattStepDown `$B775` | steps down: x + dx, y + 4, two passes | 1 |
 | 4 | MattCrouchState `$B79E` | crouches; down held takes a pick-up | 1 |
-| 5 | MattFall `$B7B5` | the jump: v from -9 up to 0 | 6, 1 |
-| 6 | MattJumpStart `$B841` | the fall: v up to 8 | 1, 7 |
+| 5 | MattJumpRise `$B7B5` | the jump: v from -9 up to 0 | 6, 1 |
+| 6 | MattFall `$B841` | the fall: v up to 8 | 1, 7 |
 | 7 | MattLongJump `$B8E7` | the JACKRABBIT long jump | 1 |
 | 8 | MattStand `$B99B` | stands still; any key hands the pass to state 1 | 1, 6, 7 |
 | 9 | MattNoEnergy `$B9B8` | out of energy: 50 passes | GameOver |
@@ -147,8 +147,8 @@ states 5 and 6. State 1 is the walk, in MattStep itself; states 2-12 go through 
 | 11 | PodStart `$BA68` | effect 9, sets the dissolve | 12 |
 | 12 | MattPodDissolve `$BA7B` | materialises: 50 passes | 8 |
 
-The names MattFall and MattJumpStart are the annotation's; state 5 is the rising jump and state 6 the fall
-(`work/docs/mxC-src-changes.md`).
+State 5 (MattJumpRise) is the rising jump and state 6 (MattFall) the fall; MattStepUp and MattStepDown are the
+steps of states 2 and 3.
 
 ```text
 MattStep:
@@ -337,7 +337,7 @@ On the moon (zone 2) both steps are slowed: the rising v skips its step when Pas
 and the falling v steps only then (1 pass in 4). Matt rises higher and falls slower.
 
 ```text
-MattFall (state 5, the jump):
+MattJumpRise (state 5, the jump):
     unless (moon and PassCounter AND 3 == 0):
         v += 1
         if v == 1: state 6, v = 1; return
@@ -345,7 +345,7 @@ MattFall (state 5, the jump):
     y += v
     if dx: move x by dx unless a wall (head, body, feet) or an edge stops it
 
-MattJumpStart (state 6, the fall):
+MattFall (state 6, the fall):
     if JACKRABBIT in use: state 7 (long jump)
     if dx: move x by dx unless a wall stops it (the edges change the screen)
     if FloorCheck != 0: state 1; y = y AND $F8; return                           # landed
@@ -354,7 +354,7 @@ MattJumpStart (state 6, the fall):
 ```
 
 ```asm
-MattFall:
+MattJumpRise:
   LD A,(ZoneSlots)        ; state 5
   CP $02
   JR NZ,l_B7C3
@@ -427,7 +427,7 @@ model has no recording. Made by `python3 tools/fig_objects.py jump docs/img/game
 **The point**: the jump is a fixed arc of nine rising passes, steered only by the facing at the take-off. The moon
 changes two counters and nothing else.
 
-Witness: MattFall and MattJumpStart in every jump (`c1`, `door`, `play2`, `rzx-` x9); JumpEdges L1 685; FloorCheck L1
+Witness: MattJumpRise and MattFall in every jump (`c1`, `door`, `play2`, `rzx-` x9); JumpEdges L1 685; FloorCheck L1
 9905; the samples above; `rzx-28000` frames 289-328 for the moon.
 
 ## 10.5 Pods, room exits and the materialisation
@@ -837,7 +837,10 @@ work/docs/mxC/rzx-00000 --from 2505 --to 2615 --step 2 --delay 60 --hold 800 doc
 end: let go inside a wall and the mission ends.
 
 Witness: EndPenetrator L1 1021 (`c1`, `door`, `rzx-` x8; most calls return at once); Penetrator in `rzx-00000`
-frames 2517-2622; Explosion never runs in any recording: its death is known only from the code.
+frames 2517-2622; Explosion runs only in `masks` (PENETRATOR given by a POKE, fire released inside the hill at frame
+1249: Explosion L1 1, then GameOver).
+
+![masks frame 1249: PENETRATOR held inside the hill, the moment before the release](img/play/masks-001249-penetrator-in-wall.png)
 
 ## 10.9 JACKRABBIT: the long jump
 
@@ -1085,8 +1088,8 @@ for the HEALER, Matt's x for the PENETRATOR, his y for the JACKRABBIT, the score
 FLASH and MIRAGE are named, drawn and placed in the map, and do nothing.
 
 Witness: HeldMasks in `rzx-16000` frames 271-418; the ULTRA FLASH and MIRAGE `RET`s at `$BE39` and `$BE3A`; MaskEffect
-`$B239` has no caller (known only from the code). No recording holds an ULTRA FLASH or a MIRAGE: no PickupTable record
-places them.
+`$B239` has no caller (known only from the code). No play holds an ULTRA FLASH or a MIRAGE (no PickupTable record
+places them); `masks` gives both by a POKE and holds fire: `$BE39` and `$BE3A` run 25 times each and nothing happens.
 
 ## 10.12 Death, game over and the new game
 
@@ -1231,14 +1234,14 @@ it hurts, how it dies and what it pays. The numbers are the templates' (EnemyTem
 | guard | 13 | touch | 100 | 10 | 1000 | ten LIFTER hits lift it |
 | boss | 14 | touch, its shot | 255 | 10 | 1000 | fires kind 15 |
 | boss shot | 15 | touch | 30 | 2 | 50 | |
-| kind 16 | 16 | touch, its shot (kind 11) | 255 | 5 | 8000 | never spawned |
-| kinds 18, 19 | 18, 19 | touch | 40-60 | 255 | 200-1000 | never spawned |
+| kind 16 | 16 | touch, its shot (kind 11) | 255 | 5 | 8000 | spawned only by a POKE (`kind6`) |
+| kinds 18, 19 | 18, 19 | touch | 40-60 | 255 | 200-1000 | spawned only by a POKE (`door3`) |
 
 The hazards of the map:
 
 - the deadly floors: character `$EA` in zones 0 and 1, `$ED` in zone 3, under either foot; the moon floor, `$FE` and
   `$FF` in zone 2, under the left foot;
-- the ceilings of zone 1 (the lava caverns): 2 energy a head bump;
+- the ceilings of zone 1 (the caverns): 2 energy a head bump;
 - the block items `$1B`: 25 energy, the block blown away;
 - the bottom of the play area: a fall below y `$70` (y + `$30` at least `$A0`).
 
@@ -1389,7 +1392,7 @@ from WarpRooms `$BA1D` (`0B 03 07 07`), screen 0, x `$42`, y + 8, state 8, and d
 
 Door 3 also runs `$BA21`, a bonus:
 
-- every BACKLASH slot gets level 3;
+- each BACKLASH slot before that slot gets level 3 (FindLifterSlot stops at the first EMPTY or PENETRATOR slot);
 - a LIFTER with 99 charges and level 1 goes into the first EMPTY or PENETRATOR slot, or slot 0 if none;
 - if slot 0 was EMPTY, the name LIFTER scrolls.
 
@@ -1424,7 +1427,7 @@ l_B9E3:
   AND $03                 ; the door
   LD E,A
   LD D,$00
-  LD HL,data_BA1D         ; WarpRooms: 0B 03 07 07
+  LD HL,WarpRooms         ; 0B 03 07 07
   ADD HL,DE
   LD A,(HL)
   LD (RoomNumber),A
@@ -1481,7 +1484,9 @@ Recording `door`, TTD frames 700-1000. Made by `python3 ../../kit/screen_anim.py
 last one also hands Matt a LIFTER and a stronger BACKLASH.
 
 Witness: StartWarp L1 1 and PasswordWarp L1 50 (`door`); EnterPassword L1 4 (`play2`); PasswordPods L1 16; RoomMessage
-L1 79; the `door` samples of frames 845-981. Door 3's bonus `$BA21` never ran: known only from the code.
+L1 79; the `door` samples of frames 845-981 (door 1, room 3). Door 3's bonus: WarpBonus `$BA21`, FindLifterSlot
+`$BA3E` and ShowLifterName `$BA60` L1 1 each in `door3` (frame 969, the flags POKEd, x `$A0` up), then room 7 with a
+LIFTER in slot 0.
 
 ## 10.16 The cheat
 
@@ -1553,8 +1558,12 @@ command as in 10.11 (`python3 tools/fig_objects.py charges docs/img/gameplay/cha
 **The point**: the cheat is hidden twice, in the password screen and in the address arithmetic. It gives endless
 masks and safe floors, but leaves the enemies as deadly as before.
 
-Witness: CheatCheck L1 39 665 (`c1`, `door`, `play2`, `rzx-` x10); CheatOn 0 in every sample. The cheat's effects are
-known only from the code: no recording types JUDGE DREDD.
+Witness: CheatCheck in every play interrupt (`c1`, `door`, `play2`, `rzx-` x10); CheatOn 0 in every play sample.
+`cheat` types JUDGE DREDD at ENTER PASSWORD: CheatOn is `$FF` from the start of play, and a LAVA SHOT given by a POKE
+(99 charges) fires six times from frame 1404 with UseCharge L1 6 and the charges still 99 at frame 2100. The safe
+floor is known only from the code.
+
+![cheat frame 1750: a LAVA SHOT in flight, the slot still at 99](img/play/cheat-001750-lava-shot-cheat.png)
 
 ## 10.17 The ending
 
@@ -1725,15 +1734,15 @@ Witness: the sections above.
 
 ## 10.20 Notes, quirks and what no recording reached
 
+- **Only in the integration's POKE recordings** (`cheat`, `masks`, `door3`, `kind6`, each script says its POKEs):
+  the cheat typed (CheatOn `$FF`), the PENETRATOR's death in a wall (Explosion, effects 16 and 17), door 3 and its
+  LIFTER bonus (WarpBonus `$BA21`), the masks no room holds, the enemy kinds 6 and 10 (objects 16, 18, 19).
 - **Never in any recording:**
-  - the cheat (CheatOn `$FF`);
-  - the PENETRATOR's death in a wall (Explosion, effects 16 and 17);
-  - door 3 and its LIFTER bonus (`$BA21`), doors 0 and 2;
+  - doors 0 and 2; the cheat's safe floor;
   - a block item taken (no loss of 25 energy);
   - a long jump on the moon;
   - the fall out of the play area as a death;
-  - ULTRA FLASH, MIRAGE, LAVA SHOT and STREAMER in a slot (no pick-up holds them, 10.7);
-  - enemy kinds 9, 11, 16, 18 and 19;
+  - enemy kinds 9 and 11;
   - rooms 7, 9, 11 and 13, and room 1 beyond screen 1.
 - **The RZX segments start from the RZX's own states.** Each segment's first frame is a state of the RZX player, not
   the end of the previous segment: the score, the slots and the room jump between them (`run.png`).

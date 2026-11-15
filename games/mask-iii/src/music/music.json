@@ -17,7 +17,11 @@
   "l1": [
     {"path": "work/stage1/c1/l1.json", "reads": true},
     "work/stage1/rec/menu/l1.json",
-    "work/stage2/rec/play2/l1.json"
+    "work/stage2/rec/play2/l1.json",
+    "work/stage2/rec/cheat/l1.json",
+    "work/stage2/rec/masks/l1.json",
+    "work/stage2/rec/door3/l1.json",
+    "work/stage2/rec/kind6/l1.json"
   ],
   "data_entries": "stop",
   "work": "work/stage2/mkmusic"

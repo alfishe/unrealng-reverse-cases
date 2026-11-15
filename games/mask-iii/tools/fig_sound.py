@@ -5,7 +5,8 @@ case's build, frame by frame as the interrupt runs them, then rendered to audio 
     python3 tools/fig_sound.py tunes OUTDIR                  the three tunes: OUTDIR/tune-N.mp3 (lame -V 4), and
                                                              DATA/tune-N.json (the AY registers a frame)
     python3 tools/fig_sound.py effects OUTDIR                each of the 18 effects on the AY (fx-NN-ay.wav) and on the
-                                                             beeper (fx-NN-beeper.wav), and DATA/effects.json
+                                                             beeper (fx-NN-beeper.wav; .mp3 when longer than 5 s),
+                                                             and DATA/effects.json
   DATA is work/docs/mxC/sound (--data DIR); the fig- commands read it.
     python3 tools/fig_sound.py fig-tunes OUT.png             the tunes as a chart: each channel's note and volume
     python3 tools/fig_sound.py fig-effects OUT.png           the effects: AY volume and period, beeper bursts
@@ -53,8 +54,8 @@ TUNE_NAMES = {1: 'the menu', 2: 'game over', 3: 'the game start'}
 EFFECT_NAMES = {
     0: 'JACKRABBIT shot', 1: 'LIFTER shot', 2: 'BLASTER shot', 3: 'BACKLASH shot', 4: 'LAVA SHOT shot',
     5: 'STREAMER shot', 6: 'wave flyer swoop', 7: 'PENETRATOR on', 8: 'death', 9: 'materialise / door warp',
-    10: 'kind 16 enters (never)', 11: 'explosion 1', 12: 'explosion 2', 13: 'explosion 3', 14: 'explosion 4',
-    15: 'chaser on screen', 16: 'wall death 1 (never)', 17: 'wall death 2 (never)'}
+    10: 'kind 16 enters', 11: 'explosion 1', 12: 'explosion 2', 13: 'explosion 3', 14: 'explosion 4',
+    15: 'chaser on screen', 16: 'wall death 1', 17: 'wall death 2'}
 
 
 class Ports:
@@ -246,6 +247,18 @@ def write_mp3(wav, mp3):
     subprocess.run(['lame', '--quiet', '-V', '4', wav, mp3], check=True)
 
 
+LONG = 5.0  # seconds: a longer effect goes out as MP3 (lame -V 4), a shorter one stays WAV
+
+
+def write_audio(base, samples):
+    """base.wav, or base.mp3 when the sound lasts more than LONG seconds (the WAV removed)"""
+    wav = base + '.wav'
+    write_wav(wav, samples)
+    if len(samples) > LONG * RATE:
+        write_mp3(wav, base + '.mp3')
+        os.remove(wav)
+
+
 # ---- effects ---------------------------------------------------------------------------------------------------
 
 def effect_record(m, n):
@@ -336,8 +349,8 @@ def cmd_effects(outdir):
         ay = run_effect_ay(n)
         ay_fixed = run_effect_ay(n, fix_c=True)
         bp = run_effect_beeper(n)
-        write_wav(os.path.join(outdir, f'fx-{n:02d}-ay.wav'), render_ay([f['r'] for f in ay], [f['e'] for f in ay]))
-        write_wav(os.path.join(outdir, f'fx-{n:02d}-beeper.wav'), render_beeper(bp))
+        write_audio(os.path.join(outdir, f'fx-{n:02d}-ay'), render_ay([f['r'] for f in ay], [f['e'] for f in ay]))
+        write_audio(os.path.join(outdir, f'fx-{n:02d}-beeper'), render_beeper(bp))
         m = Machine('128K')
         rec = effect_record(m, n)
         out[n] = {'record': ' '.join('%02X' % b for b in rec), 'name': EFFECT_NAMES[n],

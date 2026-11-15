@@ -3,9 +3,9 @@
 @about Ben Daglish's player (MUSIC BENN on the menu), 4000 bytes loaded into RAM 4 at $C000 by LoaderMain on a 128K only. The game pages RAM 4 in its interrupt and calls MusicStart $C000 (A = tune - 1), MusicPlay $C003 once a frame, MusicStop $C00A, and hands sound effects to EffectStart $C36A with IX = a channel's effect block. Three channels run order lists of patterns; each note sets a period from Periods $C5C6 and an instrument (volume and pitch envelopes) from Instruments $CBA2.
 @about Three tunes (src/res/music/tunes.txt): 1 the menu (looped by the interrupt while NotInPlay), 2 game over (GameOver $BACC), 3 the game start (MenuLoop on fire). Witness: work/stage2/NOTES.md (the tune requests in c1 and the recordings).
 $C000 c MusicStart ; JP MusicInit: start tune A + 1
-> Witness: L1 9 (c1, menu, play2).
+> Witness: L1 18 (c1, cheat, door3, kind6, masks, menu, play2).
 $C003 c MusicPlay ; JP MusicFrame: one frame of the tune
-> Witness: L1 24214 (c1, menu, play2).
+> Witness: L1 33684 (c1, cheat, door3, kind6, masks, menu, play2).
 $C006 b MusicTune ; non-zero while a tune plays ($FF at the start, 0 when every channel has ended)
 $C007 EffectByNumber ; JP $C013 (the bytes C3 13 C0): never called by the game, known only from the code
 $C00A c MusicStop ; JP Silence
@@ -13,31 +13,31 @@ $C00A c MusicStop ; JP Silence
 $C011 b PlayerState ; The effect pointer, the effect-by-number routine (never run) and the three channels' state blocks
 > The channel blocks of $15 bytes are at $C03B, $C050 and $C065 (pattern pointer, note period, timers, transpose, instrument, envelope); the instrument map of each channel at $C07A.
 $C092 c MusicInit ; Start tune A + 1: the three order lists from Songs, every channel reset, the map filled
-> Witness: L1 9 (c1, menu, play2).
+> Witness: L1 18 (c1, cheat, door3, kind6, masks, menu, play2).
 $C11A c MusicFrame ; One frame: the AY registers out (WriteRegisters), then each channel's step; MusicTune 0 when all end
-> Witness: L1 24214 (c1, menu, play2).
+> Witness: L1 33684 (c1, cheat, door3, kind6, masks, menu, play2).
 $C162 c ChannelStep ; One channel: count down the note, at its end read the order list and the pattern's next event
-> Witness: L1 36801 (c1, menu, play2).
+> Witness: L1 49266 (c1, cheat, door3, kind6, masks, menu, play2).
 $C269 c PatternCommand ; A pattern byte $80 and up: instrument (80-87), form (88-BF), the end mark, the 4-byte commands
-> Witness: L1 1399 (c1, menu, play2).
+> Witness: L1 1754 (c1, cheat, door3, kind6, masks, menu, play2).
 $C2A3 c Vibrato ; The pitch envelope step of a channel
-> Witness: L1 36801 (c1, menu, play2).
+> Witness: L1 49266 (c1, cheat, door3, kind6, masks, menu, play2).
 $C333 b EffectBlocks ; The mixer, then the effect blocks of channels A ($C334), B ($C346) and C ($C358), $12 bytes each
 $C334 EffectChannelA ; channel A's block (+6 the stop flag the game writes)
 $C346 EffectChannelB ; channel B's block
 $C358 EffectChannelC ; channel C's block
 $C36A c EffectStart ; Start the effect described at IX on its channel
-> Witness: L1 4031 (c1, menu, play2).
+> Witness: L1 5258 (c1, cheat, door3, kind6, masks, menu, play2).
 $C3F1 c Silence ; Every AY volume and the mixer off
-> Witness: L1 10 (c1, menu, play2).
+> Witness: L1 19 (c1, cheat, door3, kind6, masks, menu, play2).
 $C422 c WriteRegisters ; The frame's periods, volumes and mixer to the AY
-> Witness: L1 24214 (c1, menu, play2).
+> Witness: L1 33684 (c1, cheat, door3, kind6, masks, menu, play2).
 $C4D5 c Envelope ; One channel's volume envelope step
-> Witness: L1 38004 (c1, menu, play2).
+> Witness: L1 57483 (c1, cheat, door3, kind6, masks, menu, play2).
 $C57D c NoiseStep ; The noise period step
-> Witness: L1 33829 (c1, menu, play2).
+> Witness: L1 48432 (c1, cheat, door3, kind6, masks, menu, play2).
 $C5BF c WriteAY ; AY register E = A (ports $FFFD, $BFFD)
-> Witness: L1 139403 (c1, menu, play2).
+> Witness: L1 210883 (c1, cheat, door3, kind6, masks, menu, play2).
 $C5C6 w Periods 8 ; 85 tone periods, a semitone apart (index 0 = $0EEE, about A#0 at 1.7734 MHz)
 $C670 b Patterns 16 ; The 27 patterns, the pattern pointers, the songs and the order lists (tools/tunes.py)
 > Witness: patterns read in c1 (the menu tune, tune 1) and in the RZX segments (tunes 2 and 3); src/res/music/tunes.txt.

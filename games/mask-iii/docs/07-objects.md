@@ -743,8 +743,8 @@ BF2B-C26E --view buffer:A48B:38x6:hex --out docs/img/routines/Spawn.gif`.
 slot refills a few passes later; the screens are endless sources, not fixed sets.
 
 Witness: Spawn runs in every pass of RunObjects (L1 12 990, `c1`, `door`, `play2`, `rzx-` x9); SetupObject L1 569; the
-samples of `rzx-00000` frames 977-979. Enemy kinds 6 and 10 (room 1 screen 2, room 7 screens 2-3) were never reached:
-known only from the code.
+samples of `rzx-00000` frames 977-979. Enemy kinds 6 and 10 (room 1 screen 2, room 7 screens 2-3) were never reached
+in play; `kind6` and `door3` POKE EnemyKind `$BFB0` to run them (SpawnKind6 L1 1919, SpawnKind10 L1 1).
 
 ## 7.9 RunObjects: the shot test and the touch test
 
@@ -979,8 +979,9 @@ they touch Matt, the walker survives five touches, the turret dies with its hit,
 order of two calls decides the pay: the turret explodes before it scores, so it never pays.
 
 Witness: RunKind L1 77 932 (`c1`, `door`, `play2`, `rzx-` x9); ObjectCell L1 1891 (`door`, `rzx-` x7); the kinds seen
-in the samples (`python3 work/docs/mxC/events.py <rec>/vars.jsonl --objects`). Kinds 9, 11, 16, 18 and 19 never ran:
-known only from the code.
+in the samples (`python3 work/docs/mxC/events.py <rec>/vars.jsonl --objects`). Kinds 9 and 11 never ran:
+known only from the code; 16, 18 and 19 ran only after the EnemyKind POKEs (KindSixteen L1 488 in `kind6`,
+KindEighteen L1 167 in `door3`).
 
 ## 7.11 Notes, quirks and what is known only from the code
 
@@ -1006,4 +1007,4 @@ known only from the code.
   1387, `rzx-16000` 3669, `rzx-20000` 1732, `rzx-24000` 346) left the score unchanged. Every other kind scores first.
 - **A turret shot is harmless once its turret is dead.** KindTurretShot does its Damage only when the slot before it
   still holds a turret (kind 4).
-- **Kinds never run**: 9, 11, 16, 18, 19; enemy kinds 6 and 10 never spawned.
+- **Kinds never run**: 9 and 11; 16, 18 and 19 (enemy kinds 6 and 10) only after a POKE (`kind6`, `door3`).

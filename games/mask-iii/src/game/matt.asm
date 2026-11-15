@@ -2,9 +2,10 @@
 ; matt.asm: Matt: walking, jumping, pods, falling, dying
 ;
 ; MattStep $B3EB runs once a pass. State 1 is the walk (left, right, down into a pod, up to jump); the other states
-; are a jump table at $B73A (state - 2): 2 rise, 3 the jump's arc, 4 crouch (takes a pick-up), 5 fall, 6 jump start, 7
-; JACKRABBIT's long jump, 8 stand after a pod, 9 out of energy, 10 the password warp (never run), 11 pod start, 12 the
-; pod dissolve. Leaving the screen at an edge goes to the next screen or room (LeftEdge $B659, RightEdge $B686).
+; are a jump table at $B73A (state - 2): 2 step up, 3 step down, 4 crouch (down held takes a pick-up), 5 the jump
+; (rising), 6 the fall, 7 JACKRABBIT's long jump, 8 stand, 9 out of energy, 10 the password-door warp, 11 the
+; materialisation at a new game (effect 9), 12 the materialisation's dissolve. Leaving the screen at an edge goes to
+; the next screen or room (LeftEdge $B659, RightEdge $B686).
 ; --------------------------------------------------------------------------------------------------------------------
 
   ORG $B3EB
@@ -14,9 +15,9 @@
 ; Clears $F000-$F0BF, sets DeathFlag when Matt falls below the play area, sets
 ; the facing from left / right.
 ;
-; Witness: L1 13095 (c1, door, play2, rzx- x9).
+; Witness: L1 15289 (c1, cheat, door, door3, kind6, masks, play2, rzx- x9).
 MattStep:
-  LD HL,Zone1CharsLow+$00BF
+  LD HL,CharMap+$003F
   LD BC,$1800
 l_B3F1:
   LD (HL),C
@@ -264,7 +265,9 @@ l_B5B5:
   LD DE,$0020
   JR l_B5E9
 l_B5D5:
-  LD HL,(MattPlace)
+  LD HL,(MattPlace)       ; walking right: the head-row IsSolid result is
+                          ; discarded (no RET C), unlike the left-hand test at
+                          ; $B58C
   CALL IsSolid
   LD DE,$0020
   ADD HL,DE
@@ -287,7 +290,7 @@ l_B5EF:
 
 ; MattPlace from x and y
 ;
-; Witness: L1 13210 (c1, door, play2, rzx- x9).
+; Witness: L1 15326 (c1, cheat, door, door3, kind6, masks, play2, rzx- x9).
 MattCell:
   LD A,(Objects+$0003)
   SUB $3C
@@ -303,7 +306,7 @@ MattCell:
   ADD HL,HL
   ADD HL,HL
   ADD HL,DE
-  LD DE,Zone1CharsLow+$00BF
+  LD DE,CharMap+$003F
   ADD HL,DE
   LD (MattPlace+$0002),HL
   BIT 7,(IX+$02)
@@ -317,7 +320,7 @@ l_B624:
 
 ; The map place ahead of Matt
 ;
-; Witness: L1 399 (c1, door, play2, rzx- x9).
+; Witness: L1 405 (c1, door, door3, play2, rzx- x9).
 MattCellAhead:
   LD A,(Objects+$0013)
   AND $1F
@@ -330,7 +333,7 @@ MattCellAhead:
   ADD HL,HL
   ADD HL,HL
   ADD HL,DE
-  LD DE,Zone1CharsLow+$00C0
+  LD DE,CharMap+$0040
   ADD HL,DE
   LD (MattPlace+$0002),HL
   LD DE,$0080
@@ -376,7 +379,7 @@ l_B672:
 
 ; Off the right edge: the next screen, or the room RoomTable byte 1
 ;
-; Witness: L1 63 (door, play2, rzx- x9).
+; Witness: L1 64 (door, door3, play2, rzx- x9).
 RightEdge:
   LD A,(RoomScreen)
   CP $28
@@ -447,7 +450,7 @@ l_B6E8:
 
 ; l_B6FA
 ;
-; Used by the routine at MattFall.
+; Used by the routine at MattJumpRise.
 l_B6FA:
   LD (IX+$11),$01
   LD A,$06
@@ -456,7 +459,7 @@ l_B6FA:
 
 ; A = what is under Matt's feet
 ;
-; Witness: L1 9905 (c1, door, play2, rzx- x9).
+; Witness: L1 11688 (c1, cheat, door, door3, kind6, masks, play2, rzx- x9).
 FloorCheck:
   PUSH DE
   PUSH BC
@@ -500,11 +503,11 @@ l_B72D:
 
 ; StateJumps
 StateJumps:
-  JP MattRise             ; JP the routine of states 2-12
+  JP MattStepUp           ; JP the routine of states 2-12
 
 ; l_B73D
 l_B73D:
-  JP MattArc
+  JP MattStepDown
 
 ; l_B740
 l_B740:
@@ -512,11 +515,11 @@ l_B740:
 
 ; l_B743
 l_B743:
-  JP MattFall
+  JP MattJumpRise
 
 ; l_B746
 l_B746:
-  JP MattJumpStart
+  JP MattFall
 
 ; l_B749
 l_B749:
@@ -532,7 +535,7 @@ l_B74F:
 
 ; JP PasswordWarp $B9D8: state 10's slot
 ;
-; Witness: L1 50 (door).
+; Witness: L1 100 (door, door3).
 StateWarpJump:
   JP PasswordWarp
 
@@ -544,11 +547,11 @@ l_B755:
 l_B758:
   JP MattPodDissolve
 
-; MattRise
+; MattStepUp
 ;
 ; Used by the routine at StateJumps.
-MattRise:
-  LD A,(Objects+$0003)    ; state 2
+MattStepUp:
+  LD A,(Objects+$0003)    ; state 2: a step up, x + dx and y - 4 for two passes
   ADD A,(IX+$1B)
   LD (Objects+$0003),A
   LD A,(Objects+$0004)
@@ -559,11 +562,12 @@ MattRise:
   LD (IX+$00),$01
   RET
 
-; MattArc
+; MattStepDown
 ;
 ; Used by the routine at l_B73D.
-MattArc:
-  DEC (IX+$10)            ; state 3
+MattStepDown:
+  DEC (IX+$10)            ; state 3: a step down, x + dx and y + 4 for two
+                          ; passes (also walking off an edge)
   JP M,l_B797
   LD A,(Objects+$0003)
   ADD A,(IX+$1B)
@@ -595,11 +599,12 @@ l_B7A8:
   LD (Objects+$0004),A
   RET
 
-; MattFall
+; MattJumpRise
 ;
 ; Used by the routine at l_B743.
-MattFall:
-  LD A,(ZoneSlots)        ; state 5
+MattJumpRise:
+  LD A,(ZoneSlots)        ; state 5: the jump, v (+$11) from -9 up to 0 (every
+                          ; fourth pass on the moon), then the fall
   CP $02
   JR NZ,l_B7C3
   LD A,(PassCounter)
@@ -667,11 +672,12 @@ l_B83A:
   LD (IX+$00),$01
   JP LavaDrain
 
-; MattJumpStart
+; MattFall
 ;
 ; Used by the routine at l_B746.
-MattJumpStart:
-  LD IY,(CurrentSlot)     ; state 6
+MattFall:
+  LD IY,(CurrentSlot)     ; state 6: the fall, v up to 8; JACKRABBIT in the
+                          ; slot in use turns it into the long jump
   LD A,(IY+$01)
   CP $05
   JR NZ,l_B850
@@ -683,7 +689,7 @@ MattJumpStart:
 ; run in every jump (c1).
 MattJumpRet:
   RET
-; This entry point is used by the routine at MattJumpStart.
+; This entry point is used by the routine at MattFall.
 l_B850:
   LD A,(Objects+$001B)
   AND A
@@ -709,7 +715,7 @@ l_B879:
 
 ; The jump at the screen edges
 ;
-; Witness: L1 685 (c1, door, play2, rzx- x9).
+; Witness: L1 719 (c1, cheat, door, door3, kind6, masks, play2, rzx- x9).
 JumpEdges:
   LD A,(Objects+$0003)
   CP $3B
@@ -762,7 +768,7 @@ l_B8CF:
 
 ; JackrabbitJump
 ;
-; Used by the routines at l_B4C0, l_B6E8 and MattJumpStart.
+; Used by the routines at l_B4C0, l_B6E8 and MattFall.
 JackrabbitJump:
   LD (IX+$00),$07         ; JACKRABBIT: the long jump, state 7
   LD (IX+$11),$04
@@ -772,7 +778,8 @@ JackrabbitJump:
 ;
 ; Used by the routine at l_B749.
 MattLongJump:
-  LD IY,(CurrentSlot)     ; state 7, a charge a step
+  LD IY,(CurrentSlot)     ; state 7: a charge each 5 passes, $15 (15 BCD) on
+                          ; the moon
   LD A,(IY+$01)
   CP $05
   JR NZ,l_B94F
@@ -857,7 +864,7 @@ l_B98C:
 
 ; Carry when the character at HL is solid (its ZoneAttrs bit 7)
 ;
-; Witness: L1 74211 (c1, door, play2, rzx- x9).
+; Witness: L1 81448 (c1, cheat, door, door3, kind6, masks, play2, rzx- x9).
 IsSolid:
   PUSH DE
   LD D,$EF
@@ -914,12 +921,12 @@ StartWarp:
 ;
 ; Counts the dissolve down (IX+$10), then sets RoomNumber from WarpRooms
 ; $BA1D[door] (0B 03 07 07), RoomScreen 0, x $42, y + 8, state 8, and DrawRoom.
-; Door 3 also calls $BA21: a slot of kind 6 (LIFTER) with 99 charges at the
-; level of kind 8. The door recording (work/stage2/rec/door, a POKE cheat for
-; the password flags) took door 0 to room 11; the door-3 branch $BA21 is known
-; only from the code.
+; Door 3 also calls WarpBonus $BA21. The door recording (work/stage2/rec/door,
+; a POKE cheat for the password flags) took door 1 (x $68, state 10 at frame
+; 845) to room 3 (frame 981); door3 (the same cheat, x $A0) took door 3 to room
+; 7 and its LIFTER.
 ;
-; Witness: L1 50 (door).
+; Witness: L1 100 (door, door3).
 PasswordWarp:
   LD A,(IX+$10)
   AND $0F
@@ -937,7 +944,7 @@ l_B9E3:
   AND $03
   LD E,A
   LD D,$00
-  LD HL,data_BA1D
+  LD HL,WarpRooms
   ADD HL,DE
   LD A,(HL)
   LD (RoomNumber),A
@@ -952,31 +959,38 @@ l_B9E3:
   LD (DissolveCount),A
   LD A,E
   CP $03
-  CALL Z,sub_BA21
+  CALL Z,WarpBonus
   JP DrawRoom
 
-; data_BA1D
-data_BA1D:
+; The room behind each password door: 0B 03 07 07
+WarpRooms:
   DEFB $0B,$03,$07,$07
 
-; sub_BA21
+; Door 3's bonus: BACKLASH to level 3, a LIFTER with 99 charges at level 1, its
+; name
 ;
-; Used by the routine at PasswordWarp.
-sub_BA21:
+; FindLifterSlot $BA3E picks the first EMPTY or PENETRATOR slot (else slot 0),
+; raising every BACKLASH slot it passes to level 3; the slot gets kind 6
+; (LIFTER), 99 charges, level 1; ShowLifterName $BA60 when slot 0 was EMPTY;
+; then DrawAllSlots.
+;
+; Witness: L1 1 (door3).
+WarpBonus:
   LD IX,MaskSlots
   LD A,(IX+$01)
   AND A
-  CALL Z,sub_BA60
-  CALL sub_BA3E
+  CALL Z,ShowLifterName
+  CALL FindLifterSlot
   LD (IX+$01),$06
   LD (IX+$02),$99
   LD (IX+$03),$01
   JP DrawAllSlots
 
-; sub_BA3E
+; IX = the first EMPTY or PENETRATOR slot, else slot 0; BACKLASH slots on the
+; way get level 3
 ;
-; Used by the routine at sub_BA21.
-sub_BA3E:
+; Witness: L1 1 (door3).
+FindLifterSlot:
   LD IX,MaskSlots
   LD DE,$0004
   LD B,$04
@@ -995,19 +1009,19 @@ l_BA52:
   LD IX,MaskSlots
   RET
 
-; sub_BA60
+; ShowMaskName(LIFTER), keeping AF
 ;
-; Used by the routine at sub_BA21.
-sub_BA60:
+; Witness: L1 1 (door3).
+ShowLifterName:
   PUSH AF
   LD A,$06
   CALL ShowMaskName
   POP AF
   RET
 
-; State 11: the pod's effect, the dissolve
+; State 11: the materialisation at a new game (effect 9), then the dissolve
 ;
-; Witness: L1 16 (c1, door, play2, rzx- x8).
+; Witness: L1 21 (c1, cheat, door, door3, kind6, masks, play2, rzx- x8).
 PodStart:
   LD A,$09
   CALL PlayEffect
@@ -1115,7 +1129,7 @@ GameOverText:
 
 ; Print a string a character a few HALTs
 ;
-; Witness: L1 14 (play2, rzx- x8).
+; Witness: L1 17 (door3, kind6, masks, play2, rzx- x8).
 SlowPrint:
   PUSH HL
   CALL ScreenAddr
@@ -1145,7 +1159,7 @@ l_BB34:
 
 ; A space and a flash attribute at the cursor
 ;
-; Witness: L1 284 (play2, rzx- x8).
+; Witness: L1 341 (door3, kind6, masks, play2, rzx- x8).
 PrintSpace:
   LD A,$20
   CALL PrintChar
@@ -1168,8 +1182,8 @@ PrintSpace:
 ; HL = $E406 + $BB6B = $9F71 (PasswordBuffer, the sum overflows): typing JUDGE
 ; DREDD at ENTER PASSWORD sets CheatOn, which UseCharge $B210 and DeadlyFloor
 ; $B2F9 read: the masks keep their charges and the deadly floors do not kill.
-; Witness: L1 39665 (c1, door, play2, rzx- x10); the cheat's effect is in
-; work/stage2/NOTES.md.
+; Witness: L1 46478 (c1, cheat, door, door3, kind6, masks, play2, rzx- x10);
+; the cheat's effect is in work/stage2/NOTES.md.
 CheatCheck:
   PUSH AF
   LD BC,$BA77
@@ -1202,10 +1216,13 @@ CheatCode:
 CheatOn:
   DEFB $00                ; $FF when the cheat password was typed
 
-; Never run: 200 dots fly out of Matt (the penetrator's death in a wall)
+; 200 dots fly out of Matt: the PENETRATOR's death in a wall
 ;
-; Known only from the code: called only from EndPenetrator $BDF7 when Matt is
-; inside a wall.
+; Reached only from EndPenetrator $BDF7, when fire is released with Matt inside
+; a wall (effects 16 and 17). Witness: work/stage2/rec/masks (PENETRATOR given
+; by POKE, fire held walking right into the hill, released at frame 1249).
+;
+; Witness: L1 1 (masks).
 Explosion:
   LD A,$10
   CALL PlayEffect
@@ -1325,7 +1342,7 @@ l_BC4D:
 
 ; XOR the dot at x E, y D
 ;
-; Known only from the code.
+; Witness: L1 10085 (masks).
 PlotDot:
   LD A,D
   CP $90

@@ -26,7 +26,11 @@
     "stage1/rec/rzx-32000",
     "stage1/rec/rzx-36000",
     "stage2/rec/play2",
-    "stage2/rec/door"
+    "stage2/rec/door",
+    "stage2/rec/cheat",
+    "stage2/rec/masks",
+    "stage2/rec/door3",
+    "stage2/rec/kind6"
   ],
   "ref_builds": [
     [

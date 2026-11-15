@@ -1,6 +1,15 @@
 # MASK III: VENOM Strikes Back (Gremlin Graphics, 1988)
 
-State: in progress (stage 1, 2026-11-15).
+State: docs written, in review (2026-11-15): docs 01-10 by three writers, docs 11 and 12 generated, integrated; the
+tape builds identical from the sources. 12 documents, 74 figures (PNG), 42 animations (GIF), 69 mermaid diagrams and 39
+audio files (33 short WAV, the longest 4.6 s; 6 MP3: the three tunes and three effects over 5 s; 6.7 MB),
+counted on 2026-11-15 with:
+
+```sh
+ls docs/[0-9][0-9]-*.md | wc -l; find docs/img -name '*.png' | wc -l; find docs/img -name '*.gif' | wc -l
+cat docs/[0-9][0-9]-*.md | grep -c '^```mermaid'
+find docs -name '*.mp3' | wc -l; find docs -name '*.wav' | wc -l; du -sh docs/audio
+```
 
 | | |
 | --- | --- |
@@ -14,18 +23,18 @@ The documents: [docs/README.md](docs/README.md). How the reverse was done: [WALK
 
 ## Profile
 
-From stage 1 play and the recordings ([WALKTHROUGH 6](WALKTHROUGH.md#6-the-game)); each row is to be confirmed by the
-documents.
+Each row from the documents.
 
 | Row (AGENTS.md 4.0) | MASK III |
 | --- | --- |
-| Genre | a flick-screen arcade platform shooter for one player: Matt Trakker walks, jumps and shoots through 16 rooms of six screens each in four zones (the green surface, the magenta caverns, the moon, the cyan base), linked by teleport pods; the game ends in room 15 with "YOU HAVE FOUND SCOTT"; one energy bar, a game ends with MISSION TERMINATED ([WALKTHROUGH 6](WALKTHROUGH.md#6-the-game), [doc 2, 2.5](docs/02-architecture.md#25-the-rooms-as-data-the-first-map)) |
-| Weapons and pick-ups | four MASK slots switched by the keys 1-4, each mask with a counter; ten mask icons in the graphics (P, VE, M, H, JR, L, B, BL, LS, S); BACKLASH, JACKRABBIT, BLASTER, LIFTER, PENETRATOR seen; masks lie in the rooms |
-| Enemies and bosses | the instructions name Deathsphere, Blockbuster, Angel of Death and Serpent; robots, guns and fliers seen in the screens |
-| Map | the room table at `$953B` (exits left, right and by pod; the zone), the room maps at `$7600` (48 x 5 blocks a room), the blocks at `$8500`, four zone character sets swapped through `$E000` |
-| Sound | Ben Daglish's AY music in RAM 4 on a 128K (`$C000` start tune, `$C00A` second entry, `$C003` play each frame), the beeper on a 48K, both from the interrupt |
-| Engine | IM 2 through a `$FF` table at `$FE00` and a `JR` at `$FFFF` landing on `JP $9226`; the handler runs the music and part of the game each frame |
-| Controls | menu: 1 KEMPSTON, 2 INTERFACE 2, 3 CURSOR, 4 KEYBOARD, K DEFINE KEYS (fire, up, down, left, right), P ENTER PASSWORD, FIRE START GAME; play: 1-4 masks, H pause, Q abort (instructions) |
+| Genre | a flick-screen arcade platform shooter for one player: Matt Trakker walks, jumps and shoots through 16 rooms of six screens each in four zones (0 the surface, 1 the caverns, 2 the moon, 3 the base), linked by teleport pods, to find his son Scott in room 15 ("YOU HAVE FOUND SCOTT"); one energy bar and no lives, a game ends with MISSION TERMINATED; four password doors in room 0 ([doc 1](docs/01-game-design.md), [doc 7, 7.2](docs/07-objects.md#72-the-world-rooms-screens-and-the-room-table)) |
+| Weapons and pick-ups | four mask slots chosen by the keys 1-4, each with BCD charges (99 when taken) and a level; ten masks: PENETRATOR (walk through walls), HEALER (energy), JACKRABBIT (a shot and the long jump), LIFTER, BLASTER, BACKLASH, LAVA SHOT, STREAMER (shots), ULTRA FLASH and MIRAGE (do nothing); LAVA SHOT, STREAMER, ULTRA FLASH and MIRAGE lie in no room; door 3 gives LIFTER; block items cost 25 energy ([doc 1, 1.6](docs/01-game-design.md#16-the-rules), [doc 10](docs/10-gameplay-logic.md)) |
+| Enemies and bosses | one enemy kind a screen from 20 templates at EnemyTemplates `$BE3B` (flyer, faller, wave flyer, walker, chaser, guard, riser, the boss and its shot, the groups of kinds 6 and 10), the turrets built from the map's `$12` blocks; kinds 6 and 10 spawn only on two rooms and were run by POKE ([doc 1, 1.7](docs/01-game-design.md#17-the-enemies), [doc 7](docs/07-objects.md)) |
+| Map | the room table at `$953B` (exits by the edges and pods, the zone, an enemy kind a screen), the maps at `$7600` (40 block bytes a screen), the blocks at `$8500`, four zone character sets swapped into `$E000` by SwapZone `$A198` ([doc 7](docs/07-objects.md)) |
+| Rendering | flick-screen; the room drawn into a character map (CharMap `$F080`), sprites built each pass as fresh characters from the background and pre-shifted frames, a dirty map (`$F3C0`) that FlushDirty `$A1F0` scans to write only changed cells, one pass late for the erase; no wait for the beam ([doc 6](docs/06-rendering.md)) |
+| Engine | IM 2 through a `$FF` table at `$FE00` and a `JR` at `$FFFF` that lands on `JP $9226`; the interrupt runs the music, the keys and the message scroller; the main loop runs free, 2.4 to 5.4 frames a pass; one 128K test in the loader picks the AY or the beeper ([doc 2](docs/02-architecture.md), [doc 4](docs/04-game-loop.md)) |
+| Sound | Ben Daglish's three AY tunes and player in RAM 4 on a 128K (about 212 T a frame in play), 18 effects through effect slots on the AY, all of it on the beeper on a 48K ([doc 9](docs/09-sound.md)) |
+| Controls | menu: 1 KEMPSTON, 2 INTERFACE 2, 3 CURSOR, 4 KEYBOARD, K DEFINE KEYS, P ENTER PASSWORD, FIRE START GAME; play: left/right walk, up jump, down take or enter, fire uses the slot, 1-4 the slot, BREAK aborts; the instructions' H pause and Q abort are not in the code; the JUDGE DREDD password is a cheat ([doc 5](docs/05-controls.md)) |
 
 ## Other releases and copies
 
@@ -53,6 +62,24 @@ compared block by block with the original and with the IBSA dump (`tools/media_c
 
 The ZXDB documents (instructions, maps) are not in the local collection; the instructions were read on ZXDB's page.
 
+## Sources and credits
+
+- The game: MASK III: VENOM Strikes Back, Gremlin Graphics Software Ltd, 1988 (ZXDB 3045); ZXDB credits Colin Dooley
+  (code), Marco Duroe (graphics), Ben Daglish (music) and Ian Naylor (inlay).
+- The tape: ZXDB `pub/sinclair/games/m/MASKIII-VENOMStrikesBack.tzx.zip`, the file in `orig/`.
+- The RZX run: ZXDB's `mask3.rzx` (`work/candidates/zxdb/mask3.rzx`, recorded with SPIN 0.5, 37 200 frames, the game to
+  its ending), someone else's play cut into input scripts; the player is not named in the file.
+- The instructions: ZXDB's page (spectrumcomputing.co.uk): the keys, the masks, the passwords.
+- The music's AY rip on ZXDB (`MASKIII-VENOMStrikesBack.ay.zip`) holds the 128K block byte for byte; it was only
+  compared, the tunes here are decoded from the game.
+
 ## Build
 
-The source is written in stage 2.
+```bash
+tools/build.sh [SJASMPLUS]     # build/mask3.tzx, compared with orig/MASKIII-VENOMStrikesBack.tzx.zip byte for byte
+```
+
+The sources are `src/tape/basic.asm`, `src/loader/loader.asm`, `src/screen/screen.asm`, `src/game/game.asm` and
+`src/music/music.asm`, written by `kit/mkgame.py` from their `.ann` (`tools/regen.sh`); the resources are `src/res/`
+(`src/res/README.md`; `python3 tools/res_formats.py check`). `python3 ../../kit/refdocs.py --case .` writes docs 11
+and 12.

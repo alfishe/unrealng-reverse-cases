@@ -165,7 +165,7 @@ to room 7 (WarpRooms `$BA1D` = `0B 03 07 07`). Door 3 also gives LIFTER (1.6).
 ### Against the published maps
 
 The ZXDB entry lists maps, but no map file is in the case's collection (`work/candidates/zxdb`). The rooms here are
-drawn from the game's own bytes; WALKTHROUGH 6.3 checked the drawing against the recordings' screens (room 10,
+drawn from the game's own bytes; WALKTHROUGH 6.4 checked the drawing against the recordings' screens (room 10,
 screen 5 at RZX frame 4000).
 
 The point: the world is a single path through 16 rooms. The passwords skip parts of it.
@@ -269,8 +269,11 @@ Worked example: `c1` frame 18 600 shows PENETRATOR and BACKLASH lying in room 0.
 BACKLASH: the panel's slot shows its icon and 99, the message line says BACKLASH (the figure in 1.4).
 
 Four masks are named in MaskNames but lie in no room: ULTRA FLASH, MIRAGE, LAVA SHOT and STREAMER. ULTRA FLASH and
-MIRAGE do nothing when fired (a `RET` at `$BE39` and `$BE3A`). These are known only from the code: no recording can
-hold them.
+MIRAGE do nothing when fired (a `RET` at `$BE39` and `$BE3A`). No play can hold them; the `masks` and `cheat`
+recordings give them by a POKE: STREAMER and LAVA SHOT fire their shots, ULTRA FLASH and MIRAGE run their `RET`s
+(25 times each, frame 1000 below shows ULTRA FLASH held).
+
+![masks frame 1000: ULTRA FLASH in the slot in use, fire held, nothing happens](img/play/masks-001000-ultra-flash.png)
 
 ### The pods
 
@@ -297,7 +300,10 @@ flowchart LR
 ```
 
 The witness is `play2`: the four passwords typed at frames 500-2500, the four lamps lit at frames 4750-5250. And
-`door`: the flags set by a POKE, Matt takes door 0 and room 11 is drawn.
+`door`: the flags set by a POKE, Matt takes door 1 (x `$68`) and room 3 is drawn (frame 981). And `door3`: the same
+POKE, door 3 (x `$A0` up): room 7, the moon, with a LIFTER of 99 charges in slot 0 (WarpBonus `$BA21` at frame 969).
+
+![door3 frame 1000: room 7 after door 3, LIFTER in slot 0](img/play/door3-001000-room7-lifter.png)
 
 ### The score and the high score
 
@@ -370,9 +376,14 @@ a screen becomes a turret.
 
 The names are this case's, from the pictures. A hit count of 255 means the object is not meant to be shot down.
 
-Kind 6 spawns only on room 1, screen 2, and kind 10 only on room 7, screens 2-3. No recording ran either spawner
-(SpawnKind6 `$C0F7`, SpawnKind10 `$C1F3`): the RZX player crossed those screens before they spawned, or took the
-pod. Template 7 (500 points, a picture of its own) is used by no spawner. [Doc 7](07-objects.md) and
+Kind 6 spawns only on room 1, screen 2, and kind 10 only on room 7, screens 2-3. No play recording ran either
+spawner (SpawnKind6 `$C0F7`, SpawnKind10 `$C1F3`): the RZX player crossed those screens before they spawned, or took the
+pod. Two POKE recordings run them (EnemyKind `$BFB0` written, said in their scripts): `kind6` (object kind 16, frames
+675-1891) and `door3` (the group of kinds 18 and 19, the serpent of rings, frames 1478-1968).
+
+![door3 frame 1750: SpawnKind10's group on the moon](img/play/door3-001750-kind18-19.png)
+
+![kind6 frame 1000: SpawnKind6's object of kind 16 in room 0](img/play/kind6-001000-kind16.png) Template 7 (500 points, a picture of its own) is used by no spawner. [Doc 7](07-objects.md) and
 [doc 10](10-gameplay-logic.md) have the movers.
 
 A shot's power is its mask's level. Each pass the shot overlaps an enemy, RunObjects `$C284` takes one from the
@@ -410,6 +421,5 @@ The pod ride from room 10 to room 1, frame by frame, is the animation in
 
 - ULTRA FLASH, MIRAGE, LAVA SHOT and STREAMER lie in no room; ULTRA FLASH and MIRAGE do nothing when fired.
 - MaskEffect `$B239` would flash the border for ULTRA FLASH and give HEALER 1 energy a charge; no instruction calls it.
-- Door 3's LIFTER (`$BA21`): only door 0 was taken in a recording.
-- The enemy kinds 6 and 10 and their objects (KindSixteen `$C89B`, KindEighteen `$C980`); template 7.
-- Explosion `$BB78`: Matt bursting into 200 dots when PENETRATOR ends inside a wall.
+- Door 3's LIFTER (WarpBonus `$BA21`), the enemy kinds 6 and 10 (KindSixteen `$C89B`, KindEighteen `$C980`) and
+  Explosion `$BB78` ran only in the POKE recordings `door3`, `kind6` and `masks`, not in play; template 7 in none.

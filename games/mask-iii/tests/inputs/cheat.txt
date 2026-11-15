@@ -1,0 +1,57 @@
+# cheat (integration): from work/stage1/probe/128K/loaded.szx (the menu up). P ENTER PASSWORD, JUDGE DREDD typed, ENTER;
+# 3 CURSOR, fire (0) to start. POKE (a cheat, said so): slot 0 = LAVA SHOT (MaskSlots $AF2C-$AF2E: kind 9, 99
+# charges, level 6), a mask no room holds; fire it six times (CheatOn: the charges stay 99); then right (8) and fire.
+0 -
++200 P
++5 -
++60 -
++30 J
++5 -
++30 U
++5 -
++30 D
++5 -
++30 G
++5 -
++30 E
++5 -
++30 SPACE
++5 -
++30 D
++5 -
++30 R
++5 -
++30 E
++5 -
++30 D
++5 -
++30 D
++5 -
++30 ENTER
++5 -
++200 3
++5 -
++60 0
++10 -
++400 POKE 44844 9 153 6
++40 0
++6 -
++40 0
++6 -
++40 0
++6 -
++40 0
++6 -
++40 0
++6 -
++40 0
++6 -
++40 8
++60 -
++20 0
++6 -
++20 0
++6 -
++20 0
++6 -
++300 END

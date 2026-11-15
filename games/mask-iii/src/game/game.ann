@@ -29,12 +29,20 @@
 @isub $9476 LD (EffectChannelA+6),A
 @isub $9486 LD (EffectChannelB+6),A
 @isub $9495 LD (EffectChannelC+6),A
+@isub $A1F2 LD (DirtyMap-1),A
+@isub $A1F5 LD HL,DirtyMap+$0240
+@isub $A593 LD DE,CharMap-$80
+@isub $A688 LD BC,MaskBuffer
+@isub $A70F LD DE,MaskBuffer
+@isub $A779 LD DE,MaskBuffer
+@isub $A853 LD BC,$FF00
+@isub $A889 LD HL,BitReverse
 @module zones ; The zone graphics: three parked sets of 256 characters and 256 attributes
-@about MASK III draws every room from one of four zones' character sets (zone = room table byte 4: 0 the base, 1 the lava caves, 2 the moon, 3 the last zone). The live set is at ZoneChars $E000 (2048 bytes) and ZoneAttrs $EF00 (256 bytes, bit 7 = solid, IsSolid $B993); SwapZone $A198 swaps it byte for byte with a parked set at $5B00 + $900 x (slot - 1), ZoneSlots $A194 telling which zone sits where.
+@about MASK III draws every room from one of four zones' character sets (zone = room table byte 4: 0 the surface, 1 the caverns, 2 the moon, 3 the base). The live set is at ZoneChars $E000 (2048 bytes) and ZoneAttrs $EF00 (256 bytes, bit 7 = solid, IsSolid $B993); SwapZone $A198 swaps it byte for byte with a parked set at $5B00 + $900 x (slot - 1), ZoneSlots $A194 telling which zone sits where.
 @about As loaded, zone 0 is live, zone 2 is parked at Zone2Chars $6400 and zone 3 at Zone3Chars $6D00. Zone 1's set at $5B00 is split by the loader, which itself lives at $5E00: its characters 160-255 are loaded here at Zone1CharsHigh $6000, characters 0-159 and the attributes wait at Zone1CharsLow $F000 and Zone1Attrs $EE00 until GameEntry $9100 copies them down.
 @about The resources are PNG sheets of 16 characters a row (src/res/charsets/README.md) and the attributes as CSV.
 $6000 b Zone1CharsHigh 8 ; Zone 1's characters 160-255 (768 bytes), parked in the set at $5B00
-> Read by SwapZone $A198 when a room of zone 1 is drawn. Witness: the RZX segments reach the lava caves (work/stage1/rec/rzx-*).
+> Read by SwapZone $A198 when a room of zone 1 is drawn. Witness: the RZX segments reach the caverns (work/stage1/rec/rzx-*).
 @res charsets/zone1-high.bin
 $6300 b Zone1AttrsLeftover 16 ; 256 bytes overwritten at the entry by Zone1Attrs $EE00: an older copy of zone 1's attributes
 > GameEntry $9100 copies Zone1Attrs $EE00 over these bytes before anything reads them; 255 of the 256 bytes equal the copy, only the first differs ($00 here, $47 at $EE00). Leftover, known only from the code.
@@ -49,8 +57,8 @@ $7500 b Zone3Attrs 16 ; Zone 3's attributes
 @res charsets/zone3-attr.bin
 @module rooms ; The rooms: 16 maps of 48 x 5 blocks, the 192 blocks of 4 x 4 characters
 @about A room is a strip of six screens, 48 blocks across and 5 down, 240 bytes at RoomMaps $7600 + 240 x room, stored row by row. A screen shows 8 block columns (32 characters); RoomScreen $950D holds 8 x the screen, the map column of its left edge. DrawRoom $A89D expands the screen's 8 x 5 blocks through Blocks $8500 (16 character codes a block, 4 rows of 4) into the character map $F080. The room table RoomTable $953B gives the exits, the zone and one enemy kind a screen.
-@about The maps are also state: TakeBlockItem $B33D turns a taken item (block $1B) into block $47, CheckPickups turns a used pod block $12 into $2B; NewGame $915B turns them back. The resources are text grids (src/res/rooms/README.md); tools/roommap.py draws every room and the world map from them.
-$7600 b Room0Map 48 ; Room 0: the base (zone 0), the start, the password pods
+@about The maps are also state: TakeBlockItem $B33D turns a taken item (block $1B) into block $47, KindTurret $C457 turns a dead turret's block $12 into $2B; NewGame $915B turns them back (every $2B into $12, every $47 into $1B). The resources are text grids (src/res/rooms/README.md); tools/roommap.py draws every room and the world map from them.
+$7600 b Room0Map 48 ; Room 0: the surface (zone 0), the start, the password doors
 @res rooms/room-00.bin
 $76F0 b Room1Map 48 ; Room 1 (zone 0)
 @res rooms/room-01.bin
@@ -91,35 +99,36 @@ $9100 c GameEntry ; The entry from the loader: the parked zone 1, IM 2, the Kemp
 > Copies Zone1CharsLow $F000 to $5B00 (1280 bytes) and Zone1Attrs $EE00 to $6300 (256), so that zone 1 is whole in the first parked slot; sets R = $FF (the random generator Random $92C6 reads R), SP = StackTop, I = $FE and fills ImTable $FE00-$FF00 with $FF; writes JR (ImJr $FFFF = $18) and JP Interrupt $9226 at ImJump $FFF4, then IM 2. Clears the first attribute of each zone set ($EF00, $6300, $6C00, $7500). KempstonTest $9F62 sets ControlMethod $A13A to 0 (Kempston) when an interface answers. Then JP GameStart $CBF9.
 > Witness: L1 1 (c1).
 $915B c NewGame ; A new game: Matt in room 0, full energy, empty masks, the pick-ups and the maps restored
-> Room 0, screen 0 (RoomNumber $950A, RoomScreen $950D); Energy $AEA6 = $FF; Matt (Objects $A43F) at x $48, y $28, state $0B, facing right; clears bit 7 (taken) of every PickupTable $950E record; empties the four MaskSlots $AF2B and selects the first; ShowMaskName EMPTY; turns the map blocks $2B back to $12 and $47 back to $1B in RoomMaps $7600-$84FF; clears the end-of-level and effect flags and the Score $AE41. BuildTables $A860 makes the sprite tables first. Ends in DrawRoom $A89D and PasswordPods $ACBC.
-> Witness: L1 16 (c1, door, play2, rzx- x8).
+> Room 0, screen 0 (RoomNumber $950A, RoomScreen $950D); Energy $AEA6 = $FF; Matt (Objects $A43F) at x $48, y $28, state $0B, facing right; clears bit 7 (taken) of every PickupTable $950E record; empties the four MaskSlots $AF2B and selects the first; ShowMaskName EMPTY; turns the map blocks $2B back to $12 and $47 back to $1B in RoomMaps $7600-$84FF (so the maps' own $2B, room 5 screen 0 and room 6 screen 2, become turrets too after the first new game: rzx-16000 frame 3194); clears the end-of-level and effect flags and the Score $AE41. BuildTables $A860 makes the sprite tables first. Ends in DrawRoom $A89D and PasswordPods $ACBC.
+> Witness: L1 21 (c1, cheat, door, door3, kind6, masks, play2, rzx- x8).
 $9208 c HangLoop ; Never run: DI, then flash the border forever (the kind-0 slot of ObjectJumps $C326 jumps here)
 > XOR 7, OUT ($FE), JP HangLoop. Known only from the code.
 $9210 BorderFlash ; never run: flash the border BC times
 $9222 b TuneRequest ; The tune to start (1-4; 0 none), read by Interrupt on a 128K
-$9223 StopRequest ; non-zero: MusicStop $C00A at the next interrupt
-$9224 FrameCounter ; counted up by every interrupt
+$9223 StopRequest ; non-zero: MusicStop $C00A at the next interrupt; the game never writes it, its loaded $FF makes the first 128K interrupt call MusicStop once (c1)
+$9224 FrameCounter ; counted up by every interrupt; no instruction reads it
 $9225 BorderColour ; sent to $FE by every interrupt
 @module interrupt ; The interrupt and the main loop
 @about The game runs free in its main loop MainLoop $CC03 (2.5-5.4 frames a pass, no HALT); everything that must keep time runs in the interrupt Interrupt $9226: the key reading (in the menu MenuInterrupt $9899), the AY music and effects on a 128K or the beeper effect on a 48K, the message scroller and the BREAK check.
 $9226 c Interrupt ; The IM 2 handler (via ImJump $FFF4): keys or menu, music and effects, scroller, BREAK
 > Saves every register; FrameCounter $9224 + 1, OUT BorderColour. In play (MenuFlag $970E = 0) CheatCheck $BB4C; in the menu MenuInterrupt $9899. On a 128K (MachineFlag $FFFE = 0): pages RAM 4 ($7FFD = $14), starts TuneRequest $9222 (MusicStart) or StopRequest $9223 (MusicStop), runs StopEffects $946F and StartEffects $9421, MusicPlay $C003; in the menu (NotInPlay $970D) it restarts tune 1 when MusicTune ends; pages RAM 0 back ($10). On a 48K: StopBeeper $949F and BeeperTick $94C8. In play: Scroller $AF82, and CAPS SHIFT + SPACE (BREAK) aborts to GameStart $CBF9.
-> Witness: L1 53798 (c1, door, play2, rzx- x10).
+> Witness: L1 63268 (c1, cheat, door, door3, kind6, masks, play2, rzx- x10).
 $92C3 b RandomSeed ; Random's three bytes of state
 $92C6 c Random ; A = a pseudo-random byte from RandomSeed and R
-> Witness: L1 85196 (c1, door, play2, rzx- x10).
+> Witness: L1 100334 (c1, cheat, door, door3, kind6, masks, play2, rzx- x10).
 $92E0 b EffectTable 14 ; The 18 sound effects, 14 bytes each: the AY channel data, the channel choice (+$0A), the beeper pitch and length
 > PlayEffect $93DC picks record A; on a 128K bytes +$0B-+$0D go to the effect channel blocks of the player, on a 48K the record drives BeeperTick $94C8. The CSV is src/res/tables/effects.csv.
 @res tables/effects.bin
 $93DC c PlayEffect ; Start sound effect A: an AY channel slot on a 128K, the beeper on a 48K
 > 128K: record + $0A picks the slot (1 EffectSlotA $941B, 2 $941D, else $941F) that StartEffects $9421 reads at the next interrupt. 48K: BeeperStart $94AF.
-> Witness: L1 554 (c1, door, play2, rzx- x9).
+> Witness: L1 638 (c1, cheat, door, door3, kind6, masks, play2, rzx- x9).
 $941B b EffectSlots ; Three slots of (flag, record) for channels A, B and C
 $9421 c StartEffects ; Interrupt, 128K: hand each waiting effect to the AY player (EffectStart with IX = the channel block)
-> Witness: L1 16624 (c1, door, play2).
+> Witness: L1 26094 (c1, cheat, door, door3, kind6, masks, play2).
 $946C b EffectStops ; Three flags: stop the effect of channel A, B, C at the next interrupt
 $946F c StopEffects ; Interrupt, 128K: silence each channel whose EffectStops flag is set (writes the player's block +6)
-> Witness: L1 16624 (c1, door, play2).
+> Channel C's test is inverted (RET NZ at $9491): it zeroes channel C's hold every interrupt while its flag is clear and does nothing when it is set. Inaudible: channel C's envelopes end by themselves (docs/09-sound.md, 9.9).
+> Witness: L1 26094 (c1, cheat, door, door3, kind6, masks, play2).
 $949F c StopBeeper ; Interrupt, 48K: the beeper's version of StopEffects
 > Witness: L1 37174 (rzx- x10).
 $94AB b BeeperState ; The beeper effect: count, pitch, and the record pointer at $94AE that BeeperStart's own first instruction overwrites
@@ -130,13 +139,14 @@ $94B0 c BeeperStart ; 48K: LD ($94AE),HL and the effect's count and pitch (enter
 $94C3 c BeeperOff ; Never run: clear the beeper count
 > Known only from the code.
 $94C8 c BeeperTick ; Interrupt, 48K: one burst of the beeper effect on bits 3-4 of port $FE
+> The low half of the period is not reloaded: the JR NZ at $9505 has no DEC before it, so the low half never waits (docs/09-sound.md, 9.7 and 9.9).
 > Witness: L1 37174 (rzx- x10).
 @module rooms
 $950A b RoomNumber ; The room, 0-15
 $950B RoomRecord ; the room's RoomTable record
 $950D RoomScreen ; 8 x the screen (0-5): the map column of the screen's left edge
 $950E b PickupTable 4 ; The 11 masks lying in the rooms, 4 bytes each [room + bit 7 taken, mask kind, x, y], $FF at the end
-> PlacePickupsInScreen $A9BE shows the records of the room's screen that are not taken; CheckPickups $B126 sets bit 7 when Matt takes one; NewGame clears the bits. Also src/res/tables/pickups.csv.
+> PlacePickupsInScreen $A9BE shows the records of the room's screen that are not taken; CheckPickups $B126 sets bit 7 when Matt takes one; NewGame clears the bits. Eleven pick-ups; kinds 2, 3, 9 and 10 (ULTRA FLASH, MIRAGE, LAVA SHOT, STREAMER) are in no record and cannot be had in play. Also src/res/tables/pickups.csv.
 @res tables/pickups.bin
 $953B b RoomTable 12 ; 16 records of 12 bytes: left, right, pod, exit 3, zone, arrival, an enemy kind a screen
 > Bytes: 0 the room to the left, 1 to the right ($FF none), 2 the pod's destination (Teleport $B6B3), 3 an exit read only by the never-run ExitByte3 $B6D8, 4 the zone, 5 the arrival place after a pod: x = (b & $1F) x 4 + $40, RoomScreen = (b & $E0) / 4, 6-11 one enemy kind (EnemyKind $BFB0) for each of the six screens (DrawRoom $A89D). The table is also src/res/tables/rooms.csv (tools/res_formats.py writes it from these bytes).
@@ -144,7 +154,7 @@ $953B b RoomTable 12 ; 16 records of 12 bytes: left, right, pod, exit 3, zone, a
 $95FB b Font 5 ; 5-row glyphs: A-Z, then 0-9 at $967D, '.' $96AF, ':' $96B4, space $96B9
 @res font/font5.bin
 $96BE c CharGlyph ; HL = the 5-byte glyph of character A (letters, digits, '.', ':', space)
-> Witness: L1 33616 (c1, door, play2, rzx- x10).
+> Witness: L1 40146 (c1, cheat, door, door3, kind6, masks, play2, rzx- x10).
 $970D b NotInPlay ; $FF in the menu and the death sequence: no scroller, no BREAK, the menu tune loops
 $970E MenuFlag ; non-zero: Interrupt runs MenuInterrupt instead of CheatCheck
 $9710 HudSaved ; non-zero once SaveHud has kept the play screen's panel
@@ -153,24 +163,24 @@ $9721 MenuColourCount ; the colour cycle's step
 @module menu ; The menu, the controls, DEFINE KEYS, the password
 @about Menu $9723 wipes the screen, draws the logo and the 15 menu strings, and waits in MenuLoop $9775 for 1-4 (Kempston, Interface 2, Cursor, keyboard), K (DEFINE KEYS), P (ENTER PASSWORD) or fire (start). The interrupt animates the logo and colours in MenuInterrupt $9899.
 $9723 c Menu ; The menu: wipe, logo, strings; MenuLoop until fire, then the play screen's panel and tune 3
-> Witness: L1 16 (c1, play2, rzx- x8).
+> Witness: L1 19 (c1, door3, kind6, masks, play2, rzx- x8).
 $9775 MenuLoop ; draw the strings and the lit icon, HALT, read a key
 $984D c MenuWipe ; Wipe the attributes diagonally (PokeAttr)
-> Witness: L1 16 (c1, play2, rzx- x8).
+> Witness: L1 19 (c1, door3, kind6, masks, play2, rzx- x8).
 $985A c MenuWipeStep ; One diagonal of the wipe
-> Witness: L1 1120 (c1, play2, rzx- x8).
+> Witness: L1 1330 (c1, door3, kind6, masks, play2, rzx- x8).
 $9876 c PokeAttr ; Set the attribute at row D, column E to A when they are on the screen
-> Witness: L1 272440 (c1, door, play2, rzx- x9).
+> Witness: L1 323612 (c1, cheat, door, door3, kind6, masks, play2, rzx- x9).
 $9899 c MenuInterrupt ; The menu's interrupt: the logo's raster colours, the lit control icon, the border bars, the colour scroll
-> Witness: L1 14133 (c1, door, play2, rzx- x9).
+> Witness: L1 16790 (c1, cheat, door, door3, kind6, masks, play2, rzx- x9).
 $992F c ClearScreen ; Clear the bitmap and the attributes
-> Witness: L1 16 (c1, play2, rzx- x8).
+> Witness: L1 19 (c1, door3, kind6, masks, play2, rzx- x8).
 $9951 c LogoRaster ; Colour the logo line by line (LDI from the buffer at $F0CA in time with the beam)
-> Witness: L1 14133 (c1, door, play2, rzx- x9).
+> Witness: L1 16790 (c1, cheat, door, door3, kind6, masks, play2, rzx- x9).
 $999E c ScreenAddr ; HL = the screen address of character row D, column E
-> Witness: L1 809 (c1, door, play2, rzx- x9).
+> Witness: L1 1013 (c1, cheat, door, door3, kind6, masks, play2, rzx- x9).
 $99B8 c DrawGraphic ; Draw B x C characters from HL at row D, column E
-> Witness: L1 281 (c1, door, play2, rzx- x9).
+> Witness: L1 351 (c1, cheat, door, door3, kind6, masks, play2, rzx- x9).
 $99F0 b MenuLogo 8 ; The menu's logo, 10 x 6 characters (Menu draws it at row 0, column 11)
 @res screens/menu-logo.bin
 $9BD0 b MenuBadge 8 ; A 2 x 1 picture drawn at row 6, column 19
@@ -178,27 +188,27 @@ $9BD0 b MenuBadge 8 ; A 2 x 1 picture drawn at row 6, column 19
 $9BE0 b MenuBanner 8 ; A 12 x 2 picture drawn at row 22, column 10
 @res screens/menu-banner.bin
 $9CA0 c SaveHud ; Keep screen rows 18-23 at $F600 and their attributes at $FC64 (the play panel, restored at the start)
-> Witness: L1 15 (play2, rzx- x8).
+> Witness: L1 18 (door3, kind6, masks, play2, rzx- x8).
 $9CBF c PrintString ; Print the bit-7-terminated string at HL at row D, column E
-> Witness: L1 479 (c1, door, play2, rzx- x8).
+> Witness: L1 601 (c1, cheat, door, door3, kind6, masks, play2, rzx- x8).
 $9CD9 c PrintChar ; Print character A (5-row glyph, attribute $47)
-> Witness: L1 31638 (c1, door, play2, rzx- x10).
+> Witness: L1 37418 (c1, cheat, door, door3, kind6, masks, play2, rzx- x10).
 $9D01 b ControlIconPlaces ; The menu rows and columns of the lit control icons
 $9D16 Hiscore ; the high score, 4 BCD bytes
 $9D1A c DrawMenu ; The 15 menu strings, the high score and the control icons
-> Witness: L1 31 (c1, door, play2, rzx- x8).
+> Witness: L1 39 (c1, cheat, door, door3, kind6, masks, play2, rzx- x8).
 $9D6C t MenuStrings ; The 15 menu strings: two place bytes (column, then row: $18, $09 for PROGRAM), the text with bit 7 on the last character
 > Includes "P.ENTER PASSWOID" as the bytes have it (the original's typo; the screen shows it, work/stage1/c1).
 @res texts/menu.bin
 $9E10 c ClearMenuArea ; Clear the menu's text area
-> Witness: L1 10 (c1, play2).
+> Witness: L1 12 (c1, cheat, play2).
 $9E3B c DefineKeys ; DEFINE KEYS: FIRE, UP, DOWN, LEFT, RIGHT, each a key not taken yet
 > Witness: L1 1 (c1).
 $9E7B c AskKey ; Wait for a key that is not one of the keys chosen so far
 > Witness: L1 5 (c1).
 $9E90 t DefinePrompts ; "FIRE", "UP", "DOWN", "LEFT", "RIGHT" and "Press"
 $9EAF c ColourScroll ; The menu's colour bars, a random sequence a cycle
-> Witness: L1 14154 (c1, door, play2, rzx- x9).
+> Witness: L1 16815 (c1, cheat, door, door3, kind6, masks, play2, rzx- x9).
 $9ED3 b ColourSequences ; The colour sequences of ColourScroll
 $9F62 c KempstonTest ; Z when port $1F reads with bits 5-7 clear 256 times (a Kempston interface)
 > Witness: L1 5 (c1, play2, rzx-08000, rzx-28000).
@@ -206,136 +216,139 @@ $9F6D b PasswordFlags ; MAYHEM, TRANSMOGRIFY, VALKYR entered; $9F70 PETALS OF DO
 $9F71 PasswordBuffer ; the 16 key codes typed, 0 at the end
 $9F82 c EnterPassword ; ENTER PASSWORD: 16 keys, compared with the four passwords (key codes)
 > Each matching password sets its flag; PETALS OF DOOM sets $9F70 only when the other three are set (the AND at $9FE9-$9FF2). Witness: work/stage2/rec/play2 types the four passwords in order: each compare matches once, the four flags are written once each, and the next NewGame's PasswordPods $ACBC writes the open blocks $1E/$1F for all four doors (ACD1 run 4 times a call, ACC9 never). The flags let Matt into a door (MattWalk $B48D-$B4BB: room 0, screen 5, standing on character $1C, down held).
-> Witness: L1 4 (play2).
+> Witness: L1 5 (cheat, play2).
 $9FF9 t PasswordDots ; The 16 dots EnterPassword prints at row $0A, column $08
 $A009 b Passwords ; MAYHEM, TRANSMOGRIFY, VALKYR, PETALS OF DOOM as key codes, each 0-terminated
 > Key code = row x 16 + bit (row 0 = port $FEFE ... row 7 = $7FFE). src/res/texts/passwords.txt has them as letters.
 @res texts/passwords.bin
 $A033 c StringMatch ; Z when the buffer at HL equals the 0-terminated code string at DE
-> Witness: L1 16 (play2).
+> Witness: L1 20 (cheat, play2).
 $A040 c ScreenWipe ; Close the screen from the top and the bottom, one line pair a HALT (88 steps)
-> Witness: L1 16 (c1, door, play2, rzx- x8).
+> Witness: L1 21 (c1, cheat, door, door3, kind6, masks, play2, rzx- x8).
 $A076 c ClearLine ; Clear one pixel line
-> Witness: L1 2832 (c1, door, play2, rzx- x8).
+> Witness: L1 3717 (c1, cheat, door, door3, kind6, masks, play2, rzx- x8).
 $A081 b KeysIf2 ; Interface 2 keys (fire, up, down, left, right): 0 9 8 6 7
 $A086 KeysCursor ; Cursor keys: 0 7 6 5 8
 $A08B KeysUser ; the keyboard set (DEFINE KEYS): SPACE P L Q W as loaded
 $A090 c KeyPressed ; NZ when key code A is down (patches its own port and bit)
-> Witness: L1 88275 (c1, door, play2, rzx- x10).
+> Witness: L1 103894 (c1, cheat, door, door3, kind6, masks, play2, rzx- x10).
 $A0B2 c ScanKeyboard ; The first key down as a key code, or none
-> Witness: L1 28820 (c1, door, play2, rzx- x9).
+> Witness: L1 34726 (c1, cheat, door, door3, kind6, masks, play2, rzx- x9).
 $A0C9 c ReadKeyCode ; A key code from ScanKeyboard
-> Witness: L1 28820 (c1, door, play2, rzx- x9).
+> Witness: L1 34726 (c1, cheat, door, door3, kind6, masks, play2, rzx- x9).
 $A0E5 c WaitKey ; Wait for a key: A the character, A' the key code
-> Witness: L1 1988 (c1, play2).
+> Witness: L1 2470 (c1, cheat, play2).
 $A0F1 b KeyChars ; The 40 keys' characters, by key code
 $A119 c KeyCodeToChar ; A = the character of key code A
-> Witness: L1 235 (c1, door, play2, rzx- x5).
+> Witness: L1 271 (c1, cheat, door, door3, play2, rzx- x5).
 $A138 b Controls ; this pass's controls: bit 0 right, 1 left, 2 down, 3 up, 4 fire
 $A139 ControlsLast ; the last pass's
 $A13A ControlMethod ; 0 Kempston, 1 Interface 2, 2 Cursor, 3 keyboard
 $A13B c ReadControls ; Controls from the Kempston port or the chosen keys; right beats left, down beats up
-> Witness: L1 23419 (c1, door, play2, rzx- x10).
+> Witness: L1 27243 (c1, cheat, door, door3, kind6, masks, play2, rzx- x10).
 $A150 b KeysNow ; The five keys in use (copied from KeysIf2, KeysCursor or KeysUser)
 @module renderer ; The renderer: zone swapping, the dirty map, the sprites drawn as characters
 @about Everything on the play area is characters. The 32 x 20 character map at $F080 (rows 2-19 shown, from $F0C0) names a character of the live zone; the dirty map $F3C0-$F5FF marks each cell to redraw (1 the zone character from ZoneChars $E000 / ZoneAttrs $EF00, 2 a sprite character from $E800 / $EE00). A sprite is drawn by allocating fresh characters from $E800 up, copying the backgrounds into them and ORing the masked, shifted picture in (DrawObject $A56F); FlushDirty $A1F0 then puts the dirty cells on the screen. Characters $EA and up of a zone are foreground and are never drawn over.
 $A194 b ZoneSlots ; ZoneSlots[0] the live zone, [1-3] the zones parked at $5B00, $6400, $6D00
 $A198 c SwapZone ; Make zone A live: swap its parked $900 bytes with ZoneChars/ZoneAttrs, under DI
-> Also writes TurretStems $A1EC[zone] into TurretStem $C26E. Witness: L1 79 (c1, door, play2, rzx- x9); the per-frame trace of a room change is in work/stage2/NOTES.md.
+> Also writes TurretStems $A1EC[zone] into TurretStem $C26E. Witness: L1 86 (c1, cheat, door, door3, kind6, masks, play2, rzx- x9); the per-frame trace of a room change is in work/stage2/NOTES.md.
 $A1EC b TurretStems ; One character a zone: the stem KindTurret draws under a turret (copied to TurretStem $C26E)
 $A1F0 c FlushDirty ; Draw every dirty cell (from $F5FF down to the sentinel $F3BF) and clear its mark
-> Witness: L1 13273 (c1, door, play2, rzx- x9).
+> Witness: L1 15472 (c1, cheat, door, door3, kind6, masks, play2, rzx- x9).
 $A253 b PickupSaves ; The backgrounds kept under the pick-up icons
 $A2CB PickupSavePtr ; the next free save
 $A2CD NextSpriteChar ; the next free sprite character
 $A2CE FirstSpriteChar ; the first sprite character of this pass
 $A2CF DissolveCount ; non-zero: Matt is drawn dissolved (pods, penetrator, death)
 $A2D0 c DrawObjects ; The last step of a pass: place pick-ups, draw the 8 objects, flush, restore the backgrounds
-> Witness: L1 13174 (c1, door, play2, rzx- x9).
+> Witness: L1 15361 (c1, cheat, door, door3, kind6, masks, play2, rzx- x9).
 $A349 c SelectFrame ; The object's frame address from its mode (+$19), animation (+$18) and mask (+$1A); Matt's from his state and x
-> Witness: L1 90196 (c1, door, play2, rzx- x9).
+> Witness: L1 104259 (c1, cheat, door, door3, kind6, masks, play2, rzx- x9).
 $A3A5 c Dissolve ; Copy a frame to $DF80 through a random mask from R (the dissolve)
-> Witness: L1 2540 (c1, door, play2, rzx- x8).
+> Witness: L1 3404 (c1, cheat, door, door3, kind6, masks, play2, rzx- x8).
 $A3E2 FrameByMode ; the frame offset: animation x the mode's frame size (self-modified JR at $A3EC)
 $A3EE b FrameJumpSpare ; Four unused bytes of the mode jump table
 $A3F4 b FrameMode3Jump ; JR $A3FE (mode 3), never taken
 $A43F b Objects 38 ; The 8 objects of $26 bytes: Matt, Matt's shot $A465, the six others from $A48B
 > Fields: +0 kind (bit 7 placed, bit 6 dying), +2 direction (bit 7 left), +3 x (2 pixels a unit, column (x - $40) / 4), +4 y, +5 width and +6 height in characters, +9/+A buffer, +B first character, +C/+D frame, +E/+F save pointer, +10-+12 timers, +14/+15 the score it gives (BCD), +16/+17 the sprite base, +18 animation step, +19 mode (frame size), +1A animation mask, +1B dx, +1C dy, +1E damage to the energy, +1F once-a-room flag, +20 colour, +21 hits left, +22 hit by Matt's shot. Witness: read and written every pass (c1).
 $A465 MattShot ; object 1: Matt's shot
-$A48B Enemies ; objects 2-7
+$A48B Enemies ; objects 2-7; as loaded and in room 0: state $80, x 1, y 0, w = h = 2, mode 0, frame $0000: drawn every pass off screen, about 12 300 T each
 $A56F c DrawObject ; Draw object IX as fresh characters from $E800: copy backgrounds, mask, mirror, shift, OR in
-> Witness: L1 90196 (c1, door, play2, rzx- x9).
+> Witness: L1 104259 (c1, cheat, door, door3, kind6, masks, play2, rzx- x9).
+$A593 ; the character map as if it began 4 rows higher: (y + $30) / 8 rows down, so y 0 is CharMap row 2 (screen row 0)
 $A688 DrawAligned ; the picture on a character boundary
 $A6FE DrawShifted ; the picture shifted 2, 4 or 6 pixels through the tables $F800-$FDFF
 $A777 c MakeMask ; The frame's mask, each byte dilated through the table $F700, into $F000
-> Witness: L1 90197 (c1, door, play2, rzx- x9).
+> Witness: L1 104260 (c1, cheat, door, door3, kind6, masks, play2, rzx- x9).
 $A7F3 c MirrorFrame ; The frame mirrored through the bit-reverse table $F600 into $F300
 > Witness: L1 9519 (c1, rzx- x9).
+$A853 ; the low byte is patched by $A80F to -(8 x h): a back step, nothing to do with the IM 2 table
 $A860 c BuildTables ; Build the dilate table $F700, the shift tables $F800-$FDFF and the bit-reverse table $F600
-> Witness: L1 16 (c1, door, play2, rzx- x8).
+> Witness: L1 21 (c1, cheat, door, door3, kind6, masks, play2, rzx- x8).
 @module rooms
 $A89A b MapPointer ; RoomMaps + 240 x room + RoomScreen: the screen's first block
 $A89D c DrawRoom ; Draw the screen RoomScreen of room RoomNumber and set up its objects, pick-ups and message
 > Room 15 at screen 5 is the end: Ending $ADF6. Clears objects 2-7, expands the 8 x 5 blocks into the character map, SwapZone, marks every cell dirty and flushes, sets EnemyKind $BFB0 from RoomTable byte 6 + screen, then MoonMasks $ADD2, AnimatedCharList $AB6B, FindLift $AA75, PlaceTurrets $AC42, FindFloorRow $AC80, FindSpawnPoints $ACA0, FindBlockItems $ACEA, PlacePickupsInScreen $A9BE and RoomMessage $AD28.
-> Witness: L1 80 (c1, door, play2, rzx- x9).
+> Witness: L1 87 (c1, cheat, door, door3, kind6, masks, play2, rzx- x9).
 $A9BE c PlacePickupsInScreen ; Make the icons of this screen's untaken masks (PickupTable) as characters
-> Witness: L1 79 (c1, door, play2, rzx- x9).
+> Witness: L1 86 (c1, cheat, door, door3, kind6, masks, play2, rzx- x9).
 $A9DA c PlacePickup ; One pick-up: its icon from MaskIcons $D580 + 32 x kind, coloured MaskColours[kind]
-> Witness: L1 158 (c1, door, play2, rzx- x9).
+> Witness: L1 172 (c1, cheat, door, door3, kind6, masks, play2, rzx- x9).
 $AA59 c FindPickup ; The PickupTable record of this room at Matt's place
-> Witness: L1 158 (c1, door, play2, rzx- x9).
+> Witness: L1 172 (c1, cheat, door, door3, kind6, masks, play2, rzx- x9).
 $AA72 b LiftPlace ; The zone-0 lift's map address and direction (AnimateLift $CA3D)
 $AA75 c FindLift ; Zone 0: find character $34 in the screen (the lift), else none
-> Witness: L1 79 (c1, door, play2, rzx- x9).
+> Witness: L1 86 (c1, cheat, door, door3, kind6, masks, play2, rzx- x9).
 $AAA1 b AnimatedCells ; The dirty-map addresses of the screen's animated characters, $FFxx at the end
 $AB6B c AnimatedCharList ; List the cells of the zone's animated characters (AnimatedChars) into AnimatedCells
-> Witness: L1 79 (c1, door, play2, rzx- x9).
+> Witness: L1 86 (c1, cheat, door, door3, kind6, masks, play2, rzx- x9).
 $ABB5 b AnimatedChars ; The animated character codes of each zone, 0-terminated, and the four list pointers at $ABF5
 $ABFD c FindBlock ; B, C = the place of the first block A in the screen's map
-> Witness: L1 237 (c1, door, play2, rzx- x9).
+> Witness: L1 258 (c1, cheat, door, door3, kind6, masks, play2, rzx- x9).
 $AC2F c FindNextBlock ; The next one
 > Witness: L1 19 (door, rzx- x7).
 $AC42 c PlaceTurrets ; Every block $12 of the screen becomes a turret object (kind 4)
-> Witness: L1 79 (c1, door, play2, rzx- x9).
+> Witness: L1 86 (c1, cheat, door, door3, kind6, masks, play2, rzx- x9).
 $AC7F b FloorRow ; the first character row with a solid attribute
 $AC80 c FindFloorRow ; FloorRow from the attributes (bit 7)
-> Witness: L1 79 (c1, door, play2, rzx- x9).
+> Witness: L1 86 (c1, cheat, door, door3, kind6, masks, play2, rzx- x9).
 $AC9C b SpawnPoints ; Two map places of block $61, where kind-12 enemies rise
 $ACA0 c FindSpawnPoints ; Up to two blocks $61 into SpawnPoints
-> Witness: L1 79 (c1, door, play2, rzx- x9).
+> Witness: L1 86 (c1, cheat, door, door3, kind6, masks, play2, rzx- x9).
 $ACBC c PasswordPods ; Room 0's four door lamps at map $7628 (screen 5, top row): blocks $45/$46 shut, $1E/$1F lit for each password entered
-> Witness: L1 16 (c1, door, play2, rzx- x8).
+> Witness: L1 21 (c1, cheat, door, door3, kind6, masks, play2, rzx- x8).
 $ACDA b BlockItems ; Up to four block-$1B items of the screen (map address, place)
 $ACEA c FindBlockItems ; The block-$1B items into BlockItems
-> Witness: L1 79 (c1, door, play2, rzx- x9).
+> Witness: L1 86 (c1, cheat, door, door3, kind6, masks, play2, rzx- x9).
 @module objects ; The objects, the enemies, the score, the energy, the messages and the end
 @about Objects $A43F holds Matt, his shot and six others. Each pass Spawn $BF2B fills an empty slot with the enemy kind of the screen (EnemyKind $BFB0, from RoomTable bytes 6-11), the kinds' first values coming from EnemyTemplates $BE3B; RunObjects $C284 moves each by its kind through ObjectJumps $C326, checks Matt's shot (ShotHits $BC96) and Matt (TouchesMatt $C2D9: Damage $C2CA takes +$1E from the Energy). A killed enemy gives its score (AwardScore $C2C1) and becomes an explosion (Explode $C26F).
 $AD28 c RoomMessage ; Screen 0 messages: room 0 GOOD LUCK MATT; rooms 3, 7, 10, 11 CODE BROKEN and a password
 > Room 11 shows MAYHEM, 3 TRANSMOGRIFY, 7 VALKYR, 10 PETALS OF DOOM, built by BuildMessage $ADBF and scrolled by ShowMessage $B0FF.
-> Witness: L1 79 (c1, door, play2, rzx- x9).
+> Witness: L1 86 (c1, cheat, door, door3, kind6, masks, play2, rzx- x9).
 $AD7C t Messages ; GOOD LUCK MATT, CODE BROKEN, PASSWORD IS and the message buffer $ADAF
 @res texts/messages.bin
 $ADBF c BuildMessage ; Copy the password text after PASSWORD IS
-> Witness: L1 20 (door, rzx- x5).
+> Witness: L1 23 (door, door3, rzx- x5).
 $ADD2 c MoonMasks ; Zone 2: every PENETRATOR (kind 1) slot becomes EMPTY
-> Witness: L1 79 (c1, door, play2, rzx- x9).
+> Witness: L1 86 (c1, cheat, door, door3, kind6, masks, play2, rzx- x9).
 $ADF6 c Ending ; Room 15, screen 5: YOU HAVE FOUND SCOTT, WELL DONE, then GameStart
+> Jumps to GameStart without the high-score test of GameOver: the score of a won game is not kept (rzx-36000: 31 004 points, then the menu shows HISCORE 00000000).
 > Witness: L1 1 (play2).
 $AE1D t EndTexts ; YOU HAVE FOUND SCOTT and WELL DONE
 @res texts/end.bin
 $AE41 b Score ; 4 BCD bytes
 $AE45 c AddScore ; Score + DE (BCD)
-> Witness: L1 78 (rzx- x9).
+> Witness: L1 84 (kind6, rzx- x9).
 $AE60 c DrawScore ; The score's eight digits (Digits $D3A0) at $5077
-> Witness: L1 12988 (c1, door, play2, rzx- x9).
+> Witness: L1 15175 (c1, cheat, door, door3, kind6, masks, play2, rzx- x9).
 $AE78 c DrawDigit ; One digit
-> Witness: L1 103905 (c1, door, play2, rzx- x9).
+> Witness: L1 121401 (c1, cheat, door, door3, kind6, masks, play2, rzx- x9).
 $AEA6 b Energy ; Matt's energy, $FF full, 0 dead
 $AEA7 EnergyShown ; the energy last drawn
 $AEA8 c DrawEnergyBar ; The 8-cell energy bar at $506D, partial cells from EnergyParts
-> Witness: L1 12983 (c1, door, play2, rzx- x9).
+> Witness: L1 15170 (c1, cheat, door, door3, kind6, masks, play2, rzx- x9).
 $AEE5 c FillCell ; Fill a cell's three lines with C
-> Witness: L1 1240 (c1, door, play2, rzx- x9).
+> Witness: L1 1360 (c1, cheat, door, door3, kind6, masks, play2, rzx- x9).
 $AF04 b EnergyParts ; The 8 partial-cell patterns
 $AF0C PassCounter ; counted up every main loop pass (the icon blink, the jump's timing)
 $AF0E MaskNameShown ; the mask name on the scroller
@@ -348,30 +361,32 @@ $AF3B MaskLevels ; the level a kind starts with, per kind 0-10
 $AF46 MaskColours ; the icon colour per kind
 $AF51 CurrentSlot ; the MaskSlots slot in use
 $AF53 c DrawCurrentSlot ; Blink the slot in use and redraw its charges
-> Witness: L1 13169 (c1, door, play2, rzx- x9).
+> Witness: L1 15390 (c1, cheat, door, door3, kind6, masks, play2, rzx- x9).
 $AF6B c PrintBcd ; Print the BCD bytes at HL
-> Witness: L1 13293 (c1, door, play2, rzx- x10).
+> Witness: L1 15546 (c1, cheat, door, door3, kind6, masks, play2, rzx- x10).
 $AF74 c PrintBcdByte ; Two digits
-> Witness: L1 26585 (c1, door, play2, rzx- x10).
+> Witness: L1 31091 (c1, cheat, door, door3, kind6, masks, play2, rzx- x10).
 $AF82 c Scroller ; Interrupt: scroll the message line (row 23) one step
-> Witness: L1 38512 (c1, door, play2, rzx- x10).
+> Witness: L1 45122 (c1, cheat, door, door3, kind6, masks, play2, rzx- x10).
 $AFE0 c ScrollerNextChar ; The next character's glyph into $AF15
-> Witness: L1 1978 (c1, door, play2, rzx- x9).
+> Witness: L1 2728 (c1, cheat, door, door3, kind6, masks, play2, rzx- x9).
 $AFFA c DrawAllSlots ; The four slots' icons and charges
-> Witness: L1 31 (c1, door, play2, rzx- x9).
+> Witness: L1 38 (c1, cheat, door, door3, kind6, masks, play2, rzx- x9).
 $B024 c DrawIcon ; A mask icon (MaskIcons $D580 + 32 x kind) at slot IX
-> Witness: L1 13169 (c1, door, play2, rzx- x9).
+> While PassCounter bit 3 is set the current slot gets icon 0 (EMPTY, 32 zero bytes, a blank): the blink of the slot in use.
+> Witness: L1 15390 (c1, cheat, door, door3, kind6, masks, play2, rzx- x9).
 $B089 c MaskKeys ; Keys 1-4 (port $F7FE) choose the slot, not while dying
-> Witness: L1 12988 (c1, door, play2, rzx- x9).
+> Witness: L1 15175 (c1, cheat, door, door3, kind6, masks, play2, rzx- x9).
 $B0CE c ShowMaskName ; Scroll the name of mask kind A
-> Witness: L1 72 (c1, rzx- x9).
+> Witness: L1 79 (c1, door3, masks, rzx- x9).
 $B0FB b MessageState ; the message scroller's state
 $B0FF c ShowMessage ; Start scrolling the message at HL
-> Witness: L1 19 (c1, door, play2, rzx- x8).
+> Witness: L1 25 (c1, cheat, door, door3, kind6, masks, play2, rzx- x8).
 $B11B c CheckPickupsDown ; Matt pressing down (state 4) takes the pick-up under him
-> Witness: L1 1230 (c1, door, play2, rzx- x9).
-$B126 c CheckPickups ; Take the mask at Matt's place: a slot with that kind or an empty one, 99 charges, its level
-> Witness: L1 2460 (c1, door, play2, rzx- x9).
+> Witness: L1 1254 (c1, door, door3, play2, rzx- x9).
+$B126 c CheckPickups ; Take the mask at Matt's place into a slot with 99 charges and its kind's level
+> The slot: the current one if EMPTY (its name shown), else the first EMPTY slot, else the current one, whose mask is replaced (there is no test for a slot of the same kind: rzx-16000 frame 49, BLASTER replaced by HEALER).
+> Witness: L1 2508 (c1, door, door3, play2, rzx- x9).
 $B174 c FindEmptySlot ; The first EMPTY slot
 > Witness: L1 5 (rzx-00000, rzx-16000).
 $B18E c ShowNameKeep ; ShowMaskName keeping AF and BC
@@ -379,73 +394,83 @@ $B18E c ShowNameKeep ; ShowMaskName keeping AF and BC
 $B197 t MaskNames ; The 11 names of 11 characters: EMPTY, PENETRATOR, ULTRA FLASH, MIRAGE, HEALER, JACKRABBIT, LIFTER, BLASTER, BACKLASH, LAVA SHOT, STREAMER
 @res texts/masks.bin
 $B210 c UseCharge ; Take A charges (BCD) from the slot in use; at none it becomes EMPTY; carry when there were not enough
-> Witness: L1 593 (c1, rzx- x9).
+> Witness: L1 649 (c1, cheat, door3, masks, rzx- x9).
 $B238 b UnusedFlag ; A flag of the never-run MaskEffect
 $B239 c MaskEffect ; Never run: ULTRA FLASH flashes the border, HEALER gives 1 energy a charge
 > Known only from the code: no instruction calls $B239.
 $B276 c PlacePickups ; Draw the pick-up icons into the character map, keeping the backgrounds
-> Witness: L1 13174 (c1, door, play2, rzx- x9).
+> Witness: L1 15361 (c1, cheat, door, door3, kind6, masks, play2, rzx- x9).
 $B28B c PlaceOnePickup ; One icon
-> Witness: L1 39522 (c1, door, play2, rzx- x9).
+> Witness: L1 46083 (c1, cheat, door, door3, kind6, masks, play2, rzx- x9).
 $B2C5 c RestorePickups ; The backgrounds back
-> Witness: L1 13172 (c1, door, play2, rzx- x9).
+> Witness: L1 15357 (c1, cheat, door, door3, kind6, masks, play2, rzx- x9).
 $B2D3 c RestoreOnePickup ; One
-> Witness: L1 26344 (c1, door, play2, rzx- x9).
+> Witness: L1 30714 (c1, cheat, door, door3, kind6, masks, play2, rzx- x9).
 $B2F1 c Hazards ; The deadly floor and the items under Matt
-> Witness: L1 12990 (c1, door, play2, rzx- x9).
+> Witness: L1 15178 (c1, cheat, door, door3, kind6, masks, play2, rzx- x9).
 $B2F8 b DeathFlag ; non-zero: Matt dies this pass (MainLoop jumps to Death)
 $B2F9 c DeadlyFloor ; Matt on character $EA ($ED in zone 3) dies
-> Witness: L1 12990 (c1, door, play2, rzx- x9).
+> Witness: L1 15178 (c1, cheat, door, door3, kind6, masks, play2, rzx- x9).
 $B32C c MoonFloor ; Zone 2: the character under Matt from $FE up kills
-> Witness: L1 162 (rzx-28000).
+> Witness: L1 522 (door3, rzx-28000).
 $B33D c TakeBlockItem ; A block-$1B item touched: block $47 in the map, an object, energy - $19
-> Witness: L1 12990 (c1, door, play2, rzx- x9).
+> The y test has only one bound (Matt's y + 20 at least the item's y). No recording took an item: the effect is known only from the code.
+> Witness: L1 15178 (c1, cheat, door, door3, kind6, masks, play2, rzx- x9).
 $B3E6 b MattPlace ; Matt's map places: $B3E6 and $B3E8 (character map addresses)
 $B3EA PenetratorOn ; non-zero while PENETRATOR is used: Matt walks through walls
 @module matt ; Matt: walking, jumping, pods, falling, dying
-@about MattStep $B3EB runs once a pass. State 1 is the walk (left, right, down into a pod, up to jump); the other states are a jump table at $B73A (state - 2): 2 rise, 3 the jump's arc, 4 crouch (takes a pick-up), 5 fall, 6 jump start, 7 JACKRABBIT's long jump, 8 stand after a pod, 9 out of energy, 10 the password warp (never run), 11 pod start, 12 the pod dissolve. Leaving the screen at an edge goes to the next screen or room (LeftEdge $B659, RightEdge $B686).
+@about MattStep $B3EB runs once a pass. State 1 is the walk (left, right, down into a pod, up to jump); the other states are a jump table at $B73A (state - 2): 2 step up, 3 step down, 4 crouch (down held takes a pick-up), 5 the jump (rising), 6 the fall, 7 JACKRABBIT's long jump, 8 stand, 9 out of energy, 10 the password-door warp, 11 the materialisation at a new game (effect 9), 12 the materialisation's dissolve. Leaving the screen at an edge goes to the next screen or room (LeftEdge $B659, RightEdge $B686).
 $B3EB c MattStep ; Matt's pass: controls, edges, the state routine
 > Clears $F000-$F0BF, sets DeathFlag when Matt falls below the play area, sets the facing from left / right.
-> Witness: L1 13095 (c1, door, play2, rzx- x9).
+> Witness: L1 15289 (c1, cheat, door, door3, kind6, masks, play2, rzx- x9).
 $B460 MattWalk ; state 1
+$B5D5 ; walking right: the head-row IsSolid result is discarded (no RET C), unlike the left-hand test at $B58C
 $B5FD c MattCell ; MattPlace from x and y
-> Witness: L1 13210 (c1, door, play2, rzx- x9).
+> Witness: L1 15326 (c1, cheat, door, door3, kind6, masks, play2, rzx- x9).
 $B629 c MattCellAhead ; The map place ahead of Matt
-> Witness: L1 399 (c1, door, play2, rzx- x9).
+> Witness: L1 405 (c1, door, door3, play2, rzx- x9).
 $B659 c LeftEdge ; Off the left edge: the screen to the left, or the room RoomTable byte 0
 > Witness: L1 38 (c1, rzx-00000, rzx-32000).
 $B686 c RightEdge ; Off the right edge: the next screen, or the room RoomTable byte 1
-> Witness: L1 63 (door, play2, rzx- x9).
+> Witness: L1 64 (door, door3, play2, rzx- x9).
 $B6B3 c Teleport ; A pod: the room RoomTable byte 2, arriving at the place of byte 5
 > Witness: L1 4 (rzx-00000, rzx-04000, rzx-12000, rzx-20000).
 $B6D8 c ExitByte3 ; Never run: leave by RoomTable byte 3
 > Known only from the code: byte 3 is $FF in every room.
 $B706 c FloorCheck ; A = what is under Matt's feet
-> Witness: L1 9905 (c1, door, play2, rzx- x9).
+> Witness: L1 11688 (c1, cheat, door, door3, kind6, masks, play2, rzx- x9).
 $B73A StateJumps ; JP the routine of states 2-12
 $B752 c StateWarpJump ; JP PasswordWarp $B9D8: state 10's slot
-> Witness: L1 50 (door).
-$B75B MattRise ; state 2
-$B775 MattArc ; state 3
+> Witness: L1 100 (door, door3).
+$B75B MattStepUp ; state 2: a step up, x + dx and y - 4 for two passes
+$B775 MattStepDown ; state 3: a step down, x + dx and y + 4 for two passes (also walking off an edge)
 $B79E MattCrouchState ; state 4
-$B7B5 MattFall ; state 5
-$B841 MattJumpStart ; state 6
+$B7B5 MattJumpRise ; state 5: the jump, v (+$11) from -9 up to 0 (every fourth pass on the moon), then the fall
+$B841 MattFall ; state 6: the fall, v up to 8; JACKRABBIT in the slot in use turns it into the long jump
 $B84F c MattJumpRet ; A RET no branch reaches, then the jump's shared steps
 > The RET at $B84F never ran (known only from the code); the steps from $B850 run in every jump (c1).
 $B87F c JumpEdges ; The jump at the screen edges
-> Witness: L1 685 (c1, door, play2, rzx- x9).
+> Witness: L1 719 (c1, cheat, door, door3, kind6, masks, play2, rzx- x9).
 $B8DE JackrabbitJump ; JACKRABBIT: the long jump, state 7
-$B8E7 MattLongJump ; state 7, a charge a step
+$B8E7 MattLongJump ; state 7: a charge each 5 passes, $15 (15 BCD) on the moon
 $B993 c IsSolid ; Carry when the character at HL is solid (its ZoneAttrs bit 7)
-> Witness: L1 74211 (c1, door, play2, rzx- x9).
+> Witness: L1 81448 (c1, cheat, door, door3, kind6, masks, play2, rzx- x9).
 $B99B MattStand ; state 8
 $B9B8 MattNoEnergy ; state 9: wait, then GameOver
 $B9C5 StartWarp ; the room-0 password door: state 10, dissolve
 $B9D8 c PasswordWarp ; State 10: the warp through a room-0 password door to room 11, 3, 7 or 7
-> Counts the dissolve down (IX+$10), then sets RoomNumber from WarpRooms $BA1D[door] (0B 03 07 07), RoomScreen 0, x $42, y + 8, state 8, and DrawRoom. Door 3 also calls $BA21: a slot of kind 6 (LIFTER) with 99 charges at the level of kind 8. The door recording (work/stage2/rec/door, a POKE cheat for the password flags) took door 0 to room 11; the door-3 branch $BA21 is known only from the code.
-> Witness: L1 50 (door).
-$BA68 c PodStart ; State 11: the pod's effect, the dissolve
-> Witness: L1 16 (c1, door, play2, rzx- x8).
+> Counts the dissolve down (IX+$10), then sets RoomNumber from WarpRooms $BA1D[door] (0B 03 07 07), RoomScreen 0, x $42, y + 8, state 8, and DrawRoom. Door 3 also calls WarpBonus $BA21. The door recording (work/stage2/rec/door, a POKE cheat for the password flags) took door 1 (x $68, state 10 at frame 845) to room 3 (frame 981); door3 (the same cheat, x $A0) took door 3 to room 7 and its LIFTER.
+> Witness: L1 100 (door, door3).
+$BA1D b WarpRooms ; The room behind each password door: 0B 03 07 07
+$BA21 c WarpBonus ; Door 3's bonus: BACKLASH to level 3, a LIFTER with 99 charges at level 1, its name
+> FindLifterSlot $BA3E picks the first EMPTY or PENETRATOR slot (else slot 0), raising every BACKLASH slot it passes to level 3; the slot gets kind 6 (LIFTER), 99 charges, level 1; ShowLifterName $BA60 when slot 0 was EMPTY; then DrawAllSlots.
+> Witness: L1 1 (door3).
+$BA3E c FindLifterSlot ; IX = the first EMPTY or PENETRATOR slot, else slot 0; BACKLASH slots on the way get level 3
+> Witness: L1 1 (door3).
+$BA60 c ShowLifterName ; ShowMaskName(LIFTER), keeping AF
+> Witness: L1 1 (door3).
+$BA68 c PodStart ; State 11: the materialisation at a new game (effect 9), then the dissolve
+> Witness: L1 21 (c1, cheat, door, door3, kind6, masks, play2, rzx- x8).
 $BA7B MattPodDissolve ; state 12
 $BA93 c LavaDrain ; Zone 1: 2 energy a step
 > Witness: L1 51 (rzx-12000, rzx-16000, rzx-20000).
@@ -455,40 +480,41 @@ $BAA8 c Death ; Matt sinks for 32 passes, effect 8, then GameOver
 $BACC GameOver ; tune 2, MISSION TERMINATED, the high score, GameStart
 $BB01 t GameOverText ; MISSION TERMINATED
 $BB13 c SlowPrint ; Print a string a character a few HALTs
-> Witness: L1 14 (play2, rzx- x8).
+> Witness: L1 17 (door3, kind6, masks, play2, rzx- x8).
 $BB38 c PrintSpace ; A space and a flash attribute at the cursor
-> Witness: L1 284 (play2, rzx- x8).
+> Witness: L1 341 (door3, kind6, masks, play2, rzx- x8).
 $BB4C c CheatCheck ; Interrupt, in play: compare PasswordBuffer with CheatCode; equal sets CheatOn $BB77
-> HL = $E406 + $BB6B = $9F71 (PasswordBuffer, the sum overflows): typing JUDGE DREDD at ENTER PASSWORD sets CheatOn, which UseCharge $B210 and DeadlyFloor $B2F9 read: the masks keep their charges and the deadly floors do not kill. Witness: L1 39665 (c1, door, play2, rzx- x10); the cheat's effect is in work/stage2/NOTES.md.
+> HL = $E406 + $BB6B = $9F71 (PasswordBuffer, the sum overflows): typing JUDGE DREDD at ENTER PASSWORD sets CheatOn, which UseCharge $B210 and DeadlyFloor $B2F9 read: the masks keep their charges and the deadly floors do not kill. Witness: L1 46478 (c1, cheat, door, door3, kind6, masks, play2, rzx- x10); the cheat's effect is in work/stage2/NOTES.md.
 $BB6B b CheatCode ; The cheat password JUDGE DREDD as key codes, 0-terminated, and CheatOn $BB77
 $BB77 CheatOn ; $FF when the cheat password was typed
-$BB78 c Explosion ; Never run: 200 dots fly out of Matt (the penetrator's death in a wall)
-> Known only from the code: called only from EndPenetrator $BDF7 when Matt is inside a wall.
+$BB78 c Explosion ; 200 dots fly out of Matt: the PENETRATOR's death in a wall
+> Reached only from EndPenetrator $BDF7, when fire is released with Matt inside a wall (effects 16 and 17). Witness: work/stage2/rec/masks (PENETRATOR given by POKE, fire held walking right into the hill, released at frame 1249).
+> Witness: L1 1 (masks).
 $BC58 c PlotDot ; XOR the dot at x E, y D
-> Known only from the code.
+> Witness: L1 10085 (masks).
 $BC8E b DotBits ; The eight pixel bits
 @module objects
 $BC96 c ShotHits ; Z when Matt's shot overlaps object IX (not an explosion, not kind 10); +$22 = the shot's power
-> Witness: L1 77932 (c1, door, play2, rzx- x9).
+> Witness: L1 91060 (c1, cheat, door, door3, kind6, masks, play2, rzx- x9).
 $BCE0 c FireMask ; Fire with the mask in use: kinds 1-4 while fire is held, kinds 5-10 shoot on a new press
 > Kind 1 PENETRATOR: PenetratorOn, Matt dissolves and walks through walls, a charge every second pass ($BE0E). Kinds 2 ULTRA FLASH and 3 MIRAGE: RET ($BE39, $BE3A), nothing happens. Kind 4 HEALER: Energy + 2 for a charge. Kinds 5-10 fire Matt's shot (MattShot $A465, picture $D6E0, animation kind - 5, effect kind - 5, power = the slot's level) for a charge, LIFTER 8 charges; LIFTER's shot sets +$22 = $FF. JACKRABBIT also jumps far (MattLongJump).
-> Witness: L1 12988 (c1, door, play2, rzx- x9).
+> Witness: L1 15176 (c1, cheat, door, door3, kind6, masks, play2, rzx- x9).
 $BD7F c ShotOff ; Matt's shot gone
-> Witness: L1 79 (c1, door, play2, rzx- x9).
+> Witness: L1 86 (c1, cheat, door, door3, kind6, masks, play2, rzx- x9).
 $BD84 c MoveShot ; Matt's shot: x + dx; gone off $38-$C3 or in a wall
-> Witness: L1 12990 (c1, door, play2, rzx- x9).
+> Witness: L1 15178 (c1, cheat, door, door3, kind6, masks, play2, rzx- x9).
 $BDA4 HeldMasks ; kinds 1-4
 $BDD1 c EndPenetrator ; Fire released after PENETRATOR: Matt inside a wall dies (Explosion, GameOver)
-> Witness: L1 1021 (c1, door, rzx- x8).
-$BE0D b PenetratorCost ; Extra charges of the next PENETRATOR step (kind 8 sets $10)
+> Witness: L1 1143 (c1, door, door3, masks, rzx- x8).
+$BE0D b PenetratorCost ; Extra charges of the next PENETRATOR step: KindChaser $C68E sets 16 while PenetratorOn
 $BE0E Penetrator ; kind 1 held
 $BE39 UltraFlash ; RET: ULTRA FLASH does nothing when fired
 $BE3A Mirage ; RET: MIRAGE does nothing when fired
-$BE3B EnemyTemplates ; 20 records of 12 bytes: score (BCD word), picture, damage, animation, mask, width, height, mode, hits, colour
-> Copied into an object by SetupObject $BFF5: +$14/+$15, +$16/+$17, +$1E, +$18, +$1A, +5, +6, +$19, +$21, +$20 (bit 7 set: a random colour 1-7). Also src/res/tables/enemies.csv.
+$BE3B b EnemyTemplates 12 ; 20 records of 12 bytes: score (BCD word), picture, damage, animation, mask, width, height, mode, hits, colour
+> Copied into an object by SetupObject $BFF5: +$14/+$15, +$16/+$17, +$1E, +$18, +$1A, +5, +6, +$19, +$21, +$20 (bit 7 set: a random colour 1-7). Byte 10, the hits: 255 = never shot down (template 13, kind 10). Also src/res/tables/enemies.csv.
 @res tables/enemies.bin
 $BF2B c Spawn ; An empty object gets the screen's enemy kind (EnemyKind), every pass for kinds 5, 6, 8-10, else at random
-> Witness: L1 77933 (c1, door, play2, rzx- x9).
+> Witness: L1 91061 (c1, cheat, door, door3, kind6, masks, play2, rzx- x9).
 $BF64 SpawnNothing ; mark the slot used, 2 x 2, kind none
 $BF7F ReviveObjects ; all six slots empty: object 2 back as a placeholder
 $BFB0 b EnemyKind ; The screen's enemy kind (RoomTable bytes 6-11)
@@ -496,55 +522,58 @@ $BFB1 SpawnJumps ; RET for kind 0, then JP the spawner of kinds 1-10
 $BFB2 b SpawnJumpPad ; Two bytes after kind 0's RET
 $BFB4 SpawnJumps1 ; kinds 1-5
 $BFC3 c SpawnJump6 ; JP SpawnKind6 $C0F7 (room 1, screen 2)
-> No recording reached room 1's screen 2, the only screen of kind 6 (src/res/tables/rooms.csv): known only from the code.
+> No play recording reached room 1's screen 2, the only screen of kind 6 (src/res/tables/rooms.csv); work/stage2/rec/kind6 POKEs EnemyKind $BFB0 = 6 in room 0 (a cheat, said so in its script).
 $BFC6 SpawnJumps7 ; kinds 7-9
 $BFCF c SpawnJump10 ; JP SpawnKind10 $C1F3 (room 7, screens 2 and 3)
-> No recording reached room 7's screens 2-3, the only screens of kind 10: known only from the code.
+> No play recording reached room 7's screens 2-3, the only screens of kind 10; work/stage2/rec/door3 POKEs EnemyKind $BFB0 = 10 in room 7, screen 0 (a cheat, said so in its script).
 $BFD2 SpawnFlyer ; kind 1: a flyer from the right that homes on Matt's height (object kind 2)
 $BFF5 c SetupObject ; Copy the 12-byte template at HL into object IX
-> Witness: L1 569 (door, rzx- x9).
+> Witness: L1 634 (door, door3, kind6, rzx- x9).
 $C04B SpawnFaller ; kind 2: from the top (object kind 1)
 $C07E SpawnWave ; kind 3: a flyer on a wave (object kind 6)
 $C0A6 SpawnWalker ; kind 4: once a screen, a walker on FloorRow (object kind 7)
 $C0D6 b ChaserState ; one chaser at a time, and its timer ($0300)
 $C0D9 SpawnChaser ; kind 5: the chaser (object kind 8)
-$C0F7 c SpawnKind6 ; Kind 6 (room 1, screen 2): object kind 16, not run in the recordings
-> Known only from the code.
+$C0F7 c SpawnKind6 ; Kind 6 (room 1, screen 2): object kind 16
+> Run only with the EnemyKind POKE of work/stage2/rec/kind6 (frames 675-1891).
+> Witness: L1 1919 (kind6).
 $C116 SpawnRiser ; kind 7: from SpawnPoints (object kind 12)
 $C167 SpawnGuard ; kind 8: once a screen (object kind 13)
 $C18C c MarkOnce ; Set +$1F of the six objects
-> Witness: L1 2 (rzx-00000, rzx-24000).
+> Witness: L1 3 (kind6, rzx-00000, rzx-24000).
 $C19E SpawnBoss ; kind 9: once, on the floor (object kind 14)
 $C1F1 b SpawnPad ; Two zero bytes
-$C1F3 c SpawnKind10 ; Kind 10 (room 7, screens 2-3): a group of objects of kinds 18 and 19, not run in the recordings
-> Known only from the code.
+$C1F3 c SpawnKind10 ; Kind 10 (room 7, screens 2-3): a group of objects of kinds 18 and 19
+> Run only with the EnemyKind POKE of work/stage2/rec/door3 (frame 1478).
+> Witness: L1 1 (door3).
 $C26E b TurretStem ; The zone's turret stem character (SwapZone writes TurretStems[zone] here); KindTurret draws it under a turret
 $C26F c Explode ; Object IX becomes an explosion (kind 3, 4 steps, template HL) with a random effect 11-14
-> Witness: L1 243 (door, rzx- x9).
+> Witness: L1 272 (door, kind6, rzx- x9).
 $C284 c RunObjects ; The six objects: spawn, Matt's shot, the kind's routine; then ReviveObjects
-> Witness: L1 12990 (c1, door, play2, rzx- x9).
+> Witness: L1 15178 (c1, cheat, door, door3, kind6, masks, play2, rzx- x9).
 $C2C1 c AwardScore ; Score + the object's +$14/+$15
-> Witness: L1 78 (rzx- x9).
+> Witness: L1 84 (kind6, rzx- x9).
 $C2CA c Damage ; Energy - the object's +$1E (not below 0)
-> Witness: L1 74 (door, rzx- x9).
+> Witness: L1 133 (door, door3, kind6, rzx- x9).
 $C2D9 c TouchesMatt ; Z when object IX overlaps Matt (never while PENETRATOR is on)
-> Witness: L1 10278 (door, rzx- x9).
+> Witness: L1 12174 (door, door3, kind6, rzx- x9).
 $C315 c RunKind ; JP the routine of kind +0 & $3F through ObjectJumps
-> Witness: L1 77932 (c1, door, play2, rzx- x9).
+> Witness: L1 91060 (c1, cheat, door, door3, kind6, masks, play2, rzx- x9).
 $C326 c ObjectJumps ; JP of kinds 0-19: 0 HangLoop, 1 faller, 2 flyer, 3 explosion, 4 turret, 5 turret shot, 6 wave, 7 walker, 8 chaser, 9-19 the rest
-> Kinds 9, 11, 16, 18 and 19 never ran in a recording. Known for those only from the code.
+> Kinds 9 and 11 never ran in a recording (known for those only from the code); kinds 16, 18 and 19 ran only after an EnemyKind POKE (work/stage2/rec/kind6, door3).
+$C341 KindNineJump ; JP KindNine: kind 9's slot; no recording spawned kind 9, so its bytes stay data
 $C362 c MoveXY ; y + dy, then x + dx
-> Witness: L1 4336 (door, rzx- x9).
+> Witness: L1 4423 (door, kind6, rzx- x9).
 $C36B MoveX ; x + dx
 $C375 KindFaller ; 1
 $C3A6 KindFlyer ; 2
 $C3F1 KindExplosion ; 3
 $C401 c HitsWall ; Carry when the object's corners touch a solid character
-> Witness: L1 11213 (c1, rzx- x9).
-$C457 KindTurret ; 4: bobs, now and then fires a turret shot (kind 5)
+> Witness: L1 12137 (c1, cheat, door3, kind6, masks, rzx- x9).
+$C457 KindTurret ; 4: bobs, now and then fires a turret shot (kind 5); killed, Explode runs before AwardScore, so the explosion template's score 0 is added: a turret never scores
 $C503 c ObjectCell ; HL = the character map place of object IX
 > Witness: L1 1891 (door, rzx- x7).
-$C521 KindTurretShot ; 5
+$C521 KindTurretShot ; 5: damages Matt only while the slot before it holds a turret: the shot of a dead turret is harmless
 $C562 KindWave ; 6, its heights WaveHeights $C5B5
 $C5B5 b WaveHeights ; 18 heights and 18 animation steps of the wave
 $C5D9 KindWalker ; 7
@@ -563,28 +592,30 @@ $C7F4 c GuardBob ; The guard's up and down
 > Witness: L1 270 (rzx-00000, rzx-24000).
 $C81B KindFourteen ; 14, the boss
 $C860 KindFifteen ; 15
-$C89B c KindSixteen ; Never run: kind 16
-> Known only from the code.
+$C89B c KindSixteen ; Kind 16 (SpawnKind6's object)
+> Run only in work/stage2/rec/kind6 (an EnemyKind POKE), frames 675-1891.
+> Witness: L1 488 (kind6).
 $C8FD ObjectGone ; the object leaves
 $C922 KindSeventeen ; 17
-$C980 c KindEighteen ; Never run: kinds 18 and 19 (SpawnKind10's group)
-> Known only from the code.
+$C980 c KindEighteen ; Kinds 18 and 19 (SpawnKind10's group)
+> Run only in work/stage2/rec/door3 (an EnemyKind POKE), frames 1478-1968.
+> Witness: L1 167 (door3).
 @module renderer
 $C9EA c Twinkle ; Eight bits of the characters at $E710 ($E728 in zone 3) switched on and off in turn (TwinkleSteps)
-> Witness: L1 13174 (c1, door, play2, rzx- x9).
+> Witness: L1 15361 (c1, cheat, door, door3, kind6, masks, play2, rzx- x9).
 $CA35 b TwinkleSteps ; The eight steps' states
 $CA3D c AnimateLift ; Zone 0: move the lift (characters $69 / $6B) up and down its shaft
-> Witness: L1 13174 (c1, door, play2, rzx- x9).
+> Witness: L1 15361 (c1, cheat, door, door3, kind6, masks, play2, rzx- x9).
 $CAAD c MarkAnimated ; Mark every AnimatedCells cell dirty
-> Witness: L1 13174 (c1, door, play2, rzx- x9).
+> Witness: L1 15361 (c1, cheat, door, door3, kind6, masks, play2, rzx- x9).
 $CABD b AnimSteps ; Three counters: 0-7, 5-0, 0-11, and frame tables at $CAC0 and $CAC7
 $CACD c AnimateZone ; Each pass: copy the zone's next animation frames into its live characters, the lift, the twinkle
-> Witness: L1 13174 (c1, door, play2, rzx- x9).
+> Witness: L1 15361 (c1, cheat, door, door3, kind6, masks, play2, rzx- x9).
 $CB41 b AnimLast ; the last random frame (zone 1)
 $CB42 AnimateZone1 ; zone 1
 @module interrupt
 $CBF9 c GameStart ; The menu, a new game, then the main loop
-> Witness: L1 16 (c1, play2, rzx- x8).
+> Witness: L1 19 (c1, door3, kind6, masks, play2, rzx- x8).
 $CC03 MainLoop ; one pass: controls, Matt, shot, hazards, objects, fire, mask keys, score, death, energy, slot, animation, draw
 $CC5C b PassBcd ; A BCD pass counter (bit 0 times PENETRATOR's charges and the turret's bob)
 $CC5D s PassBcdSpare ; 35 zero bytes no routine reads
@@ -624,7 +655,7 @@ $D960 b SpriteWalker 8 ; The walker (kind 7, $BE77): 4 frames of 2 x 2
 @res sprites/walker.bin
 $D9E0 b SpriteChaser 8 ; The chaser (kind 8, $BE83): one picture of 8 x 3
 @res sprites/chaser.bin
-$DAA0 b SpriteKind16 8 ; Kind 16's picture ($BE8F, never spawned): 4 frames of 2 x 3
+$DAA0 b SpriteKind16 8 ; Kind 16's picture ($BE8F, spawned only by a POKE in work/stage2/rec/kind6): 4 frames of 2 x 3
 @res sprites/kind16.bin
 $DB60 b SpriteBig 8 ; One 4 x 3 picture ($BECB)
 @res sprites/big.bin
@@ -653,10 +684,17 @@ $EE00 b Zone1Attrs 16 ; Zone 1's attributes, copied to $6300 by GameEntry; then 
 $EF00 b ZoneAttrs 16 ; The live zone's attributes (bit 7 solid): zone 0's as loaded
 @res charsets/zone0-attr.bin
 $F000 b Zone1CharsLow 8 ; Zone 1's characters 0-159, copied to $5B00 by GameEntry; then the masks, the character map ($F080) and the dirty map ($F3C0)
+$F000 MaskBuffer ; at run time: the sprite mask (MakeMask $A777) and DrawObject's work space, $F000-$F07F
+$F080 CharMap ; at run time: the character map, 32 x 20 character codes; row 2 ($F0C0) is screen row 0
+$F300 MirrorBuffer ; at run time: MirrorFrame's mirrored frame
+$F3C0 DirtyMap ; at run time: the dirty marks, 32 x 18, one a shown cell (1 the zone character, 2 a sprite character), to $F5FF
 @res charsets/zone1-low.bin
 $F500 b LeftoverF500 16 ; 256 bytes of leftovers, cleared as the dirty map before any read
 @res leftovers/f500.bin
 $F600 b PlayPanel 8 ; The play panel (rows 18-23, 32 x 6 characters), drawn by Menu at the first start; then BuildTables' tables
+$F600 BitReverse ; at run time: BuildTables' bit-reverse table (MirrorFrame)
+$F700 Dilate ; at run time: the dilate table of MakeMask
+$F800 ShiftTables ; at run time: three page pairs, each byte shifted 2, 4 or 6 pixels and the bits pushed out, to $FDFF
 @res screens/panel.bin
 $FC00 b LeftoverFC00 16 ; 100 bytes between the panel and its attributes (overwritten by BuildTables)
 @res leftovers/fc00.bin

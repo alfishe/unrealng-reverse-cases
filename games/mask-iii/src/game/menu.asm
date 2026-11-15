@@ -11,7 +11,7 @@
 ; The menu: wipe, logo, strings; MenuLoop until fire, then the play screen's
 ; panel and tune 3
 ;
-; Witness: L1 16 (c1, play2, rzx- x8).
+; Witness: L1 19 (c1, door3, kind6, masks, play2, rzx- x8).
 Menu:
   LD A,$FF
   LD (NotInPlay),A
@@ -22,8 +22,8 @@ Menu:
   LD (HudSaved),A
   CALL MenuWipe
   CALL ClearScreen
-  LD HL,Zone1CharsLow+$02F0
-  LD DE,Zone1CharsLow+$02F1
+  LD HL,CharMap+$0270
+  LD DE,CharMap+$0271
   LD BC,$0050
   LD (HL),$00
   LDIR
@@ -153,7 +153,7 @@ l_9838:
 
 ; Wipe the attributes diagonally (PokeAttr)
 ;
-; Witness: L1 16 (c1, play2, rzx- x8).
+; Witness: L1 19 (c1, door3, kind6, masks, play2, rzx- x8).
 MenuWipe:
   LD E,$F8
 l_984F:
@@ -167,7 +167,7 @@ l_984F:
 
 ; One diagonal of the wipe
 ;
-; Witness: L1 1120 (c1, play2, rzx- x8).
+; Witness: L1 1330 (c1, door3, kind6, masks, play2, rzx- x8).
 MenuWipeStep:
   PUSH DE
   PUSH AF
@@ -193,7 +193,7 @@ l_9861:
 
 ; Set the attribute at row D, column E to A when they are on the screen
 ;
-; Witness: L1 272440 (c1, door, play2, rzx- x9).
+; Witness: L1 323612 (c1, cheat, door, door3, kind6, masks, play2, rzx- x9).
 PokeAttr:
   EX AF,AF'
   LD A,E
@@ -223,12 +223,12 @@ l_9897:
 ; The menu's interrupt: the logo's raster colours, the lit control icon, the
 ; border bars, the colour scroll
 ;
-; Witness: L1 14133 (c1, door, play2, rzx- x9).
+; Witness: L1 16790 (c1, cheat, door, door3, kind6, masks, play2, rzx- x9).
 MenuInterrupt:
   CALL LogoRaster
   CALL ColourScroll
   LD A,$07
-  LD HL,Zone1CharsLow+$00C0
+  LD HL,CharMap+$0040
   LD DE,Attributes+11
 l_98A7:
   EX AF,AF'
@@ -320,7 +320,7 @@ l_9921:
 
 ; Clear the bitmap and the attributes
 ;
-; Witness: L1 16 (c1, play2, rzx- x8).
+; Witness: L1 19 (c1, door3, kind6, masks, play2, rzx- x8).
 ClearScreen:
   LD HL,Screen
   LD DE,Screen+1
@@ -340,7 +340,7 @@ ClearScreen:
 ; Colour the logo line by line (LDI from the buffer at $F0CA in time with the
 ; beam)
 ;
-; Witness: L1 14133 (c1, door, play2, rzx- x9).
+; Witness: L1 16790 (c1, cheat, door, door3, kind6, masks, play2, rzx- x9).
 LogoRaster:
   LD BC,$021F
 l_9954:
@@ -352,7 +352,7 @@ l_9954:
   NOP
   NOP
   LD DE,Attributes+11
-  LD HL,Zone1CharsLow+$00CA
+  LD HL,CharMap+$004A
   LD A,$07
 l_9964:
   EX AF,AF'
@@ -397,7 +397,7 @@ l_9993:
 
 ; HL = the screen address of character row D, column E
 ;
-; Witness: L1 809 (c1, door, play2, rzx- x9).
+; Witness: L1 1013 (c1, cheat, door, door3, kind6, masks, play2, rzx- x9).
 ScreenAddr:
   LD HL,Screen
   LD A,D
@@ -418,7 +418,7 @@ ScreenAddr:
 
 ; Draw B x C characters from HL at row D, column E
 ;
-; Witness: L1 281 (c1, door, play2, rzx- x9).
+; Witness: L1 351 (c1, cheat, door, door3, kind6, masks, play2, rzx- x9).
 DrawGraphic:
   PUSH HL
   PUSH DE
@@ -480,7 +480,7 @@ MenuBanner:
 ; Keep screen rows 18-23 at $F600 and their attributes at $FC64 (the play
 ; panel, restored at the start)
 ;
-; Witness: L1 15 (play2, rzx- x8).
+; Witness: L1 18 (door3, kind6, masks, play2, rzx- x8).
 SaveHud:
   LD HL,Screen+4160
   LD DE,PlayPanel
@@ -504,7 +504,7 @@ l_9CA9:
 
 ; Print the bit-7-terminated string at HL at row D, column E
 ;
-; Witness: L1 479 (c1, door, play2, rzx- x8).
+; Witness: L1 601 (c1, cheat, door, door3, kind6, masks, play2, rzx- x8).
 PrintString:
   PUSH BC
   PUSH DE
@@ -530,7 +530,7 @@ l_9CD3:
 
 ; Print character A (5-row glyph, attribute $47)
 ;
-; Witness: L1 31638 (c1, door, play2, rzx- x10).
+; Witness: L1 37418 (c1, cheat, door, door3, kind6, masks, play2, rzx- x10).
 PrintChar:
   PUSH BC
   PUSH HL
@@ -577,7 +577,7 @@ Hiscore:
 
 ; The 15 menu strings, the high score and the control icons
 ;
-; Witness: L1 31 (c1, door, play2, rzx- x8).
+; Witness: L1 39 (c1, cheat, door, door3, kind6, masks, play2, rzx- x8).
 DrawMenu:
   LD HL,MenuStrings
   LD B,$0F
@@ -639,7 +639,7 @@ MenuStrings:
 
 ; Clear the menu's text area
 ;
-; Witness: L1 10 (c1, play2).
+; Witness: L1 12 (c1, cheat, play2).
 ClearMenuArea:
   LD HL,Screen+4256
   LD D,$00
@@ -730,10 +730,10 @@ DefinePrompts:
 
 ; The menu's colour bars, a random sequence a cycle
 ;
-; Witness: L1 14154 (c1, door, play2, rzx- x9).
+; Witness: L1 16815 (c1, cheat, door, door3, kind6, masks, play2, rzx- x9).
 ColourScroll:
-  LD DE,Zone1CharsLow+$00C0
-  LD HL,Zone1CharsLow+$02F0
+  LD DE,CharMap+$0040
+  LD HL,CharMap+$0270
   LD B,$38
 l_9EB7:
   PUSH HL
@@ -772,8 +772,8 @@ ColourSequences:
 ;
 ; Used by the routine at MenuInterrupt.
 l_9F2E:
-  LD HL,Zone1CharsLow+$02F1
-  LD DE,Zone1CharsLow+$02F0
+  LD HL,CharMap+$0271
+  LD DE,CharMap+$0270
   LD BC,$004B
   LDIR
   LD HL,(ColourSequences)
@@ -834,7 +834,7 @@ PasswordBuffer:
 ; The flags let Matt into a door (MattWalk $B48D-$B4BB: room 0, screen 5,
 ; standing on character $1C, down held).
 ;
-; Witness: L1 4 (play2).
+; Witness: L1 5 (cheat, play2).
 EnterPassword:
   CALL ClearMenuArea
   LD HL,MenuStrings+$0084
@@ -910,7 +910,7 @@ Passwords:
 
 ; Z when the buffer at HL equals the 0-terminated code string at DE
 ;
-; Witness: L1 16 (play2).
+; Witness: L1 20 (cheat, play2).
 StringMatch:
   LD DE,PasswordBuffer
 l_A036:
@@ -926,7 +926,7 @@ l_A036:
 
 ; Close the screen from the top and the bottom, one line pair a HALT (88 steps)
 ;
-; Witness: L1 16 (c1, door, play2, rzx- x8).
+; Witness: L1 21 (c1, cheat, door, door3, kind6, masks, play2, rzx- x8).
 ScreenWipe:
   LD HL,Screen+6048
   EXX
@@ -967,7 +967,7 @@ l_A074:
 
 ; Clear one pixel line
 ;
-; Witness: L1 2832 (c1, door, play2, rzx- x8).
+; Witness: L1 3717 (c1, cheat, door, door3, kind6, masks, play2, rzx- x8).
 ClearLine:
   LD E,L
   LD D,$20
@@ -990,7 +990,7 @@ KeysUser:
 
 ; NZ when key code A is down (patches its own port and bit)
 ;
-; Witness: L1 88275 (c1, door, play2, rzx- x10).
+; Witness: L1 103894 (c1, cheat, door, door3, kind6, masks, play2, rzx- x10).
 KeyPressed:
   PUSH BC
   PUSH AF
@@ -1016,7 +1016,7 @@ KeyPressed:
 
 ; The first key down as a key code, or none
 ;
-; Witness: L1 28820 (c1, door, play2, rzx- x9).
+; Witness: L1 34726 (c1, cheat, door, door3, kind6, masks, play2, rzx- x9).
 ScanKeyboard:
   LD B,$7F
 l_A0B4:
@@ -1037,7 +1037,7 @@ l_A0C7:
 
 ; A key code from ScanKeyboard
 ;
-; Witness: L1 28820 (c1, door, play2, rzx- x9).
+; Witness: L1 34726 (c1, cheat, door, door3, kind6, masks, play2, rzx- x9).
 ReadKeyCode:
   PUSH BC
   CALL ScanKeyboard
@@ -1063,7 +1063,7 @@ l_A0E0:
 
 ; Wait for a key: A the character, A' the key code
 ;
-; Witness: L1 1988 (c1, play2).
+; Witness: L1 2470 (c1, cheat, play2).
 WaitKey:
   CALL ReadKeyCode
   JR Z,WaitKey
@@ -1082,7 +1082,7 @@ KeyChars:
 
 ; A = the character of key code A
 ;
-; Witness: L1 235 (c1, door, play2, rzx- x5).
+; Witness: L1 271 (c1, cheat, door, door3, play2, rzx- x5).
 KeyCodeToChar:
   PUSH HL
   PUSH DE
@@ -1122,7 +1122,7 @@ ControlMethod:
 ; Controls from the Kempston port or the chosen keys; right beats left, down
 ; beats up
 ;
-; Witness: L1 23419 (c1, door, play2, rzx- x10).
+; Witness: L1 27243 (c1, cheat, door, door3, kind6, masks, play2, rzx- x10).
 ReadControls:
   LD A,(Controls)
   LD (ControlsLast),A

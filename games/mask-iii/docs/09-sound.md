@@ -507,16 +507,16 @@ Witness: TuneRequest is written only at `$9812` (3) and `$BAD4` (2) (`grep TuneR
 | 1 | LIFTER shot | FireMask | A | 47 | 30 | [AY](audio/fx-01-ay.wav), [beeper](audio/fx-01-beeper.wav) | `rzx-12000` 2100 |
 | 2 | BLASTER shot | FireMask | A | 47 | 30 | [AY](audio/fx-02-ay.wav), [beeper](audio/fx-02-beeper.wav) | `rzx-08000` 1115, `rzx-24000` 252 |
 | 3 | BACKLASH shot | FireMask | A | 47 | 30 | [AY](audio/fx-03-ay.wav), [beeper](audio/fx-03-beeper.wav) | `c1` 19 326, `rzx-00000` 990 |
-| 4 | LAVA SHOT shot | FireMask | A | 47 | 30 | [AY](audio/fx-04-ay.wav), [beeper](audio/fx-04-beeper.wav) | never: no LAVA SHOT lies anywhere |
-| 5 | STREAMER shot | FireMask | A | 47 | 30 | [AY](audio/fx-05-ay.wav), [beeper](audio/fx-05-beeper.wav) | never: no STREAMER lies anywhere |
+| 4 | LAVA SHOT shot | FireMask | A | 47 | 30 | [AY](audio/fx-04-ay.wav), [beeper](audio/fx-04-beeper.wav) | in play never (no LAVA SHOT lies anywhere); `cheat` (a POKE) fires it |
+| 5 | STREAMER shot | FireMask | A | 47 | 30 | [AY](audio/fx-05-ay.wav), [beeper](audio/fx-05-beeper.wav) | in play never (no STREAMER lies anywhere); `masks` (a POKE) fires it |
 | 6 | the wave flyer's swoop | KindWave `$C562`, once a swoop | B | 30 | 15 | [AY](audio/fx-06-ay.wav), [beeper](audio/fx-06-beeper.wav) | `rzx-12000` 2747 |
-| 7 | PENETRATOR on | Penetrator `$BE0E` | A, R13 | until stopped | until stopped | [AY](audio/fx-07-ay.wav), [beeper](audio/fx-07-beeper.wav) | `rzx-00000` 2517 |
+| 7 | PENETRATOR on | Penetrator `$BE0E` | A, R13 | until stopped | until stopped | [AY](audio/fx-07-ay.mp3), [beeper](audio/fx-07-beeper.mp3) | `rzx-00000` 2517 |
 | 8 | death | Death `$BAA8` | C | 47 | 40 | [AY](audio/fx-08-ay.wav), [beeper](audio/fx-08-beeper.wav) | `rzx-04000` 1561 |
 | 9 | Matt materialises, the door warp | PodStart `$BA68` (a new game), StartWarp `$B9C5` | A, R13 | 130 | 130 | [AY](audio/fx-09-ay.wav), [beeper](audio/fx-09-beeper.wav) | every new game; `door` 845 |
-| 10 | kind 16 enters | SpawnKind6 `$C0F7`, KindSixteen | B | 257 | 230 | [AY](audio/fx-10-ay.wav), [beeper](audio/fx-10-beeper.wav) | never |
+| 10 | kind 16 enters | SpawnKind6 `$C0F7`, KindSixteen | B | 257 | 230 | [AY](audio/fx-10-ay.mp3), [beeper](audio/fx-10-beeper.wav) | in play never; `kind6` (an EnemyKind POKE) spawns kind 16 |
 | 11-14 | an explosion | Explode `$C26F`: 11 + Random AND 3; KindEleven's burst: 11 | C | 131, 68, 131, 131 | 5 | [11](audio/fx-11-ay.wav), [12](audio/fx-12-ay.wav), [13](audio/fx-13-ay.wav), [14](audio/fx-14-ay.wav); beeper [11](audio/fx-11-beeper.wav), [12](audio/fx-12-beeper.wav), [13](audio/fx-13-beeper.wav), [14](audio/fx-14-beeper.wav) | every kill; `rzx-00000` 996 |
 | 15 | the chaser in view | KindChaser `$C64E`, each pass | B, R13 | 100 | 100 | [AY](audio/fx-15-ay.wav), [beeper](audio/fx-15-beeper.wav) | `rzx-08000` from 1034, `rzx-32000` from 473 |
-| 16, 17 | Matt explodes in a wall | Explosion `$BB78` | A and B | 131 | 100 | [16](audio/fx-16-ay.wav), [17](audio/fx-17-ay.wav); beeper [16](audio/fx-16-beeper.wav), [17](audio/fx-17-beeper.wav) | never |
+| 16, 17 | Matt explodes in a wall | Explosion `$BB78` | A and B | 131 | 100 | [16](audio/fx-16-ay.wav), [17](audio/fx-17-ay.wav); beeper [16](audio/fx-16-beeper.wav), [17](audio/fx-17-beeper.wav) | in play never; `masks` (PENETRATOR by a POKE, released in a wall at frame 1249) |
 
 "AY" is the frames until the channel is silent. "Beeper" is the bursts (frames) BeeperTick plays. "Until stopped" is
 capped at 400 frames in the renders.
@@ -566,8 +566,9 @@ long sounds (PENETRATOR, the chaser) use the AY's hardware envelope and need sto
 EffectStops.
 
 Witness: the callers by `grep PlayEffect src/game/*.asm`; BeeperState in `rzx-00000` at frames 990 and 996 (9.1); the
-"Seen in" frames from the samples of [doc 10](10-gameplay-logic.md). Effects 4, 5, 10, 16 and 17 have no witness:
-no recording reached their causes. They are known only from the code and the simulator.
+"Seen in" frames from the samples of [doc 10](10-gameplay-logic.md). Effects 4, 5, 10, 16 and 17: no play recording
+reached their causes; the POKE recordings do (`cheat` fires LAVA SHOT, `masks` STREAMER and the Explosion, `kind6`
+spawns kind 16), but their sound is known only from the code and the simulator.
 
 ## 9.7 The beeper on a 48K: BeeperStart and BeeperTick
 
@@ -736,9 +737,9 @@ Witness: 9.1 (the flag and the paths), 9.7 (the beeper), [doc 3](03-build-and-lo
   for effects. No record and no instrument has bit 7, and only EffectStart, Silence and the envelope's end write that
   byte, so the test never holds. In the menu and at the start an effect on a busy channel is cut by the next note.
 - **Never run**: EffectByNumber `$C007` (JP `$C013`) and BeeperOff `$94C3`.
-- **Effects no recording played**: 4 and 5 (no LAVA SHOT or STREAMER lies
-  anywhere), 10 (kind 16, never spawned in the recordings), 16 and 17 (Matt's death inside a wall). Their sound is
-  known only from the simulator.
+- **Effects no play recording played**: 4 and 5 (no LAVA SHOT or STREAMER lies
+  anywhere), 10 (kind 16, not spawned in play), 16 and 17 (Matt's death inside a wall); only the POKE recordings
+  `cheat`, `masks` and `kind6` reach their causes. Their sound is known only from the simulator.
 - **Not cross-checked**: the AY renders come from the simulator, not from AY register captures of a recording. The
   simulator runs the game's own code from the build, so the register values are the game's. The analogue part (the
   volume table, the mixing) is a standard AY model.

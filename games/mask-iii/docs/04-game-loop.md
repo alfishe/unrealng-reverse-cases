@@ -292,8 +292,8 @@ Three findings come out of these tables.
 - The menu's interrupt is nearly a whole frame, 64 914 T of 70 908. MenuInterrupt draws the logo's colour raster
   and reads the menu keys. The menu's own loop gets the rest and waits on `HALT`.
 
-WALKTHROUGH 1 estimated the AY player at "about 27 000 T a frame" from the whole of c1. That figure mixed the menu's
-interrupts into the average; the play window measures 212 T.
+The whole-recording average of c1 (30 032 T an interrupt, WALKTHROUGH 1) is not the AY player's cost: it mixes the
+menu's interrupts into the average; the play window measures 212 T.
 
 The point: in play the interrupt takes 2.4 % to 3.7 % of the CPU. The main loop gets the rest.
 
@@ -623,6 +623,7 @@ pass, and a pass is 2.4 to 5.4 frames.
 ## 4.7 Known only from the code
 
 - Explosion `$BB78`: 200 dots flying out of Matt with 150 `HALT`s. Only EndPenetrator calls it, when Matt is inside a
-  wall as PENETRATOR ends; no recording did that.
+  wall as PENETRATOR ends; no play recording did that, only `masks` (PENETRATOR given by a POKE, released inside the
+  hill at frame 1249, Explosion L1 1).
 - HangLoop `$9208`: `DI` and a border flash forever, the kind-0 slot of ObjectJumps; no object of kind 0 runs.
 - FrameCounter `$9224` is counted every frame and never read.

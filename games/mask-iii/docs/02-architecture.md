@@ -358,11 +358,12 @@ Code known only from the code: no recording ran it.
 | BorderFlash (after HangLoop) | flash the border BC times |
 | BeeperOff `$94C3` | clear the beeper count |
 | ExitByte3 `$B6D8` | leave by the room table's byte 3, which is `$FF` everywhere |
-| Explosion `$BB78` | 200 dots fly out of Matt, when PENETRATOR ends in a wall |
-| KindEleven `$C6F2`, KindSixteen `$C89B`, KindEighteen `$C980` | the movers of objects 11, 16, 18 and 19 |
-| SpawnKind6 `$C0F7`, SpawnKind10 `$C1F3` | the spawners of room 1 screen 2 and room 7 screens 2-3 |
-| the door-3 branch `$BA21` | LIFTER for door 3 |
+| KindEleven `$C6F2` | the mover of objects of kind 11 |
 | MattJumpRet `$B84F`, KindThirteenRet `$C789` | a `RET` no branch reaches |
 
 The point: the leftovers show how the tape image was made. The panel, zone 1's set and the loader's tail were
 captured from a working memory, not assembled into place.
+
+Run only in the integration's POKE recordings (`work/stage2/rec/`, each script says its POKEs): Explosion `$BB78`
+(`masks`, frame 1249), KindSixteen `$C89B` and SpawnKind6 `$C0F7` (`kind6`, EnemyKind `$BFB0` = 6), KindEighteen
+`$C980` and SpawnKind10 `$C1F3` (`door3`, EnemyKind = 10), the door-3 bonus WarpBonus `$BA21` (`door3`, frame 969).

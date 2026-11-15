@@ -319,7 +319,7 @@ def jump_model(moon):
     while passes < 60:
         passes += 1
         if state == 5:
-            # the jump (MattFall $B7B5): on the moon v skips its step when PassCounter AND 3 is 0
+            # the jump (MattJumpRise $B7B5): on the moon v skips its step when PassCounter AND 3 is 0
             if not moon or passes % 4 != 0:
                 v += 1
                 if v == 1:
@@ -349,7 +349,7 @@ def cmd_jump(out):
         ax.plot(range(len(ys)), [-y for y in ys], marker='o', ms=3, color=c, label=lab)
     ax.set_xlabel('pass')
     ax.set_ylabel('height above the start (pixels)')
-    ax.set_title(r'The model (MattFall \$B7B5, \$B8A7), standing jump')
+    ax.set_title(r'The model (MattJumpRise \$B7B5, \$B8A7), standing jump')
     ax.set_ylim(-2, 64)
     ax.set_yticks(range(0, 50, 10))
     ax.legend(loc='upper center', fontsize=10)

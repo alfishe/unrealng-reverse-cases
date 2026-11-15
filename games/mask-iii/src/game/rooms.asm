@@ -7,12 +7,12 @@
 ; of 4) into the character map $F080. The room table RoomTable $953B gives the exits, the zone and one enemy kind a
 ; screen.
 ;
-; The maps are also state: TakeBlockItem $B33D turns a taken item (block $1B) into block $47, CheckPickups turns a
-; used pod block $12 into $2B; NewGame $915B turns them back. The resources are text grids (src/res/rooms/README.md);
-; tools/roommap.py draws every room and the world map from them.
+; The maps are also state: TakeBlockItem $B33D turns a taken item (block $1B) into block $47, KindTurret $C457 turns a
+; dead turret's block $12 into $2B; NewGame $915B turns them back (every $2B into $12, every $47 into $1B). The
+; resources are text grids (src/res/rooms/README.md); tools/roommap.py draws every room and the world map from them.
 ; --------------------------------------------------------------------------------------------------------------------
 
-; Room 0: the base (zone 0), the start, the password pods
+; Room 0: the surface (zone 0), the start, the password doors
 Room0Map:
   INCBIN "res/rooms/room-00.bin",$0000,240
 
@@ -100,7 +100,9 @@ RoomScreen:
 ;
 ; PlacePickupsInScreen $A9BE shows the records of the room's screen that are
 ; not taken; CheckPickups $B126 sets bit 7 when Matt takes one; NewGame clears
-; the bits. Also src/res/tables/pickups.csv.
+; the bits. Eleven pick-ups; kinds 2, 3, 9 and 10 (ULTRA FLASH, MIRAGE, LAVA
+; SHOT, STREAMER) are in no record and cannot be had in play. Also
+; src/res/tables/pickups.csv.
 PickupTable:
   INCBIN "res/tables/pickups.bin",$0000,45
 
@@ -122,7 +124,7 @@ Font:
 
 ; HL = the 5-byte glyph of character A (letters, digits, '.', ':', space)
 ;
-; Witness: L1 33616 (c1, door, play2, rzx- x10).
+; Witness: L1 40146 (c1, cheat, door, door3, kind6, masks, play2, rzx- x10).
 CharGlyph:
   AND $7F
   CP $61
@@ -206,7 +208,7 @@ MapPointer:
 ; FindFloorRow $AC80, FindSpawnPoints $ACA0, FindBlockItems $ACEA,
 ; PlacePickupsInScreen $A9BE and RoomMessage $AD28.
 ;
-; Witness: L1 80 (c1, door, play2, rzx- x9).
+; Witness: L1 87 (c1, cheat, door, door3, kind6, masks, play2, rzx- x9).
 DrawRoom:
   LD A,(RoomNumber)
   CP $0F
@@ -239,7 +241,7 @@ l_A8D3:
   LD (IX+$1F),$00
   ADD IX,DE
   DJNZ l_A8D3
-  LD DE,Zone1CharsLow+$0080
+  LD DE,CharMap
   EXX
   LD A,(RoomNumber)
   LD L,A
@@ -344,8 +346,8 @@ l_A96B:
   LD IX,(RoomRecord)
   LD A,(IX+$04)
   CALL SwapZone
-  LD HL,Zone1CharsLow+$03C0
-  LD DE,Zone1CharsLow+$03C1
+  LD HL,DirtyMap
+  LD DE,DirtyMap+$0001
   LD BC,$023F
   LD (HL),$01
   LDIR
@@ -375,7 +377,7 @@ l_A96B:
 
 ; Make the icons of this screen's untaken masks (PickupTable) as characters
 ;
-; Witness: L1 79 (c1, door, play2, rzx- x9).
+; Witness: L1 86 (c1, cheat, door, door3, kind6, masks, play2, rzx- x9).
 PlacePickupsInScreen:
   LD HL,PickupTable
   LD DE,$0004
@@ -393,7 +395,7 @@ PlacePickupsInScreen:
 ; One pick-up: its icon from MaskIcons $D580 + 32 x kind, coloured
 ; MaskColours[kind]
 ;
-; Witness: L1 158 (c1, door, play2, rzx- x9).
+; Witness: L1 172 (c1, cheat, door, door3, kind6, masks, play2, rzx- x9).
 PlacePickup:
   LD (IX+$01),$FF
   CALL FindPickup
@@ -426,7 +428,7 @@ PlacePickup:
   ADD HL,HL
   ADD HL,HL
   ADD HL,DE
-  LD DE,Zone1CharsLow+$00C0
+  LD DE,CharMap+$0040
   ADD HL,DE
   LD (IX+$03),L
   LD (IX+$04),H
@@ -473,7 +475,7 @@ PlacePickup:
 
 ; The PickupTable record of this room at Matt's place
 ;
-; Witness: L1 158 (c1, door, play2, rzx- x9).
+; Witness: L1 172 (c1, cheat, door, door3, kind6, masks, play2, rzx- x9).
 FindPickup:
   EXX
 l_AA5A:
@@ -505,7 +507,7 @@ LiftPlace:
 
 ; Zone 0: find character $34 in the screen (the lift), else none
 ;
-; Witness: L1 79 (c1, door, play2, rzx- x9).
+; Witness: L1 86 (c1, cheat, door, door3, kind6, masks, play2, rzx- x9).
 FindLift:
   LD HL,$0000
   LD (LiftPlace),HL
@@ -515,7 +517,7 @@ FindLift:
   LD A,(ZoneSlots)
   AND A
   RET NZ
-  LD HL,Zone1CharsLow+$00C0
+  LD HL,CharMap+$0040
   LD BC,$0240
   LD E,$34
 l_AA8D:
@@ -567,7 +569,7 @@ AnimatedCells:
 ; List the cells of the zone's animated characters (AnimatedChars) into
 ; AnimatedCells
 ;
-; Witness: L1 79 (c1, door, play2, rzx- x9).
+; Witness: L1 86 (c1, cheat, door, door3, kind6, masks, play2, rzx- x9).
 AnimatedCharList:
   LD HL,AnimatedChars+$003F
   LD A,(ZoneSlots)
@@ -582,7 +584,7 @@ AnimatedCharList:
   LD (l_AB89+$0001),HL
   LD HL,AnimatedCells
   LD (AnimatedCells+$00C8),HL
-  LD HL,Zone1CharsLow+$00C0
+  LD HL,CharMap+$0040
   LD BC,$0240
 l_AB89:
   LD DE,$0000
@@ -631,7 +633,7 @@ AnimatedChars:
 
 ; B, C = the place of the first block A in the screen's map
 ;
-; Witness: L1 237 (c1, door, play2, rzx- x9).
+; Witness: L1 258 (c1, cheat, door, door3, kind6, masks, play2, rzx- x9).
 FindBlock:
   LD (AnimatedChars+$0047),A
   LD HL,(MapPointer)
@@ -694,7 +696,7 @@ l_AC38:
 
 ; Every block $12 of the screen becomes a turret object (kind 4)
 ;
-; Witness: L1 79 (c1, door, play2, rzx- x9).
+; Witness: L1 86 (c1, cheat, door, door3, kind6, masks, play2, rzx- x9).
 PlaceTurrets:
   LD A,(ChaserState)
   AND A
@@ -729,11 +731,11 @@ FloorRow:
 
 ; FloorRow from the attributes (bit 7)
 ;
-; Witness: L1 79 (c1, door, play2, rzx- x9).
+; Witness: L1 86 (c1, cheat, door, door3, kind6, masks, play2, rzx- x9).
 FindFloorRow:
   XOR A
   EX AF,AF'
-  LD HL,Zone1CharsLow+$00C0
+  LD HL,CharMap+$0040
   LD DE,$0020
   LD B,$EF
 l_AC8A:
@@ -757,7 +759,7 @@ SpawnPoints:
 
 ; Up to two blocks $61 into SpawnPoints
 ;
-; Witness: L1 79 (c1, door, play2, rzx- x9).
+; Witness: L1 86 (c1, cheat, door, door3, kind6, masks, play2, rzx- x9).
 FindSpawnPoints:
   LD HL,$0000
   LD (SpawnPoints),HL
@@ -774,7 +776,7 @@ FindSpawnPoints:
 ; Room 0's four door lamps at map $7628 (screen 5, top row): blocks $45/$46
 ; shut, $1E/$1F lit for each password entered
 ;
-; Witness: L1 16 (c1, door, play2, rzx- x8).
+; Witness: L1 21 (c1, cheat, door, door3, kind6, masks, play2, rzx- x8).
 PasswordPods:
   LD HL,Room0Map+$0028
   LD DE,PasswordFlags
@@ -805,7 +807,7 @@ BlockItems:
 
 ; The block-$1B items into BlockItems
 ;
-; Witness: L1 79 (c1, door, play2, rzx- x9).
+; Witness: L1 86 (c1, cheat, door, door3, kind6, masks, play2, rzx- x9).
 FindBlockItems:
   LD IX,BlockItems
   LD DE,$0004

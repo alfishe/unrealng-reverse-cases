@@ -16,9 +16,9 @@ ZoneSlots:
 ; Make zone A live: swap its parked $900 bytes with ZoneChars/ZoneAttrs, under
 ; DI
 ;
-; Also writes TurretStems $A1EC[zone] into TurretStem $C26E. Witness: L1 79
-; (c1, door, play2, rzx- x9); the per-frame trace of a room change is in
-; work/stage2/NOTES.md.
+; Also writes TurretStems $A1EC[zone] into TurretStem $C26E. Witness: L1 86
+; (c1, cheat, door, door3, kind6, masks, play2, rzx- x9); the per-frame trace
+; of a room change is in work/stage2/NOTES.md.
 SwapZone:
   LD HL,ZoneSlots
   CP (HL)
@@ -92,11 +92,11 @@ TurretStems:
 ; Draw every dirty cell (from $F5FF down to the sentinel $F3BF) and clear its
 ; mark
 ;
-; Witness: L1 13273 (c1, door, play2, rzx- x9).
+; Witness: L1 15472 (c1, cheat, door, door3, kind6, masks, play2, rzx- x9).
 FlushDirty:
   LD A,$FF
-  LD (Zone1CharsLow+$03BF),A
-  LD HL,PlayPanel
+  LD (DirtyMap-1),A
+  LD HL,DirtyMap+$0240
   LD IX,l_A1FC
 
 ; l_A1FC
@@ -207,7 +207,7 @@ DissolveCount:
 ; The last step of a pass: place pick-ups, draw the 8 objects, flush, restore
 ; the backgrounds
 ;
-; Witness: L1 13174 (c1, door, play2, rzx- x9).
+; Witness: L1 15361 (c1, cheat, door, door3, kind6, masks, play2, rzx- x9).
 DrawObjects:
   CALL PlacePickups
   LD A,(FirstSpriteChar)
@@ -282,7 +282,7 @@ l_A33C:
 ; The object's frame address from its mode (+$19), animation (+$18) and mask
 ; (+$1A); Matt's from his state and x
 ;
-; Witness: L1 90196 (c1, door, play2, rzx- x9).
+; Witness: L1 104259 (c1, cheat, door, door3, kind6, masks, play2, rzx- x9).
 SelectFrame:
   LD A,(IX+$19)
   AND A
@@ -333,7 +333,7 @@ l_A39A:
 
 ; Copy a frame to $DF80 through a random mask from R (the dissolve)
 ;
-; Witness: L1 2540 (c1, door, play2, rzx- x8).
+; Witness: L1 3404 (c1, cheat, door, door3, kind6, masks, play2, rzx- x8).
 Dissolve:
   LD L,(IX+$0C)
   LD H,(IX+$0D)
@@ -476,16 +476,26 @@ MattShot:
                                                                                                                                                                ; shot
 Enemies:
   DEFB $00,$00,$00,$00,$00,$01,$01,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$46,$00,$00,$01,$00,$00 ; objects
-  DEFB $00,$00,$00,$3A,$23,$03,$02,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$45,$00,$00,$02,$00,$00 ; 2-7
-  DEFB $00,$00,$00,$68,$3F,$03,$02,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$44,$00,$00,$03,$00,$00
-  DEFB $00,$00,$00,$50,$2D,$03,$05,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$43,$00,$00,$04,$00,$00
-  DEFB $00,$00,$00,$72,$28,$03,$02,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$42,$00,$00,$05,$00,$00
-  DEFB $00,$00,$00,$72,$0D,$03,$02,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$41,$00,$00,$06,$00,$00
+  DEFB $00,$00,$00,$3A,$23,$03,$02,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$45,$00,$00,$02,$00,$00 ; 2-7; as
+  DEFB $00,$00,$00,$68,$3F,$03,$02,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$44,$00,$00,$03,$00,$00 ; loaded and
+  DEFB $00,$00,$00,$50,$2D,$03,$05,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$43,$00,$00,$04,$00,$00 ; in room 0:
+  DEFB $00,$00,$00,$72,$28,$03,$02,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$42,$00,$00,$05,$00,$00 ; state $80,
+  DEFB $00,$00,$00,$72,$0D,$03,$02,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$41,$00,$00,$06,$00,$00 ; x 1, y 0,
+                                                                                                                                                               ; w = h = 2,
+                                                                                                                                                               ; mode 0,
+                                                                                                                                                               ; frame
+                                                                                                                                                               ; $0000:
+                                                                                                                                                               ; drawn
+                                                                                                                                                               ; every pass
+                                                                                                                                                               ; off
+                                                                                                                                                               ; screen,
+                                                                                                                                                               ; about 12
+                                                                                                                                                               ; 300 T each
 
 ; Draw object IX as fresh characters from $E800: copy backgrounds, mask,
 ; mirror, shift, OR in
 ;
-; Witness: L1 90196 (c1, door, play2, rzx- x9).
+; Witness: L1 104259 (c1, cheat, door, door3, kind6, masks, play2, rzx- x9).
 DrawObject:
   LD A,(IX+$04)
   ADD A,$30
@@ -507,7 +517,9 @@ DrawObject:
   LD D,$FF
 l_A592:
   ADD HL,DE
-  LD DE,Zone1CharsLow
+  LD DE,CharMap-$80       ; the character map as if it began 4 rows higher: (y
+                          ; + $30) / 8 rows down, so y 0 is CharMap row 2
+                          ; (screen row 0)
   ADD HL,DE
   LD (IX+$0A),H
   LD (IX+$09),L
@@ -665,7 +677,7 @@ l_A66C:
   AND $03
   JP NZ,DrawShifted
 DrawAligned:
-  LD BC,Zone1CharsLow     ; the picture on a character boundary
+  LD BC,MaskBuffer        ; the picture on a character boundary
   LD E,(IX+$0C)
   LD D,(IX+$0D)
   LD A,(IX+$05)
@@ -781,7 +793,7 @@ DrawShifted:
   LD A,D
   EXX
   LD H,A
-  LD DE,Zone1CharsLow
+  LD DE,MaskBuffer
   LD C,(IX+$0C)
   LD B,(IX+$0D)
   LD A,(IX+$05)
@@ -864,10 +876,10 @@ l_A76F:
 
 ; The frame's mask, each byte dilated through the table $F700, into $F000
 ;
-; Witness: L1 90197 (c1, door, play2, rzx- x9).
+; Witness: L1 104260 (c1, cheat, door, door3, kind6, masks, play2, rzx- x9).
 MakeMask:
   LD B,$F7
-  LD DE,Zone1CharsLow
+  LD DE,MaskBuffer
   LD L,(IX+$0C)
   LD H,(IX+$0D)
   EXX
@@ -1000,7 +1012,7 @@ l_A80C:
   LD A,E
   NEG
   LD (l_A825+$002F),A
-  LD DE,Zone1CharsLow+$0300
+  LD DE,MirrorBuffer
   LD (IX+$0D),D
   LD (IX+$0C),E
   LD B,$F6
@@ -1054,7 +1066,8 @@ l_A825:
   EX AF,AF'
   DEC A
   JP NZ,l_A825
-  LD BC,ImTable+256
+  LD BC,$FF00             ; the low byte is patched by $A80F to -(8 x h): a
+                          ; back step, nothing to do with the IM 2 table
   ADD HL,BC
   ADD HL,BC
   LD B,$F6
@@ -1066,9 +1079,9 @@ l_A825:
 ; Build the dilate table $F700, the shift tables $F800-$FDFF and the
 ; bit-reverse table $F600
 ;
-; Witness: L1 16 (c1, door, play2, rzx- x8).
+; Witness: L1 21 (c1, cheat, door, door3, kind6, masks, play2, rzx- x8).
 BuildTables:
-  LD HL,PlayPanel+$0100
+  LD HL,Dilate
 l_A863:
   LD A,L
   LD D,L
@@ -1079,7 +1092,7 @@ l_A863:
   LD (HL),A
   INC L
   JR NZ,l_A863
-  LD HL,PlayPanel+$0200
+  LD HL,ShiftTables
 l_A871:
   LD E,H
   LD B,$00
@@ -1099,7 +1112,7 @@ l_A877:
   LD H,E
   INC L
   JR NZ,l_A871
-  LD HL,PlayPanel
+  LD HL,BitReverse
 l_A88C:
   LD A,L
   LD B,$08
@@ -1117,7 +1130,7 @@ l_A88F:
 ; Eight bits of the characters at $E710 ($E728 in zone 3) switched on and off
 ; in turn (TwinkleSteps)
 ;
-; Witness: L1 13174 (c1, door, play2, rzx- x9).
+; Witness: L1 15361 (c1, cheat, door, door3, kind6, masks, play2, rzx- x9).
 Twinkle:
   LD HL,ZoneChars+$0710
   LD A,(ZoneSlots)
@@ -1176,7 +1189,7 @@ TwinkleSteps:
 
 ; Zone 0: move the lift (characters $69 / $6B) up and down its shaft
 ;
-; Witness: L1 13174 (c1, door, play2, rzx- x9).
+; Witness: L1 15361 (c1, cheat, door, door3, kind6, masks, play2, rzx- x9).
 AnimateLift:
   LD HL,(LiftPlace)
   LD A,H
@@ -1254,7 +1267,7 @@ l_CA9B:
 
 ; Mark every AnimatedCells cell dirty
 ;
-; Witness: L1 13174 (c1, door, play2, rzx- x9).
+; Witness: L1 15361 (c1, cheat, door, door3, kind6, masks, play2, rzx- x9).
 MarkAnimated:
   LD HL,AnimatedCells
   LD A,$01
@@ -1276,7 +1289,7 @@ AnimSteps:
 ; Each pass: copy the zone's next animation frames into its live characters,
 ; the lift, the twinkle
 ;
-; Witness: L1 13174 (c1, door, play2, rzx- x9).
+; Witness: L1 15361 (c1, cheat, door, door3, kind6, masks, play2, rzx- x9).
 AnimateZone:
   CALL MarkAnimated
   CALL AnimateLift

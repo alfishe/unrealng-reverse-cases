@@ -18,7 +18,7 @@
 ; StopBeeper $949F and BeeperTick $94C8. In play: Scroller $AF82, and CAPS
 ; SHIFT + SPACE (BREAK) aborts to GameStart $CBF9.
 ;
-; Witness: L1 53798 (c1, door, play2, rzx- x10).
+; Witness: L1 63268 (c1, cheat, door, door3, kind6, masks, play2, rzx- x10).
 Interrupt:
   PUSH AF
   EX AF,AF'
@@ -116,7 +116,7 @@ RandomSeed:
 
 ; A = a pseudo-random byte from RandomSeed and R
 ;
-; Witness: L1 85196 (c1, door, play2, rzx- x10).
+; Witness: L1 100334 (c1, cheat, door, door3, kind6, masks, play2, rzx- x10).
 Random:
   PUSH HL
   PUSH DE
@@ -154,7 +154,7 @@ EffectTable:
 ; 128K: record + $0A picks the slot (1 EffectSlotA $941B, 2 $941D, else $941F)
 ; that StartEffects $9421 reads at the next interrupt. 48K: BeeperStart $94AF.
 ;
-; Witness: L1 554 (c1, door, play2, rzx- x9).
+; Witness: L1 638 (c1, cheat, door, door3, kind6, masks, play2, rzx- x9).
 PlayEffect:
   PUSH AF
   PUSH HL
@@ -205,7 +205,7 @@ EffectSlots:
 ; Interrupt, 128K: hand each waiting effect to the AY player (EffectStart with
 ; IX = the channel block)
 ;
-; Witness: L1 16624 (c1, door, play2).
+; Witness: L1 26094 (c1, cheat, door, door3, kind6, masks, play2).
 StartEffects:
   LD HL,(EffectSlots)
   LD A,H
@@ -251,7 +251,11 @@ EffectStops:
 ; Interrupt, 128K: silence each channel whose EffectStops flag is set (writes
 ; the player's block +6)
 ;
-; Witness: L1 16624 (c1, door, play2).
+; Channel C's test is inverted (RET NZ at $9491): it zeroes channel C's hold
+; every interrupt while its flag is clear and does nothing when it is set.
+; Inaudible: channel C's envelopes end by themselves (docs/09-sound.md, 9.9).
+;
+; Witness: L1 26094 (c1, cheat, door, door3, kind6, masks, play2).
 StopEffects:
   LD A,(EffectStops)
   AND A
@@ -329,6 +333,9 @@ BeeperOff:
 
 ; Interrupt, 48K: one burst of the beeper effect on bits 3-4 of port $FE
 ;
+; The low half of the period is not reloaded: the JR NZ at $9505 has no DEC
+; before it, so the low half never waits (docs/09-sound.md, 9.7 and 9.9).
+;
 ; Witness: L1 37174 (rzx- x10).
 BeeperTick:
   LD A,(BeeperState)
@@ -374,7 +381,7 @@ l_9505:
 
 ; The menu, a new game, then the main loop
 ;
-; Witness: L1 16 (c1, play2, rzx- x8).
+; Witness: L1 19 (c1, door3, kind6, masks, play2, rzx- x8).
 GameStart:
   LD SP,StackTop
   EI

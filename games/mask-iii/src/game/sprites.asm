@@ -82,7 +82,8 @@ SpriteWalker:
 SpriteChaser:
   INCBIN "res/sprites/chaser.bin",$0000,192
 
-; Kind 16's picture ($BE8F, never spawned): 4 frames of 2 x 3
+; Kind 16's picture ($BE8F, spawned only by a POKE in work/stage2/rec/kind6): 4
+; frames of 2 x 3
 SpriteKind16:
   INCBIN "res/sprites/kind16.bin",$0000,192
 

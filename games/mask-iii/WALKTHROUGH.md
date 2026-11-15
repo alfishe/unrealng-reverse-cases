@@ -40,7 +40,7 @@ the 128 menu's Tape Loader, the original tape at ROM speed (the fast LD-BYTES tr
 | 15 019 T 60 034 | the game's entry `$9100` | `stages`; `tools/ttd_dump.py` the memory there |
 | 15 021 | the `JR` at `$FFFF`, the handler `$9226` entered through it | `stages` |
 | 17 750 | the menu (screen `docs/img/play/c1-17750-menu.png`) | the capture's screens |
-| 18 250 | room 0, Matt in the teleport pod | the screens |
+| 18 400 | room 0, Matt in the teleport pod (`docs/img/play/c1-18400-start-pod.png`) | the screens |
 
 The memory at the entry equals the tape blocks: `$6000-$FDFF` = block 6 byte for byte, RAM 4 `$C000-$CF9F` = block 7,
 `$FFFE` = 0, ROM 1 paged ([doc 2, 2.1](docs/02-architecture.md#21-the-machine-budget-and-the-images)).
@@ -65,8 +65,9 @@ from frame 15 021), 30 032 T an entry, 13.8 % of the CPU over the whole recordin
 Callees in c1: `$9421`, `$946F`, `$C003` x7279; `$BB4C` x4031; `$AF82` x3955; `$9899` x3248; `$C000` x2; `$C00A` x1.
 In the RZX segments the beeper path runs instead: the RZX's memory has `$FFFE` = 1 (its player used a 48K or a
 machine the test missed), and `rs.py interrupts --work work/stage1/rec/rzx-16000` gives 3999 entries in 4000 frames,
-2600 T an entry, 3.7 % of the CPU, callees `$949F`, `$94C8`, `$AF82`, `$BB4C` each x3999. So the AY player costs about
-27 000 T a frame on the 128K, the beeper's 2600 T on the 48K.
+2600 T an entry, 3.7 % of the CPU, callees `$949F`, `$94C8`, `$AF82`, `$BB4C` each x3999. In play the AY player
+costs about 212 T a frame (`c1-play`, [doc 4, 4.3](docs/04-game-loop.md)); the whole-recording average of 30 032 T an
+entry is the menu's MenuInterrupt (64 914 T an entry). The beeper path costs 2600 T an interrupt.
 
 `DI` / `EI`: `DI` at the entry and around `$A198` (the zone swap, `$A19D`-`$A1EA` with `EI`), at `$915B` (the new-game
 set-up, `EI` at `$9161`), `$9A15`, `$9B18`, `$9EA9`; `EI` at `$CBFC` (the game start). `HALT` only in the menu
@@ -110,14 +111,24 @@ Stage 2.
 
 ### 6.0 The recordings
 
-Every recording keeps its `session.ttd` in its folder under `work/stage1/`.
+Every recording keeps its `session.ttd` (reopen with `kit/rs.py open --work DIR --ttd DIR/session.ttd --model 128K`)
+and its `l1.json` in its folder: stage 1's under `work/stage1/`, stage 2's and the integration's under
+`work/stage2/rec/`. The writers made no captures of their own: their `work/docs/mx*` folders hold windows and traces
+cut from these recordings.
 
 | Recording | Made with | Frames | What it reached |
 | --- | --- | ---: | --- |
-| `c1` | `tools/capture.py --work work/stage1/c1 --media A --model 128K --inputs tests/inputs/c1.txt --record-load`: power-on, the original at ROM speed | 22 300 | the load, the menu, K DEFINE KEYS, 4 KEYBOARD, start, room 0: Matt walks, jumps, fires, takes the BL mask, the masks 1-4, H pause |
+| `c1` | `tools/capture.py --work work/stage1/c1 --media A --model 128K --inputs tests/inputs/c1.txt --record-load`: power-on, the original at ROM speed | 22 300 | the load, the menu, K DEFINE KEYS, 4 KEYBOARD, start, room 0: Matt walks, jumps, fires, takes the BACKLASH mask, the mask keys 1-4 |
 | `rec/menu` | `tools/capture.py --work work/stage1/rec/menu --snapshot work/stage1/probe/128K/loaded.szx --inputs tests/inputs/menu.txt` (the snapshot: the original loaded with the LD-BYTES trap on the 128K, the menu up) | 9565 | 1 KEMPSTON, 2 INTERFACE 2, 3 CURSOR (the chosen icon lit), K DEFINE KEYS ("PRESS FIRE", "PRESS UP", ...), P ENTER PASSWORD (16 places, "MASK" typed, ENTER: back to the menu), 4, start; 6000 frames with no key: Matt stays in the pod and nothing reaches him |
 | `rec/rzx-00000` .. `rec/rzx-32000` | `tools/rzx_segment.sh FROM FROM+4000`: `kit/rzx_dump.py` writes the RZX's state at frame FROM (`snap-FROM.z80`), `tools/rzx_script.py` its keys for frames FROM..FROM+3999 (`tests/inputs/rzx-FROM.txt`), `capture.py --snapshot` replays them, `kit/rzx_match.py` compares the screens with the RZX's | 4000 each | the RZX's rooms from its own state at each start (below) |
 | `rec/rzx-36000` | the same, frames 36 000-37 199 (the RZX's end) | 1200 | the RZX's last room 15, the ending and the menu |
+| `stage2/rec/play2` | `tools/capture.py --work work/stage2/rec/play2 --snapshot work/stage1/probe/128K/loaded.szx --model 128K --inputs tests/inputs/s2play.txt` | 7370 | Kempston play, the four passwords typed, the four door lamps lit, BREAK back to the start, the ending by POKE (said in the script) |
+| `stage2/rec/c48` | `tools/capture.py --work work/stage2/rec/c48 --media A --model 48K --inputs tests/inputs/c48.txt --record-load` | 2175 | the 48K path: the music load skipped, the beeper in the interrupt; not a read build (the ROM RAM test reads the image as data) |
+| `stage2/rec/door` | `tools/capture.py --work work/stage2/rec/door --snapshot work/stage1/probe/128K/loaded.szx --model 128K --inputs tests/inputs/door.txt` | 1975 | PasswordFlags POKEd to `$FF` (said in the script), door 1 (x `$68`) with down: the warp and room 3 at frame 981 |
+| `stage2/rec/cheat` | `tools/capture.py --work work/stage2/rec/cheat --snapshot work/stage1/probe/128K/loaded.szx --model 128K --inputs tests/inputs/cheat.txt --port-base 37780` | 2114 | JUDGE DREDD typed at ENTER PASSWORD: CheatOn `$BB77` = `$FF`; LAVA SHOT POKEd into slot 0 (said in the script) and fired from frame 1404, its charges still 99 at frame 2100 |
+| `stage2/rec/masks` | the same with `tests/inputs/masks.txt` | 2078 | STREAMER, ULTRA FLASH, MIRAGE and PENETRATOR POKEd into the four slots (said in the script) and fired; PENETRATOR released inside the hill: Explosion `$BB78` at frames 1249-1250 |
+| `stage2/rec/door3` | the same with `tests/inputs/door3.txt` | 3009 | PasswordFlags, RoomScreen and Matt's x POKEd (said): door 3 with down, room 7 and LIFTER 99 in slot 0 (WarpBonus `$BA21`, frame 969); then EnemyKind `$BFB0` POKEd to 10: SpawnKind10 at frame 1478, kinds 18 and 19 to frame 1968; later Matt dies and a new game starts |
+| `stage2/rec/kind6` | the same with `tests/inputs/kind6.txt` | 2275 | EnemyKind `$BFB0` POKEd to 6 in room 0 (said): SpawnKind6 frames 675-1891, kind 16 |
 
 The segments stay in step with the RZX (screens within 1500 bytes) for 500 to 4000 frames, then drift: the RZX's
 player used the Interface 2 stick and the game's frame (a free main loop beside the interrupt, 2.8 frames a pass) does
@@ -139,45 +150,114 @@ some segments Matt dies and a new game starts.
 | `rzx-36000` | 1000 | 15 | the ending: "YOU HAVE FOUND SCOTT......" at frame 250 (RZX 36 250), then the menu |
 
 The ending is reached in `rec/rzx-36000`: room 15's last screen (`$A89D` jumps to `$ADF6` there) and "YOU HAVE FOUND
-SCOTT......", with 31 004 points, then the menu (its HISCORE shows 00000000). Not reached by a recording of ours yet: the password's effect (no password known), the Kempston and Cursor controls in play, every mask's use, the 48K's beeper
-music on a 48K model (the RZX segments run the beeper path on the 128K).
+SCOTT......", with 31 004 points, then the menu (its HISCORE shows 00000000). Stage 2 and the integration reached the
+passwords and doors 1 and 3, the Kempston control in play, the 48K beeper path, the cheat, and six of the ten masks in
+use (BACKLASH, LIFTER, LAVA SHOT, STREAMER, ULTRA FLASH, MIRAGE, PENETRATOR's wall death). Not reached yet: doors 0
+and 2, the Cursor control in play, HEALER and JACKRABBIT in use, the cheat's safe floor, enemy kinds 9 and 11.
 
 ### 6.1 The screens
 
-The menu and its options ([doc 5](docs/05-controls.md) in stage 2):
+Every screenshot in `docs/img/play` (512 x 384, `kit/screen_shot.py` or the capture's screens), by recording and frame.
 
+The load and the menu:
+
+- `c1` frame 3000, the loading screen complete: ![c1 frame 3000](docs/img/play/c1-03000-loading-screen.png)
 - `c1` frame 17 750, the menu after the load: ![c1 frame 17750](docs/img/play/c1-17750-menu.png)
+- `c1` frame 17 850, DEFINE KEYS: ![c1 frame 17850](docs/img/play/c1-17850-define-keys.png)
 - `rec/menu` frame 750, 3 CURSOR chosen (its icon lit): ![rec/menu frame 750](docs/img/play/menu-0750-cursor-chosen.png)
 - `rec/menu` frame 1250, K DEFINE KEYS asking for fire: ![rec/menu frame 1250](docs/img/play/menu-1250-define-keys.png)
 - `rec/menu` frame 2750, P ENTER PASSWORD with "MASK" typed: ![rec/menu frame 2750](docs/img/play/menu-2750-password.png)
+- `play2` frame 500, MAYHEM typed at ENTER PASSWORD: ![play2 frame 500](docs/img/play/play2-000500-password-mayhem.png)
+- `play2` frame 2500, PETALS OF DOOM typed: ![play2 frame 2500](docs/img/play/play2-002500-password-petals.png)
 
 Play:
 
-- `c1` frame 18 250, room 0 at the start, Matt in the pod: ![c1 frame 18250](docs/img/play/c1-18250-room0-start.png)
-- `rec/rzx-00000` frame 500 (RZX 500), room 0 further right: ![rzx-00000 frame 500](docs/img/play/rzx-00000-0500-room0-bridge.png)
-- `rec/rzx-00000` frame 1500 (RZX 1500), the pod's transfer between rooms: ![rzx-00000 frame 1500](docs/img/play/rzx-00000-1500-teleport.png)
-- `rec/rzx-00000` frame 1750 (RZX 1750), room 10, the base: ![rzx-00000 frame 1750](docs/img/play/rzx-00000-1750-room10.png)
+- `c1` frame 18 400, room 0 at the start, Matt in the pod: ![c1 frame 18400](docs/img/play/c1-18400-start-pod.png)
+- `c1` frame 18 600, PENETRATOR and BACKLASH lying in room 0: ![c1 frame 18600](docs/img/play/c1-18600-pickups.png)
+- `c1` frame 19 300, BACKLASH taken: ![c1 frame 19300](docs/img/play/c1-19300-backlash-taken.png)
+- `rec/rzx-00000` frame 500 (RZX 500), room 0, Matt at a pod: ![rzx-00000 frame 500](docs/img/play/rzx-00000-0500-room0-pod.png)
+- `rec/rzx-00000` frame 1500, the first enemies and a turret, room 0: ![rzx-00000 frame 1500](docs/img/play/rzx-00000-1500-first-enemies.png)
+- `rec/rzx-00000` frame 3000, room 10, the base: ![rzx-00000 frame 3000](docs/img/play/rzx-00000-3000-room10-base.png)
+- `rec/rzx-08000` frame 1250, room 2, the surface: ![rzx-08000 frame 1250](docs/img/play/rzx-08000-1250-room2.png)
 - `rec/rzx-12000` frame 250 (RZX 12 250), the caverns: ![rzx-12000 frame 250](docs/img/play/rzx-12000-0250-cavern.png)
 - `rec/rzx-12000` frame 750, the caverns' lava and guns: ![rzx-12000 frame 750](docs/img/play/rzx-12000-0750-cavern-lava.png)
-- `rec/rzx-12000` frame 1750, room 12, the base: ![rzx-12000 frame 1750](docs/img/play/rzx-12000-1750-room12.png)
-- `rec/rzx-12000` frame 2750, the pod effect drawn over the screen: ![rzx-12000 frame 2750](docs/img/play/rzx-12000-2750-pod-effect.png)
+- `rec/rzx-12000` frame 1750, a pod in the caverns: ![rzx-12000 frame 1750](docs/img/play/rzx-12000-1750-cavern-pod.png)
+- `rec/rzx-12000` frame 2750, the base, Matt in a booth: ![rzx-12000 frame 2750](docs/img/play/rzx-12000-2750-base-booth.png)
 - `rec/rzx-28000` frame 250, the moon: ![rzx-28000 frame 250](docs/img/play/rzx-28000-0250-moon.png)
+- `door` frame 750, the four password doors, room 0 screen 5: ![door frame 750](docs/img/play/door-000750-four-doors.png)
+- `play2` frame 4750, the four door lamps lit: ![play2 frame 4750](docs/img/play/play2-004750-door-lamps.png)
+- `door3` frame 1000, room 7 after door 3, LIFTER in slot 0: ![door3 frame 1000](docs/img/play/door3-001000-room7-lifter.png)
+- `door3` frame 1750, SpawnKind10's group (kinds 18 and 19) on the moon: ![door3 frame 1750](docs/img/play/door3-001750-kind18-19.png)
+- `kind6` frame 1000, SpawnKind6's object of kind 16 in room 0: ![kind6 frame 1000](docs/img/play/kind6-001000-kind16.png)
+- `cheat` frame 1750, a LAVA SHOT in flight, the slot still at 99: ![cheat frame 1750](docs/img/play/cheat-001750-lava-shot-cheat.png)
+- `masks` frame 1000, ULTRA FLASH in the slot in use, fire held: ![masks frame 1000](docs/img/play/masks-001000-ultra-flash.png)
+- `masks` frame 1249, PENETRATOR held inside the hill, before the release: ![masks frame 1249](docs/img/play/masks-001249-penetrator-in-wall.png)
 
 The end of a game:
 
+- `rec/rzx-28000` frame 750, MISSION TERMINATED: ![rzx-28000 frame 750](docs/img/play/rzx-28000-0750-mission-terminated.png)
+- `rec/rzx-28000` frame 3250, the menu with HISCORE 00019090: ![rzx-28000 frame 3250](docs/img/play/rzx-28000-3250-menu-hiscore.png)
+- `play2` frame 6500, WELL DONE: ![play2 frame 6500](docs/img/play/play2-006500-well-done.png)
 - `rec/rzx-36000` frame 250 (RZX 36 250), the ending: ![rzx-36000 frame 250](docs/img/play/rzx-36000-0250-found-scott.png)
-- `rec/rzx-08000` frame 1000, the energy bar empty: ![rzx-08000 frame 1000](docs/img/play/rzx-08000-1000-energy-out.png)
-- `rec/rzx-28000` frame 500, MISSION TERMINATED: ![rzx-28000 frame 500](docs/img/play/rzx-28000-0500-mission-terminated.png)
-- `rec/rzx-32000` frame 750, the menu after a game with the HISCORE: ![rzx-32000 frame 750](docs/img/play/rzx-32000-0750-menu-hiscore.png)
 
-### 6.2 The images and the state
+### 6.2 The animations
+
+Every GIF the documents link, with the recording and the frames it was cut from (`frame:T` for a window inside a
+frame). `c1` and `rec/...` are under `work/stage1/`, `stage2/rec/...` under `work/`.
+
+| File (`docs/img/`) | Document | Recording | Frames |
+| --- | --- | --- | --- |
+| `load/load-c1.gif` | doc 3 | `c1` | 1000-15 100, every 200th |
+| `routines/Interrupt.gif` | doc 4 | `c1` | 19 001 |
+| `routines/MainLoop.gif` | doc 4 | `c1` | 19 000-19 003 |
+| `routines/DrawRoom-heaviest.gif` | doc 4 | `rec/rzx-04000` | 463-471 |
+| `play/room-change-10-1.gif` | doc 4 | `rec/rzx-04000` | 452-482 |
+| `routines/AskKey.gif` | doc 5 | `c1` | 17929:69000-17930:3000 |
+| `routines/ReadControls.gif` | doc 5 | `c1` | 18669:38400-18669:39420 |
+| `play/keys.gif` | doc 5 | `c1` | 18 540-19 270 |
+| `play/mask-keys.gif` | doc 5, doc 8 | `rec/rzx-12000` | 1255-1480 |
+| `play/password.gif` | doc 5 | `stage2/rec/play2` | 196-560 |
+| `routines/DrawRoom-room0.gif` | doc 6 | `c1` | 18351:39000-18357:41000 |
+| `routines/DrawObjects.gif` | doc 6 | `c1` | 18669:61700-18671:42000 |
+| `routines/Dissolve.gif` | doc 6 | `c1` | 18357:70400-18358:3600 |
+| `routines/AnimateZone.gif` | doc 6 | `rec/rzx-12000` | 750:11400-750:15700 |
+| `routines/DrawRoom-decode.gif` | doc 7 | `rec/rzx-00000` | 2311:0-2313:0 |
+| `play/pod.gif` | doc 7, doc 10 | `rec/rzx-00000` | 2290-2330 |
+| `routines/Teleport.gif` | doc 7 | `rec/rzx-00000` | 2309:0-2314:0 |
+| `routines/Spawn.gif` | doc 7 | `rec/rzx-00000` | 977:0-979:0 |
+| `routines/KindFaller.gif` | doc 7 | `rec/rzx-00000` | 975:0-1000:0 |
+| `play/kill.gif` | doc 7, doc 10 | `rec/rzx-00000` | 978-1010 |
+| `routines/KindTurret.gif` | doc 7 | `rec/rzx-12000` | 1255:0-1290:0 |
+| `routines/KindWalker.gif` | doc 7 | `rec/rzx-12000` | 2125:0-2160:0 |
+| `routines/DrawScore.gif` | doc 8 | `c1` | 18669:49000-18669:57700 |
+| `play/hud-update.gif` | doc 8 | `rec/rzx-12000` | 222-320 |
+| `play/game-over.gif` | doc 8, doc 9, doc 10 | `rec/rzx-28000` | 330-1060 |
+| `play/ending.gif` | doc 8, doc 10 | `stage2/rec/play2` | 6080-6640 |
+| `routines/StartEffects.gif` | doc 9 | `c1` | 19 325:0-19 328:0 |
+| `routines/BeeperTick.gif` | doc 9 | `rec/rzx-00000` | 995:0-997:0 |
+| `routines/MattStep-jump.gif` | doc 10 | `rec/rzx-00000` | 858:0-889:0 |
+| `play/jump.gif` | doc 10 | `rec/rzx-00000` | 852-894 |
+| `play/energy-out.gif` | doc 10 | `rec/rzx-32000` | 640-800 |
+| `routines/Penetrator.gif` | doc 10 | `rec/rzx-00000` | 2515:0-2565:0 |
+| `play/penetrator.gif` | doc 10 | `rec/rzx-00000` | 2505-2615 |
+| `routines/MattLongJump.gif` | doc 10 | `rec/rzx-12000` | 1297:0-1330:0 |
+| `play/jackrabbit.gif` | doc 10 | `rec/rzx-12000` | 1288-1432 |
+| `routines/FireMask-lifter.gif` | doc 10 | `rec/rzx-12000` | 2098:0-2120:0 |
+| `play/lifter.gif` | doc 10 | `rec/rzx-12000` | 2084-2222 |
+| `routines/Death.gif` | doc 10 | `rec/rzx-04000` | 1556:0-1640:0 |
+| `play/death.gif` | doc 10 | `rec/rzx-04000` | 1520-1700 |
+| `routines/PasswordWarp.gif` | doc 10 | `stage2/rec/door` | 843:0-900:0 |
+| `play/door-warp.gif` | doc 10 | `stage2/rec/door` | 700-1000 |
+| `routines/Ending.gif` | doc 10 | `rec/rzx-36000` | 0:0-40:0 |
+
+### 6.3 The images and the state
 
 [Doc 2, 2.1 and 2.4](docs/02-architecture.md#21-the-machine-budget-and-the-images): the image as loaded is the code at
 the entry byte for byte; in play only the zone sets, the buffers, the IM 2 table and variables change. The state
 variables were found by sampling the RZX's memory every 500 frames (`work/stage1/rzx/dump/mem.bin`) and reading the
 code that writes them.
 
-### 6.3 The first map and the sprites
+### 6.4 The first map and the sprites
 
 [Doc 2, 2.5](docs/02-architecture.md#25-the-rooms-as-data-the-first-map): the room table at `$953B`, the maps at
 `$7600`, the blocks at `$8500`, the zone sets swapped by `$A198`; `tools/roommap.py` draws all 16 rooms from these

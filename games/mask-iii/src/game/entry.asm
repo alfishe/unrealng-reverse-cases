@@ -65,11 +65,13 @@ GameEntry:
 ; Matt (Objects $A43F) at x $48, y $28, state $0B, facing right; clears bit 7
 ; (taken) of every PickupTable $950E record; empties the four MaskSlots $AF2B
 ; and selects the first; ShowMaskName EMPTY; turns the map blocks $2B back to
-; $12 and $47 back to $1B in RoomMaps $7600-$84FF; clears the end-of-level and
-; effect flags and the Score $AE41. BuildTables $A860 makes the sprite tables
-; first. Ends in DrawRoom $A89D and PasswordPods $ACBC.
+; $12 and $47 back to $1B in RoomMaps $7600-$84FF (so the maps' own $2B, room 5
+; screen 0 and room 6 screen 2, become turrets too after the first new game:
+; rzx-16000 frame 3194); clears the end-of-level and effect flags and the Score
+; $AE41. BuildTables $A860 makes the sprite tables first. Ends in DrawRoom
+; $A89D and PasswordPods $ACBC.
 ;
-; Witness: L1 16 (c1, door, play2, rzx- x8).
+; Witness: L1 21 (c1, cheat, door, door3, kind6, masks, play2, rzx- x8).
 NewGame:
   DI
   POP HL
@@ -174,8 +176,11 @@ BorderFlash:
 TuneRequest:
   DEFB $00
 StopRequest:
-  DEFB $FF                ; non-zero: MusicStop $C00A at the next interrupt
+  DEFB $FF                ; non-zero: MusicStop $C00A at the next interrupt;
+                          ; the game never writes it, its loaded $FF makes the
+                          ; first 128K interrupt call MusicStop once (c1)
 FrameCounter:
-  DEFB $00                ; counted up by every interrupt
+  DEFB $00                ; counted up by every interrupt; no instruction reads
+                          ; it
 BorderColour:
   DEFB $00                ; sent to $FE by every interrupt

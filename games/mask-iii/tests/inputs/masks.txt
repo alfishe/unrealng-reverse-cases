@@ -1,0 +1,37 @@
+# masks (integration): from work/stage1/probe/128K/loaded.szx (the menu up), no password. 3 CURSOR, fire (0) to start.
+# POKEs (a cheat, said so): the four slots (MaskSlots $AF2B, 4 bytes each: column, kind, BCD charges, level) get the
+# masks no room holds, 99 charges each: slot 0 STREAMER (10), slot 1 ULTRA FLASH (2), slot 2 MIRAGE (3), slot 3
+# PENETRATOR (1). Fire STREAMER three times, key 2 and hold fire, key 3 and hold fire, key 4 and walk right with fire
+# held through the scenery, release.
+0 -
++200 3
++5 -
++60 0
++10 -
++400 POKE 44844 10 153 1
++0 POKE 44848 2 153 1
++0 POKE 44852 3 153 1
++0 POKE 44856 1 153 1
++40 0
++6 -
++40 0
++6 -
++40 0
++6 -
++40 2
++5 -
++20 0
++60 -
++40 3
++5 -
++20 0
++60 -
++40 4
++5 -
++20 0 8
++120 -
++40 0 8
++200 -
++40 0 5
++150 -
++400 END

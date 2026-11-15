@@ -1,0 +1,77 @@
+# door3 (integration): from work/stage1/probe/128K/loaded.szx. POKEs (a cheat, said so): PasswordFlags $9F6D-$9F70 = $FF
+# in the menu, 3 CURSOR, fire (0); in play RoomScreen $950D = $20, Matt x $A442 = $B5, right (8) over the edge into
+# room 0's screen 5 (the doors); x = $A0 (door 3's quarter, (x - $40) >> 5 = 3), short steps right with down (6).
+# After the warp to room 7 with LIFTER: fire it; then EnemyKind $BFB0 = 10 (SpawnKind10) and later 6 (SpawnKind6),
+# firing LIFTER between.
+0 -
++200 POKE 40813 255 255 255 255
++20 3
++5 -
++60 0
++10 -
++400 POKE 38157 32
++0 POKE 42050 181
++0 8
++40 -
++20 POKE 42050 160
++5 8
++4 -
++3 6
++20 -
++5 8
++4 -
++3 6
++20 -
++5 8
++4 -
++3 6
++20 -
++5 8
++4 -
++3 6
++20 -
++5 8
++4 -
++3 6
++20 -
++5 8
++4 -
++3 6
++20 -
++5 8
++4 -
++3 6
++20 -
++5 8
++4 -
++3 6
++20 -
++400 0
++6 -
++60 POKE 49072 10
++80 0
++6 -
++80 0
++6 -
++80 0
++6 -
++80 0
++6 -
++80 0
++6 -
++80 0
++6 -
++100 POKE 49072 6
++80 0
++6 -
++80 0
++6 -
++80 0
++6 -
++80 0
++6 -
++80 0
++6 -
++80 0
++6 -
++400 END

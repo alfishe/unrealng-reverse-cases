@@ -34,7 +34,14 @@ ZoneAttrs:
 ; Zone 1's characters 0-159, copied to $5B00 by GameEntry; then the masks, the
 ; character map ($F080) and the dirty map ($F3C0)
 Zone1CharsLow:
-  INCBIN "res/charsets/zone1-low.bin",$0000,1280
+MaskBuffer:
+  INCBIN "res/charsets/zone1-low.bin",$0000,128
+CharMap:
+  INCBIN "res/charsets/zone1-low.bin",$0080,640
+MirrorBuffer:
+  INCBIN "res/charsets/zone1-low.bin",$0300,192
+DirtyMap:
+  INCBIN "res/charsets/zone1-low.bin",$03C0,320
 
 ; 256 bytes of leftovers, cleared as the dirty map before any read
 LeftoverF500:
@@ -43,7 +50,12 @@ LeftoverF500:
 ; The play panel (rows 18-23, 32 x 6 characters), drawn by Menu at the first
 ; start; then BuildTables' tables
 PlayPanel:
-  INCBIN "res/screens/panel.bin",$0000,1536
+BitReverse:
+  INCBIN "res/screens/panel.bin",$0000,256
+Dilate:
+  INCBIN "res/screens/panel.bin",$0100,256
+ShiftTables:
+  INCBIN "res/screens/panel.bin",$0200,1024
 
 ; 100 bytes between the panel and its attributes (overwritten by BuildTables)
 LeftoverFC00:

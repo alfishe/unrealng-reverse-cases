@@ -375,8 +375,9 @@ flowchart LR
 ```
 
 The witness: CheatCheck runs in every play interrupt of every recording (L1 39 665 entries). Its effect is in the
-stage 2 notes: the CheatOn tests in UseCharge and DeadlyFloor. No recording of ours typed JUDGE DREDD; the effect is
-known from the code.
+stage 2 notes: the CheatOn tests in UseCharge and DeadlyFloor. The `cheat` recording types JUDGE DREDD: CheatOn is
+`$FF` in play and a LAVA SHOT fired six times keeps its 99 charges ([doc 10](10-gameplay-logic.md)); the safe floor
+is known from the code.
 
 The point: Gremlin hid the cheat from a code search, not from a player. The password screen accepts it like any
 other password.

@@ -1,0 +1,22 @@
+# kind6 (integration): from work/stage1/probe/128K/loaded.szx, no password. 3 CURSOR, fire (0) to start. POKE (a cheat,
+# said so): EnemyKind $BFB0 = 6 in room 0 screen 0 (the spawner kind of room 1 screen 2, which no recording reached),
+# then again after each 300 frames; Matt walks right a little and fires.
+0 -
++200 3
++5 -
++60 0
++10 -
++400 POKE 49072 6
++150 8
++20 -
++130 POKE 49072 6
++150 8
++20 -
++130 POKE 49072 6
++150 8
++20 -
++130 POKE 49072 6
++150 8
++20 -
++130 POKE 49072 6
++400 END

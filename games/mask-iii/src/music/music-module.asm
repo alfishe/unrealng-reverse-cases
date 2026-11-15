@@ -14,13 +14,13 @@
 
 ; JP MusicInit: start tune A + 1
 ;
-; Witness: L1 9 (c1, menu, play2).
+; Witness: L1 18 (c1, cheat, door3, kind6, masks, menu, play2).
 MusicStart:
   JP MusicInit
 
 ; JP MusicFrame: one frame of the tune
 ;
-; Witness: L1 24214 (c1, menu, play2).
+; Witness: L1 33684 (c1, cheat, door3, kind6, masks, menu, play2).
 MusicPlay:
   JP MusicFrame
 
@@ -68,7 +68,7 @@ PlayerState:
 ; Start tune A + 1: the three order lists from Songs, every channel reset, the
 ; map filled
 ;
-; Witness: L1 9 (c1, menu, play2).
+; Witness: L1 18 (c1, cheat, door3, kind6, masks, menu, play2).
 MusicInit:
   PUSH AF
   CALL Silence
@@ -151,7 +151,7 @@ l_C0F3:
 ; One frame: the AY registers out (WriteRegisters), then each channel's step;
 ; MusicTune 0 when all end
 ;
-; Witness: L1 24214 (c1, menu, play2).
+; Witness: L1 33684 (c1, cheat, door3, kind6, masks, menu, play2).
 MusicFrame:
   CALL WriteRegisters
   LD A,(MusicTune)
@@ -186,7 +186,7 @@ l_C144:
 ; One channel: count down the note, at its end read the order list and the
 ; pattern's next event
 ;
-; Witness: L1 36801 (c1, menu, play2).
+; Witness: L1 49266 (c1, cheat, door3, kind6, masks, menu, play2).
 ChannelStep:
   CALL Vibrato
   LD A,(IY+$0B)
@@ -351,7 +351,7 @@ l_C25C:
 ; A pattern byte $80 and up: instrument (80-87), form (88-BF), the end mark,
 ; the 4-byte commands
 ;
-; Witness: L1 1399 (c1, menu, play2).
+; Witness: L1 1754 (c1, cheat, door3, kind6, masks, menu, play2).
 PatternCommand:
   LD A,(DE)
   CP $88
@@ -392,7 +392,7 @@ l_C29B:
 
 ; The pitch envelope step of a channel
 ;
-; Witness: L1 36801 (c1, menu, play2).
+; Witness: L1 49266 (c1, cheat, door3, kind6, masks, menu, play2).
 Vibrato:
   BIT 7,(IX+$11)
   RET NZ
@@ -505,7 +505,7 @@ EffectChannelC:
 
 ; Start the effect described at IX on its channel
 ;
-; Witness: L1 4031 (c1, menu, play2).
+; Witness: L1 5258 (c1, cheat, door3, kind6, masks, menu, play2).
 EffectStart:
   DI
   LD A,IYL
@@ -569,7 +569,7 @@ l_C3D1:
 
 ; Every AY volume and the mixer off
 ;
-; Witness: L1 10 (c1, menu, play2).
+; Witness: L1 19 (c1, cheat, door3, kind6, masks, menu, play2).
 Silence:
   LD C,$FD
   LD HL,$FFBF
@@ -594,7 +594,7 @@ Silence:
 
 ; The frame's periods, volumes and mixer to the AY
 ;
-; Witness: L1 24214 (c1, menu, play2).
+; Witness: L1 33684 (c1, cheat, door3, kind6, masks, menu, play2).
 WriteRegisters:
   LD A,(EffectBlocks)
   AND $3F
@@ -629,14 +629,7 @@ l_C460:
   ADD A,(IX+$1B)
   BIT 1,(IX+$23)
   JP Z,l_C47C
-
-; data_C47B
-data_C47B:
-  DEFB $57
-
-; l_C47C
-;
-; Used by the routine at WriteRegisters.
+  LD D,A
 l_C47C:
   CALL WriteAY
   INC E
@@ -682,7 +675,7 @@ l_C498:
 
 ; One channel's volume envelope step
 ;
-; Witness: L1 38004 (c1, menu, play2).
+; Witness: L1 57483 (c1, cheat, door3, kind6, masks, menu, play2).
 Envelope:
   LD A,(EffectBlocks)
   AND (IX+$02)
@@ -779,7 +772,7 @@ l_C576:
 
 ; The noise period step
 ;
-; Witness: L1 33829 (c1, menu, play2).
+; Witness: L1 48432 (c1, cheat, door3, kind6, masks, menu, play2).
 NoiseStep:
   LD A,(IX+$07)
   AND A
@@ -819,7 +812,7 @@ l_C5AE:
 
 ; AY register E = A (ports $FFFD, $BFFD)
 ;
-; Witness: L1 139403 (c1, menu, play2).
+; Witness: L1 210883 (c1, cheat, door3, kind6, masks, menu, play2).
 WriteAY:
   LD B,H
   OUT (C),E

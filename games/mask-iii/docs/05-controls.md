@@ -881,6 +881,6 @@ its input.
 - With a Kempston stick, "left and right" walks left and "up and down" crouches (MattWalk's order). No recording drove
   a Kempston stick with both bits of an axis.
 - CheatCheck's hidden operands (`$BA77` + `INC B`, `$E406` + `$BB6B`). The cheat's effect is in stage 2's notes
-  (`work/stage2/NOTES.md`); no recording used for this document typed JUDGE DREDD.
+  (`work/stage2/NOTES.md`); the `cheat` recording types JUDGE DREDD and shows it working ([doc 10](10-gameplay-logic.md)).
 - DefineKeys zeroes KeysNow, and code 0 is CAPS SHIFT. So CAPS SHIFT can never be defined: AskKey finds `$00` in the
   unfilled slots and waits for another key.

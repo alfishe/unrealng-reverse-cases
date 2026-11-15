@@ -1,8 +1,8 @@
 ; --------------------------------------------------------------------------------------------------------------------
 ; zones.asm: The zone graphics: three parked sets of 256 characters and 256 attributes
 ;
-; MASK III draws every room from one of four zones' character sets (zone = room table byte 4: 0 the base, 1 the lava
-; caves, 2 the moon, 3 the last zone). The live set is at ZoneChars $E000 (2048 bytes) and ZoneAttrs $EF00 (256 bytes,
+; MASK III draws every room from one of four zones' character sets (zone = room table byte 4: 0 the surface, 1 the
+; caverns, 2 the moon, 3 the base). The live set is at ZoneChars $E000 (2048 bytes) and ZoneAttrs $EF00 (256 bytes,
 ; bit 7 = solid, IsSolid $B993); SwapZone $A198 swaps it byte for byte with a parked set at $5B00 + $900 x (slot - 1),
 ; ZoneSlots $A194 telling which zone sits where.
 ;
@@ -17,7 +17,7 @@
 ; Zone 1's characters 160-255 (768 bytes), parked in the set at $5B00
 ;
 ; Read by SwapZone $A198 when a room of zone 1 is drawn. Witness: the RZX
-; segments reach the lava caves (work/stage1/rec/rzx-*).
+; segments reach the caverns (work/stage1/rec/rzx-*).
 Zone1CharsHigh:
   INCBIN "res/charsets/zone1-high.bin",$0000,768
 
