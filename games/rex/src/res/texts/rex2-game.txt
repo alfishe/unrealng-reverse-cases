@@ -1,0 +1,28 @@
+# REX 2: GameTexts, the play texts and the panels
+# $attribute column $line "text"; "bytes": anything else
+$46 7 $50 "PHASE TWO:ENTER"
+$46 7 $58 "THE LIVING TOWER"
+$46 7 $60 "TO REACH ZENITH"
+$43 3 $40 "GAME OVER"
+$45 5 $60 "HI:SCORE 0000000"
+$45 7 $80 "BIO GROWTHS KILLED:00000"
+$45 6 $50 "WITH THE BIG SQUIDGY"
+$45 6 $58 "THING DESTROYED REX "
+$45 6 $60 "CAN GO HOME AND HAVE"
+$45 6 $68 "A NICE CUP OF TEA"
+$45 6 $70 "AND PUT HIS FEET UP"
+$44 4 $70 "PRESS FIRE"
+$44 4 $78 "TO BEGIN  "
+$46 3 $28 "    SPEED UP   "
+$42 3 $28 "  SHIELD LOSS  "
+$46 3 $28 "   1000 BONUS  "
+$42 3 $28 "  ENERGY LOSS  "
+$46 3 $28 "100 RAPID SHOTS"
+bytes $00
+$01 69 $12 "(DOUBLE FIRE"
+bytes $00
+$01 69 $03 "(LASER"
+bytes $00
+$01 69 $14 "(MULTIPLE"
+bytes $00
+$01 69 $12 "(SPRAY"

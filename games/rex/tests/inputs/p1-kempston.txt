@@ -1,0 +1,29 @@
+# p1-kempston (stage 2): REX 1 from work/stage1/probe/128K/loaded.szx: 2 KEMPSTON, Y; fire (the stick's button) to
+# begin; then the stick: right, left, up (jump), down (the shield on, then off), fire, right with fire.
+0 -
++100 2
++10 -
++60 Y
++10 -
++150 KF
++5 -
++60 KF
++5 -
++60 KF
++5 -
++150 KR
++150 -
++20 KL
++60 -
++20 KU
++6 -
++60 KR KU
++30 -
++40 KD
++6 -
++80 KD
++6 -
++40 KF
++80 -
++40 KR KF
++300 -

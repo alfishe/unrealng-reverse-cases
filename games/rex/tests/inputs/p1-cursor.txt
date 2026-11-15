@@ -1,0 +1,46 @@
+# p1-cursor (stage 2): REX 1 from work/stage1/probe/128K/loaded.szx (the menu after the load, 128K): 3 CURSOR, Y;
+# fire (0) to begin; then the Cursor keys: right 8, left 5, up 7 (jump), down 6 (the shield on, then off), fire 0;
+# H (the pause) and 0 to go on; SPACE (a smart bomb); ENTER (the restart: a new game) and fire to begin again.
+0 -
++100 3
++10 -
++60 Y
++10 -
++150 0
++5 -
++60 0
++5 -
++60 0
++5 -
++150 8
++150 -
++20 5
++60 -
++20 7
++6 -
++60 8 7
++30 -
++40 6
++6 -
++80 6
++6 -
++40 0
++80 -
++40 H
++6 -
++100 0
++6 -
++40 SPACE
++6 -
++200 8 0
++200 -
++40 ENTER
++6 -
++150 0
++5 -
++60 0
++5 -
++60 0
++5 -
++200 5 0
++200 -

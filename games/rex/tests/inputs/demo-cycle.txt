@@ -1,0 +1,8 @@
+# demo-cycle (stage 2): DEMO from work/stage1/d1/start.szx (the state d1 starts from), no keys for 30000 frames: the
+# tutor's rooms 4, 1, 0 and 2 and again; then SPACE (DemoPause), SPACE again to go on.
+0 -
++30000 SPACE
++6 -
++100 SPACE
++6 -
++200 -

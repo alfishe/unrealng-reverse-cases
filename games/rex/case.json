@@ -1,11 +1,110 @@
 {
-  "image_cmd": ["sh", "-c", "python3 tools/image.py work/mkgame/original.bin --part 1"],
+  "image_cmd": [
+    "sh",
+    "-c",
+    "test -f work/mkgame/original.bin || python3 tools/parts.py > /dev/null"
+  ],
   "image": "work/mkgame/original.bin",
   "lo": "6018",
   "hi": "FFFA",
   "device": "ZXSPECTRUM128",
-  "bases": {"5": "4000", "2": "8000", "0": "C000"},
-  "read_builds": ["stage1/c1"],
-  "ref_builds": [["stage1/c1", "c1: power-on, side 1 of the original at ROM speed on the 128K, the menu and play on level 1"]],
-  "header": ["; Rex, Martech Games 1988 (The Light): part 1 (REX 1), $6018-$FFF9 as the ROM loader leaves it", "; (tools/image.py: side 1 blocks 4 and 6 of orig/Rex.tzx.zip); entry $947A."]
+  "bases": {
+    "5": "4000",
+    "2": "8000",
+    "0": "C000"
+  },
+  "read_builds": [
+    "stage1/c1",
+    "stage1/rec/rzx-p1-00000",
+    "stage1/rec/rzx-p1-02000",
+    "stage1/rec/rzx-p1-04000",
+    "stage1/rec/rzx-p1-06000",
+    "stage1/rec/rzx-p1-08000",
+    "stage1/rec/rzx-p1-10000",
+    "stage1/rec/rzx-p1-12000",
+    "stage1/rec/rzx-p1-14000",
+    "stage1/rec/rzx-p1-16000",
+    "stage1/rec/rzx-p1-18000",
+    "stage1/rec/rzx-p1-20000",
+    "stage1/rec/rzx-p1-22000",
+    "stage1/rec/rzx-p1-24000",
+    "stage1/rec/rzx-p1-26000",
+    "stage1/rec/rzx-p1-28000",
+    "stage1/rec/rzx-p1-30000",
+    "stage1/rec/rzx-p1-32000",
+    "stage1/rec/rzx-p1-34000",
+    "stage1/rec/rzx-p1-36000",
+    "stage1/rec/rzx-p1-38000",
+    "stage1/rec/rzx-p1-40000",
+    "stage1/rec/rzx-p1-42000",
+    "stage1/rec/rzx-p1-44000",
+    "stage1/rec/rzx-p1-46000",
+    "stage1/rec/rzx-p1-48000",
+    "stage1/rec/rzx-p1-50000",
+    "stage1/rec/rzx-p1-52000",
+    "stage1/rec/rzx-p1-54000",
+    "stage1/rec/rzx-p1-56000",
+    "stage1/rec/rzx-p1-58000",
+    "stage1/rec/rzx-p1-60000",
+    "stage1/rec/rzx-p1-62000",
+    "stage1/rec/rzx-p1-64000",
+    "stage2/rec/p1-room14",
+    "stage2/rec/p1-room24",
+    "stage2/rec/p1-room26",
+    "stage2/rec/p1-room27",
+    "stage2/rec/p1-room30",
+    "stage2/rec/p1-code",
+    "stage2/rec/p1-cursor",
+    "stage2/rec/p1-kempston",
+    "stage2/rec/p1-gameover",
+    "stage2/rec/p1-define"
+  ],
+  "ref_builds": [
+    [
+      "stage1/c1",
+      "c1: power-on, side 1 of the original at ROM speed on the 128K, the menu and play on level 1"
+    ]
+  ],
+  "header": [
+    "; Rex, Martech Games 1988 (The Light): part 1 (REX 1), $6018-$FFF9 as the ROM loader leaves it",
+    "; (tools/parts.py: side 1 blocks 4 and 6 of orig/Rex.tzx.zip); entry $947A."
+  ],
+  "ref_load_end": {
+    "stage1/c1": 13701
+  },
+  "res_comments": true,
+  "ref_parts": [
+    [
+      "src/tape/basic-rex1.json",
+      "The BASIC of REX 1"
+    ],
+    [
+      "src/tape/basic-rex2.json",
+      "The BASIC of REX 2"
+    ],
+    [
+      "src/tape/basic-demo.json",
+      "The BASIC of DEMO"
+    ],
+    [
+      "src/screen/screen-rex1.json",
+      "REX 1's loading screen"
+    ],
+    [
+      "src/screen/screen-rex2.json",
+      "REX 2's loading screen"
+    ],
+    [
+      "src/screen/screen-demo.json",
+      "DEMO's loading screen"
+    ],
+    [
+      "src/rex2/rex2.json",
+      "Part 2 (REX 2)"
+    ],
+    [
+      "src/demo/demo.json",
+      "DEMO"
+    ]
+  ]
 }

@@ -77,10 +77,10 @@ def main():
         if self.frame_index >= 0 and not args.no_dump:
             mem = self.simulator.memory
             if n % args.every == 0:
-                screens.write(bytes(mem[0x4000:0x5B00]))
+                screens.write(bytes(mem[a] for a in range(0x4000, 0x5B00)))  # a 128K's paged memory has no slices
                 index.append(n)
             if n % args.mem_every == 0:
-                memf.write(bytes(mem[0:0x10000]))
+                memf.write(bytes(mem[a] for a in range(0x10000)))
                 mindex.append(n)
             for a in watch:
                 if seen.get(a) != mem[a]:

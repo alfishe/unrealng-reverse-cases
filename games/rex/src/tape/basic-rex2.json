@@ -1,0 +1,23 @@
+{
+  "about": "Tape side 1 block 8, the BASIC program \"REX 2\" at PROG $5CCB: python3 ../../kit/mkgame.py --part src/tape/basic-rex2.json --install",
+  "image_cmd": [
+    "sh",
+    "-c",
+    "test -f work/parts/basic-rex2.img || python3 tools/parts.py > /dev/null"
+  ],
+  "image": "work/parts/basic-rex2.img",
+  "lo": "5CCB",
+  "hi": "5D62",
+  "ann": "src/tape/basic.ann",
+  "piece": "rex2",
+  "top": "basic-rex2",
+  "bin": "basic-rex2.bin",
+  "dest": "src/tape",
+  "device": "ZXSPECTRUM128",
+  "header": [
+    "; Rex, Martech Games 1988: tape side 1 block 8, the BASIC program \"REX 2\" (PROG $5CCB, LINE 1)."
+  ],
+  "l1": [],
+  "data_entries": "stop",
+  "work": "work/stage2/mkbasic-rex2"
+}

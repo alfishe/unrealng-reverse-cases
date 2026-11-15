@@ -1,0 +1,22 @@
+{
+  "about": "Tape side 2 block 4, the loading screen of DEMO, loaded by `LOAD \"\" SCREEN$` at $4000: python3 ../../kit/mkgame.py --part src/screen/screen-demo.json --install",
+  "image_cmd": [
+    "sh",
+    "-c",
+    "test -f work/parts/screen-demo.bin || python3 tools/parts.py > /dev/null"
+  ],
+  "image": "work/parts/screen-demo.bin",
+  "org": "4000",
+  "ann": "src/screen/screen.ann",
+  "piece": "demo",
+  "top": "screen-demo",
+  "bin": "screen-demo.bin",
+  "dest": "src/screen",
+  "device": "ZXSPECTRUM128",
+  "header": [
+    "; Rex, Martech Games 1988: tape side 2 block 4, the loading screen of DEMO (6912 bytes at $4000)."
+  ],
+  "l1": [],
+  "data_entries": "stop",
+  "work": "work/stage2/mkscreen-demo"
+}

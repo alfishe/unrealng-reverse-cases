@@ -1,0 +1,38 @@
+# p1-define (stage 2): REX 1 from work/stage1/probe/128K/loaded.szx (the menu after the load, 128K): 1 DEFINE, then
+# UP P, DOWN L, LEFT Z, RIGHT X, FIRE M (ScanKey writes each into its reader's port and BIT operands), Y to confirm;
+# M (fire) to begin; then X (right), Z (left), P (jump), L (the shield on and off) and M (fire).
+0 -
++100 1
++10 -
++80 P
++10 -
++80 L
++10 -
++80 Z
++10 -
++80 X
++10 -
++80 M
++10 -
++80 Y
++10 -
++150 M
++5 -
++60 M
++5 -
++60 M
++5 -
++150 X
++150 -
++20 Z
++60 -
++20 P
++6 -
++60 L
++6 -
++80 L
++6 -
++40 M
++80 -
++100 -
++10 END

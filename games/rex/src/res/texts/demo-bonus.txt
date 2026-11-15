@@ -1,0 +1,7 @@
+# DEMO: BonusTexts, the bonus roulette's five panels
+# $attribute column $line "text"; "bytes": anything else
+$46 3 $28 "    SPEED UP   "
+$42 3 $28 "  SHIELD LOSS  "
+$46 3 $28 "   1000 BONUS  "
+$42 3 $28 "  ENERGY LOSS  "
+$46 3 $28 "100 RAPID SHOTS"

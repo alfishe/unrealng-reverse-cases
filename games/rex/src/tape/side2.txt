@@ -1,0 +1,13 @@
+# Side 2 of the tape ("Rex - Side 2.tzx" in orig/Rex.tzx.zip) as tools/mktape.py writes it (see side1.txt):
+#   basic-demo.bin   src/tape/basic-demo.asm, the BASIC "DEMO" (src/tape/basic.ann, piece demo)
+#   screen-demo.bin  src/screen/screen-demo.asm, DEMO's loading screen
+#   demo.bin         src/demo/demo.asm, DEMO's code $61A8-$FFF9
+# The Bytes headers' second parameter is 32768 plus the BASIC's length (32918).
+tzx 1.10
+text Created with Ramsoft MakeTZX
+header 1016 0 DEMO @basic-demo.bin 1 150
+data 3804 basic-demo.bin
+header 1015 3 ds 6912 40000 32918
+data 3960 screen-demo.bin
+header 1011 3 ds @demo.bin 25000 32918
+data 0 demo.bin

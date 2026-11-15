@@ -1,0 +1,116 @@
+{
+  "about": "Side 1 block 12, part 2 (REX 2), $61A8-$FFF9 as the ROM loader leaves it, entry $9470: python3 ../../kit/mkgame.py --part src/rex2/rex2.json --install",
+  "image_cmd": [
+    "sh",
+    "-c",
+    "test -f work/parts/rex2.img || python3 tools/parts.py > /dev/null"
+  ],
+  "image": "work/parts/rex2.img",
+  "lo": "61A8",
+  "hi": "FFFA",
+  "ann": "src/rex2/rex2.ann",
+  "top": "rex2",
+  "bin": "rex2.bin",
+  "dest": "src/rex2",
+  "device": "ZXSPECTRUM128",
+  "header": [
+    "; Rex, Martech Games 1988 (The Light): part 2 (REX 2), $61A8-$FFF9 as the ROM loader leaves it",
+    "; (tools/parts.py: side 1 blocks 10 and 12 of orig/Rex.tzx.zip); entry $9470."
+  ],
+  "l1": [
+    {
+      "path": "work/stage1/c2/l1.json",
+      "reads": true,
+      "load_end": 13567
+    },
+    {
+      "path": "work/stage1/rec/rzx-p2-00000/l1.json",
+      "reads": true
+    },
+    {
+      "path": "work/stage1/rec/rzx-p2-02000/l1.json",
+      "reads": true
+    },
+    {
+      "path": "work/stage1/rec/rzx-p2-04000/l1.json",
+      "reads": true
+    },
+    {
+      "path": "work/stage1/rec/rzx-p2-06000/l1.json",
+      "reads": true
+    },
+    {
+      "path": "work/stage1/rec/rzx-p2-08000/l1.json",
+      "reads": true
+    },
+    {
+      "path": "work/stage1/rec/rzx-p2-10000/l1.json",
+      "reads": true
+    },
+    {
+      "path": "work/stage1/rec/rzx-p2-12000/l1.json",
+      "reads": true
+    },
+    {
+      "path": "work/stage1/rec/rzx-p2-14000/l1.json",
+      "reads": true
+    },
+    {
+      "path": "work/stage1/rec/rzx-p2-16000/l1.json",
+      "reads": true
+    },
+    {
+      "path": "work/stage1/rec/rzx-p2-18000/l1.json",
+      "reads": true
+    },
+    {
+      "path": "work/stage1/rec/rzx-p2-20000/l1.json",
+      "reads": true
+    },
+    {
+      "path": "work/stage1/rec/rzx-p2-22000/l1.json",
+      "reads": true
+    },
+    {
+      "path": "work/stage1/rec/rzx-p2-24000/l1.json",
+      "reads": true
+    },
+    {
+      "path": "work/stage1/rec/rzx-p2-26000/l1.json",
+      "reads": true
+    },
+    {
+      "path": "work/stage1/rec/rzx-p2-28000/l1.json",
+      "reads": true
+    },
+    {
+      "path": "work/stage1/rec/rzx-p2-30000/l1.json",
+      "reads": true
+    },
+    {
+      "path": "work/stage1/rec/rzx-p2-32000/l1.json",
+      "reads": true
+    },
+    {
+      "path": "work/stage1/rec/rzx-p2-34000/l1.json",
+      "reads": true
+    },
+    {
+      "path": "work/stage1/rec/rzx-p2-36000/l1.json",
+      "reads": true
+    },
+    {
+      "path": "work/stage1/rec/rzx-p2-38000/l1.json",
+      "reads": true
+    },
+    {
+      "path": "work/stage1/rec/rzx-p2-40000/l1.json",
+      "reads": true
+    },
+    {
+      "path": "work/stage2/rec/p2-room20/l1.json",
+      "reads": true
+    }
+  ],
+  "work": "work/stage2/mkrex2"
+}

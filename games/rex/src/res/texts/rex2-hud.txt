@@ -1,0 +1,5 @@
+# REX 2: HudTexts, the HUD's three rows
+# $attribute column $line "text"; "bytes": anything else
+$06 12 $08 "############"
+$06 12 $00 "0000000:99:3"
+$07 3 $10 "]\\ ^\\ _\\ @\\ \"\\ $\\ %\\ &\\ '\\"

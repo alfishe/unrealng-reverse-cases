@@ -1,0 +1,2 @@
+# REX 1: AttractRooms, the attract mode's rooms, $FF: again
+$06 $11 $01 $14 $0A $17 $1D $20 $FF

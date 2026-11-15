@@ -1,0 +1,64 @@
+# DEMO: the rooms. Each "room N" holds the exits (up, right, down, left: the room numbers, 0 none, 99 the end of the part)
+# and the address of its object list, then the map: 7 rows of 10 block codes (blocks/demo.csv; a block is 3 x 3 characters).
+# The object lists follow, each at its address with the rooms that use it: the header | each [kind][X][Y] | $FF;
+# (rooms/README.md). A room past the exits table has a map and no exits line.
+room 0
+exits 0 1 0 0 $AFEE
+  FC 8E 9B A7 00 00 A5 FB 9A 8D
+  8E A1 A2 AD A4 99 A3 FA 9B 8E
+  9B 00 B3 B4 00 08 08 00 A0 A2
+  00 00 B1 AE 00 03 9D 00 07 00
+  00 00 00 00 00 00 00 0B 74 72
+  A9 00 00 00 00 00 07 73 72 72
+  A8 99 80 A6 00 A4 80 99 80 99
+room 1
+exits 0 15 2 0 $AFF1
+  00 BC 00 00 09 09 00 00 AD 00
+  00 B5 81 00 02 01 00 B3 B4 00
+  00 B2 82 A7 00 00 A7 B1 B0 00
+  00 B8 00 00 00 00 00 00 B8 00
+  80 A9 00 BC 00 00 AD 00 A5 8A
+  94 A8 A9 B5 81 B3 B4 A5 A3 8C
+  94 00 A8 AF 82 B1 AE A3 00 8C
+room 2
+exits 0 3 0 0 $AFF4
+  D8 D6 E5 32 50 28 D5 27 4A 27
+  00 00 00 4C 4A DC 3B 27 77 D8
+  00 00 00 4B 4E 00 00 28 27 DD
+  00 00 00 00 08 08 4B 27 4D 00
+  00 00 00 12 03 06 00 75 79 18
+  42 00 00 60 D9 CC 00 00 76 00
+  43 28 27 27 27 27 11 27 27 27
+room 3
+exits 0 4 0 0 $AFFA
+  28 CA 4C D5 27 4A 00 00 00 00
+  4A 00 00 DE D7 00 00 00 00 00
+  00 00 CE 00 00 00 00 00 00 00
+  00 00 5F 60 D9 00 00 00 00 00
+  00 CE 00 2D 25 76 00 00 00 18
+  CB CC 2B 27 50 4A 00 00 CB D1
+  27 28 27 27 4A 00 00 2D 27 27
+room 4
+exits 0 5 0 0 $B000
+  27 4A DC 4F D7 67 E0 4F D7 3B
+  D8 00 00 00 54 54 D1 D9 00 18
+  5F CE 00 63 D4 D5 3C 28 27 27
+  00 D0 00 5F 00 D7 DC 3B 27 50
+  60 5F 00 00 D0 00 00 00 DF 45
+  00 00 00 00 00 53 00 5A D1 1C
+  3E 3E 3E 3E 3E 15 27 27 25 8F
+room 5
+exits 0 0 0 0 $B018
+  4F 4C 27 CA 10 4C 3C 27 4C 27
+  00 00 DC 00 00 00 3B D8 00 D4
+  24 00 00 00 00 00 00 08 08 F1
+  27 00 00 00 00 00 12 03 06 F1
+  8F 20 CF 00 0D 0E 5F 00 00 C8
+  25 9A E6 00 00 00 66 31 31 31
+  8E 9B 55 55 55 55 6A 68 68 68
+list $AFEE 0: $0A $00 | $FF
+list $AFF1 1: $01 $0F | $FF
+list $AFF4 2: $0A $50 | $FC $B0 $12 | $FF
+list $AFFA 3: $09 $32 | $08 $A0 $06 | $FF
+list $B000 4: $0A $50 | $0A $68 $05 | $0B $28 $0E | $01 $B8 $06 | $81 $D8 $06 | $8B $D8 $11 | $0B $08 $0C | $09 $90 $03 | $FF
+list $B018 5: $0A $50 | $09 $68 $05 | $0A $A0 $0E | $0A $38 $10 | $81 $B8 $08 | $01 $50 $12 | $01 $70 $12 | $01 $90 $12 | $FD $D0 $04 | $FF

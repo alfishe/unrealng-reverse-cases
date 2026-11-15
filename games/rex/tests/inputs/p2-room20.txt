@@ -1,0 +1,25 @@
+# p2-room20 (stage 2): REX 2 from work/stage1/rzx/p2/at029000.szx (an RZX state in room 19; Sinclair keys 6-0).
+# POKEs on this clone: infinite lives (40303 = 0); the current room's exits right and left (RoomRight $A226 = 41510,
+# RoomLeft $A229 = 41513) set to room 20 and Rex at X $EE (RexX $A24F = 41551), so walking right leaves for room 20.
+# Then fire, walk left, a jump; H (the pause) and fire (0) to go on.
+0 POKE 40303 0
+0 POKE 41510 20
+0 POKE 41513 20
+0 POKE 41551 238
+0 7
++40 -
++20 0
++6 -
++40 6
++60 0 6
++60 -
++40 9
++6 -
++80 7 0
++80 -
++40 H
++6 -
++100 0
++6 -
++200 -
++10 END

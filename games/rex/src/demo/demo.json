@@ -1,0 +1,32 @@
+{
+  "about": "Side 2 block 6, DEMO (the Tutor Mode), $61A8-$FFF9 as the ROM loader leaves it, entry $8A84: python3 ../../kit/mkgame.py --part src/demo/demo.json --install",
+  "image_cmd": [
+    "sh",
+    "-c",
+    "test -f work/parts/demo.img || python3 tools/parts.py > /dev/null"
+  ],
+  "image": "work/parts/demo.img",
+  "lo": "61A8",
+  "hi": "FFFA",
+  "ann": "src/demo/demo.ann",
+  "top": "demo",
+  "bin": "demo.bin",
+  "dest": "src/demo",
+  "device": "ZXSPECTRUM128",
+  "header": [
+    "; Rex, Martech Games 1988 (The Light): DEMO, the Tutor Mode, $61A8-$FFF9 as the ROM loader leaves it",
+    "; (tools/parts.py: side 2 blocks 4 and 6 of orig/Rex.tzx.zip); entry $8A84."
+  ],
+  "l1": [
+    {
+      "path": "work/stage1/d1/l1.json",
+      "reads": true,
+      "load_end": 13224
+    },
+    {
+      "path": "work/stage2/rec/demo-cycle/l1.json",
+      "reads": true
+    }
+  ],
+  "work": "work/stage2/mkdemo"
+}

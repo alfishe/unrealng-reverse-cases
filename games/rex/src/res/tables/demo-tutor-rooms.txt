@@ -1,0 +1,2 @@
+# DEMO: TutorRooms, the rooms the demo plays in turn, $FF: again
+$04 $01 $00 $02 $FF

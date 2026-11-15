@@ -1,0 +1,24 @@
+# REX 1: GameTexts, the play texts, the bonus panels and the weapon panels
+# $attribute column $line "text"; "bytes": anything else
+$46 7 $50 "PHASE ONE:PROCEED"
+$46 7 $58 "ON FOOT THROUGH"
+$46 7 $60 "UNDERGROUND COMPLEX"
+$43 5 $40 "GAME OVER"
+$45 7 $60 "HI:SCORE 0000000"
+$45 9 $80 "HUMANS KILLED:00000"
+$44 4 $70 "PRESS FIRE"
+$44 4 $78 "TO BEGIN  "
+$46 3 $28 "    SPEED UP   "
+$42 3 $28 "  SHIELD LOSS  "
+$46 3 $28 "   1000 BONUS  "
+$42 3 $28 "  ENERGY LOSS  "
+$46 3 $28 "100 RAPID SHOTS"
+bytes $00
+$01 69 $12 "(DOUBLE FIRE"
+bytes $00
+$01 69 $03 "(LASER"
+bytes $00
+$01 69 $14 "(MULTIPLE"
+bytes $00
+$01 69 $12 "(SPRAY"
+bytes $80 $40 $20 $10 $08 $04 $02 $01

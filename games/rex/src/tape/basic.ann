@@ -1,0 +1,91 @@
+# The annotations of the three BASIC programs on the tape, "REX 1" (side 1 block 2), "REX 2" (side 1 block 8) and
+# "DEMO" (side 2 block 2), each at PROG $5CCB: one piece a program (src/tape/basic-rex1.json, basic-rex2.json,
+# basic-demo.json; ../../kit/mkgame.py --part F --install). Format: ../../../../docs/ann-format.md. The three differ only
+# in the CLEAR, the USR and the names in line 999 (docs/03-build-and-load.md 3.1, "The BASIC").
+
+@piece rex1
+@module basic-rex1 ; The BASIC "REX 1": clears the screen, sets RAMTOP, loads the screen and the code and calls the game
+@about Tape block 2 of side 1 holds the program "REX 1" (header: LINE 1, program length 151, no variables). Line 1 does not exist, so the ROM runs from line 10: PAPER 0: INK 0: BORDER 0: CLS, CLEAR 24599, `LOAD "" SCREEN$`, PRINT AT 0,0;, LOAD "" CODE, RANDOMIZE USR 38010. Every number is its digits, then the number marker $0E and the five-byte small-integer form the ROM reads.
+@about Witness: c1 (work/stage1/c1: power-on, side 1 at ROM speed on the 128K), whose ROM loads this block and runs it from line 1, frame 13 701 enters $947A.
+
+$5CCB b BasicLine10 ; Line 10: PAPER 0: INK 0: BORDER 0: CLS
+> Black paper, ink and border, then CLS: the ROM's tape messages that follow print black on black, and the loading screen comes onto a black frame.
+$5CCD ; the line's length, 29
+$5CCF ; PAPER ($DA) "0", $0E and 0
+$5CD7 ; ":" INK ($D9) "0", $0E and 0
+$5CE0 ; ":" BORDER ($E7) "0", $0E and 0
+$5CE9 ; ":" CLS ($FB), ENTER
+$5CEC b BasicLine20 ; Line 20: CLEAR 24599
+> RAMTOP to $6017, one byte under the code block ($6018): the machine stack moves under the code, where the game keeps it (its own SP is set by the entry).
+$5CF0 ; CLEAR ($FD) "24599", $0E and 24599 = $6017, ENTER
+$5CFD b BasicLine30 ; Line 30: LOAD "" SCREEN$
+> Loads the next Bytes file to the screen at $4000 whatever its header's start says (the header gives 40000).
+$5D06 b BasicLine40 ; Line 40: PRINT AT 0,0;
+> Puts the print position back at the top left, so the ROM's "Bytes: ds" message of the next LOAD prints in the black top line (INK 0 on PAPER 0) and not over the picture (known only from the BASIC: the message is not visible in the recording's screens).
+$5D0A ; PRINT ($F5) AT ($AC) "0", $0E and 0, "," "0", $0E and 0, ";", ENTER
+$5D1D b BasicLine50 ; Line 50: LOAD "" CODE
+> Loads the code block at the start its header gives ($6018).
+$5D26 b BasicLine60 ; Line 60: RANDOMIZE USR 38010
+> Calls part 1's entry GameEntry $947A (src/game), which never returns.
+$5D2A ; RANDOMIZE ($F9) USR ($C0) "38010", $0E and 38010 = $947A, ENTER
+$5D38 b BasicLine999 ; Line 999: SAVE "t:": SAVE "REX 1" LINE 1: LOAD "a:": LOAD "make1"
+> The authors' mastering line, never run (the program starts at line 1, and line 60 does not return). SAVE "t:" sends the next SAVE to the tape and LOAD "a:" makes a disk drive the default, the syntax of a disk interface's BASIC: so the program saves itself to tape with LINE 1 and then loads the next step, "make1", from the disk (known only from the BASIC's text).
+$5D3C ; SAVE ($F8) "t:" ":"
+
+@piece rex2
+@module basic-rex2 ; The BASIC "REX 2": clears the screen, sets RAMTOP, loads the screen and the code and calls the game
+@about Tape block 8 of side 1 holds the program "REX 2" (header: LINE 1, program length 151, no variables). Line 1 does not exist, so the ROM runs from line 10: PAPER 0: INK 0: BORDER 0: CLS, CLEAR 24999, `LOAD "" SCREEN$`, PRINT AT 0,0;, LOAD "" CODE, RANDOMIZE USR 38000. Every number is its digits, then the number marker $0E and the five-byte small-integer form the ROM reads.
+@about Witness: c2 (work/stage1/c2: power-on, side 1 from tape block 6 at ROM speed on the 128K), whose ROM loads this block and runs it, frame 13 567 enters $9470.
+
+$5CCB b BasicLine10 ; Line 10: PAPER 0: INK 0: BORDER 0: CLS
+> Black paper, ink and border, then CLS: the ROM's tape messages that follow print black on black, and the loading screen comes onto a black frame.
+$5CCD ; the line's length, 29
+$5CCF ; PAPER ($DA) "0", $0E and 0
+$5CD7 ; ":" INK ($D9) "0", $0E and 0
+$5CE0 ; ":" BORDER ($E7) "0", $0E and 0
+$5CE9 ; ":" CLS ($FB), ENTER
+$5CEC b BasicLine20 ; Line 20: CLEAR 24999
+> RAMTOP to $61A7, one byte under the code block ($61A8): the machine stack moves under the code, where the game keeps it (its own SP is set by the entry).
+$5CF0 ; CLEAR ($FD) "24999", $0E and 24999 = $61A7, ENTER
+$5CFD b BasicLine30 ; Line 30: LOAD "" SCREEN$
+> Loads the next Bytes file to the screen at $4000 whatever its header's start says (the header gives 40000).
+$5D06 b BasicLine40 ; Line 40: PRINT AT 0,0;
+> Puts the print position back at the top left, so the ROM's "Bytes: ds" message of the next LOAD prints in the black top line (INK 0 on PAPER 0) and not over the picture (known only from the BASIC: the message is not visible in the recording's screens).
+$5D0A ; PRINT ($F5) AT ($AC) "0", $0E and 0, "," "0", $0E and 0, ";", ENTER
+$5D1D b BasicLine50 ; Line 50: LOAD "" CODE
+> Loads the code block at the start its header gives ($61A8).
+$5D26 b BasicLine60 ; Line 60: RANDOMIZE USR 38000
+> Calls part 2's entry $9470 (src/rex2), which never returns.
+$5D2A ; RANDOMIZE ($F9) USR ($C0) "38000", $0E and 38000 = $9470, ENTER
+$5D38 b BasicLine999 ; Line 999: SAVE "t:": SAVE "REX 2" LINE 1: LOAD "a:": LOAD "make2"
+> The authors' mastering line, never run (the program starts at line 1, and line 60 does not return). SAVE "t:" sends the next SAVE to the tape and LOAD "a:" makes a disk drive the default, the syntax of a disk interface's BASIC: so the program saves itself to tape with LINE 1 and then loads the next step, "make2", from the disk (known only from the BASIC's text).
+$5D3C ; SAVE ($F8) "t:" ":"
+
+@piece demo
+@module basic-demo ; The BASIC "DEMO": clears the screen, sets RAMTOP, loads the screen and the code and calls the game
+@about Tape block 2 of side 2 holds the program "DEMO" (header: LINE 1, program length 150, no variables). Line 1 does not exist, so the ROM runs from line 10: PAPER 0: INK 0: BORDER 0: CLS, CLEAR 24999, `LOAD "" SCREEN$`, PRINT AT 0,0;, LOAD "" CODE, RANDOMIZE USR 35460. Every number is its digits, then the number marker $0E and the five-byte small-integer form the ROM reads.
+@about Witness: d1 (work/stage1/d1: power-on, side 2 at ROM speed on the 128K), whose ROM loads this block and runs it, frame 13 224 enters $8A84.
+
+$5CCB b BasicLine10 ; Line 10: PAPER 0: INK 0: BORDER 0: CLS
+> Black paper, ink and border, then CLS: the ROM's tape messages that follow print black on black, and the loading screen comes onto a black frame.
+$5CCD ; the line's length, 29
+$5CCF ; PAPER ($DA) "0", $0E and 0
+$5CD7 ; ":" INK ($D9) "0", $0E and 0
+$5CE0 ; ":" BORDER ($E7) "0", $0E and 0
+$5CE9 ; ":" CLS ($FB), ENTER
+$5CEC b BasicLine20 ; Line 20: CLEAR 24999
+> RAMTOP to $61A7, one byte under the code block ($61A8): the machine stack moves under the code, where the game keeps it (its own SP is set by the entry).
+$5CF0 ; CLEAR ($FD) "24999", $0E and 24999 = $61A7, ENTER
+$5CFD b BasicLine30 ; Line 30: LOAD "" SCREEN$
+> Loads the next Bytes file to the screen at $4000 whatever its header's start says (the header gives 40000).
+$5D06 b BasicLine40 ; Line 40: PRINT AT 0,0;
+> Puts the print position back at the top left, so the ROM's "Bytes: ds" message of the next LOAD prints in the black top line (INK 0 on PAPER 0) and not over the picture (known only from the BASIC: the message is not visible in the recording's screens).
+$5D0A ; PRINT ($F5) AT ($AC) "0", $0E and 0, "," "0", $0E and 0, ";", ENTER
+$5D1D b BasicLine50 ; Line 50: LOAD "" CODE
+> Loads the code block at the start its header gives ($61A8).
+$5D26 b BasicLine60 ; Line 60: RANDOMIZE USR 35460
+> Calls DEMO's entry $8A84 (src/demo), which never returns.
+$5D2A ; RANDOMIZE ($F9) USR ($C0) "35460", $0E and 35460 = $8A84, ENTER
+$5D38 b BasicLine999 ; Line 999: SAVE "t:": SAVE "DEMO" LINE 1: LOAD "a:": LOAD "maked"
+> The authors' mastering line, never run (the program starts at line 1, and line 60 does not return). SAVE "t:" sends the next SAVE to the tape and LOAD "a:" makes a disk drive the default, the syntax of a disk interface's BASIC: so the program saves itself to tape with LINE 1 and then loads the next step, "maked", from the disk (known only from the BASIC's text).
+$5D3C ; SAVE ($F8) "t:" ":"

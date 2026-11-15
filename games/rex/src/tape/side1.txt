@@ -1,0 +1,22 @@
+# Side 1 of the tape ("Rex - Side 1.tzx" in orig/Rex.tzx.zip) as tools/mktape.py writes it: one line a TZX block, in
+# order (the format is in tools/mktape.py; the blocks in docs/03-build-and-load.md 3.1). The items are the parts
+# tools/build.sh assembles into build/:
+#   basic-rex1.bin   src/tape/basic-rex1.asm, the BASIC "REX 1" (src/tape/basic.ann, piece rex1)
+#   screen-rex1.bin  src/screen/screen-rex1.asm, REX 1's loading screen
+#   game.bin         src/game/game.asm, part 1's code $6018-$FFF9
+#   basic-rex2.bin, screen-rex2.bin, rex2.bin: the same for REX 2 (src/rex2/rex2.asm, $61A8-$FFF9)
+# The Bytes headers' second parameter is 32768 plus the BASIC's length (32919), as the authors' SAVE left it.
+tzx 1.10
+text Created with Ramsoft MakeTZX
+header 1012 0 REX_1 @basic-rex1.bin 1 151
+data 4196 basic-rex1.bin
+header 1013 3 ds 6912 40000 32919
+data 5275 screen-rex1.bin
+header 1014 3 ds @game.bin 24600 32919
+data 23072 game.bin
+header 1017 0 REX_2 @basic-rex2.bin 1 151
+data 4404 basic-rex2.bin
+header 1017 3 ds 6912 40000 32919
+data 5147 screen-rex2.bin
+header 1015 3 ds @rex2.bin 25000 32919
+data 42693 rex2.bin

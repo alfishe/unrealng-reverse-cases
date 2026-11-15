@@ -1,0 +1,22 @@
+# REX 2: MenuTexts, the menu and the DEFINE texts
+# $attribute column $line "text"; "bytes": anything else
+$06 21 $90 "  SELECT"
+$05 21 $98 "1:DEFINE"
+$05 21 $A0 "2:KEMPSTON"
+$05 21 $A8 "3:CURSOR"
+$05 21 $B0 "4:SINCLAIR"
+$04 9 $80 "CONFIRM SINCLAIR Y.N"
+$04 9 $80 "CONFIRM CURSOR Y.N"
+$04 9 $80 "CONFIRM KEMPSTON Y.N"
+$04 3 $90 "CONFIRM KEYS Y.N"
+$07 15 $58 " PRESS"
+$01 15 $60 " :UP"
+$01 15 $68 " :DOWN"
+$01 15 $70 " :LEFT"
+$01 15 $78 " :RIGHT"
+$01 15 $80 " :FIRE"
+$06 15 $60 " :UP"
+$06 15 $68 " :DOWN"
+$06 15 $70 " :LEFT"
+$06 15 $78 " :RIGHT"
+bytes $06 $0F $80 $20 $3A

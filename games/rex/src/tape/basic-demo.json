@@ -1,0 +1,23 @@
+{
+  "about": "Tape side 2 block 2, the BASIC program \"DEMO\" at PROG $5CCB: python3 ../../kit/mkgame.py --part src/tape/basic-demo.json --install",
+  "image_cmd": [
+    "sh",
+    "-c",
+    "test -f work/parts/basic-demo.img || python3 tools/parts.py > /dev/null"
+  ],
+  "image": "work/parts/basic-demo.img",
+  "lo": "5CCB",
+  "hi": "5D61",
+  "ann": "src/tape/basic.ann",
+  "piece": "demo",
+  "top": "basic-demo",
+  "bin": "basic-demo.bin",
+  "dest": "src/tape",
+  "device": "ZXSPECTRUM128",
+  "header": [
+    "; Rex, Martech Games 1988: tape side 2 block 2, the BASIC program \"DEMO\" (PROG $5CCB, LINE 1)."
+  ],
+  "l1": [],
+  "data_entries": "stop",
+  "work": "work/stage2/mkbasic-demo"
+}

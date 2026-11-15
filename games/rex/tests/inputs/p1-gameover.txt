@@ -1,0 +1,10 @@
+# p1-gameover (stage 2): REX 1 from work/stage1/rzx/p1/at012000.szx (an RZX state), no keys.
+# POKEs on this clone: Lives $A063 = 0 (41059), HumansKilled $A089 = 37 (41097, 41098 = 0) and SweepWidth $A067 = 2
+# (41063), so the HUD sweep kills Rex soon, LifeLost finds no life and GameOver prints the panel; the screens show
+# HUMANS KILLED:00037.
+0 POKE 41059 0
+0 POKE 41097 37 0
+0 POKE 41063 2
+0 -
++1500 -
++10 END

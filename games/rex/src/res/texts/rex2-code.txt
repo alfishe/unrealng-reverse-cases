@@ -1,0 +1,8 @@
+# REX 2: CodeTexts, the code panel's texts
+# $attribute column $line "text"; "bytes": anything else
+$02 13 $58 "INVALID CODE"
+$02 13 $60 "TRY AGAIN   "
+$06 3 $70 "INPUT YOUR CODE"
+$06 3 $78 "USE CAPS TO DELETE:"
+$05 3 $80 "                      "
+$07 3 $40 "                "

@@ -1,0 +1,94 @@
+# p1-code (stage 2): REX 1 from work/stage1/rzx/p1/at063000.szx, the RZX's keys of frames 63001-64813 (tools/rzx_script.py);
+# POKEs on this clone: all four exits of room 31 ($B1ED-$B1F0) poked to 99 (the end): the RZX leaves room 31 at frame 63705, the CODE panel; infinite lives (40057 = 0).
+# RZX archive rex.zip: work/stage1/rzx/inputs-p1.json, frames 63001-64813 as held keys, from the state after frame 63000 (tools/rzx_script.py)
+0 POKE 40057 0
+0 POKE 45549 99
+0 POKE 45550 99
+0 POKE 45551 99
+0 POKE 45552 99
+0 -
+1 6
+6 0 6
+11 6
+16 0 9 6
+22 9 6
+27 0 9 6
+43 9 6
+48 0 6
+53 6
+58 0 6
+63 6
+68 0 6
+78 6
+83 0 6
+88 6
+93 0
+98 7
+103 0 7
+109 7
+114 0 7
+124 7
+129 0 7
+134 7
+149 -
+154 0 9
+164 9
+169 0 9
+174 -
+188 7
+193 0 9 7
+198 -
+212 7
+222 0 9 7
+232 9 7
+236 0 9 7
+242 9 7
+247 7
+251 0 9 7
+256 -
+266 6
+275 0 6
+280 6
+285 0 6
+290 6
+295 0 6
+300 6
+310 0 6
+315 6
+325 0 9 6
+345 9 6
+350 0 9 6
+356 6
+361 0 9 6
+366 6
+372 0 9 6
+378 6
+421 0 6
+426 6
+441 0 6
+447 6
+451 0 6
+457 6
+466 0 6
+471 6
+527 -
+536 7
+550 -
+559 7
+573 -
+577 9 6
+586 6
+600 -
+609 6
+618 -
+632 7
+637 -
+646 8
+651 -
+665 6
+669 -
+699 8
+703 -
+1726 0
+1733 -
+1813 END

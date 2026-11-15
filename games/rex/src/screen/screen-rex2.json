@@ -1,0 +1,22 @@
+{
+  "about": "Tape side 1 block 10, the loading screen of REX 2, loaded by `LOAD \"\" SCREEN$` at $4000: python3 ../../kit/mkgame.py --part src/screen/screen-rex2.json --install",
+  "image_cmd": [
+    "sh",
+    "-c",
+    "test -f work/parts/screen-rex2.bin || python3 tools/parts.py > /dev/null"
+  ],
+  "image": "work/parts/screen-rex2.bin",
+  "org": "4000",
+  "ann": "src/screen/screen.ann",
+  "piece": "rex2",
+  "top": "screen-rex2",
+  "bin": "screen-rex2.bin",
+  "dest": "src/screen",
+  "device": "ZXSPECTRUM128",
+  "header": [
+    "; Rex, Martech Games 1988: tape side 1 block 10, the loading screen of REX 2 (6912 bytes at $4000)."
+  ],
+  "l1": [],
+  "data_entries": "stop",
+  "work": "work/stage2/mkscreen-rex2"
+}

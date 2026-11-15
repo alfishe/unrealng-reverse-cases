@@ -1,0 +1,23 @@
+# REX 1: RollCallTexts, the enemies' names and scores, $FF ends; DefineTaken's 6 bytes after
+# $attribute column $line "text"; "bytes": anything else
+$44 3 $10 "   FOOT MAN"
+$43 3 $18 "   PTS:100 "
+$44 3 $10 "   STOMPER"
+$43 3 $18 "   PTS:200"
+$44 3 $10 "   SCANNER"
+$43 3 $18 "   PTS:600"
+$44 3 $10 "   RAMMING POD"
+$43 3 $18 "   PTS:300    "
+$44 3 $10 "   LAUNCHER"
+$43 3 $18 "   PTS:800 "
+$44 3 $10 "   SHOOTERS"
+$43 3 $18 "   PTS:500 "
+$44 3 $10 "   SWING GUN"
+$43 3 $18 "   PTS:600  "
+$44 3 $10 "  BLOB"
+$43 3 $18 "  PTS:200"
+$44 3 $10 "   MINE LAYER"
+$43 3 $18 "   PTS:1000  "
+$44 3 $10 "  MINE"
+$43 3 $18 "  NO SCORE"
+bytes $FF $00 $00 $00 $00 $00 $00
