@@ -1,0 +1,48 @@
+{
+  "image_cmd": [
+    "sh",
+    "-c",
+    "mkdir -p work/mkgame && cp work/stage1/images/entry.cpu.bin work/mkgame/original.bin"
+  ],
+  "image": "work/mkgame/original.bin",
+  "lo": "7000",
+  "hi": "10000",
+  "device": "ZXSPECTRUM48",
+  "bases": {
+    "5": "4000",
+    "2": "8000",
+    "0": "C000"
+  },
+  "read_builds": [
+    "stage1/c1",
+    "stage1/rec/l1",
+    "stage1/rec/l2",
+    "stage1/rec/l3",
+    "stage1/rec/l4",
+    "stage1/rec/l5",
+    "stage1/rec/l6",
+    "stage1/rec/l7",
+    "stage1/rec/l8",
+    "stage1/rec/ending",
+    "stage1/rec/ctl-kempston",
+    "stage1/rec/ctl-if2",
+    "stage1/rec/ctl-sinclair",
+    "stage1/rec/gameover",
+    "stage1/rec/continue",
+    "stage1/rec/hiscore",
+    "stage1/rec/hiscore-typed"
+  ],
+  "ref_builds": [
+    [
+      "stage1/c1",
+      "c1: power-on, orig/R-Type.tzx.zip at ROM speed on the 48K, SpeedLock 7, level 1 from side 2, the menu, define keys, play on level 1"
+    ]
+  ],
+  "header": [
+    "; R-Type, Electric Dreams Software 1988: $7000-$FFFF as the SpeedLock loader leaves it at the entry $85FD",
+    "; (c1 frame 11700 T 1379, tools/ttd_dump.py -> work/stage1/images/entry.cpu.bin); level 1 not yet loaded."
+  ],
+  "ref_load_end": {
+    "stage1/c1": 11700
+  }
+}

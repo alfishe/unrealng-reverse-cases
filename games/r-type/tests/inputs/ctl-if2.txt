@@ -1,0 +1,25 @@
+# ctl-METHOD: from c1's title (menu.szx), the game started with the fire of METHOD (if2: keys 1-5, kempston:
+# the Kempston joystick, sinclair: keys 6-0), the method byte `$74FB` read, then each direction, fire, a charged
+# beam and SPACE (the Force's detach with a joystick) with that method only; no POKE
+# Start: work/stage1/c1/menu.szx
+50 5
+58 -
+118 2
+158 4
+188 3
+218 1
+248 5
+252 -
+272 5
+276 -
+296 5
+416 -
+446 SPACE
+452 -
+492 SPACE
+498 -
+538 2 5
+598 4 5
+628 3 5
+658 -
+758 END
