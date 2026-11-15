@@ -4,8 +4,9 @@
 
 ; Move the homing missiles, count MissileTimer down
 ;
-; Witness: L1 27064 (c1, continue, ctl-if2, ctl-kempston, ctl-sinclair, ending,
-; gameover, hiscore, hiscore-typed, l1-l8).
+; Witness: L1 33322 (boss, c1, continue, ctl-if2, ctl-kempston, ctl-sinclair,
+; deaths-l7, ending, force, gameover, hiscore, hiscore-typed, pause, restart,
+; l1-l8).
 MoveMissiles:
   LD IX,MissileLaunch
   LD IY,MissileLaunch+$0006
@@ -22,8 +23,9 @@ MoveMissiles:
 
 ; Move one missile along its frame lists, turning toward a target
 ;
-; Witness: L1 63293 (c1, continue, ctl-if2, ctl-kempston, ctl-sinclair, ending,
-; gameover, hiscore, hiscore-typed, l1-l8).
+; Witness: L1 76378 (boss, c1, continue, ctl-if2, ctl-kempston, ctl-sinclair,
+; deaths-l7, ending, force, gameover, hiscore, hiscore-typed, pause, restart,
+; l1-l8).
 MoveMissile:
   LD A,(IX+$00)
   AND A
@@ -177,8 +179,9 @@ l_94E8:
 ; Move the ship by the controls, tilt it while it climbs or dives, test what it
 ; touches
 ;
-; Witness: L1 27064 (c1, continue, ctl-if2, ctl-kempston, ctl-sinclair, ending,
-; gameover, hiscore, hiscore-typed, l1-l8).
+; Witness: L1 33322 (boss, c1, continue, ctl-if2, ctl-kempston, ctl-sinclair,
+; deaths-l7, ending, force, gameover, hiscore, hiscore-typed, pause, restart,
+; l1-l8).
 MoveShip:
   LD A,(ShipFrame)
   AND A
@@ -261,8 +264,12 @@ l_9559:
 
 ; While ShieldTimer runs: the shield; then the fire and detach controls
 ;
-; Witness: L1 19736 (c1, continue, ctl-if2, ctl-kempston, ctl-sinclair, ending,
-; gameover, hiscore, hiscore-typed, l1-l8).
+; No test reads ShieldTimer but this one: the shield is drawn and does not
+; protect (deaths-l7 8376: a shot death with ShieldTimer 45).
+;
+; Witness: L1 24884 (boss, c1, continue, ctl-if2, ctl-kempston, ctl-sinclair,
+; deaths-l7, ending, force, gameover, hiscore, hiscore-typed, pause, restart,
+; l1-l8).
 ShipShield:
   LD A,(ShieldTimer)
   AND A
@@ -340,8 +347,9 @@ l_95F3:
 
 ; Move the Force by its state, draw it, dock it at the ship
 ;
-; Witness: L1 27064 (c1, continue, ctl-if2, ctl-kempston, ctl-sinclair, ending,
-; gameover, hiscore, hiscore-typed, l1-l8).
+; Witness: L1 33322 (boss, c1, continue, ctl-if2, ctl-kempston, ctl-sinclair,
+; deaths-l7, ending, force, gameover, hiscore, hiscore-typed, pause, restart,
+; l1-l8).
 MoveForce:
   LD A,(ForceRecord)
   AND A
@@ -452,7 +460,7 @@ l_969D:
 
 ; Patch the Force's seek and return the ship's column + 1
 ;
-; Witness: L1 4 (l1).
+; Witness: L1 12 (boss, force, l1).
 ForceTarget:
   LD (Scratch),BC
   LD A,$C9
@@ -543,7 +551,7 @@ l_9725:
 
 ; Step the Force toward its target, testing the cells it would enter
 ;
-; Witness: L1 4 (l1).
+; Witness: L1 17 (boss, force, l1).
 ForceSeek:
   INC B
   INC C
@@ -603,7 +611,7 @@ ForceStore:
 
 ; Test the cell in direction A; carry when it is free
 ;
-; Witness: L1 16 (l1).
+; Witness: L1 68 (boss, force, l1).
 ForceProbe:
   PUSH BC
   LD (ForceProbe+$0008),A
@@ -619,7 +627,7 @@ ForceProbe:
 
 ; The up probe and its opposite
 ;
-; Witness: L1 8 (l1).
+; Witness: L1 29 (boss, force, l1).
 DirUp:
   LD A,$04
   LD D,$05
@@ -627,7 +635,7 @@ DirUp:
 
 ; The down probe and its opposite
 ;
-; Witness: L1 4 (l1).
+; Witness: L1 17 (boss, force, l1).
 DirDown:
   LD A,$05
   LD D,$04
@@ -635,7 +643,7 @@ DirDown:
 
 ; The left probe and its opposite
 ;
-; Witness: L1 4 (l1).
+; Witness: L1 22 (boss, force, l1).
 DirLeft:
   LD A,$0C
   LD D,$0D
@@ -643,7 +651,7 @@ DirLeft:
 
 ; The right probe and its opposite
 ;
-; Witness: L1 4 (l1).
+; Witness: L1 17 (boss, force, l1).
 DirRight:
   LD A,$0D
   LD D,$0C
@@ -651,7 +659,7 @@ DirRight:
 
 ; Patch the probe operands and test the cell
 ;
-; Witness: L1 4 (l1).
+; Witness: L1 17 (boss, force, l1).
 ForceTry:
   PUSH DE
   PUSH BC
@@ -748,8 +756,9 @@ MoveCarriers:
 
 ; Move carrier A and draw it; touching the ship takes its pick-up
 ;
-; Witness: L1 27064 (c1, continue, ctl-if2, ctl-kempston, ctl-sinclair, ending,
-; gameover, hiscore, hiscore-typed, l1-l8).
+; Witness: L1 33322 (boss, c1, continue, ctl-if2, ctl-kempston, ctl-sinclair,
+; deaths-l7, ending, force, gameover, hiscore, hiscore-typed, pause, restart,
+; l1-l8).
 MoveCarrierA:
   LD A,(Carriers)
   AND A
@@ -820,8 +829,9 @@ l_989C:
 
 ; Move carrier B
 ;
-; Witness: L1 27064 (c1, continue, ctl-if2, ctl-kempston, ctl-sinclair, ending,
-; gameover, hiscore, hiscore-typed, l1-l8).
+; Witness: L1 33322 (boss, c1, continue, ctl-if2, ctl-kempston, ctl-sinclair,
+; deaths-l7, ending, force, gameover, hiscore, hiscore-typed, pause, restart,
+; l1-l8).
 MoveCarrierB:
   LD A,(Carriers+$0004)
   AND A
@@ -836,9 +846,13 @@ MoveCarrierB:
   JR CarrierDraw
 ; This entry point is used by the routine at CarrierDraw.
 TakePickup:
-  PUSH DE                 ; the ship took a pick-up: by its kind the bits, the
-                          ; missiles, the shield, a laser crystal and a Force
-                          ; level
+  PUSH DE                 ; the ship took a pick-up: sound $0D (bits $83), 400
+                          ; points; kind 9 the lower bit, 8 the upper bit (the
+                          ; lower if the upper is on), 7 the missiles, 6
+                          ; ShieldTimer $30 and 600 more points, 3-5 WeaponKind
+                          ; = kind - 2 and ForceLevel + 1 (max 3); at
+                          ; ForceLevel 1 the Force starts in state 4 at column
+                          ; 0, row 8
   LD HL,$0D83
   CALL PlaySound
   LD DE,$0403
@@ -897,7 +911,7 @@ l_9918:
 
 ; DE = the Force record of level A
 ;
-; Witness: L1 20 (l1-l8).
+; Witness: L1 33 (boss, deaths-l7, force, l1-l8).
 ForceRecordOf:
   LD DE,ForceRecord
   CP $01
@@ -985,7 +999,7 @@ l_998C:
 
 ; Step a bit's animation counter; A = its sprite
 ;
-; Witness: L1 13446 (ending, l1, l4-l8).
+; Witness: L1 14669 (boss, deaths-l7, ending, l1, l4-l8).
 BitFrame:
   LD A,(HL)
   INC A
@@ -1001,7 +1015,7 @@ l_99B5:
 
 ; Step a carrier's animation; A = its character from CarrierFrames
 ;
-; Witness: L1 5737 (l1-l8).
+; Witness: L1 7243 (boss, deaths-l7, force, l1-l8).
 NextCarrierFrame:
   LD A,(HL)
   INC A
@@ -1019,7 +1033,7 @@ l_99C3:
 
 ; Count a carrier's timer down; Z when it ran out
 ;
-; Witness: L1 5759 (l1-l8).
+; Witness: L1 7266 (boss, deaths-l7, force, l1-l8).
 CarrierTimer:
   LD B,$00
   LD A,(ScrollStep)
@@ -1033,7 +1047,7 @@ CarrierTimer:
 
 ; Store the ship's position in the trail ring
 ;
-; Witness: L1 13446 (ending, l1, l4-l8).
+; Witness: L1 14669 (boss, deaths-l7, ending, l1, l4-l8).
 TrailPoint:
   LD A,(FrameCounter)
   AND $03
@@ -1060,8 +1074,9 @@ l_99F9:
 
 ; Draw game object A at BC as stored, with the hits gathered
 ;
-; Witness: L1 284759 (c1, continue, ctl-if2, ctl-kempston, ctl-sinclair,
-; ending, gameover, hiscore, hiscore-typed, l1-l8).
+; Witness: L1 305434 (boss, c1, continue, ctl-if2, ctl-kempston, ctl-sinclair,
+; deaths-l7, ending, force, gameover, hiscore, hiscore-typed, pause, restart,
+; l1-l8).
 DrawGame:
   CALL DrawPrepare
   CALL DrawSprite
@@ -1069,8 +1084,8 @@ DrawGame:
 
 ; Draw game object A upside down
 ;
-; Witness: L1 3528 (c1, continue, ctl-if2, ctl-kempston, ctl-sinclair,
-; gameover, hiscore, hiscore-typed, l1-l8).
+; Witness: L1 4144 (boss, c1, continue, ctl-if2, ctl-kempston, ctl-sinclair,
+; deaths-l7, force, gameover, hiscore, hiscore-typed, restart, l1-l8).
 DrawGameFlipped:
   CALL DrawPrepare
   CALL DrawSpriteFlipped
@@ -1078,7 +1093,7 @@ DrawGameFlipped:
 
 ; Draw game object A mirrored
 ;
-; Witness: L1 2112 (l1-l8).
+; Witness: L1 3673 (boss, deaths-l7, l1-l8).
 DrawGameMirrored:
   CALL DrawPrepare
   CALL DrawSpriteMirrored
@@ -1086,7 +1101,7 @@ DrawGameMirrored:
 
 ; Draw game object A mirrored and upside down
 ;
-; Witness: L1 3572 (l1-l8).
+; Witness: L1 4906 (boss, deaths-l7, force, l1-l8).
 DrawGameBoth:
   CALL DrawPrepare
   CALL DrawSpriteBoth
@@ -1094,8 +1109,9 @@ DrawGameBoth:
 
 ; GameObject A and the hit gathering on (CellFree's RET made a NOP)
 ;
-; Witness: L1 293971 (c1, continue, ctl-if2, ctl-kempston, ctl-sinclair,
-; ending, gameover, hiscore, hiscore-typed, l1-l8).
+; Witness: L1 318157 (boss, c1, continue, ctl-if2, ctl-kempston, ctl-sinclair,
+; deaths-l7, ending, force, gameover, hiscore, hiscore-typed, pause, restart,
+; l1-l8).
 DrawPrepare:
   CALL GameObject
   XOR A
@@ -1117,8 +1133,12 @@ DrawFinish:
 ; fires a plain shot and the Force's lasers by WeaponKind; a longer one a beam
 ; by the charge.
 ;
-; Witness: L1 14604 (c1, continue, ctl-if2, ctl-kempston, ctl-sinclair,
-; gameover, hiscore, hiscore-typed, l1-l8).
+; BeamCharge + 2 a pass while held, kept below $40 (stops at $3E); on release
+; below $0C a plain shot, else BeamRelease: $0C-$13 power 10, $14-$23 power 20,
+; $24 up power 30.
+;
+; Witness: L1 17968 (boss, c1, continue, ctl-if2, ctl-kempston, ctl-sinclair,
+; deaths-l7, force, gameover, hiscore, hiscore-typed, restart, l1-l8).
 FireBeam:
   LD A,(ControlBits)
   BIT 4,A
@@ -1386,9 +1406,9 @@ l_9C1E:
   LD A,$01
   JR l_9BFF
 
-; Start a homing missile record HL if free
+; Start a missile record HL if free
 ;
-; Witness: L1 2850 (l1-l5, l8).
+; Witness: L1 3225 (boss, l1-l5, l8).
 StartMissile:
   EX AF,AF'
   LD A,(HL)
@@ -1398,7 +1418,7 @@ StartMissile:
 
 ; Write a record at HL
 ;
-; Witness: L1 1990 (l1-l8).
+; Witness: L1 2401 (boss, deaths-l7, l1-l8).
 StartRecord:
   LD (HL),$01
   INC L
@@ -1519,7 +1539,7 @@ FireBits:
 
 ; Fire a reflect-laser pair from ForceShotsA
 ;
-; Witness: L1 1947 (l1, l4-l8).
+; Witness: L1 2140 (boss, deaths-l7, l1, l4-l8).
 ForceShotA:
   LD HL,ForceShotsA
   JR ForceShotFrom
@@ -1584,7 +1604,8 @@ l_9D42:
 
 ; Start a plain ship shot
 ;
-; Witness: L1 3769 (c1, continue, gameover, hiscore, hiscore-typed, l1-l8).
+; Witness: L1 4642 (boss, c1, continue, deaths-l7, force, gameover, hiscore,
+; hiscore-typed, restart, l1-l8).
 ShotFire:
   CALL FreeShot
   LD (HL),$18
@@ -1641,7 +1662,8 @@ ShotStore:
 
 ; HL = a free ship shot record; none: return to the caller's caller
 ;
-; Witness: L1 3769 (c1, continue, gameover, hiscore, hiscore-typed, l1-l8).
+; Witness: L1 4642 (boss, c1, continue, deaths-l7, force, gameover, hiscore,
+; hiscore-typed, restart, l1-l8).
 FreeShot:
   LD HL,ShipShots
   LD B,$10
@@ -1659,8 +1681,9 @@ l_9D9B:
 ; Move the ship's shots and draw them; a shot leaving the field or hitting
 ; scenery ends
 ;
-; Witness: L1 27064 (c1, continue, ctl-if2, ctl-kempston, ctl-sinclair, ending,
-; gameover, hiscore, hiscore-typed, l1-l8).
+; Witness: L1 33322 (boss, c1, continue, ctl-if2, ctl-kempston, ctl-sinclair,
+; deaths-l7, ending, force, gameover, hiscore, hiscore-typed, pause, restart,
+; l1-l8).
 MoveShipShots:
   LD HL,ShipShots
   LD B,$10
@@ -1727,8 +1750,9 @@ l_9DF4:
 
 ; Move the reflect-laser pairs, bouncing off the scenery
 ;
-; Witness: L1 27064 (c1, continue, ctl-if2, ctl-kempston, ctl-sinclair, ending,
-; gameover, hiscore, hiscore-typed, l1-l8).
+; Witness: L1 33322 (boss, c1, continue, ctl-if2, ctl-kempston, ctl-sinclair,
+; deaths-l7, ending, force, gameover, hiscore, hiscore-typed, pause, restart,
+; l1-l8).
 MoveForceShots:
   LD HL,ForceShotsA
   LD B,$04
@@ -1809,8 +1833,9 @@ l_9E65:
 
 ; Move the beam shot, ending it at scenery
 ;
-; Witness: L1 27064 (c1, continue, ctl-if2, ctl-kempston, ctl-sinclair, ending,
-; gameover, hiscore, hiscore-typed, l1-l8).
+; Witness: L1 33322 (boss, c1, continue, ctl-if2, ctl-kempston, ctl-sinclair,
+; deaths-l7, ending, force, gameover, hiscore, hiscore-typed, pause, restart,
+; l1-l8).
 MoveBeam:
   LD HL,BeamShot
   LD A,(HL)
@@ -1864,8 +1889,8 @@ MoveBeam:
 
 ; Draw the beam's segment
 ;
-; Witness: L1 1887 (c1, continue, ctl-if2, ctl-kempston, ctl-sinclair,
-; gameover, hiscore, hiscore-typed, l1-l8).
+; Witness: L1 2466 (boss, c1, continue, ctl-if2, ctl-kempston, ctl-sinclair,
+; deaths-l7, force, gameover, hiscore, hiscore-typed, restart, l1-l8).
 DrawBeam:
   LD A,(FrameCounter)
   AND $01
@@ -1898,8 +1923,9 @@ MoveAntiAir:
 
 ; Move an anti-air shot along AntiAirPathUp or AntiAirPathDown
 ;
-; Witness: L1 54107 (c1, continue, ctl-if2, ctl-kempston, ctl-sinclair, ending,
-; gameover, hiscore, hiscore-typed, l1-l8).
+; Witness: L1 66602 (boss, c1, continue, ctl-if2, ctl-kempston, ctl-sinclair,
+; deaths-l7, ending, force, gameover, hiscore, hiscore-typed, pause, restart,
+; l1-l8).
 MoveAntiAirShot:
   LD (Scratch+$0004),HL
   LD A,(HL)
@@ -1976,7 +2002,7 @@ l_9F5C:
 
 ; Step a shot along its path table; $63 ends it
 ;
-; Witness: L1 1473 (l1).
+; Witness: L1 2480 (boss, l1).
 ShotPathStep:
   INC (HL)
   DEC A
@@ -2095,8 +2121,9 @@ l_A00C:
 
 ; Move the three missile records, then the bit units
 ;
-; Witness: L1 27064 (c1, continue, ctl-if2, ctl-kempston, ctl-sinclair, ending,
-; gameover, hiscore, hiscore-typed, l1-l8).
+; Witness: L1 33322 (boss, c1, continue, ctl-if2, ctl-kempston, ctl-sinclair,
+; deaths-l7, ending, force, gameover, hiscore, hiscore-typed, pause, restart,
+; l1-l8).
 MoveMissileSet:
   LD A,(FrameCounter)
   AND $03
@@ -2116,8 +2143,9 @@ MoveMissileSet:
 
 ; Move one missile record and draw its trail
 ;
-; Witness: L1 81192 (c1, continue, ctl-if2, ctl-kempston, ctl-sinclair, ending,
-; gameover, hiscore, hiscore-typed, l1-l8).
+; Witness: L1 99966 (boss, c1, continue, ctl-if2, ctl-kempston, ctl-sinclair,
+; deaths-l7, ending, force, gameover, hiscore, hiscore-typed, pause, restart,
+; l1-l8).
 MoveMissileRec:
   LD A,(HL)
   AND A
@@ -2137,7 +2165,7 @@ MoveMissileRec:
 ; One step of a reflected shot: the next direction by the cells around it
 ; (ForceShotTurns)
 ;
-; Witness: L1 24156 (l1-l5, l8).
+; Witness: L1 24990 (boss, l1-l5, l8).
 BounceShot:
   LD A,(HL)
   LD (BitPositions+$000A),A
@@ -2295,7 +2323,7 @@ BounceEnd:
 
 ; Copy the 3 x 3 cells around BC
 ;
-; Witness: L1 13408 (l1-l5, l8).
+; Witness: L1 13537 (boss, l1-l5, l8).
 GetCellWindow:
   DEC B
   DEC C
@@ -2310,7 +2338,7 @@ GetCellWindow:
 
 ; One row of 3 cells
 ;
-; Witness: L1 40224 (l1-l5, l8).
+; Witness: L1 40611 (boss, l1-l5, l8).
 CellWindowRow:
   PUSH BC
   LD A,B
@@ -2340,7 +2368,7 @@ l_A1AE:
 
 ; Draw a missile's trail
 ;
-; Witness: L1 12078 (l1-l5, l8).
+; Witness: L1 12495 (boss, l1-l5, l8).
 DrawTrail:
   LD A,(DE)
   LD C,A
@@ -2425,8 +2453,9 @@ MoveBitUnits:
 
 ; Move one bit unit and draw it
 ;
-; Witness: L1 54128 (c1, continue, ctl-if2, ctl-kempston, ctl-sinclair, ending,
-; gameover, hiscore, hiscore-typed, l1-l8).
+; Witness: L1 66644 (boss, c1, continue, ctl-if2, ctl-kempston, ctl-sinclair,
+; deaths-l7, ending, force, gameover, hiscore, hiscore-typed, pause, restart,
+; l1-l8).
 MoveBitUnit:
   LD A,(HL)
   AND A
@@ -2446,7 +2475,7 @@ MoveBitUnit:
 
 ; One step of a bit unit by the cells around it
 ;
-; Witness: L1 24346 (l3-l8).
+; Witness: L1 25142 (deaths-l7, l3-l8).
 BitStep:
   LD A,(HL)
   LD (BitPositions+$000B),A
@@ -2649,7 +2678,7 @@ BitEnd:
 
 ; Draw a bit unit's trail
 ;
-; Witness: L1 12173 (l3-l8).
+; Witness: L1 12571 (deaths-l7, l3-l8).
 DrawBitTrail:
   PUSH HL
   LD A,$08
@@ -2715,7 +2744,7 @@ l_A427:
 
 ; Read the cells around BC
 ;
-; Witness: L1 19099 (l3-l8).
+; Witness: L1 19592 (deaths-l7, l3-l8).
 ReadCellWindow:
   LD IX,$5F9C
   PUSH HL
@@ -2755,7 +2784,7 @@ ReadCellWindow:
 
 ; Test A for hard scenery
 ;
-; Witness: L1 21 (l1).
+; Witness: L1 93 (boss, force, l1).
 SolidHard:
   CP $FB
   RET NC
@@ -2763,7 +2792,7 @@ SolidHard:
 
 ; Test A for any blocking cell
 ;
-; Witness: L1 78558 (l1-l8).
+; Witness: L1 80846 (boss, deaths-l7, l1-l8).
 SolidAny:
   CP $FA
   RET NC
@@ -2789,7 +2818,7 @@ l_A482:
 
 ; DE = the hit counter of the current bit unit
 ;
-; Witness: L1 143860 (l3-l8).
+; Witness: L1 147777 (deaths-l7, l3-l8).
 BitHits:
   LD DE,MissileTimer+$0002
   LD A,(MissileTimer+$0004)
@@ -2800,16 +2829,16 @@ BitHits:
 
 ; Mark the score, then ProcessHits
 ;
-; Witness: L1 68907 (c1, continue, ctl-if2, ctl-kempston, ctl-sinclair, ending,
-; gameover, hiscore, hiscore-typed, l1-l8).
+; Witness: L1 82749 (boss, c1, continue, ctl-if2, ctl-kempston, ctl-sinclair,
+; deaths-l7, ending, force, gameover, hiscore, hiscore-typed, restart, l1-l8).
 AddScoreFlag:
   LD A,$01
   LD (ScoreDirty),A
 
 ; Process HitList: enemy slots lose a hit, soft cells explode
 ;
-; Witness: L1 258153 (c1, continue, ctl-if2, ctl-kempston, ctl-sinclair,
-; ending, gameover, hiscore, hiscore-typed, l1-l8).
+; Witness: L1 274857 (boss, c1, continue, ctl-if2, ctl-kempston, ctl-sinclair,
+; deaths-l7, ending, force, gameover, hiscore, hiscore-typed, restart, l1-l8).
 ProcessHits:
   XOR A
   LD (Scratch+$0006),A
@@ -2991,8 +3020,11 @@ HitCounted:
 
 ; An enemy is destroyed: an explosion and the score award
 ;
-; Witness: L1 1313 (c1, continue, ending, gameover, hiscore, hiscore-typed,
-; l1-l8).
+; With no free explosion record AwardScore is skipped and AddScore gets the
+; caller's DE (a stale value).
+;
+; Witness: L1 1580 (boss, c1, continue, deaths-l7, ending, force, gameover,
+; hiscore, hiscore-typed, restart, l1-l8).
 EnemyDies:
   CALL FreeExplosion
   JR NZ,l_A5A1
@@ -3003,8 +3035,8 @@ l_A5A1:
 
 ; HL = a free explosion record
 ;
-; Witness: L1 1317 (c1, continue, ending, gameover, hiscore, hiscore-typed,
-; l1-l8).
+; Witness: L1 1740 (boss, c1, continue, deaths-l7, ending, force, gameover,
+; hiscore, hiscore-typed, restart, l1-l8).
 FreeExplosion:
   LD HL,Explosions
   LD B,$14
@@ -3025,8 +3057,8 @@ l_A5AA:
 ; The kind's byte 2: high nibble the explosion size ($10 sound 8, $40 sound
 ; $0A, else 9), low nibble the award.
 ;
-; Witness: L1 1317 (c1, continue, ending, gameover, hiscore, hiscore-typed,
-; l1-l8).
+; Witness: L1 1584 (boss, c1, continue, deaths-l7, ending, force, gameover,
+; hiscore, hiscore-typed, restart, l1-l8).
 AwardScore:
   LD (Scratch+$0002),HL
   LD E,(IY+$06)

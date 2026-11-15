@@ -4,7 +4,7 @@
 
 ; A = the next ROM byte at RandomPtr
 ;
-; Witness: L1 400 (ending, l7, l8).
+; Witness: L1 2364 (boss, ending, l7, l8).
 NextRandom:
   LD HL,(RandomPtr)
   INC HL
@@ -16,8 +16,9 @@ NextRandom:
 
 ; HitCount and HitCellCount = 0, HitList cleared
 ;
-; Witness: L1 81406 (c1, continue, ctl-if2, ctl-kempston, ctl-sinclair, ending,
-; gameover, hiscore, hiscore-typed, l1-l8).
+; Witness: L1 100195 (boss, c1, continue, ctl-if2, ctl-kempston, ctl-sinclair,
+; deaths-l7, ending, force, gameover, hiscore, hiscore-typed, pause, restart,
+; l1-l8).
 ClearHits:
   XOR A
   LD (HitCount),A
@@ -28,8 +29,9 @@ ClearHits:
 
 ; The drawers' colour override off
 ;
-; Witness: L1 55887 (c1, continue, ctl-if2, ctl-kempston, ctl-sinclair, ending,
-; gameover, hiscore, hiscore-typed, l1-l8).
+; Witness: L1 69052 (boss, c1, continue, ctl-if2, ctl-kempston, ctl-sinclair,
+; deaths-l7, ending, force, gameover, hiscore, hiscore-typed, pause, restart,
+; l1-l8).
 ClearColourOverride:
   XOR A
   LD (CellMark+$000F),A
@@ -37,22 +39,24 @@ ClearColourOverride:
 
 ; Print the text HL double height on the text row, column C
 ;
-; Witness: L1 69 (c1, ending, hiscore, hiscore-typed, l1-l8).
+; Witness: L1 1256 (c1, deaths-l7, ending, hiscore, hiscore-typed, pause,
+; l1-l8).
 PrintRow22:
   LD B,$16
 
 ; Print the text HL double height at row B column C
 ;
-; Witness: L1 39746 (c1, continue, ctl-if2, ctl-kempston, ctl-sinclair, ending,
-; gameover, hiscore, hiscore-typed, l1-l8).
+; Witness: L1 41361 (c1, continue, ctl-if2, ctl-kempston, ctl-sinclair,
+; deaths-l7, ending, gameover, hiscore, hiscore-typed, pause, restart, l1-l8).
 PrintText:
   XOR A
   JR PrintTextA
 
 ; Print the text HL at row B column C
 ;
-; Witness: L1 17800 (c1, continue, ctl-if2, ctl-kempston, ctl-sinclair, ending,
-; gameover, hiscore, hiscore-typed, l1-l8).
+; Witness: L1 21566 (boss, c1, continue, ctl-if2, ctl-kempston, ctl-sinclair,
+; deaths-l7, ending, force, gameover, hiscore, hiscore-typed, pause, restart,
+; l1-l8).
 PrintTextNormal:
   LD A,$01
 
@@ -125,8 +129,8 @@ l_C0D0:
 
 ; Pixel lines of a character, each doubled
 ;
-; Witness: L1 602127 (c1, continue, ctl-if2, ctl-kempston, ctl-sinclair,
-; ending, gameover, hiscore, hiscore-typed, l1-l8).
+; Witness: L1 631829 (c1, continue, ctl-if2, ctl-kempston, ctl-sinclair,
+; deaths-l7, ending, gameover, hiscore, hiscore-typed, pause, restart, l1-l8).
 PrintHalf:
   LD B,$04
 l_C0DB:
@@ -141,8 +145,8 @@ l_C0DB:
 
 ; A = the SolidMap cell at row B column C
 ;
-; Witness: L1 241013 (c1, continue, ctl-if2, ctl-kempston, ctl-sinclair,
-; ending, gameover, hiscore, hiscore-typed, l1-l8).
+; Witness: L1 267495 (boss, c1, continue, ctl-if2, ctl-kempston, ctl-sinclair,
+; deaths-l7, ending, force, gameover, hiscore, hiscore-typed, restart, l1-l8).
 GetCell:
   LD A,B
   RRCA
@@ -164,16 +168,18 @@ GetCell:
 
 ; Run the boss explosion twice a pass
 ;
-; Witness: L1 27064 (c1, continue, ctl-if2, ctl-kempston, ctl-sinclair, ending,
-; gameover, hiscore, hiscore-typed, l1-l8).
+; Witness: L1 33322 (boss, c1, continue, ctl-if2, ctl-kempston, ctl-sinclair,
+; deaths-l7, ending, force, gameover, hiscore, hiscore-typed, pause, restart,
+; l1-l8).
 BossBlastStep:
   CALL BossBlastOnce
 
 ; One step of the boss explosion: random explosions over the boss, then the
 ; sweep
 ;
-; Witness: L1 54128 (c1, continue, ctl-if2, ctl-kempston, ctl-sinclair, ending,
-; gameover, hiscore, hiscore-typed, l1-l8).
+; Witness: L1 66644 (boss, c1, continue, ctl-if2, ctl-kempston, ctl-sinclair,
+; deaths-l7, ending, force, gameover, hiscore, hiscore-typed, pause, restart,
+; l1-l8).
 BossBlastOnce:
   LD A,(BossBlast)
   AND A
@@ -274,8 +280,11 @@ l_C196:
 ;
 ; Sets ScrollHalted, BossBlast and WavesHalted; puts a RET into ShipDies + 3
 ; (immortal) and ShieldControls (the controls off); RandomPtr and BossBlastPos
-; = 0; the explosions cleared; the solid cells marked. Known only from the
-; code: no recording runs it.
+; = 0; the explosions cleared; the solid cells marked. Run only in the boss
+; recording, where a POKE frees the slot the level code waits for (no boss was
+; killed by hits).
+;
+; Witness: L1 1 (boss).
 BossDestroyed:
   LD A,$01
   LD (WavesHalted),A
@@ -283,7 +292,7 @@ BossDestroyed:
   LD (ScrollHalted),A
   LD A,$80
   LD (BossBlastCount),A
-  LD HL,l_C1D9+$0006
+  LD HL,l_C1DF
   LD (l_C134+$0004),HL
   LD A,$C9
   LD (ShipDies+$0003),A
@@ -308,12 +317,15 @@ l_C1D9:
   LD A,B
   OR C
   JR NZ,l_C1D4
+
+; l_C1DF
+l_C1DF:
   RET
 
 ; The slot was hit: a sound while it has hits left, else EnemyDies
 ;
-; Witness: L1 170404 (c1, continue, ctl-if2, ctl-kempston, ctl-sinclair,
-; ending, gameover, hiscore, hiscore-typed, l1-l8).
+; Witness: L1 201705 (boss, c1, continue, ctl-if2, ctl-kempston, ctl-sinclair,
+; deaths-l7, ending, force, gameover, hiscore, hiscore-typed, restart, l1-l8).
 EnemyHit:
   BIT 7,(IY+$08)
   RET Z
@@ -342,7 +354,7 @@ l_C1FC:
 
 ; Clear D rows of E cells of SolidMap from BC
 ;
-; Witness: L1 2996 (l x5).
+; Witness: L1 4341 (boss, l x5).
 ClearCells:
   PUSH DE
   PUSH BC
@@ -368,7 +380,8 @@ l_C21E:
 
 ; Start a wave from a record at HL, for the levels' code
 ;
-; Witness: L1 833 (ending, l1, l3-l5, l7, l8).
+; Witness: L1 1030 (boss, deaths-l7, ending, force, restart, l1, l3-l5, l7,
+; l8).
 StartWaveAt:
   EX AF,AF'
   PUSH AF
@@ -392,8 +405,8 @@ StartWaveAt:
 
 ; Add D to the score digit E, carrying
 ;
-; Witness: L1 1355 (c1, continue, ending, gameover, hiscore, hiscore-typed,
-; l1-l8).
+; Witness: L1 1635 (boss, c1, continue, deaths-l7, ending, force, gameover,
+; hiscore, hiscore-typed, restart, l1-l8).
 AddScore:
   LD A,E
   AND A
@@ -421,8 +434,13 @@ l_C251:
 ; The level's end: at each step of LevelEndTimer the next part, then the next
 ; level
 ;
-; Witness: L1 27064 (c1, continue, ctl-if2, ctl-kempston, ctl-sinclair, ending,
-; gameover, hiscore, hiscore-typed, l1-l8).
+; Acts when (LevelEndTimer - 1) AND $1F = 0. LevelDigit '8': '9', the waves on,
+; ShipDies+3 = RET (immortal), play goes on; '9': '0', then the normal end, so
+; LoadLevel loads level 1 (the wrap).
+;
+; Witness: L1 33322 (boss, c1, continue, ctl-if2, ctl-kempston, ctl-sinclair,
+; deaths-l7, ending, force, gameover, hiscore, hiscore-typed, pause, restart,
+; l1-l8).
 LevelEnd:
   LD A,(LevelEndTimer)
   AND A
@@ -477,8 +495,8 @@ l_C290:
 
 ; Clear the text row
 ;
-; Witness: L1 77 (c1, continue, ctl-if2, ctl-kempston, ctl-sinclair, ending,
-; gameover, hiscore, hiscore-typed, l1-l8).
+; Witness: L1 90 (c1, continue, ctl-if2, ctl-kempston, ctl-sinclair, deaths-l7,
+; ending, gameover, hiscore, hiscore-typed, pause, restart, l1-l8).
 ClearTextRow:
   LD A,$20
   LD BC,$1600
@@ -493,8 +511,9 @@ l_C2CA:
 
 ; At a checkpoint column, set the restart column and wave
 ;
-; Witness: L1 27056 (c1, continue, ctl-if2, ctl-kempston, ctl-sinclair, ending,
-; gameover, hiscore, hiscore-typed, l1-l8).
+; Witness: L1 33313 (boss, c1, continue, ctl-if2, ctl-kempston, ctl-sinclair,
+; deaths-l7, ending, force, gameover, hiscore, hiscore-typed, pause, restart,
+; l1-l8).
 CheckRestart:
   LD HL,LevelChecks+$0002
   LD DE,LevelWaves+$0004
@@ -522,8 +541,8 @@ l_C2ED:
 
 ; An enemy fires at the ship while Shooters is below ShooterLimit
 ;
-; Witness: L1 33065 (c1, continue, ctl-if2, ctl-kempston, ctl-sinclair,
-; gameover, hiscore, hiscore-typed, l1, l3-l7).
+; Witness: L1 43995 (boss, c1, continue, ctl-if2, ctl-kempston, ctl-sinclair,
+; deaths-l7, force, gameover, hiscore, hiscore-typed, restart, l1, l3-l7).
 EnemyFire:
   LD A,(ShooterLimit)
   LD L,A
@@ -579,8 +598,9 @@ l_C340:
 
 ; Move the enemy shots; one that reaches the ship kills it
 ;
-; Witness: L1 27064 (c1, continue, ctl-if2, ctl-kempston, ctl-sinclair, ending,
-; gameover, hiscore, hiscore-typed, l1-l8).
+; Witness: L1 33322 (boss, c1, continue, ctl-if2, ctl-kempston, ctl-sinclair,
+; deaths-l7, ending, force, gameover, hiscore, hiscore-typed, pause, restart,
+; l1-l8).
 MoveEnemyShots:
   LD HL,EnemyShots
   XOR A
@@ -677,8 +697,8 @@ l_C3CD:
 
 ; Step BC by the direction bits of A: bit 0 up, 1 down, 2 left, 3 right
 ;
-; Witness: L1 256283 (c1, continue, ctl-if2, ctl-kempston, ctl-sinclair,
-; ending, gameover, hiscore, hiscore-typed, l1-l8).
+; Witness: L1 306115 (boss, c1, continue, ctl-if2, ctl-kempston, ctl-sinclair,
+; deaths-l7, ending, force, gameover, hiscore, hiscore-typed, restart, l1-l8).
 MoveByBits:
   BIT 0,A
   JR Z,l_C3D6
@@ -699,8 +719,8 @@ l_C3E0:
 
 ; Patch the drawers for the soft cells
 ;
-; Witness: L1 2649 (c1, continue, ctl-if2, ctl-kempston, ctl-sinclair,
-; gameover, hiscore, hiscore-typed, l1-l8).
+; Witness: L1 3284 (boss, c1, continue, ctl-if2, ctl-kempston, ctl-sinclair,
+; deaths-l7, gameover, hiscore, hiscore-typed, restart, l1-l8).
 SoftCellsOn:
   LD A,$40
   LD (l_8EB7+$0008),A
@@ -709,8 +729,8 @@ SoftCellsOn:
 
 ; Restore them
 ;
-; Witness: L1 7280 (c1, continue, ctl-if2, ctl-kempston, ctl-sinclair,
-; gameover, hiscore, hiscore-typed, l1-l8).
+; Witness: L1 12266 (boss, c1, continue, ctl-if2, ctl-kempston, ctl-sinclair,
+; deaths-l7, gameover, hiscore, hiscore-typed, restart, l1-l8).
 SoftCellsOff:
   LD A,$60
   LD (l_8EB7+$0008),A
@@ -725,7 +745,7 @@ SoftCellsSet:
 
 ; ClearCells through the attribute shadow
 ;
-; Witness: L1 1594 (l1, l2, l4).
+; Witness: L1 2220 (boss, l1, l2, l4).
 ClearCellsTag:
   LD (l_C213+$0001),A
   LD A,$78
@@ -739,8 +759,9 @@ ClearCellsTag:
 
 ; Step and draw the explosions
 ;
-; Witness: L1 27064 (c1, continue, ctl-if2, ctl-kempston, ctl-sinclair, ending,
-; gameover, hiscore, hiscore-typed, l1-l8).
+; Witness: L1 33322 (boss, c1, continue, ctl-if2, ctl-kempston, ctl-sinclair,
+; deaths-l7, ending, force, gameover, hiscore, hiscore-typed, pause, restart,
+; l1-l8).
 DrawExplosions:
   LD B,$14
   LD HL,Explosions
@@ -791,8 +812,8 @@ l_C429:
 
 ; Paint and print the HUD: BEAM, the meter, HI SCORE, the lives and the score
 ;
-; Witness: L1 77 (c1, continue, ctl-if2, ctl-kempston, ctl-sinclair, gameover,
-; hiscore, hiscore-typed, l2-l8).
+; Witness: L1 96 (c1, continue, ctl-if2, ctl-kempston, ctl-sinclair, deaths-l7,
+; gameover, hiscore, hiscore-typed, pause, restart, l2-l8).
 DrawHud:
   LD HL,$5A80
   LD BC,$0020

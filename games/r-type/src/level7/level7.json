@@ -27,13 +27,18 @@
       "path": "work/stage1/rec/l7/l1.json",
       "lo": "C4AE",
       "hi": "F773"
+    },
+    {
+      "path": "work/stage2/rec/deaths-l7/l1.json",
+      "lo": "C4AE",
+      "hi": "F773"
     }
   ],
   "work": "work/stage2/mklevel7",
   "ref_builds": [
     [
       "stage1/rec/l7",
-      "l7: level 7 played from its load to the next search (the immortality POKE $91F2)"
+      "l7: level 7 played from its load to the next search (the immortality POKE `$91F2`)"
     ]
   ],
   "other_builds": []

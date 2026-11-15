@@ -5,8 +5,9 @@
 ; When the score changed: print it and give an extra life at 50 000 and at each
 ; 100 000
 ;
-; Witness: L1 26646 (continue, ctl-if2, ctl-kempston, ctl-sinclair, ending,
-; gameover, hiscore, hiscore-typed, l1-l8).
+; Witness: L1 32904 (boss, continue, ctl-if2, ctl-kempston, ctl-sinclair,
+; deaths-l7, ending, force, gameover, hiscore, hiscore-typed, pause, restart,
+; l1-l8).
 CheckExtraLife:
   LD A,(ScoreChanged)
   AND A
@@ -19,8 +20,9 @@ CheckExtraLife:
 ; and none was given, or when the first digit equals ExtraLives: ExtraLives +
 ; 1, Lives + 1, DrawHud, sound $0E.
 ;
-; Witness: L1 1149 (continue, ctl-if2, ctl-kempston, ctl-sinclair, ending,
-; gameover, hiscore, hiscore-typed, l1-l8).
+; Witness: L1 1357 (boss, continue, ctl-if2, ctl-kempston, ctl-sinclair,
+; deaths-l7, ending, force, gameover, hiscore, hiscore-typed, pause, restart,
+; l1-l8).
 PrintScore:
   LD HL,Lives
   PUSH HL
@@ -63,14 +65,14 @@ ExtraLifeNone:
 
 ; Wait 256 frames
 ;
-; Witness: L1 9 (ending, hiscore, l1-l7).
+; Witness: L1 10 (boss, ending, hiscore, l1-l7).
 Wait256:
   LD B,$00
 
 ; HALT B times
 ;
-; Witness: L1 7537 (continue, ctl-if2, ctl-kempston, ctl-sinclair, ending,
-; gameover, hiscore, hiscore-typed, l1-l8).
+; Witness: L1 8495 (boss, continue, ctl-if2, ctl-kempston, ctl-sinclair,
+; deaths-l7, ending, gameover, hiscore, hiscore-typed, restart, l1-l8).
 WaitFrames:
   HALT
   DJNZ WaitFrames
@@ -78,15 +80,21 @@ WaitFrames:
 
 ; Zero BC bytes from HL
 ;
-; Witness: L1 80987 (continue, ctl-if2, ctl-kempston, ctl-sinclair, ending,
-; gameover, hiscore, hiscore-typed, l1-l8).
+; Witness: L1 99924 (boss, continue, ctl-if2, ctl-kempston, ctl-sinclair,
+; deaths-l7, ending, force, gameover, hiscore, hiscore-typed, pause, restart,
+; l1-l8).
 ClearBlock:
   XOR A
 
 ; Fill BC bytes from HL with A
 ;
-; Witness: L1 84425 (continue, ctl-if2, ctl-kempston, ctl-sinclair, ending,
-; gameover, hiscore, hiscore-typed, l1-l8).
+; HL ends at the last byte filled, not after it: a FillBlock that follows
+; another starts one byte early (DrawHud's $44 fill covers row 20 column 31 and
+; row 21 columns 0-6).
+;
+; Witness: L1 103437 (boss, continue, ctl-if2, ctl-kempston, ctl-sinclair,
+; deaths-l7, ending, force, gameover, hiscore, hiscore-typed, pause, restart,
+; l1-l8).
 FillBlock:
   LD (HL),A
   LD D,H
@@ -203,7 +211,7 @@ LoadLevelRetry:
 
 ; Every LoadBytes return: EI; RET C; an error falls into LoadError
 ;
-; Witness: L1 23 (ending, l1-l8).
+; Witness: L1 25 (deaths-l7, ending, l1-l8).
 LoadDone:
   EI
   RET C
@@ -236,8 +244,8 @@ LoadError:
 ; patched CALL); MapReadPtr / MapBlockPtr set; every attribute with bit 7 marks
 ; its SolidMap cell $FF and loses bit 7; the limit back; soft cells off.
 ;
-; Witness: L1 38 (c1, continue, ctl-if2, ctl-kempston, ctl-sinclair, gameover,
-; hiscore, hiscore-typed, l2-l8).
+; Witness: L1 47 (c1, continue, ctl-if2, ctl-kempston, ctl-sinclair, deaths-l7,
+; gameover, hiscore, hiscore-typed, restart, l2-l8).
 DrawFirstScreen:
   CALL SoftCellsOn
   LD HL,$5800

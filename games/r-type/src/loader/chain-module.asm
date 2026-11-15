@@ -2651,7 +2651,7 @@ l_FB85:
 
 ; Zero memory upward from $FBD7 for ever: the end of a failed check
 ;
-; Used by the routines at SL7LoadBlock and SL7BlockEnd.
+; No recording ran it: known only from the code (the load passed every check).
 SL7WipeTrap:
   LD IY,l_FB85+$0041
 l_FBCF:

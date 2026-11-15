@@ -47,7 +47,7 @@ LevelMoves2:
 LoaderLeftover:
   INCBIN "res/leftovers/loader-leftover.bin",$0000,6100
 
-; The title picture (a SCREEN$) ShowLoadingScreen copies to the screen
+; The title picture (a `SCREEN$`) ShowLoadingScreen copies to the screen
 TitleScreen:
   INCBIN "res/screens/title.scr",$0000,6912
 

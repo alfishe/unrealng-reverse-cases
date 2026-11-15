@@ -53,277 +53,7 @@ L1Map:
 ; The wave script: entries (scroll position, kind, script) RunWaves starts;
 ; then the enemies' movement scripts
 L1Waves:
-  DEFB $10,$00,$63,$04,$00,$10,$00,$01
-  DEFB $1F,$04,$10,$05,$01,$1F,$01,$10
-  DEFB $0A,$01,$1F,$07,$10,$0F,$01,$1F
-  DEFB $03,$11,$10,$01,$1F,$0A,$11,$15
-  DEFB $01,$1F,$07,$11,$1A,$01,$1F,$0D
-  DEFB $11,$1F,$01,$1F,$09,$12,$00,$08
-  DEFB $1F,$0F,$12,$1A,$05,$1F,$0E,$12
-  DEFB $1D,$05,$1F,$0E,$13,$00,$05,$1F
-  DEFB $0E,$13,$03,$05,$1F,$0E,$13,$06
-  DEFB $05,$1F,$0E,$14,$00,$02,$1F,$0C
-  DEFB $14,$03,$02,$1F,$0C,$14,$06,$02
-  DEFB $1F,$0C,$14,$09,$02,$1F,$0C,$14
-  DEFB $0C,$02,$1F,$0C,$15,$00,$01,$1F
-  DEFB $0A,$15,$06,$01,$1F,$07,$15,$0C
-  DEFB $01,$1F,$09,$17,$09,$01,$1F,$09
-  DEFB $17,$12,$01,$1F,$03,$17,$1B,$01
-  DEFB $1F,$01,$18,$04,$01,$1F,$08,$18
-  DEFB $0D,$01,$1F,$03,$18,$16,$01,$1F
-  DEFB $0A,$18,$1F,$01,$1F,$01,$19,$08
-  DEFB $01,$1F,$03,$19,$11,$01,$1F,$09
-  DEFB $19,$1A,$01,$1F,$02,$1A,$00,$01
-  DEFB $1F,$05,$1A,$09,$01,$1F,$07,$1A
-  DEFB $12,$01,$1F,$09,$1A,$1B,$01,$1F
-  DEFB $01,$1B,$04,$01,$1F,$03,$1B,$08
-  DEFB $18,$21,$05,$1B,$0D,$01,$1F,$09
-  DEFB $1B,$16,$01,$1F,$04,$1B,$1F,$01
-  DEFB $1F,$0A,$1C,$08,$01,$1F,$06,$1D
-  DEFB $00,$0C,$18,$00,$1D,$00,$01,$1F
-  DEFB $06,$1D,$10,$01,$1F,$04,$1D,$1C
-  DEFB $08,$1F,$0F,$1E,$0A,$21,$1E,$0F
-  DEFB $1E,$18,$08,$1F,$0F,$20,$00,$63
-  DEFB $04,$04,$20,$00,$08,$1F,$0F,$21
-  DEFB $10,$08,$1F,$0F,$21,$10,$07,$FE
-  DEFB $0F,$23,$10,$0F,$1C,$07,$24,$00
-  DEFB $02,$1F,$05,$24,$03,$02,$1F,$05
-  DEFB $24,$06,$02,$1F,$05,$24,$09,$02
-  DEFB $1F,$05,$24,$0C,$02,$1F,$05,$25
-  DEFB $0E,$10,$19,$FD,$26,$0E,$2D,$FC
-  DEFB $0F,$27,$10,$02,$1F,$0B,$2A,$06
-  DEFB $0E,$1C,$FF,$2A,$12,$0E,$1F,$04
-  DEFB $2A,$18,$0E,$1F,$12,$2A,$1E,$0E
-  DEFB $1C,$12,$2C,$06,$0E,$16,$FF,$2C
-  DEFB $0C,$0E,$1F,$FF,$2C,$18,$0E,$1F
-  DEFB $12,$2C,$1E,$0E,$16,$12,$2E,$06
-  DEFB $0E,$10,$FF,$2E,$0C,$0E,$1F,$FF
-  DEFB $2E,$12,$0E,$1F,$08,$2E,$18,$0E
-  DEFB $1F,$12,$30,$06,$0E,$0A,$FF,$30
-  DEFB $0C,$0E,$1F,$FF,$30,$10,$0E,$1F
-  DEFB $04,$30,$10,$0E,$1F,$0C,$30,$10
-  DEFB $0E,$1F,$10,$30,$12,$0E,$1F,$0A
-  DEFB $32,$0F,$13,$1F,$04,$32,$0F,$16
-  DEFB $1F,$0E,$33,$0F,$13,$1F,$04,$33
-  DEFB $0F,$16,$1F,$0E,$33,$10,$0F,$1C
-  DEFB $07,$34,$0F,$13,$1F,$06,$34,$0F
-  DEFB $16,$1F,$0C,$35,$0F,$13,$1F,$06
-  DEFB $35,$0F,$16,$1F,$0C,$38,$10,$19
-  DEFB $1F,$09,$39,$01,$21,$1F,$0F,$39
-  DEFB $18,$1A,$1F,$09,$3C,$08,$03,$18
-  DEFB $FE,$3C,$0C,$03,$18,$FE,$3C,$0F
-  DEFB $63,$03,$19,$3C,$0F,$13,$1F,$02
-  DEFB $3C,$10,$03,$18,$FE,$3C,$14,$03
-  DEFB $18,$FE,$3C,$18,$03,$18,$FE,$3D
-  DEFB $08,$63,$03,$08,$3D,$08,$2C,$24
-  DEFB $10,$3D,$0C,$63,$03,$09,$3D,$0C
-  DEFB $0A,$24,$10,$3D,$0F,$63,$03,$1A
-  DEFB $3D,$0F,$13,$1F,$02,$3D,$10,$63
-  DEFB $03,$0A,$3D,$10,$0A,$24,$10,$3D
-  DEFB $14,$63,$03,$0B,$3D,$14,$0A,$24
-  DEFB $10,$3D,$18,$63,$03,$0C,$3D,$18
-  DEFB $2C,$24,$10,$3D,$1C,$63,$03,$0D
-  DEFB $3D,$1C,$0A,$24,$10,$3E,$00,$63
-  DEFB $03,$0E,$3E,$00,$0A,$24,$10,$3E
-  DEFB $04,$63,$03,$0F,$3E,$04,$0A,$24
-  DEFB $10,$3E,$08,$63,$03,$10,$3E,$08
-  DEFB $2C,$24,$10,$3E,$0C,$63,$03,$11
-  DEFB $3E,$0C,$0A,$24,$10,$3E,$10,$63
-  DEFB $03,$12,$3E,$10,$0A,$24,$10,$3E
-  DEFB $14,$63,$03,$13,$3E,$14,$0A,$24
-  DEFB $10,$3E,$18,$63,$03,$14,$3E,$18
-  DEFB $0B,$24,$10,$3E,$18,$63,$03,$15
-  DEFB $3E,$18,$0A,$24,$10,$3E,$1C,$63
-  DEFB $03,$16,$3E,$1C,$2C,$24,$10,$3F
-  DEFB $00,$63,$03,$17,$3F,$00,$0A,$24
-  DEFB $10,$3F,$04,$63,$03,$18,$3F,$04
-  DEFB $0A,$24,$10,$48,$0F,$13,$1F,$04
-  DEFB $49,$0F,$13,$1F,$04,$49,$10,$11
-  DEFB $1C,$05,$4A,$0F,$13,$1F,$02,$4B
-  DEFB $0F,$13,$1F,$02,$4C,$00,$01,$1F
-  DEFB $07,$4C,$06,$01,$1F,$05,$4C,$0C
-  DEFB $01,$1F,$08,$4C,$0F,$13,$1F,$02
-  DEFB $4D,$01,$21,$1F,$0F,$4D,$0F,$13
-  DEFB $1F,$02,$4E,$0C,$01,$1F,$0A,$4E
-  DEFB $0F,$13,$1F,$02,$4E,$10,$1B,$1F
-  DEFB $0F,$4E,$12,$01,$1F,$07,$4E,$18
-  DEFB $01,$1F,$09,$4F,$0F,$13,$1F,$02
-  DEFB $52,$01,$1C,$1E,$09,$52,$01,$01
-  DEFB $1F,$0B,$52,$04,$03,$17,$FE,$52
-  DEFB $08,$03,$17,$FE,$52,$0C,$03,$17
-  DEFB $FE,$52,$0F,$13,$1F,$06,$52,$0F
-  DEFB $16,$1F,$0C,$52,$10,$03,$17,$FE
-  DEFB $52,$14,$03,$17,$FE,$52,$18,$03
-  DEFB $17,$FE,$52,$1C,$03,$17,$FE,$53
-  DEFB $00,$03,$17,$FE,$53,$04,$03,$17
-  DEFB $FE,$53,$08,$03,$17,$FE,$53,$0F
-  DEFB $13,$1F,$06,$53,$0F,$63,$03,$18
-  DEFB $53,$0F,$16,$1F,$0C,$53,$18,$12
-  DEFB $1C,$05,$54,$10,$1F,$0E,$FB,$56
-  DEFB $18,$1D,$1E,$08,$5A,$0F,$13,$1F
-  DEFB $02,$5B,$0F,$13,$1F,$02,$5C,$0F
-  DEFB $13,$1F,$02,$5D,$01,$20,$19,$05
-  DEFB $5D,$0F,$13,$1F,$02,$5E,$0F,$13
-  DEFB $1F,$04,$5E,$16,$1E,$1E,$0A,$5F
-  DEFB $0F,$13,$1F,$04,$63,$00,$63,$03
-  DEFB $18,$63,$00,$20,$19,$05,$64,$00
-  DEFB $63,$03,$01,$64,$00,$2A,$29,$00
-  DEFB $64,$00,$63,$03,$02,$64,$00,$2E
-  DEFB $C8,$C8,$64,$00,$63,$03,$19,$64
-  DEFB $00,$17,$2D,$0F,$64,$00,$63,$03
-  DEFB $14,$64,$00,$2E,$28,$01,$64,$00
-  DEFB $63,$03,$15,$64,$00,$06,$28,$0F
-  DEFB $64,$00,$63,$03,$16,$64,$00,$2E
-  DEFB $2C,$09,$64,$00,$63,$03,$17,$64
-  DEFB $00,$06,$2E,$0C,$6A,$00,$2B,$1F
-  DEFB $04,$6A,$00,$2B,$1F,$08,$6A,$00
-  DEFB $2B,$1F,$0C,$6A,$18,$04,$1C,$04
-  DEFB $6A,$18,$04,$1C,$08,$6A,$18,$04
-  DEFB $1C,$0C,$6B,$01,$63,$01,$00,$6B
-  DEFB $01,$63,$03,$02,$6B,$01,$14,$16
-  DEFB $09,$6B,$07,$15,$15,$09,$6B,$09
-  DEFB $15,$15,$09,$6B,$0B,$15,$15,$09
-  DEFB $6B,$0D,$15,$15,$09,$6B,$0F,$15
-  DEFB $15,$09,$6B,$11,$15,$15,$09,$6C
-  DEFB $07,$09,$15,$09,$6C,$09,$09,$15
-  DEFB $09,$6C,$0B,$09,$15,$09,$6C,$0D
-  DEFB $09,$15,$09,$6C,$0F,$09,$15,$09
-  DEFB $6C,$11,$09,$15,$09,$6D,$07,$15
-  DEFB $15,$09,$6D,$09,$15,$15,$09,$6D
-  DEFB $0B,$15,$15,$09,$6D,$0D,$15,$15
-  DEFB $09,$6D,$0F,$15,$15,$09,$6D,$11
-  DEFB $15,$15,$09,$6E,$07,$09,$15,$09
-  DEFB $6E,$09,$09,$15,$09,$6E,$0B,$09
-  DEFB $15,$09,$6E,$0D,$09,$15,$09,$6E
-  DEFB $0F,$09,$15,$09,$6E,$11,$09,$15
-  DEFB $09,$6F,$07,$15,$15,$09,$6F,$09
-  DEFB $15,$15,$09,$6F,$0B,$15,$15,$09
-  DEFB $6F,$0D,$15,$15,$09,$6F,$0F,$15
-  DEFB $15,$09,$6F,$11,$15,$15,$09,$70
-  DEFB $07,$09,$15,$09,$70,$09,$09,$15
-  DEFB $09,$70,$0B,$09,$15,$09,$70,$0D
-  DEFB $09,$15,$09,$70,$0F,$09,$15,$09
-  DEFB $70,$11,$09,$15,$09,$71,$07,$15
-  DEFB $15,$09,$71,$09,$15,$15,$09,$71
-  DEFB $0B,$15,$15,$09,$71,$0D,$15,$15
-  DEFB $09,$71,$0F,$15,$15,$09,$71,$11
-  DEFB $15,$15,$09,$72,$07,$09,$15,$09
-  DEFB $72,$09,$09,$15,$09,$72,$0B,$09
-  DEFB $15,$09,$72,$0D,$09,$15,$09,$72
-  DEFB $0F,$09,$15,$09,$72,$11,$09,$15
-  DEFB $09,$73,$07,$15,$15,$09,$73,$09
-  DEFB $15,$15,$09,$73,$0B,$15,$15,$09
-  DEFB $73,$0D,$15,$15,$09,$73,$0F,$15
-  DEFB $15,$09,$73,$11,$15,$15,$09,$74
-  DEFB $00,$63,$01,$00,$7B,$00,$63,$05
-  DEFB $00,$00,$41,$12,$57,$F0,$57,$F0
-  DEFB $57,$F0,$57,$F0,$00,$00,$00,$41
-  DEFB $22,$67,$F0,$67,$F0,$00,$00,$00
-  DEFB $41,$22,$87,$F0,$87,$F0,$8F,$F0
-  DEFB $9B,$F0,$9B,$F0,$9B,$F0,$9B,$F0
-  DEFB $00,$00,$00,$3F,$1C,$63,$F3,$FF
-  DEFB $FF,$00,$41,$22,$A7,$F0,$A7,$F0
-  DEFB $B5,$F0,$B5,$F0,$BB,$F0,$BB,$F0
-  DEFB $00,$00,$03,$20,$33,$F5,$F1,$FF
-  DEFB $FF,$11,$41,$12,$C9,$F0,$C9,$F0
-  DEFB $C9,$F0,$C9,$F0,$C9,$F0,$C9,$F0
-  DEFB $03,$F1,$C9,$F0,$C9,$F0,$00,$00
-  DEFB $11,$41,$12,$D1,$F0,$D1,$F0,$D1
-  DEFB $F0,$D1,$F0,$00,$00,$07,$3F,$1C
-  DEFB $19,$F2,$19,$F2,$19,$F2,$19,$F2
-  DEFB $2D,$F2,$00,$00,$15,$3F,$2C,$27
-  DEFB $F1,$27,$F1,$27,$F1,$27,$F1,$27
-  DEFB $F1,$27,$F1,$00,$00,$14,$02,$2C
-  DEFB $0A,$0A,$0A,$1C,$45,$CF,$F1,$CF
-  DEFB $F1,$CF,$F1,$CF,$F1,$CF,$F1,$D5
-  DEFB $F1,$FF,$FF,$0B,$3F,$1C,$D7,$F1
-  DEFB $D7,$F1,$00,$00,$1C,$41,$23,$F1
-  DEFB $F1,$E5,$F1,$F3,$F1,$EB,$F1,$FF
-  DEFB $FF,$11,$41,$12,$E1,$F0,$ED,$F0
-  DEFB $D9,$F0,$EF,$F0,$19,$F1,$ED,$F0
-  DEFB $D1,$F0,$D1,$F0,$00,$00,$11,$41
-  DEFB $12,$E1,$F0,$E1,$F0,$E1,$F0,$ED
-  DEFB $F0,$D9,$F0,$ED,$F0,$11,$F1,$11
-  DEFB $F1,$D9,$F0,$C9,$F0,$ED,$F0,$D1
-  DEFB $F0,$11,$F1,$11,$F1,$11,$F1,$11
-  DEFB $F1,$D9,$F0,$C9,$F0,$D1,$F0,$C9
-  DEFB $F0,$D9,$F0,$11,$F1,$D9,$F0,$19
-  DEFB $F1,$00,$00,$11,$41,$12,$E1,$F0
-  DEFB $ED,$F0,$D9,$F0,$EF,$F0,$F1,$F0
-  DEFB $FF,$F0,$ED,$F0,$D1,$F0,$D1,$F0
-  DEFB $00,$00,$11,$41,$12,$E1,$F0,$ED
-  DEFB $F0,$D9,$F0,$EF,$F0,$F1,$F0,$ED
-  DEFB $F0,$D9,$F0,$EF,$F0,$F1,$F0,$ED
-  DEFB $F0,$D1,$F0,$D1,$F0,$00,$00,$66
-  DEFB $41,$31,$35,$F2,$FF,$FF,$11,$3E
-  DEFB $1C,$F9,$F1,$FF,$FF,$07,$3F,$1C
-  DEFB $19,$F2,$19,$F2,$19,$F2,$19,$F2
-  DEFB $25,$F2,$00,$00,$66,$41,$31,$45
-  DEFB $F2,$FF,$FF,$09,$3F,$1C,$55,$F2
-  DEFB $FF,$FF,$92,$01,$22,$77,$F1,$83
-  DEFB $F1,$8B,$F1,$87,$F1,$77,$F1,$AF
-  DEFB $F1,$9F,$F1,$AF,$F1,$8B,$F1,$87
-  DEFB $F1,$00,$00,$E2,$01,$22,$77,$F1
-  DEFB $83,$F1,$8B,$F1,$87,$F1,$83,$F1
-  DEFB $83,$F1,$87,$F1,$8B,$F1,$00,$00
-  DEFB $A2,$01,$22,$77,$F1,$83,$F1,$8B
-  DEFB $F1,$83,$F1,$8F,$F1,$97,$F1,$9B
-  DEFB $F1,$AF,$F1,$9F,$F1,$9F,$F1,$00
-  DEFB $00,$72,$01,$22,$83,$F1,$8B,$F1
-  DEFB $87,$F1,$77,$F1,$AF,$F1,$A7,$F1
-  DEFB $A7,$F1,$A7,$F1,$AF,$F1,$8B,$F1
-  DEFB $83,$F1,$77,$F1,$AF,$F1,$9F,$F1
-  DEFB $9F,$F1,$B3,$F1,$B7,$F1,$C3,$F1
-  DEFB $B7,$F1,$C3,$F1,$B7,$F1,$00,$00
-  DEFB $D2,$01,$22,$83,$F1,$83,$F1,$77
-  DEFB $F1,$AF,$F1,$9F,$F1,$9F,$F1,$9F
-  DEFB $F1,$B3,$F1,$B7,$F1,$C3,$F1,$C7
-  DEFB $F1,$B3,$F1,$9F,$F1,$AF,$F1,$8B
-  DEFB $F1,$87,$F1,$77,$F1,$00,$00,$F2
-  DEFB $01,$22,$83,$F1,$77,$F1,$87,$F1
-  DEFB $8F,$F1,$8F,$F1,$99,$F1,$9B,$F1
-  DEFB $AF,$F1,$9F,$F1,$AF,$F1,$8B,$F1
-  DEFB $87,$F1,$00,$00,$B2,$01,$22,$8B
-  DEFB $F1,$87,$F1,$77,$F1,$83,$F1,$8F
-  DEFB $F1,$87,$F1,$97,$F1,$97,$F1,$9D
-  DEFB $F1,$AF,$F1,$A7,$F1,$AF,$F1,$8B
-  DEFB $F1,$8B,$F1,$87,$F1,$00,$00,$11
-  DEFB $01,$12,$E1,$F0,$E1,$F0,$E1,$F0
-  DEFB $ED,$F0,$D9,$F0,$EF,$F0,$F1,$F0
-  DEFB $ED,$F0,$D1,$F0,$00,$00,$1D,$28
-  DEFB $48,$57,$F2,$57,$F2,$5F,$F2,$67
-  DEFB $F2,$67,$F2,$67,$F2,$5F,$F2,$8F
-  DEFB $F2,$7F,$F2,$7F,$F2,$7F,$F2,$7F
-  DEFB $F2,$6F,$F2,$6F,$F2,$6F,$F2,$00
-  DEFB $00,$1E,$05,$15,$9F,$F2,$9F,$F2
-  DEFB $DF,$F2,$B7,$F2,$E7,$F2,$C3,$F2
-  DEFB $D3,$F2,$D3,$F2,$C3,$F2,$E7,$F2
-  DEFB $9F,$F2,$DF,$F2,$BF,$F2,$C7,$F2
-  DEFB $C7,$F2,$BF,$F2,$9F,$F2,$E7,$F2
-  DEFB $C3,$F2,$D3,$F2,$D3,$F2,$C3,$F2
-  DEFB $9F,$F2,$00,$00,$00,$01,$3C,$EF
-  DEFB $F2,$EF,$F2,$05,$F3,$F9,$F2,$F9
-  DEFB $F2,$00,$00,$00,$01,$3C,$EF,$F2
-  DEFB $EF,$F2,$0D,$F3,$F9,$F2,$F9,$F2
-  DEFB $00,$00,$00,$01,$3C,$EF,$F2,$EF
-  DEFB $F2,$19,$F3,$F9,$F2,$F9,$F2,$00
-  DEFB $00,$00,$01,$3C,$EF,$F2,$EF,$F2
-  DEFB $21,$F3,$F9,$F2,$F9,$F2,$00,$00
-  DEFB $1F,$01,$3C,$2D,$F3,$37,$F3,$3F
-  DEFB $F3,$49,$F3,$FF,$FF,$1F,$01,$3C
-  DEFB $37,$F3,$3F,$F3,$49,$F3,$2D,$F3
-  DEFB $FF,$FF,$1F,$01,$3C,$3F,$F3,$49
-  DEFB $F3,$2D,$F3,$37,$F3,$FF,$FF,$1F
-  DEFB $01,$3C,$49,$F3,$2D,$F3,$37,$F3
-  DEFB $3F,$F3,$FF,$FF,$08,$3F,$33,$51
-  DEFB $F3,$FF,$FF,$00,$3F,$1C,$53,$F3
-  DEFB $53,$F3,$53,$F3,$63,$F3,$00,$00
-  DEFB $15,$7F,$2C,$0A,$0A,$11,$41,$12
-  DEFB $C9,$F0,$C9,$F0,$C9,$F0,$11,$F1
-  DEFB $D9,$F0,$11,$F1,$11,$F1,$11,$F1
-  DEFB $D9,$F0,$11,$F1,$11,$F1,$11,$F1
-  DEFB $D9,$F0,$00,$00,$03,$20,$33,$F7
-  DEFB $F1,$FF,$FF
+  INCBIN "res/levels/level1/waves.bin",$0000,2163
 
 ; The enemy kinds StartWave reads (LevelKinds)
 L1Kinds:
@@ -485,8 +215,8 @@ L1MoverA0:
 
 ; Mover A1
 ;
-; Witness: L1 2430 (c1, continue, ctl-if2, ctl-kempston, ctl-sinclair,
-; gameover, hiscore, hiscore-typed, l1).
+; Witness: L1 4033 (boss, c1, continue, ctl-if2, ctl-kempston, ctl-sinclair,
+; force, gameover, hiscore, hiscore-typed, l1, restart).
 L1MoverA1:
   JP C,MoveNext
 ; This entry point is used by the routines at L1MoverA2, L1MoverA5, L1MoverA12,
@@ -499,14 +229,14 @@ l_F3AE:
 
 ; Mover A2
 ;
-; Witness: L1 231 (l1).
+; Witness: L1 558 (boss, force, l1, restart).
 L1MoverA2:
   JR NC,l_F3AE
   JP MoveNext
 
 ; Mover A3
 ;
-; Witness: L1 2205 (l1).
+; Witness: L1 3598 (boss, l1).
 L1MoverA3:
   PUSH AF
   CALL L1DriftLeft
@@ -528,7 +258,7 @@ L1MoverA3:
 
 ; Mover A4
 ;
-; Witness: L1 479 (l1).
+; Witness: L1 958 (boss, l1).
 L1MoverA4:
   JR NC,l_F3F6
   LD A,(EnemySlots+84)
@@ -552,7 +282,7 @@ l_F404:
 
 ; Mover A5
 ;
-; Witness: L1 8143 (l1).
+; Witness: L1 16286 (boss, l1).
 L1MoverA5:
   LD A,(LevelVars)
   CP $07
@@ -619,7 +349,7 @@ l_F45F:
 
 ; Mover A6
 ;
-; Witness: L1 4991 (l1).
+; Witness: L1 9982 (boss, l1).
 L1MoverA6:
   JR C,l_F4C6
   LD A,(FrameCounter)
@@ -680,7 +410,7 @@ l_F4C6:
 
 ; Mover A7
 ;
-; Witness: L1 1188 (l1).
+; Witness: L1 1448 (boss, l1).
 L1MoverA7:
   LD A,(IY+$08)
   CP $01
@@ -692,7 +422,7 @@ L1MoverA7:
 
 ; Mover A8
 ;
-; Witness: L1 736 (l1).
+; Witness: L1 1028 (boss, l1).
 L1MoverA8:
   LD A,$9C
   LD (DrawTag),A
@@ -760,7 +490,7 @@ l_F553:
 
 ; Mover A9
 ;
-; Witness: L1 736 (l1).
+; Witness: L1 1028 (boss, l1).
 L1MoverA9:
   CALL L1DriftLeft
   LD A,(FrameCounter)
@@ -813,7 +543,7 @@ l_F585:
 
 ; Mover A10
 ;
-; Witness: L1 925 (l1).
+; Witness: L1 2375 (boss, force, l1, restart).
 L1MoverA10:
   JP C,MoveNext
   LD A,(IY+$08)
@@ -851,14 +581,14 @@ L1SpawnA:
 
 ; Mover A11
 ;
-; Witness: L1 616 (l1).
+; Witness: L1 1568 (boss, force, l1, restart).
 L1MoverA11:
   DEC C
   JP MoveStore
 
 ; Mover A12
 ;
-; Witness: L1 1779 (l1).
+; Witness: L1 3558 (boss, l1).
 L1MoverA12:
   JP C,MoveNext
   LD A,(ShipColumn)
@@ -922,7 +652,7 @@ l_F637:
 
 ; Mover A13
 ;
-; Witness: L1 391 (l1).
+; Witness: L1 721 (boss, l1).
 L1MoverA13:
   JP C,MoveNext
   LD A,(IY+$08)
@@ -1036,7 +766,7 @@ L1SpawnB:
 
 ; Mover A14
 ;
-; Witness: L1 633 (l1).
+; Witness: L1 1578 (boss, force, l1, restart).
 L1MoverA14:
   EX AF,AF'
   CP $19
@@ -1079,7 +809,7 @@ L1SpawnC:
 
 ; Mover A15
 ;
-; Witness: L1 2149 (l1).
+; Witness: L1 3692 (boss, l1).
 L1MoverA15:
   PUSH DE
   CALL GetCell
@@ -1095,15 +825,15 @@ l_F734:
 
 ; Mover B0
 ;
-; Witness: L1 23922 (c1, continue, ctl-if2, ctl-kempston, ctl-sinclair,
-; gameover, hiscore, hiscore-typed, l1).
+; Witness: L1 38451 (boss, c1, continue, ctl-if2, ctl-kempston, ctl-sinclair,
+; force, gameover, hiscore, hiscore-typed, l1, restart).
 L1MoverB0:
   JP MoveScript
 
 ; Mover B1
 ;
-; Witness: L1 17671 (c1, continue, ctl-if2, ctl-kempston, ctl-sinclair,
-; gameover, hiscore, hiscore-typed, l1).
+; Witness: L1 32322 (boss, c1, continue, ctl-if2, ctl-kempston, ctl-sinclair,
+; force, gameover, hiscore, hiscore-typed, l1, restart).
 L1MoverB1:
   LD A,(FrameCounter)
   AND $01
@@ -1119,7 +849,7 @@ L1MoverB2:
 
 ; Mover B6
 ;
-; Witness: L1 4977 (l1).
+; Witness: L1 9954 (boss, l1).
 L1MoverB6:
   CALL SoftCellsOff
   LD A,$1F
@@ -1128,7 +858,7 @@ L1MoverB6:
 
 ; Mover B7
 ;
-; Witness: L1 26 (l1).
+; Witness: L1 52 (boss, l1).
 L1MoverB7:
   LD L,$08
   JR l_F779
@@ -1142,35 +872,35 @@ L1MoverB8:
 
 ; Mover B10, B11
 ;
-; Witness: L1 58 (l1).
+; Witness: L1 116 (boss, l1).
 L1MoverB10:
   LD L,$03
   JR l_F779
 
 ; Mover B9, B12
 ;
-; Witness: L1 17 (l1).
+; Witness: L1 130 (boss, force, l1, restart).
 L1MoverB9:
   LD L,$04
   JR l_F779
 
 ; Mover B13
 ;
-; Witness: L1 21 (l1).
+; Witness: L1 42 (boss, l1).
 L1MoverB13:
   LD L,$05
   JR l_F779
 
 ; Mover B14
 ;
-; Witness: L1 50 (l1).
+; Witness: L1 100 (boss, l1).
 L1MoverB14:
   LD L,$06
   JR l_F779
 
 ; Mover B15
 ;
-; Witness: L1 59 (l1).
+; Witness: L1 118 (boss, l1).
 L1MoverB15:
   LD L,$07
 ; This entry point is used by the routines at L1MoverB7, L1MoverB8, L1MoverB10,
@@ -1234,7 +964,7 @@ l_F7BA:
 ; Unless MapColumn is $6B-$73: every 8th pass move the slot one column left
 ; (column - 1 into IY+3)
 ;
-; Witness: L1 3677 (l1).
+; Witness: L1 5654 (boss, l1).
 L1DriftLeft:
   LD A,(MapColumn)
   CP $74
@@ -1252,7 +982,7 @@ l_F7D4:
 ; Return while the slot is free; else drop the return and go on at Mover B1
 ; (Mover B15 calls it)
 ;
-; Witness: L1 231 (l1).
+; Witness: L1 558 (boss, force, l1, restart).
 L1SlotBusy:
   LD A,(IY+$00)
   AND A

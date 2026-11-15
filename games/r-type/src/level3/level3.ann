@@ -45,6 +45,7 @@ $DF36 b L3Metatiles 9 ; The metatiles, 144 bytes each (4 x 4 cells of 9 bytes), 
 $E716 b L3Map 5 ; The map: 5 bytes a block column (64 columns), each byte a metatile (bits 0-5) and its drawer (bits 6-7)
 @res levels/level3/map.bin
 $E856 b L3Waves ; The wave script: entries (scroll position, kind, script) RunWaves starts; then the enemies' movement scripts
+@res levels/level3/waves.bin
 $ED50 b L3Kinds ; The enemy kinds StartWave reads (LevelKinds)
 $F0A6 w L3MoversA ; The first mover of each kind (16 words, LevelMoves)
 $F0C6 w L3MoversB ; The second mover of each kind (16 words, LevelMoves2)

@@ -54,8 +54,9 @@ HitResult:
 BeamMeter:
   DEFB $00                ; the BEAM meter's column
 ShieldTimer:
-  DEFB $00                ; the frames the ship stays untouchable ($38 at the
-                          ; first start, $30 from the pick-up)
+  DEFB $00                ; the passes the ship carries the shield ($38 at the
+                          ; first start, $20 at a later life, $30 from the
+                          ; pick-up)
 ScoreChanged:
   DEFB $00                ; non-zero when AddScore changed the score:
                           ; CheckExtraLife prints it
@@ -77,7 +78,7 @@ Lives:
 ShipColumn:
   DEFB $00                ; the ship's column (1-28)
 ShipRow:
-  DEFB $00                ; the ship's row (1-19)
+  DEFB $00                ; the ship's row (0-19)
 ForceAttached:
   DEFB $00                ; the Force: 0 free, 1 at the ship's nose, 2 at its
                           ; tail
@@ -101,7 +102,8 @@ WeaponKind:
 ForceLevel:
   DEFB $00                ; the Force's level: 0 none, 1-3
 BeamCharge:
-  DEFB $00                ; the beam's charge while fire is held, up to $40
+  DEFB $00                ; the beam's charge while fire is held, up to $3E (+2
+                          ; a pass; $9A66 CP $40 keeps the old value at $40)
 BeamPower:
   DEFB $00                ; the beam's strength left
 Carriers:
@@ -239,8 +241,10 @@ PlayStarStates:
   DEFB $02,$00,$03,$1A,$00,$1C,$02,$17
   DEFB $01,$01,$01,$04,$01,$03,$01,$18
 
-; the star task's work (640 bytes cleared by ClearPlayState)
-StarBuffer:
+; 1 where a sprite cell is on the screen (set by ScrollRows' copy, cleared by
+; its erase); the star task draws only where it is 0 (640 bytes cleared by
+; ClearPlayState)
+DrawnMap:
   DEFB $00,$00,$00,$00,$00,$00,$00,$00
   DEFB $00,$00,$00,$00,$00,$00,$00,$00
   DEFB $00,$00,$00,$00,$00,$00,$00,$00

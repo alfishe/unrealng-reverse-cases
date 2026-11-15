@@ -4,8 +4,8 @@
 
 ; The enemy slot's hits left
 ;
-; Witness: L1 61290 (c1, continue, ending, gameover, hiscore, hiscore-typed,
-; l1-l8).
+; Witness: L1 65244 (boss, c1, continue, deaths-l7, ending, force, gameover,
+; hiscore, hiscore-typed, restart, l1-l8).
 SlotFlags:
   AND $7F
   DEC A
@@ -28,8 +28,9 @@ SlotFlags:
 ; takes its kind (a command when $63: CommandWave) and script and starts it
 ; (StartWave).
 ;
-; Witness: L1 27064 (c1, continue, ctl-if2, ctl-kempston, ctl-sinclair, ending,
-; gameover, hiscore, hiscore-typed, l1-l8).
+; Witness: L1 33322 (boss, c1, continue, ctl-if2, ctl-kempston, ctl-sinclair,
+; deaths-l7, ending, force, gameover, hiscore, hiscore-typed, pause, restart,
+; l1-l8).
 RunWaves:
   LD A,(WavesHalted)
   AND A
@@ -78,8 +79,8 @@ RunWavesNext:
 ; The kind's record from LevelKinds; WaveOverride picks the slot; no free slot:
 ; the wave is dropped.
 ;
-; Witness: L1 2570 (c1, continue, ctl-if2, ctl-kempston, ctl-sinclair, ending,
-; gameover, hiscore, hiscore-typed, l1-l8).
+; Witness: L1 3151 (boss, c1, continue, ctl-if2, ctl-kempston, ctl-sinclair,
+; deaths-l7, ending, force, gameover, hiscore, hiscore-typed, restart, l1-l8).
 StartWave:
   LD H,$00
   LD L,A
@@ -168,8 +169,8 @@ StartWaveDone:
 ; A wave command: 1 halt the scroll (a boss), 2 resume, 3 next slot, 4 shooter
 ; limit, 5 the level's end, 6 a sound
 ;
-; Witness: L1 227 (c1, continue, ctl-if2, ctl-kempston, ctl-sinclair, ending,
-; gameover, hiscore, hiscore-typed, l1-l8).
+; Witness: L1 271 (boss, c1, continue, ctl-if2, ctl-kempston, ctl-sinclair,
+; deaths-l7, ending, force, gameover, hiscore, hiscore-typed, restart, l1-l8).
 CommandWave:
   INC HL
   LD A,(HL)
@@ -227,8 +228,8 @@ l_90EF:
 
 ; Clear ScrollHalted and WavesHalted and restore CellFreeEmpty's code
 ;
-; Witness: L1 55 (c1, continue, ctl-if2, ctl-kempston, ctl-sinclair, ending,
-; gameover, hiscore, hiscore-typed, l1-l8).
+; Witness: L1 64 (c1, continue, ctl-if2, ctl-kempston, ctl-sinclair, deaths-l7,
+; ending, gameover, hiscore, hiscore-typed, restart, l1-l8).
 ResumeWaves:
   XOR A
   LD (ScrollHalted),A
@@ -245,8 +246,9 @@ ResumeWaves:
 ; mover from LevelMoves and its second from LevelMoves2: the levels' own code,
 ; which comes back to MoveStore, MoveDraw, MoveDrawA, MoveNext or MoveDone.
 ;
-; Witness: L1 27063 (c1, continue, ctl-if2, ctl-kempston, ctl-sinclair, ending,
-; gameover, hiscore, hiscore-typed, l1-l8).
+; Witness: L1 33321 (boss, c1, continue, ctl-if2, ctl-kempston, ctl-sinclair,
+; deaths-l7, ending, force, gameover, hiscore, hiscore-typed, pause, restart,
+; l1-l8).
 MoveEnemies:
   LD A,(WavesHalted)
   AND A
@@ -401,8 +403,8 @@ MoveFree:
 
 ; HL = the word at HL + 2 x A
 ;
-; Witness: L1 326146 (c1, continue, ctl-if2, ctl-kempston, ctl-sinclair,
-; ending, gameover, hiscore, hiscore-typed, l1-l8).
+; Witness: L1 388175 (boss, c1, continue, ctl-if2, ctl-kempston, ctl-sinclair,
+; deaths-l7, ending, force, gameover, hiscore, hiscore-typed, restart, l1-l8).
 TableEntry:
   ADD A,A
   ADD A,L
@@ -429,8 +431,8 @@ TableEntry:
 ; and the end of level 8 put it there; the immortality POKE of the stage 1
 ; recordings writes $C9 at $91F2).
 ;
-; Witness: L1 6613 (c1, continue, ctl-if2, ctl-kempston, ctl-sinclair, ending,
-; gameover, hiscore, hiscore-typed, l1-l8).
+; Witness: L1 7575 (boss, c1, continue, ctl-if2, ctl-kempston, ctl-sinclair,
+; deaths-l7, ending, force, gameover, hiscore, hiscore-typed, restart, l1-l8).
 ShipDies:
   CALL ClearHits
   NOP
@@ -454,8 +456,8 @@ ShipDies:
 
 ; Clear the ship's, the shots' and the enemy shots' state
 ;
-; Witness: L1 66 (c1, continue, ctl-if2, ctl-kempston, ctl-sinclair, gameover,
-; hiscore, hiscore-typed).
+; Witness: L1 85 (c1, continue, ctl-if2, ctl-kempston, ctl-sinclair, deaths-l7,
+; gameover, hiscore, hiscore-typed, restart).
 ClearShipStuff:
   LD HL,ShipColumn
   LD BC,$0055
@@ -470,8 +472,8 @@ ClearShipStuff:
 
 ; Print LifeChar A times from column C leftwards, then a blank
 ;
-; Witness: L1 255 (c1, continue, ctl-if2, ctl-kempston, ctl-sinclair, gameover,
-; hiscore, hiscore-typed, l2-l8).
+; Witness: L1 335 (c1, continue, ctl-if2, ctl-kempston, ctl-sinclair,
+; deaths-l7, gameover, hiscore, hiscore-typed, pause, restart, l2-l8).
 DrawLives:
   AND A
   JR Z,l_9244
@@ -491,8 +493,9 @@ l_9244:
 ; Count the death down: the explosion, PILOT STAND BY or MISSION OVER,
 ; CONTINUE, the next life
 ;
-; Witness: L1 27094 (c1, continue, ctl-if2, ctl-kempston, ctl-sinclair, ending,
-; gameover, hiscore, hiscore-typed, l1-l8).
+; Witness: L1 33360 (boss, c1, continue, ctl-if2, ctl-kempston, ctl-sinclair,
+; deaths-l7, ending, force, gameover, hiscore, hiscore-typed, pause, restart,
+; l1-l8).
 LoseLife:
   LD A,(DeathTimer)
   AND A
@@ -555,16 +558,16 @@ l_92BE:
   POP DE
   JP StartLife
 
-; Print PILOT STAND BY $ and wait
+; Print `PILOT STAND BY $` and wait
 ;
-; Witness: L1 29 (c1, continue, ctl-if2, ctl-kempston, ctl-sinclair, gameover,
-; hiscore, hiscore-typed).
+; Witness: L1 38 (c1, continue, ctl-if2, ctl-kempston, ctl-sinclair, deaths-l7,
+; gameover, hiscore, hiscore-typed, restart).
 PilotStandBy:
   LD HL,PilotStandByText
   LD BC,$1608
   JR PrintAndWait
 
-; Sounds, MISSION OVER $ and a wait
+; Sounds, `MISSION OVER $` and a wait
 ;
 ; Witness: L1 4 (continue, gameover, hiscore, hiscore-typed).
 MissionOver:

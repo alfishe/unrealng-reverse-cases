@@ -7,8 +7,8 @@
 @equ $FEB3 SL7Pattern
 
 @module stage2 ; The second stage
-@about Loaded to $FEE8 by SL7Main. It loads the loading screen (6143 bytes to $4000 through the deciphering store hook), wipes memory when a check failed, sets IM 2 and jumps to the countdown loader at $7530 (loaded with the screen's blocks).
-$FEE8 c Stage2Start ; Load the screen with the store hook, check the flag, IM 2, SP = $752F, JP $7530
+@about Loaded to $FEE8 by SL7Main. It loads the loading screen (6143 bytes to $4000 through the deciphering store hook), wipes memory when a check failed. Its code after the CALL (IM 2, SP = $752F, JP $7530) never runs: block 31 loads Stage2End over $FEFC, and the reader returns into Stage2End after block 35.
+$FEE8 c Stage2Start ; Load the screen with the store hook, check the flag; the IM 2, SP = $752F, JP $7530 after the CALL never runs (Stage2End is loaded over $FEFC by block 31)
 > Witness: L1 1 (c1).
-$FF17 b Stage2Data ; Zeros, the first block table at $FF4A (5-byte records: address, length, the $7FFD bank) and the countdown digits 0-9 (8 bytes each from $FF60)
+$FF17 b Stage2Data ; Zeros, the first block table at $FF49 (5-byte records: address, length, the $7FFD bank) and the countdown digits 0-9 (8 bytes each from $FF80)
 @res loader/stage2-data.bin

@@ -1,0 +1,308 @@
+# the wave script: block column, metatile column.scroll step, then the kind and the enemy's column,row, or
+# command N A (kind $63: 1 halt, 2 resume, 3 next wave slot A, 4 shooter limit A, 5 level end, 6 sound A);
+# from the end mark ($FF) on: the bytes that follow (the kind records), in hex
+9 0.0 command 4 8
+9 0.0 kind 1 at 31,9
+9 0.7 kind 1 at 31,7
+9 1.6 kind 1 at 31,8
+9 3.0 kind 2 at 31,9
+10 0.0 kind 1 at 31,6
+10 3.6 kind 1 at 31,8
+11 3.6 kind 1 at 31,9
+12 1.7 kind 1 at 31,10
+13 0.0 kind 15 at 31,15
+13 1.7 kind 1 at 31,7
+13 3.6 kind 1 at 31,6
+14 1.7 kind 1 at 31,10
+14 3.0 kind 14 at 31,2
+14 3.3 kind 14 at 31,6
+15 1.6 kind 9 at 30,9
+16 0.0 kind 3 at 31,9
+16 3.0 kind 22 at 29,7
+16 3.5 kind 21 at 31,15
+17 0.0 kind 10 at 16,253
+17 0.4 kind 10 at 16,253
+17 1.0 kind 10 at 16,253
+17 1.4 kind 10 at 16,253
+17 2.0 kind 10 at 16,253
+17 2.4 kind 10 at 16,253
+17 3.0 kind 10 at 16,253
+17 3.4 kind 10 at 16,253
+18 0.0 kind 4 at 31,11
+18 0.0 kind 10 at 16,253
+18 0.4 kind 10 at 16,253
+18 1.0 kind 14 at 31,2
+18 1.1 kind 24 at 32,12
+18 2.0 kind 15 at 31,15
+18 2.0 kind 14 at 3,31
+18 3.4 kind 25 at 33,12
+19 2.0 kind 26 at 31,9
+19 3.0 kind 22 at 29,7
+20 0.0 kind 14 at 31,10
+20 0.0 kind 14 at 6,255
+20 0.1 kind 27 at 31,12
+21 3.0 kind 14 at 0,255
+21 3.0 kind 23 at 31,9
+22 3.0 kind 5 at 254,7
+24 1.7 kind 28 at 247,8
+25 0.0 kind 50 at 33,15
+27 0.0 kind 26 at 31,9
+28 0.0 kind 26 at 31,9
+29 3.0 kind 29 at 33,9
+29 3.0 kind 30 at 32,15
+30 3.0 kind 31 at 34,9
+30 3.0 kind 32 at 33,15
+30 3.0 kind 33 at 34,3
+31 0.4 kind 34 at 45,3
+32 0.0 kind 34 at 41,3
+32 1.0 kind 14 at 31,8
+32 2.0 kind 6 at 30,9
+33 3.0 kind 35 at 39,9
+34 3.0 kind 35 at 39,10
+36 2.0 kind 37 at 32,9
+39 0.0 kind 14 at 255,2
+39 0.1 kind 51 at 30,15
+40 1.4 kind 38 at 255,9
+40 2.0 kind 14 at 255,7
+40 3.0 kind 14 at 31,2
+41 0.0 kind 14 at 31,7
+42 0.0 kind 14 at 31,12
+42 1.0 kind 14 at 255,15
+43 0.0 kind 39 at 48,15
+43 2.0 kind 40 at 253,9
+43 2.0 kind 39 at 46,15
+44 0.0 kind 39 at 44,15
+44 2.0 kind 39 at 42,15
+45 0.0 kind 39 at 40,15
+45 1.0 kind 14 at 255,4
+45 2.0 command 4 4
+45 2.0 kind 39 at 38,15
+46 0.0 kind 39 at 36,15
+46 2.0 kind 39 at 34,15
+47 0.0 kind 39 at 32,15
+47 0.0 kind 14 at 31,3
+47 2.0 kind 39 at 30,15
+48 0.0 kind 14 at 31,15
+50 1.0 kind 41 at 31,9
+51 0.0 kind 7 at 31,15
+51 2.0 kind 11 at 20,253
+51 2.4 kind 11 at 20,253
+51 3.0 kind 11 at 19,253
+51 3.0 kind 20 at 19,253
+51 3.4 kind 11 at 19,253
+51 3.4 kind 20 at 19,253
+52 0.0 kind 11 at 18,253
+52 0.0 kind 20 at 18,253
+52 0.4 kind 11 at 18,253
+52 0.4 kind 20 at 18,253
+52 1.0 kind 11 at 17,253
+52 1.0 kind 20 at 17,253
+52 1.4 kind 11 at 17,253
+52 1.4 kind 20 at 17,253
+52 2.0 kind 11 at 16,253
+52 2.0 kind 20 at 16,253
+52 2.4 kind 11 at 16,253
+52 2.4 kind 20 at 16,253
+52 3.0 kind 20 at 15,253
+52 3.4 kind 20 at 15,253
+53 0.0 kind 20 at 14,253
+53 0.4 kind 20 at 14,253
+53 1.0 kind 20 at 13,253
+53 1.4 kind 20 at 13,253
+53 2.0 kind 14 at 31,3
+53 2.0 kind 14 at 31,15
+53 2.0 kind 14 at 31,11
+53 2.0 kind 20 at 12,253
+53 2.4 kind 20 at 12,253
+53 3.0 kind 20 at 11,253
+53 3.4 kind 20 at 11,253
+54 0.0 kind 20 at 10,253
+54 0.4 kind 20 at 10,253
+54 1.0 kind 20 at 9,253
+54 1.4 kind 20 at 9,253
+54 2.0 kind 20 at 8,253
+54 2.4 kind 20 at 8,253
+54 3.0 kind 20 at 7,253
+54 3.4 kind 20 at 7,253
+55 0.0 kind 20 at 6,253
+55 0.4 kind 20 at 6,253
+55 1.0 kind 20 at 5,253
+55 1.4 kind 20 at 5,253
+55 2.0 kind 20 at 4,253
+55 2.4 kind 20 at 4,253
+55 3.0 kind 20 at 3,253
+55 3.4 kind 20 at 3,253
+56 0.0 kind 20 at 2,253
+56 0.4 kind 20 at 2,253
+56 1.0 kind 20 at 1,253
+57 2.2 kind 1 at 31,9
+57 3.4 kind 1 at 31,7
+58 2.0 kind 1 at 31,6
+58 3.2 kind 1 at 31,5
+59 0.4 kind 1 at 31,10
+59 1.6 kind 15 at 36,15
+59 3.0 kind 1 at 31,4
+59 3.4 kind 15 at 33,15
+60 0.2 kind 1 at 31,9
+60 1.0 kind 15 at 38,15
+60 2.0 kind 15 at 30,15
+60 2.6 kind 1 at 31,5
+61 0.0 kind 1 at 31,4
+61 0.1 command 3 25
+61 0.1 kind 8 at 31,3
+61 2.4 kind 1 at 31,7
+61 3.6 kind 1 at 31,6
+62 2.2 kind 1 at 31,6
+62 3.4 kind 1 at 31,5
+63 2.0 kind 1 at 31,9
+63 3.2 kind 1 at 31,5
+64 1.6 kind 1 at 31,7
+64 3.0 kind 1 at 31,3
+65 1.4 kind 1 at 31,4
+65 2.6 kind 1 at 31,6
+66 0.0 kind 1 at 31,8
+66 2.4 kind 1 at 31,6
+66 3.6 kind 1 at 31,8
+67 0.0 kind 49 at 253,15
+67 2.2 kind 1 at 31,6
+67 3.4 kind 1 at 31,10
+68 2.0 kind 1 at 31,9
+68 3.2 kind 1 at 31,7
+69 1.6 kind 1 at 31,7
+69 3.0 kind 1 at 31,3
+70 0.2 kind 1 at 31,5
+70 2.6 kind 1 at 31,9
+72 0.0 kind 12 at 21,255
+72 2.0 command 1 0
+73 1.0 command 6 10
+73 1.0 kind 52 at 20,2
+73 2.2 command 6 10
+73 2.2 kind 52 at 14,2
+73 3.4 command 6 10
+73 3.4 kind 52 at 8,2
+74 0.6 command 6 10
+74 0.6 kind 52 at 2,2
+74 1.0 kind 42 at 3,248
+74 1.0 kind 43 at 9,252
+74 1.0 kind 44 at 15,249
+74 1.0 kind 43 at 21,255
+76 0.0 kind 48 at 13,17
+76 0.0 command 3 26
+76 0.0 kind 46 at 36,8
+76 0.0 command 93 26
+76 0.0 kind 47 at 33,9
+77 1.2 kind 48 at 3,17
+78 0.0 command 3 26
+78 0.0 kind 46 at 36,8
+78 0.0 kind 47 at 33,9
+78 2.4 kind 48 at 18,17
+79 3.6 kind 48 at 8,17
+80 0.0 command 3 26
+80 0.0 kind 46 at 36,8
+80 0.0 kind 47 at 33,9
+81 1.0 kind 48 at 23,17
+82 0.0 command 3 26
+82 0.0 kind 46 at 36,8
+82 0.0 kind 47 at 33,9
+82 2.2 kind 48 at 11,17
+83 3.4 kind 48 at 8,17
+84 0.0 command 3 26
+84 0.0 kind 46 at 36,8
+84 0.0 kind 47 at 33,9
+85 0.6 kind 48 at 18,17
+86 0.0 command 3 26
+86 0.0 kind 46 at 36,8
+86 0.0 kind 47 at 33,9
+86 2.0 kind 48 at 13,17
+87 3.2 kind 48 at 3,17
+88 0.0 command 3 26
+88 0.0 kind 46 at 36,8
+88 0.0 kind 47 at 33,9
+89 0.4 kind 48 at 18,17
+90 0.0 command 3 26
+90 0.0 kind 46 at 36,8
+90 0.0 kind 47 at 33,9
+90 1.6 kind 48 at 8,17
+91 3.0 kind 48 at 23,17
+92 0.0 command 3 26
+92 0.0 kind 46 at 36,8
+92 0.0 kind 47 at 33,9
+93 0.2 kind 48 at 11,17
+94 1.0 command 6 10
+94 1.0 command 6 10
+94 1.0 command 6 10
+94 1.0 kind 53 at 2,2
+94 1.0 kind 53 at 8,2
+94 1.0 kind 53 at 14,2
+94 1.0 kind 53 at 20,2
+96 0.0 command 5 0
+bytes FF FF FF FF FF 00 41 12 BD F1 BD F1 BD F1 BD F1
+bytes 00 00 E2 01 22 51 F3 51 F3 61 F3 3D F3 39 F3 29
+bytes F3 35 F3 3D F3 00 00 F2 01 22 51 F3 51 F3 51 F3
+bytes 51 F3 61 F3 41 F3 35 F3 39 F3 49 F3 49 F3 4D F3
+bytes 61 F3 51 F3 51 F3 00 00 B2 01 22 2D F3 61 F3 51
+bytes F3 51 F3 51 F3 51 F3 51 F3 51 F3 51 F3 00 00 B2
+bytes 01 22 79 F3 6D F3 75 F3 81 F3 89 F3 89 F3 65 F3
+bytes 51 F3 51 F3 51 F3 51 F3 00 00 D2 01 22 51 F3 51
+bytes F3 51 F3 51 F3 61 F3 35 F3 2D F3 39 F3 41 F3 39
+bytes F3 00 00 E2 01 22 51 F3 51 F3 51 F3 51 F3 61 F3
+bytes 51 F3 51 F3 51 F3 51 F3 00 00 72 01 22 39 F3 29
+bytes F3 35 F3 3D F3 39 F3 29 F3 35 F3 3D F3 00 00 11
+bytes 41 12 87 F2 7F F2 A5 F2 97 F2 A3 F2 7F F2 A3 F2
+bytes B3 F2 8F F2 8F F2 8F F2 8F F2 8F F2 8F F2 00 00
+bytes 00 41 12 CD F1 CD F1 D5 F1 DD F1 DD F1 00 00 00
+bytes 41 12 CD F1 D5 F1 DD F1 D5 F1 CD F1 D9 F1 DD F1
+bytes DD F1 00 00 1C 41 23 9D F3 91 F3 9F F3 97 F3 FF
+bytes FF 1E 03 15 23 F4 63 F4 43 F4 4B F4 4B F4 43 F4
+bytes 63 F4 23 F4 63 F4 43 F4 4B F4 4B F4 43 F4 23 F4
+bytes 6B F4 47 F4 57 F4 57 F4 23 F4 23 F4 00 00 00 01
+bytes 3C 73 F4 73 F4 89 F4 7D F4 7D F4 00 00 00 01 3C
+bytes 73 F4 73 F4 91 F4 7D F4 7D F4 00 00 00 01 3C 73
+bytes F4 73 F4 9D F4 7D F4 7D F4 00 00 00 01 3C 73 F4
+bytes 73 F4 A5 F4 7D F4 7D F4 00 00 00 41 12 D1 F1 CD
+bytes F1 CD F1 D5 F1 D1 F1 ED F1 F1 F1 F5 F1 FD F1 03
+bytes F2 07 F2 0B F2 F1 F1 F1 F1 F1 F1 00 00 11 41 12
+bytes 7F F2 7F F2 7F F2 7F F2 00 00 11 41 12 97 F2 9F
+bytes F2 A3 F2 7F F2 7F F2 7F F2 7F F2 00 00 11 41 12
+bytes 87 F2 A3 F2 D9 F2 97 F2 A3 F2 7F F2 7F F2 7F F2
+bytes 00 00 11 01 12 17 F2 0F F2 1F F2 0F F2 0F F2 0F
+bytes F2 00 00 11 01 12 0F F2 0F F2 25 F2 17 F2 0F F2
+bytes 0F F2 00 00 11 01 12 0F F2 0F F2 0F F2 0F F2 00
+bytes 00 11 01 12 17 F2 0F F2 0F F2 1F F2 0F F2 17 F2
+bytes 00 00 37 3E 40 33 F2 33 F2 33 F2 33 F2 33 F2 33
+bytes F2 33 F2 33 F2 33 F2 33 F2 33 F2 33 F2 33 F2 33
+bytes F2 2B F2 2B F2 2B F2 2B F2 2B F2 2B F2 2B F2 2B
+bytes F2 2B F2 2B F2 2B F2 2B F2 2B F2 2B F2 2B F2 2B
+bytes F2 2B F2 2B F2 2B F2 2B F2 2B F2 2B F2 2B F2 2B
+bytes F2 2B F2 2B F2 2B F2 2B F2 00 00 11 41 12 7F F2
+bytes A5 F2 97 F2 A3 F2 7F F2 8B F2 A5 F2 97 F2 00 00
+bytes 11 41 12 7F F2 7F F2 8B F2 A5 F2 97 F2 00 00 11
+bytes 41 12 87 F2 8B F2 7F F2 A5 F2 97 F2 A3 F2 7F F2
+bytes 8B F2 A5 F2 97 F2 00 00 11 41 12 87 F2 8B F2 7F
+bytes F2 7F F2 8B F2 A5 F2 97 F2 00 00 11 41 12 7F F2
+bytes 8B F2 A5 F2 97 F2 A3 F2 87 F2 A5 F2 97 F2 A3 F2
+bytes 7F F2 8B F2 A5 F2 97 F2 00 00 11 41 12 7F F2 7F
+bytes F2 7F F2 8B F2 A5 F2 97 F2 A3 F2 87 F2 A5 F2 97
+bytes F2 A3 F2 7F F2 7F F2 00 00 13 01 24 5F F2 5F F2
+bytes 5F F2 5F F2 5F F2 00 00 00 3F 2C 6F F2 6F F2 6F
+bytes F2 6F F2 6F F2 00 00 11 41 12 7F F2 D9 F2 97 F2
+bytes A3 F2 7F F2 7F F2 7F F2 00 00 11 41 12 8F F2 B5
+bytes F2 B3 F2 8F F2 8F F2 BB F2 AB F2 B3 F2 8F F2 B5
+bytes F2 AB F2 AB F2 00 00 11 41 12 7F F2 7F F2 7F F2
+bytes A5 F2 97 F2 00 00 11 41 12 8F F2 93 F2 B5 F2 AB
+bytes F2 AF F2 A3 F2 7F F2 00 00 11 41 12 7F F2 A5 F2
+bytes 97 F2 A3 F2 7F F2 7F F2 7F F2 00 00 64 01 11 A1
+bytes F3 A1 F3 A1 F3 A1 F3 00 00 64 01 11 B1 F3 B1 F3
+bytes B1 F3 B1 F3 00 00 64 01 11 C1 F3 C1 F3 C1 F3 C1
+bytes F3 00 00 64 01 11 C1 F3 C1 F3 C1 F3 C1 F3 00 00
+bytes 35 3E 2C 13 F3 13 F3 13 F3 1F F3 19 F3 19 F3 00
+bytes 00 00 01 1A E5 F2 F1 F2 0D F3 FD F2 00 00 06 41
+bytes 24 D1 F3 F9 F3 F9 F3 F9 F3 F9 F3 E5 F3 00 00 11
+bytes 41 12 8F F2 8F F2 8F F2 B3 F2 A3 F2 A3 F2 7F F2
+bytes 87 F2 00 00 11 41 12 7F F2 C7 F2 A3 F2 7F F2 8B
+bytes F2 A5 F2 97 F2 7F F2 00 00 1E 03 15 23 F4 43 F4
+bytes 4B F4 43 F4 63 F4 63 F4 2B F4 63 F4 43 F4 4B F4
+bytes 43 F4 27 F4 47 F4 57 F4 57 F4 2B F4 47 F4 57 F4
+bytes 57 F4 57 F4 23 F4 2B F4 00 00 59 3F 2C 03 F4 03
+bytes F4 13 F4 13 F4 00 00 59 3F 2C 03 F4 03 F4 01 F4
+bytes 00 00

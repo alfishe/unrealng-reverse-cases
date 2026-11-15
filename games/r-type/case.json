@@ -92,7 +92,12 @@
     "stage1/rec/gameover",
     "stage1/rec/continue",
     "stage1/rec/hiscore",
-    "stage1/rec/hiscore-typed"
+    "stage1/rec/hiscore-typed",
+    "stage2/rec/deaths-l7",
+    "docs/rtB/rec/pause",
+    "docs/integrate/rec/force",
+    "docs/integrate/rec/boss",
+    "docs/integrate/rec/restart"
   ],
   "ref_builds": [
     [

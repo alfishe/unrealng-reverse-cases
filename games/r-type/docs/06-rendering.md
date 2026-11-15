@@ -885,7 +885,7 @@ FirstScreenMarks from 2757:51866: about 7 frames.
 The stars are not part of the passes. StarTask `$BE79`, run from the frame interrupt, walks RowTable from its
 second entry and moves one star in each row (their states in PlayStarStates `$80D8`). StarStep `$BE97` draws a star
 straight on the screen, and only in a cell whose SolidMap and DrawnMap bytes are 0 and whose right neighbours are
-not scenery. The `.ann` names DrawnMap `$8100` "StarBuffer"; it is ScrollRows' erase map, which the star task reads
+not scenery. DrawnMap `$8100` is ScrollRows' erase map, which the star task reads
 too.
 
 The point: the first screen reuses the sprite drawers for scenery, so the game has one set of four variant loops for

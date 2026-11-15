@@ -175,7 +175,7 @@ chain into ChainStart and 46 entries in `src/loader/chain.ann` (Layer02 ... Laye
 between them). Several loops share one entry when no `CALL` or jump target falls between them. The last loop leaves
 the SpeedLock reader at `$FB7E` (3.5).
 
-Stage 1 and the docstring of `tools/speedlock7.py` say "26 layers". That is the number of code arrivals c1's L1 saw
+Stage 1 counted "26 layers". That is the number of code arrivals c1's L1 saw
 (an arrival is a jump into bytes written since the last one), not the number of loops: one arrival holds up to nine
 loops.
 

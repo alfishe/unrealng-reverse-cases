@@ -54,63 +54,64 @@ $D911 b L1Metatiles 9 ; The metatiles, 144 bytes each (4 x 4 cells of 9 bytes), 
 $E571 b L1Map 5 ; The map: 5 bytes a block column (107 columns), each byte a metatile (bits 0-5) and its drawer (bits 6-7)
 @res levels/level1/map.bin
 $E788 b L1Waves ; The wave script: entries (scroll position, kind, script) RunWaves starts; then the enemies' movement scripts
+@res levels/level1/waves.bin
 $EFFB b L1Kinds ; The enemy kinds StartWave reads (LevelKinds)
 $F365 w L1MoversA ; The first mover of each kind (16 words, LevelMoves)
 $F385 w L1MoversB ; The second mover of each kind (16 words, LevelMoves2)
 $F3A5 c L1MoverA0 ; Mover A0
 > Witness: L1 0 (none).
 $F3AB c L1MoverA1 ; Mover A1
-> Witness: L1 2430 (c1, continue, ctl-if2, ctl-kempston, ctl-sinclair, gameover, hiscore, hiscore-typed, l1).
+> Witness: L1 4033 (boss, c1, continue, ctl-if2, ctl-kempston, ctl-sinclair, force, gameover, hiscore, hiscore-typed, l1, restart).
 $F3B9 c L1MoverA2 ; Mover A2
-> Witness: L1 231 (l1).
+> Witness: L1 558 (boss, force, l1, restart).
 $F3BE c L1MoverA3 ; Mover A3
-> Witness: L1 2205 (l1).
+> Witness: L1 3598 (boss, l1).
 $F3E3 c L1MoverA4 ; Mover A4
-> Witness: L1 479 (l1).
+> Witness: L1 958 (boss, l1).
 $F408 c L1MoverA5 ; Mover A5
-> Witness: L1 8143 (l1).
+> Witness: L1 16286 (boss, l1).
 $F468 c L1MoverA6 ; Mover A6
-> Witness: L1 4991 (l1).
+> Witness: L1 9982 (boss, l1).
 $F4D8 c L1MoverA7 ; Mover A7
-> Witness: L1 1188 (l1).
+> Witness: L1 1448 (boss, l1).
 $F4EC c L1MoverA8 ; Mover A8
-> Witness: L1 736 (l1).
+> Witness: L1 1028 (boss, l1).
 $F559 c L1MoverA9 ; Mover A9
-> Witness: L1 736 (l1).
+> Witness: L1 1028 (boss, l1).
 $F5AD c L1MoverA10 ; Mover A10
-> Witness: L1 925 (l1).
+> Witness: L1 2375 (boss, force, l1, restart).
 $F5E8 c L1MoverA11 ; Mover A11
-> Witness: L1 616 (l1).
+> Witness: L1 1568 (boss, force, l1, restart).
 $F5EC c L1MoverA12 ; Mover A12
-> Witness: L1 1779 (l1).
+> Witness: L1 3558 (boss, l1).
 $F63D c L1MoverA13 ; Mover A13
-> Witness: L1 391 (l1).
+> Witness: L1 721 (boss, l1).
 $F6EA c L1MoverA14 ; Mover A14
-> Witness: L1 633 (l1).
+> Witness: L1 1578 (boss, force, l1, restart).
 $F728 c L1MoverA15 ; Mover A15
-> Witness: L1 2149 (l1).
+> Witness: L1 3692 (boss, l1).
 $F742 c L1MoverB0 ; Mover B0
-> Witness: L1 23922 (c1, continue, ctl-if2, ctl-kempston, ctl-sinclair, gameover, hiscore, hiscore-typed, l1).
+> Witness: L1 38451 (boss, c1, continue, ctl-if2, ctl-kempston, ctl-sinclair, force, gameover, hiscore, hiscore-typed, l1, restart).
 $F745 c L1MoverB1 ; Mover B1
-> Witness: L1 17671 (c1, continue, ctl-if2, ctl-kempston, ctl-sinclair, gameover, hiscore, hiscore-typed, l1).
+> Witness: L1 32322 (boss, c1, continue, ctl-if2, ctl-kempston, ctl-sinclair, force, gameover, hiscore, hiscore-typed, l1, restart).
 $F750 c L1MoverB2 ; Mover B2, B3, B4, B5
 > No recording ran it: known only from the code.
 $F755 c L1MoverB6 ; Mover B6
-> Witness: L1 4977 (l1).
+> Witness: L1 9954 (boss, l1).
 $F75F c L1MoverB7 ; Mover B7
-> Witness: L1 26 (l1).
+> Witness: L1 52 (boss, l1).
 $F763 c L1MoverB8 ; Mover B8
 > No recording ran it: known only from the code.
 $F767 c L1MoverB10 ; Mover B10, B11
-> Witness: L1 58 (l1).
+> Witness: L1 116 (boss, l1).
 $F76B c L1MoverB9 ; Mover B9, B12
-> Witness: L1 17 (l1).
+> Witness: L1 130 (boss, force, l1, restart).
 $F76F c L1MoverB13 ; Mover B13
-> Witness: L1 21 (l1).
+> Witness: L1 42 (boss, l1).
 $F773 c L1MoverB14 ; Mover B14
-> Witness: L1 50 (l1).
+> Witness: L1 100 (boss, l1).
 $F777 c L1MoverB15 ; Mover B15
-> Witness: L1 59 (l1).
+> Witness: L1 118 (boss, l1).
 $F42B b L1Gap ; two bytes between the movers ($30, $C9): no recording reads or runs them (known only from the code)
 $F42D c L1BossHit ; Mover A4's end: LevelVars = $1A, the slot indestructible ($3F), the explosions drawn first (L1ExplosionsFirst), points (AddScore with $0104 and $0503)
 > No recording ran it: known only from the code.
@@ -124,7 +125,7 @@ $F7AA c L1ExplosionsFirst ; Move the CALL DrawExplosions from $866B to MainLoopP
 $F7B3 c L1ExplosionsLast ; Move the CALL DrawExplosions back from MainLoopPatch to $866B
 > No recording ran it: known only from the code.
 $F7CA c L1DriftLeft ; Unless MapColumn is $6B-$73: every 8th pass move the slot one column left (column - 1 into IY+3)
-> Witness: L1 3677 (l1).
+> Witness: L1 5654 (boss, l1).
 $F7DF c L1SlotBusy ; Return while the slot is free; else drop the return and go on at Mover B1 (Mover B15 calls it)
-> Witness: L1 231 (l1).
+> Witness: L1 558 (boss, force, l1, restart).
 $F7EA b L1ShapeFrames 7 ; 16 frames of 7 bytes, a nibble a row (14 rows): the column offsets Mover A9 draws a shape of tag $80 from, a frame by FrameCounter

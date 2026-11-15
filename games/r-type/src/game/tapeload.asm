@@ -8,7 +8,7 @@
 ; again; waits for the pilot and the sync, then reads the flag and the bytes
 ; with the border stripes; carry set when the check byte is right.
 ;
-; Witness: L1 31 (c1, ending, l1-l8).
+; Witness: L1 32 (c1, deaths-l7, ending, l1-l8).
 LoadBytes:
   DI
   LD A,$E6
@@ -97,14 +97,14 @@ l_8F85:
 
 ; Wait for two edges
 ;
-; Witness: L1 788129 (c1, ending, l1-l8).
+; Witness: L1 893818 (c1, deaths-l7, ending, l1-l8).
 EdgePair:
   CALL EdgeOne
   RET NC
 
 ; Wait for one edge on the EAR bit, counting B; carry when found
 ;
-; Witness: L1 1650894 (c1, ending, l1-l8).
+; Witness: L1 1866762 (c1, deaths-l7, ending, l1-l8).
 EdgeOne:
   AND A
 EdgeLoop:

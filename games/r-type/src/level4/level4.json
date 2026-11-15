@@ -33,7 +33,7 @@
   "ref_builds": [
     [
       "stage1/rec/l4",
-      "l4: level 4 played from its load to the next search (the immortality POKE $91F2)"
+      "l4: level 4 played from its load to the next search (the immortality POKE `$91F2`)"
     ]
   ],
   "other_builds": []

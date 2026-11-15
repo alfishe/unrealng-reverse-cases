@@ -7,7 +7,7 @@ What this covers:
 - the main loop `$8649`, the order of a [pass](README.md#terms) and its wait for the third interrupt;
 - where the interrupts are off;
 - the pass as measured on level 2 (4.68 frames), what each frame of it costs, and the pass against the beam;
-- the 12-frame pass: a noise burst inside the interrupt;
+- the 12-frame pass: three explosions' noise bursts inside the interrupt;
 - the level start: the tape search, the load with the interrupts off, the first screen;
 - every delay, pause and timer;
 - what is known only from the code.
@@ -524,16 +524,19 @@ The writes by routine, from the figure's key:
 The frame budget of the whole of `l2` and of a 12-frame window, by module and by routine, is in
 [doc 2, 2.6](02-architecture.md#26-the-frame-budget).
 
-### The 12-frame pass: a noise burst inside the interrupt
+### The 12-frame pass: three explosions inside the interrupt
 
 The longest pass of `l2` starts in frame 8982 and takes 12 frames. Nothing in the pass is heavier than usual. The
 interrupt is:
 
-- a shot bounced off the scenery (BounceShot `$A150` ran once in the window), and the bounce started sound `$18`;
-- sound `$18` is a noise effect: its channel's task calls NoiseBurst `$FAA2`, a loop of `OUT ($FE)` and delays
-  ([doc 9](09-sound.md));
+- three small explosions (sound `$08`) hold all three channels: channel 3 plays one from 8977, and at 8978
+  AwardScore starts two more (PlaySound with HL = `$0882`, twice), which take channels 2 and 1;
+- each explosion's script is noise: its channel's task calls NoiseBurst `$FAA2`, a loop of `OUT ($FE)` and delays
+  ([doc 9, 9.8](09-sound.md#98-the-cost-the-12-frame-pass));
+- the shot that bounced off the scenery at 8979 and 8991 (BounceShot, PlaySound HL = `$1841`, three times) finds no
+  free channel: sound `$18`, a chord, is dropped, and TonePlayer runs 0 T in the window;
 - the loop runs inside the interrupt, so for 12 frames each interrupt keeps the CPU for about 30 000 T, 45 % of the
-  frame.
+  frame (the noise T per frame from 8978 to 8992: 28 350-32 621; 0 at 8993).
 
 | Window | Sound tasks | Scroll | Sprites | Interrupt and stars |
 | --- | --- | --- | --- | --- |
@@ -541,7 +544,8 @@ interrupt is:
 | the longest pass, frames 8981-8994 (14 frames) | 404 100 T | 273 712 T | 165 408 T | 48 289 T |
 
 NoiseBurst runs 39 089 instructions in the 12 frames from 8982, and none in the 12 frames from 8958 (stage 2 NOTES,
-Facts 6). The pass does its normal work in the 55 % of each frame the interrupt leaves.
+Facts 6). Witness: the trace of 8976-8996 (`work/docs/rtC/l2/traces/8976_0-8996_0.uatr`; the T per frame by
+engine part in `work/docs/rtC/l2-tsplit.txt`; the PlaySound calls by `work/docs/integrate/playsound_calls.py`). The pass does its normal work in the 55 % of each frame the interrupt leaves.
 
 ```mermaid
 sequenceDiagram
@@ -550,7 +554,7 @@ sequenceDiagram
     participant S as the sound task
     P->>P: Scroll, sprites
     P->>I: T 0 of a frame
-    I->>S: the channel's turn, sound $18
+    I->>S: the channel's turn, an explosion $08
     S->>S: NoiseBurst, about 30 000 T of OUT and delay
     S-->>I: done
     I-->>P: EI, RET
@@ -560,7 +564,7 @@ sequenceDiagram
 
 *The 12-frame pass as a sequence. How to read it: time runs down; one round of the arrows is one frame. The point:
 the pass and the sound share the CPU, and the sound always wins because it runs in the interrupt. The game slows
-down while a noise sound plays, for a quarter of a second. Witness: `l2` frames 8982-8994 in the trace. The other
+down while explosions play, for a quarter of a second. Witness: `l2` frames 8982-8994 in the trace. The other
 long passes (11 frames from 11 721 and 11 732, 10 frames from 8848, 8858, 11 776, 11 804 and 14 956) were not
 traced.*
 

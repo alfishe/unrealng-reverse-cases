@@ -53,6 +53,7 @@ $DCB1 b L4Metatiles 9 ; The metatiles, 144 bytes each (4 x 4 cells of 9 bytes), 
 $E521 b L4Map 5 ; The map: 5 bytes a block column (74 columns), each byte a metatile (bits 0-5) and its drawer (bits 6-7)
 @res levels/level4/map.bin
 $E693 b L4Waves ; The wave script: entries (scroll position, kind, script) RunWaves starts; then the enemies' movement scripts
+@res levels/level4/waves.bin
 $EF8A b L4Kinds ; The enemy kinds StartWave reads (LevelKinds)
 $F2AE w L4MoversA ; The first mover of each kind (16 words, LevelMoves)
 $F2CE w L4MoversB ; The second mover of each kind (16 words, LevelMoves2)

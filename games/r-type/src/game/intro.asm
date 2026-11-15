@@ -67,7 +67,7 @@ l_819E:
   JR NZ,l_819A
   RET
 
-; "STOP THE TAPE $" and the credits: R TYPE, PROGRAMMED BY BOB PAPE, GRAPHICS,
+; `STOP THE TAPE $` and the credits: R TYPE, PROGRAMMED BY BOB PAPE, GRAPHICS,
 ; SOUND, IREM 1987, ELECTRIC DREAMS 1988
 ScrollerText:
   INCBIN "res/texts/scroller.bin",$0000,466
@@ -79,8 +79,9 @@ ScrollerEnd:
 ; The IM 2 target: JP Interrupt (every vector of Im2Table is $83, so the CPU
 ; jumps to $8383)
 ;
-; Witness: L1 134792 (c1, continue, ctl-if2, ctl-kempston, ctl-sinclair,
-; ending, gameover, hiscore, hiscore-typed, l1-l8).
+; Witness: L1 159333 (boss, c1, continue, ctl-if2, ctl-kempston, ctl-sinclair,
+; deaths-l7, ending, force, gameover, hiscore, hiscore-typed, pause, restart,
+; l1-l8).
 Im2Jump:
   JP Interrupt
 

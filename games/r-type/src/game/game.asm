@@ -5,13 +5,13 @@
   DEVICE ZXSPECTRUM48
 
 ; The variables past the loaded image (game.ann @equ)
-EntryCopy      EQU $5B64  ; 414 bytes copied from EntryCopySource at the entry
+EntryCopy      EQU $5B64  ; 414 bytes copied from EntryCopySource at the entry; the copy ends at $5D01, two bytes into BitReverse, which the entry built just before: $5D01 holds $00 instead of $80 (1 reversed)
 BitReverse     EQU $5D00  ; each byte with its bits reversed, built at the entry: the mirrored metatiles and sprites, the cursor keys
 ColumnBuffer   EQU $5E00  ; the column the scroll brings in at the right: 20 cells of 9 bytes, cut by the metatile drawers
 ShipShots      EQU $5EB4  ; the ship's shots, 3 bytes each (kind, column, row): MoveShipShots
-MissileA       EQU $5F00  ; homing missile record A
-MissileB       EQU $5F34  ; homing missile record B
-MissileC       EQU $5F68  ; homing missile record C
+MissileA       EQU $5F00  ; missile record A (MoveMissileSet)
+MissileB       EQU $5F34  ; missile record B (MoveMissileSet)
+MissileC       EQU $5F68  ; missile record C (MoveMissileSet)
 Explosions     EQU $5FC1  ; the explosions, 3 bytes each (frame and kind, column, row): DrawExplosions
   ORG $7000
   INCLUDE "texts.asm"  ; Texts and small tables in the pixel shadow's spare halves

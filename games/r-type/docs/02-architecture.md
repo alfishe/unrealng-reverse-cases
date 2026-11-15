@@ -78,7 +78,7 @@ level 1 (`play-L1.cpu.bin`), the executed ranges of the 16 recordings (`work/sta
 | `$5B64-$5D01` | EntryCopy: 414 bytes copied from `$7EE2` at the entry; its last two bytes land on BitReverse (below) | |
 | `$5D00-$5DFF` | BitReverse: each byte with its bits reversed, built at the entry (the mirrored metatiles and sprites) | |
 | `$5E00-$5EB3` | ColumnBuffer: the column the scroll brings in, 20 cells of 9 bytes | |
-| `$5EB4-$5FFF` | the ship's shots `$5EB4`, the three homing missiles `$5F00`, `$5F34`, `$5F68`, the explosions `$5FC1` | |
+| `$5EB4-$5FFF` | the ship's shots `$5EB4`, the three missiles `$5F00`, `$5F34`, `$5F68`, the explosions `$5FC1` | |
 | `$6000-$77FF` | the pixel shadow: the play field drawn off screen, laid out like the screen `$2000` higher. In its third third only the first 128 bytes of each pixel line are play field, and the other halves hold the texts (`$7080-$73BB`), the star switches and the Kempston probe (`$73BC`), the screen helpers and TitleLoop (`$7680`) | texts, titlestate, screen |
 | `$7800-$7A7F` | PlayAttrs: the attribute shadow, 20 rows of 32, at `$5800 + $2000` | screen |
 | `$7A80-$7AEF` | the variables of play (GameVars): the scroll, IntTicks `$7A8A`, the timers, Lives `$7AA0`, the ship, the Force, the beam | vars |
@@ -283,7 +283,7 @@ waves at columns 67-73 that would show the text. Witness: `ending` reads nothing
 
 The point: in play the scroll (42.5 %) and the sprites (36.2 %) take four fifths of the CPU, and the interrupt with
 its stars 6.1 %. Over the whole recording the tape loader takes 18.4 %. In the longest pass the sound takes 40.8 %:
-a noise burst inside the interrupt ([doc 4, 4.6](04-game-loop.md#46-what-a-pass-costs-against-the-beam)). Command:
+three explosions' noise bursts inside the interrupt ([doc 4, 4.6](04-game-loop.md#46-what-a-pass-costs-against-the-beam)). Command:
 `python3 ../../kit/fig_budget.py work/stage1/rec/l2/l1.json docs/img/arch/budget-modules.png --ann
 src/game/game.ann --ann src/level2/level2.ann,label=level2 --by module --label "l2 whole (load + play)" --state "a
 12-frame window of play (8958-8970)=work/stage2/pass/norm/l1.json" --state "the longest pass

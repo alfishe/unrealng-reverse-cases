@@ -7,8 +7,8 @@
 ; A = the metatile: MetatileAddress; the column MetaColumn's 4 cells (9 bytes
 ; each) to ColumnPtr.
 ;
-; Witness: L1 11076 (c1, continue, ctl-if2, ctl-kempston, ctl-sinclair,
-; gameover, hiscore, hiscore-typed, l1-l8).
+; Witness: L1 14196 (boss, c1, continue, ctl-if2, ctl-kempston, ctl-sinclair,
+; deaths-l7, force, gameover, hiscore, hiscore-typed, pause, restart, l1-l8).
 CutMetatile:
   CALL MetatileAddress
   LD A,(MetaColumn)
@@ -47,7 +47,8 @@ l_8756:
 ; Cut a column from a metatile mirrored left to right (the bytes through
 ; BitReverse)
 ;
-; Witness: L1 320 (hiscore, hiscore-typed, l1-l4, l6, l7).
+; Witness: L1 420 (boss, force, hiscore, hiscore-typed, restart, l1-l4, l6,
+; l7).
 CutMetatileMirrored:
   CALL MetatileAddress
   LD A,(MetaColumn)
@@ -70,7 +71,8 @@ CutMetatileMirrored:
 
 ; Copy one cell's 8 pixel bytes through BitReverse, then its attribute
 ;
-; Witness: L1 1280 (hiscore, hiscore-typed, l1-l4, l6, l7).
+; Witness: L1 1680 (boss, force, hiscore, hiscore-typed, restart, l1-l4, l6,
+; l7).
 MirrorCell:
   LD A,(HL)
   EX AF,AF'
@@ -94,7 +96,7 @@ l_87A6:
 
 ; Cut a column from a metatile upside down
 ;
-; Witness: L1 1540 (l1-l8).
+; Witness: L1 2071 (boss, deaths-l7, restart, l1-l8).
 CutMetatileFlipped:
   CALL MetatileAddress
   LD DE,$008F
@@ -135,7 +137,7 @@ l_87DA:
 
 ; Cut a column from a metatile mirrored and upside down
 ;
-; Witness: L1 172 (l x5).
+; Witness: L1 220 (boss, l x5).
 CutMetatileBoth:
   CALL MetatileAddress
   LD DE,$008F
@@ -178,8 +180,8 @@ l_8811:
 ; HL = the metatile A's data below the level's map (LevelMetatiles - (A + 1) x
 ; 144)
 ;
-; Witness: L1 14628 (c1, continue, ctl-if2, ctl-kempston, ctl-sinclair,
-; gameover, hiscore, hiscore-typed, l1-l8).
+; Witness: L1 18787 (boss, c1, continue, ctl-if2, ctl-kempston, ctl-sinclair,
+; deaths-l7, force, gameover, hiscore, hiscore-typed, pause, restart, l1-l8).
 MetatileAddress:
   INC A
   ADD A,A
@@ -204,11 +206,16 @@ MetatileAddress:
 ;
 ; For each row of RowTable: the attribute shadow and the solid map row shifted;
 ; the row walked from the right, scenery cells shifted in the shadow, other
-; cells copied from the pixel shadow to the screen. While the scroll stands the
-; scenery is shifted through the unrolled chain ShiftRun.
+; cells copied from the pixel shadow to the screen. While the map moves
+; (ScrollHalted $7A8E = 0) the runs of scenery cells are shifted one pixel left
+; through the unrolled chain ShiftRun; while it stands they are skipped. Sprite
+; cells (tag 1 to $DB) are copied from the pixel shadow and DrawnMap set;
+; untagged cells with DrawnMap 1 are cleared; every tag but $9C is cleared, $9C
+; only when FrameCounter AND 7 = 7 ($88CD).
 ;
-; Witness: L1 27714 (c1, continue, ctl-if2, ctl-kempston, ctl-sinclair, ending,
-; gameover, hiscore, hiscore-typed, l1-l8).
+; Witness: L1 33972 (boss, c1, continue, ctl-if2, ctl-kempston, ctl-sinclair,
+; deaths-l7, ending, force, gameover, hiscore, hiscore-typed, pause, restart,
+; l1-l8).
 ScrollRows:
   LD IX,RowTable
 
@@ -379,242 +386,242 @@ l_88FB:
 ; The unrolled RL (HL) / DEC L chain, entered 3 bytes a cell from its end to
 ; shift a run of cells one pixel left
 ;
-; Witness: L1 229672 (l1-l8).
+; Witness: L1 255048 (boss, deaths-l7, force, restart, l1-l8).
 ShiftRun:
   RL (HL)
   DEC L
 
 ; the chain from 30 cells
 ;
-; Witness: L1 237848 (l1-l8).
+; Witness: L1 265656 (boss, deaths-l7, force, restart, l1-l8).
 ShiftRun30:
   RL (HL)
   DEC L
 
 ; the chain from 29 cells
 ;
-; Witness: L1 246432 (l1-l8).
+; Witness: L1 276704 (boss, deaths-l7, force, restart, l1-l8).
 ShiftRun29:
   RL (HL)
   DEC L
 
 ; the chain from 28 cells
 ;
-; Witness: L1 255664 (l1-l8).
+; Witness: L1 288496 (boss, deaths-l7, force, restart, l1-l8).
 ShiftRun28:
   RL (HL)
   DEC L
 
 ; the chain from 27 cells
 ;
-; Witness: L1 264696 (l1-l8).
+; Witness: L1 300088 (boss, deaths-l7, force, restart, l1-l8).
 ShiftRun27:
   RL (HL)
   DEC L
 
 ; the chain from 26 cells
 ;
-; Witness: L1 273536 (l1-l8).
+; Witness: L1 311440 (boss, deaths-l7, force, restart, l1-l8).
 ShiftRun26:
   RL (HL)
   DEC L
 
 ; the chain from 25 cells
 ;
-; Witness: L1 303736 (c1, continue, ctl-if2, ctl-kempston, ctl-sinclair,
-; gameover, hiscore, hiscore-typed, l1-l8).
+; Witness: L1 349464 (boss, c1, continue, ctl-if2, ctl-kempston, ctl-sinclair,
+; deaths-l7, force, gameover, hiscore, hiscore-typed, restart, l1-l8).
 ShiftRun25:
   RL (HL)
   DEC L
 
 ; the chain from 24 cells
 ;
-; Witness: L1 324720 (c1, continue, ctl-if2, ctl-kempston, ctl-sinclair,
-; gameover, hiscore, hiscore-typed, l1-l8).
+; Witness: L1 374656 (boss, c1, continue, ctl-if2, ctl-kempston, ctl-sinclair,
+; deaths-l7, force, gameover, hiscore, hiscore-typed, restart, l1-l8).
 ShiftRun24:
   RL (HL)
   DEC L
 
 ; the chain from 23 cells
 ;
-; Witness: L1 342872 (c1, continue, ctl-if2, ctl-kempston, ctl-sinclair,
-; gameover, hiscore, hiscore-typed, l1-l8).
+; Witness: L1 397144 (boss, c1, continue, ctl-if2, ctl-kempston, ctl-sinclair,
+; deaths-l7, force, gameover, hiscore, hiscore-typed, restart, l1-l8).
 ShiftRun23:
   RL (HL)
   DEC L
 
 ; the chain from 22 cells
 ;
-; Witness: L1 361560 (c1, continue, ctl-if2, ctl-kempston, ctl-sinclair,
-; gameover, hiscore, hiscore-typed, l1-l8).
+; Witness: L1 420184 (boss, c1, continue, ctl-if2, ctl-kempston, ctl-sinclair,
+; deaths-l7, force, gameover, hiscore, hiscore-typed, restart, l1-l8).
 ShiftRun22:
   RL (HL)
   DEC L
 
 ; the chain from 21 cells
 ;
-; Witness: L1 380400 (c1, continue, ctl-if2, ctl-kempston, ctl-sinclair,
-; gameover, hiscore, hiscore-typed, l1-l8).
+; Witness: L1 443376 (boss, c1, continue, ctl-if2, ctl-kempston, ctl-sinclair,
+; deaths-l7, force, gameover, hiscore, hiscore-typed, restart, l1-l8).
 ShiftRun21:
   RL (HL)
   DEC L
 
 ; the chain from 20 cells
 ;
-; Witness: L1 406608 (c1, continue, ctl-if2, ctl-kempston, ctl-sinclair,
-; gameover, hiscore, hiscore-typed, l1-l8).
+; Witness: L1 478448 (boss, c1, continue, ctl-if2, ctl-kempston, ctl-sinclair,
+; deaths-l7, force, gameover, hiscore, hiscore-typed, restart, l1-l8).
 ShiftRun20:
   RL (HL)
   DEC L
 
 ; the chain from 19 cells
 ;
-; Witness: L1 426384 (c1, continue, ctl-if2, ctl-kempston, ctl-sinclair,
-; gameover, hiscore, hiscore-typed, l1-l8).
+; Witness: L1 503472 (boss, c1, continue, ctl-if2, ctl-kempston, ctl-sinclair,
+; deaths-l7, force, gameover, hiscore, hiscore-typed, restart, l1-l8).
 ShiftRun19:
   RL (HL)
   DEC L
 
 ; the chain from 18 cells
 ;
-; Witness: L1 450640 (c1, continue, ctl-if2, ctl-kempston, ctl-sinclair,
-; gameover, hiscore, hiscore-typed, l1-l8).
+; Witness: L1 532976 (boss, c1, continue, ctl-if2, ctl-kempston, ctl-sinclair,
+; deaths-l7, force, gameover, hiscore, hiscore-typed, restart, l1-l8).
 ShiftRun18:
   RL (HL)
   DEC L
 
 ; the chain from 17 cells
 ;
-; Witness: L1 489272 (c1, continue, ctl-if2, ctl-kempston, ctl-sinclair,
-; gameover, hiscore, hiscore-typed, l1-l8).
+; Witness: L1 580696 (boss, c1, continue, ctl-if2, ctl-kempston, ctl-sinclair,
+; deaths-l7, force, gameover, hiscore, hiscore-typed, restart, l1-l8).
 ShiftRun17:
   RL (HL)
   DEC L
 
 ; the chain from 16 cells
 ;
-; Witness: L1 528376 (c1, continue, ctl-if2, ctl-kempston, ctl-sinclair,
-; gameover, hiscore, hiscore-typed, l1-l8).
+; Witness: L1 629912 (boss, c1, continue, ctl-if2, ctl-kempston, ctl-sinclair,
+; deaths-l7, force, gameover, hiscore, hiscore-typed, restart, l1-l8).
 ShiftRun16:
   RL (HL)
   DEC L
 
 ; the chain from 15 cells
 ;
-; Witness: L1 605984 (c1, continue, ctl-if2, ctl-kempston, ctl-sinclair,
-; gameover, hiscore, hiscore-typed, l1-l8).
+; Witness: L1 718528 (boss, c1, continue, ctl-if2, ctl-kempston, ctl-sinclair,
+; deaths-l7, force, gameover, hiscore, hiscore-typed, pause, restart, l1-l8).
 ShiftRun15:
   RL (HL)
   DEC L
 
 ; the chain from 14 cells
 ;
-; Witness: L1 639680 (c1, continue, ctl-if2, ctl-kempston, ctl-sinclair,
-; gameover, hiscore, hiscore-typed, l1-l8).
+; Witness: L1 759776 (boss, c1, continue, ctl-if2, ctl-kempston, ctl-sinclair,
+; deaths-l7, force, gameover, hiscore, hiscore-typed, pause, restart, l1-l8).
 ShiftRun14:
   RL (HL)
   DEC L
 
 ; the chain from 13 cells
 ;
-; Witness: L1 690760 (c1, continue, ctl-if2, ctl-kempston, ctl-sinclair,
-; gameover, hiscore, hiscore-typed, l1-l8).
+; Witness: L1 818984 (boss, c1, continue, ctl-if2, ctl-kempston, ctl-sinclair,
+; deaths-l7, force, gameover, hiscore, hiscore-typed, pause, restart, l1-l8).
 ShiftRun13:
   RL (HL)
   DEC L
 
 ; the chain from 12 cells
 ;
-; Witness: L1 733488 (c1, continue, ctl-if2, ctl-kempston, ctl-sinclair,
-; gameover, hiscore, hiscore-typed, l1-l8).
+; Witness: L1 869872 (boss, c1, continue, ctl-if2, ctl-kempston, ctl-sinclair,
+; deaths-l7, force, gameover, hiscore, hiscore-typed, pause, restart, l1-l8).
 ShiftRun12:
   RL (HL)
   DEC L
 
 ; the chain from 11 cells
 ;
-; Witness: L1 792336 (c1, continue, ctl-if2, ctl-kempston, ctl-sinclair,
-; gameover, hiscore, hiscore-typed, l1-l8).
+; Witness: L1 947552 (boss, c1, continue, ctl-if2, ctl-kempston, ctl-sinclair,
+; deaths-l7, force, gameover, hiscore, hiscore-typed, pause, restart, l1-l8).
 ShiftRun11:
   RL (HL)
   DEC L
 
 ; the chain from 10 cells
 ;
-; Witness: L1 844720 (c1, continue, ctl-if2, ctl-kempston, ctl-sinclair,
-; gameover, hiscore, hiscore-typed, l1-l8).
+; Witness: L1 1014688 (boss, c1, continue, ctl-if2, ctl-kempston, ctl-sinclair,
+; deaths-l7, force, gameover, hiscore, hiscore-typed, pause, restart, l1-l8).
 ShiftRun10:
   RL (HL)
   DEC L
 
 ; the chain from 9 cells
 ;
-; Witness: L1 1011616 (c1, continue, ctl-if2, ctl-kempston, ctl-sinclair,
-; gameover, hiscore, hiscore-typed, l1-l8).
+; Witness: L1 1212288 (boss, c1, continue, ctl-if2, ctl-kempston, ctl-sinclair,
+; deaths-l7, force, gameover, hiscore, hiscore-typed, pause, restart, l1-l8).
 ShiftRun9:
   RL (HL)
   DEC L
 
 ; the chain from 8 cells
 ;
-; Witness: L1 1254160 (c1, continue, ctl-if2, ctl-kempston, ctl-sinclair,
-; gameover, hiscore, hiscore-typed, l1-l8).
+; Witness: L1 1527280 (boss, c1, continue, ctl-if2, ctl-kempston, ctl-sinclair,
+; deaths-l7, force, gameover, hiscore, hiscore-typed, pause, restart, l1-l8).
 ShiftRun8:
   RL (HL)
   DEC L
 
 ; the chain from 7 cells
 ;
-; Witness: L1 1596368 (c1, continue, ctl-if2, ctl-kempston, ctl-sinclair,
-; gameover, hiscore, hiscore-typed, l1-l8).
+; Witness: L1 2032696 (boss, c1, continue, ctl-if2, ctl-kempston, ctl-sinclair,
+; deaths-l7, force, gameover, hiscore, hiscore-typed, pause, restart, l1-l8).
 ShiftRun7:
   RL (HL)
   DEC L
 
 ; the chain from 6 cells
 ;
-; Witness: L1 1742181 (c1, continue, ctl-if2, ctl-kempston, ctl-sinclair,
-; gameover, hiscore, hiscore-typed, l1-l8).
+; Witness: L1 2289541 (boss, c1, continue, ctl-if2, ctl-kempston, ctl-sinclair,
+; deaths-l7, force, gameover, hiscore, hiscore-typed, pause, restart, l1-l8).
 ShiftRun6:
   RL (HL)
   DEC L
 
 ; the chain from 5 cells
 ;
-; Witness: L1 1841989 (c1, continue, ctl-if2, ctl-kempston, ctl-sinclair,
-; gameover, hiscore, hiscore-typed, l1-l8).
+; Witness: L1 2427765 (boss, c1, continue, ctl-if2, ctl-kempston, ctl-sinclair,
+; deaths-l7, force, gameover, hiscore, hiscore-typed, pause, restart, l1-l8).
 ShiftRun5:
   RL (HL)
   DEC L
 
 ; the chain from 4 cells
 ;
-; Witness: L1 2001893 (c1, continue, ctl-if2, ctl-kempston, ctl-sinclair,
-; gameover, hiscore, hiscore-typed, l1-l8).
+; Witness: L1 2679349 (boss, c1, continue, ctl-if2, ctl-kempston, ctl-sinclair,
+; deaths-l7, force, gameover, hiscore, hiscore-typed, pause, restart, l1-l8).
 ShiftRun4:
   RL (HL)
   DEC L
 
 ; the chain from 3 cells
 ;
-; Witness: L1 2383797 (c1, continue, ctl-if2, ctl-kempston, ctl-sinclair,
-; gameover, hiscore, hiscore-typed, l1-l8).
+; Witness: L1 3179797 (boss, c1, continue, ctl-if2, ctl-kempston, ctl-sinclair,
+; deaths-l7, force, gameover, hiscore, hiscore-typed, pause, restart, l1-l8).
 ShiftRun3:
   RL (HL)
   DEC L
 
 ; the chain from 2 cells
 ;
-; Witness: L1 2590180 (c1, continue, ctl-if2, ctl-kempston, ctl-sinclair,
-; gameover, hiscore, hiscore-typed, l1-l8).
+; Witness: L1 3432452 (boss, c1, continue, ctl-if2, ctl-kempston, ctl-sinclair,
+; deaths-l7, force, gameover, hiscore, hiscore-typed, pause, restart, l1-l8).
 ShiftRun2:
   RL (HL)
   DEC L
 
 ; the last cell, then the next pixel line
 ;
-; Witness: L1 2653860 (c1, continue, ctl-if2, ctl-kempston, ctl-sinclair,
-; gameover, hiscore, hiscore-typed, l1-l8).
+; Witness: L1 3510244 (boss, c1, continue, ctl-if2, ctl-kempston, ctl-sinclair,
+; deaths-l7, force, gameover, hiscore, hiscore-typed, pause, restart, l1-l8).
 ShiftRun1:
   RL (HL)
   INC H
@@ -624,8 +631,8 @@ ShiftRun1:
 
 ; Where the chain returns: back into ScrollRows
 ;
-; Witness: L1 331732 (c1, continue, ctl-if2, ctl-kempston, ctl-sinclair,
-; gameover, hiscore, hiscore-typed, l1-l8).
+; Witness: L1 438780 (boss, c1, continue, ctl-if2, ctl-kempston, ctl-sinclair,
+; deaths-l7, force, gameover, hiscore, hiscore-typed, pause, restart, l1-l8).
 ShiftRunDone:
   LD H,B
   LD L,E
@@ -638,8 +645,9 @@ ShiftRunDone:
 ; buffer flushed into column 31; the other steps cut one metatile of the block
 ; column each (CutNextMetatile).
 ;
-; Witness: L1 27061 (c1, continue, ctl-if2, ctl-kempston, ctl-sinclair, ending,
-; gameover, hiscore, hiscore-typed, l1-l8).
+; Witness: L1 33318 (boss, c1, continue, ctl-if2, ctl-kempston, ctl-sinclair,
+; deaths-l7, ending, force, gameover, hiscore, hiscore-typed, pause, restart,
+; l1-l8).
 Scroll:
   CALL ScrollRows
   LD A,(ScrollStep)
@@ -769,8 +777,8 @@ l_8A3A:
 
 ; Write B into the four sprite drawers' column limit
 ;
-; Witness: L1 76 (c1, continue, ctl-if2, ctl-kempston, ctl-sinclair, gameover,
-; hiscore, hiscore-typed, l2-l8).
+; Witness: L1 94 (c1, continue, ctl-if2, ctl-kempston, ctl-sinclair, deaths-l7,
+; gameover, hiscore, hiscore-typed, restart, l2-l8).
 SetDrawLimit:
   LD A,B
 
@@ -912,13 +920,14 @@ l_8AE9:
 
 ; Call the control method's reader through ControlVector
 ;
-; Witness: L1 29982 (c1, continue, ctl-if2, ctl-kempston, ctl-sinclair, ending,
-; gameover, hiscore, hiscore-typed, l1-l8).
+; Witness: L1 36240 (boss, c1, continue, ctl-if2, ctl-kempston, ctl-sinclair,
+; deaths-l7, ending, force, gameover, hiscore, hiscore-typed, pause, restart,
+; l1-l8).
 ReadControls:
   LD HL,(ControlVector)
   JP (HL)
 
-; Read Interface 2 (half-row $F7FE through BitReverse)
+; Read Interface 2 (half-row $F7FE, keys 1-5: XOR $BF, AND $1F, no table)
 ;
 ; Witness: L1 123263 (c1, ctl-if2, ctl-kempston, ctl-sinclair, gameover,
 ; hiscore).
@@ -931,8 +940,9 @@ ReadIf2:
 
 ; Read the six DefinedKeys into the control bits
 ;
-; Witness: L1 152582 (c1, continue, ctl-if2, ctl-kempston, ctl-sinclair,
-; ending, gameover, hiscore, hiscore-typed, l1-l8).
+; Witness: L1 158840 (boss, c1, continue, ctl-if2, ctl-kempston, ctl-sinclair,
+; deaths-l7, ending, force, gameover, hiscore, hiscore-typed, pause, restart,
+; l1-l8).
 ReadKeys:
   LD HL,DefinedKeys
   JR ReadKeysFrom
@@ -953,7 +963,7 @@ ReadKempston:
 
 ; ControlDetach
 ;
-; Used by the routines at ReadIf2, ReadKempston and ReadCursor.
+; Used by the routines at ReadIf2, ReadKempston and ReadSinclair.
 ControlDetach:
   LD C,A                  ; the joystick readers' detach key (DetachKey)
   LD HL,DetachKey
@@ -963,7 +973,7 @@ ControlDetach:
 ;
 ; Witness: L1 123264 (c1, ctl-if2, ctl-kempston, ctl-sinclair, gameover,
 ; hiscore).
-ReadCursor:
+ReadSinclair:
   LD A,$EF
   IN A,($FE)
   LD B,$5D
@@ -1000,7 +1010,7 @@ l_8B5C:
 
 ; ReadDetach
 ;
-; Used by the routines at ControlDetach and ReadCursor.
+; Used by the routines at ControlDetach and ReadSinclair.
 ReadDetach:
   CALL TestKey            ; the detach key into bit 5; the bits stored in
                           ; ControlBits
@@ -1014,8 +1024,9 @@ l_8B6A:
 
 ; Read the key (port, mask) at HL: Z when pressed; HL past the pair
 ;
-; Witness: L1 1285283 (c1, continue, ctl-if2, ctl-kempston, ctl-sinclair,
-; ending, gameover, hiscore, hiscore-typed, l1-l8).
+; Witness: L1 1322831 (boss, c1, continue, ctl-if2, ctl-kempston, ctl-sinclair,
+; deaths-l7, ending, force, gameover, hiscore, hiscore-typed, pause, restart,
+; l1-l8).
 TestKey:
   LD A,(HL)
   IN A,($FE)
@@ -1032,8 +1043,9 @@ TestKey:
 ; alone are down; then the text row cleared, interrupts on, DrawHud. There is
 ; no abort key: the game only ends when the lives and credits run out.
 ;
-; Witness: L1 27061 (c1, continue, ctl-if2, ctl-kempston, ctl-sinclair, ending,
-; gameover, hiscore, hiscore-typed, l1-l8).
+; Witness: L1 33318 (boss, c1, continue, ctl-if2, ctl-kempston, ctl-sinclair,
+; deaths-l7, ending, force, gameover, hiscore, hiscore-typed, pause, restart,
+; l1-l8).
 CheckPause:
   CALL ReadRow0
   RET NZ
@@ -1058,18 +1070,22 @@ l_8B96:
 
 ; A = keys 1-4 of half-row $F7FE as bits (pressed = 1); Z when key 1 alone
 ;
-; No recording ran it: known only from the code.
+; Witness: L1 68 (pause).
 ReadRow1:
   LD A,$F7
   JR l_8BA6
 
 ; A = CAPS SHIFT, Z, X, C of half-row $FEFE; Z when CAPS SHIFT alone
 ;
-; Witness: L1 27061 (c1, continue, ctl-if2, ctl-kempston, ctl-sinclair, ending,
-; gameover, hiscore, hiscore-typed, l1-l8).
+; Witness: L1 34503 (boss, c1, continue, ctl-if2, ctl-kempston, ctl-sinclair,
+; deaths-l7, ending, force, gameover, hiscore, hiscore-typed, pause, restart,
+; l1-l8).
 ReadRow0:
   LD A,$FE
-; This entry point is used by the routine at ReadRow1.
+
+; l_8BA6
+;
+; Used by the routine at ReadRow1.
 l_8BA6:
   IN A,($FE)
   CPL
@@ -1080,10 +1096,10 @@ l_8BA6:
 ; Set the ship up for a life
 ;
 ; The first play (FirstPlay 0): ShieldTimer $38 and the fly-in from the left
-; (ShipEntry 1); later lives: ShieldTimer $30... at the set place.
+; (ShipEntry 1); later lives: ShieldTimer $20 at the set place.
 ;
-; Witness: L1 38 (c1, continue, ctl-if2, ctl-kempston, ctl-sinclair, gameover,
-; hiscore, hiscore-typed, l2-l8).
+; Witness: L1 47 (c1, continue, ctl-if2, ctl-kempston, ctl-sinclair, deaths-l7,
+; gameover, hiscore, hiscore-typed, restart, l2-l8).
 StartPlay:
   LD HL,FirstPlay
   LD A,(HL)
@@ -1218,8 +1234,9 @@ l_8C80:
 ; Move the ship in at the first start (ShipEntry 1, then 2), then hand it to
 ; the controls
 ;
-; Witness: L1 27064 (c1, continue, ctl-if2, ctl-kempston, ctl-sinclair, ending,
-; gameover, hiscore, hiscore-typed, l1-l8).
+; Witness: L1 33322 (boss, c1, continue, ctl-if2, ctl-kempston, ctl-sinclair,
+; deaths-l7, ending, force, gameover, hiscore, hiscore-typed, pause, restart,
+; l1-l8).
 ShipFlyIn:
   LD A,(ShipEntry)
   AND A
@@ -1253,10 +1270,11 @@ l_8CB0:
   INC A
   JR l_8CA5
 
-; Stop all three sound channels
+; Meant to stop the three channels; frees channel 3 only (bits $82 and $81 mean
+; the first free channel, which is channel 3 again)
 ;
-; Witness: L1 37 (c1, continue, ctl-if2, ctl-kempston, ctl-sinclair, gameover,
-; hiscore, hiscore-typed).
+; Witness: L1 46 (c1, continue, ctl-if2, ctl-kempston, ctl-sinclair, deaths-l7,
+; gameover, hiscore, hiscore-typed, restart).
 Silence:
   LD HL,$0083
   PUSH HL
@@ -1273,8 +1291,9 @@ Silence:
 ; Scroll the attribute shadow and the solid map one cell left (unless
 ; ScrollHalted)
 ;
-; Witness: L1 3370 (c1, continue, ctl-if2, ctl-kempston, ctl-sinclair, ending,
-; gameover, hiscore, hiscore-typed, l1-l8).
+; Witness: L1 4150 (boss, c1, continue, ctl-if2, ctl-kempston, ctl-sinclair,
+; deaths-l7, ending, force, gameover, hiscore, hiscore-typed, pause, restart,
+; l1-l8).
 ScrollAttrs:
   LD A,(ScrollHalted)
   AND A
@@ -1289,8 +1308,8 @@ ScrollAttrs:
 
 ; LDIR a run of each of A rows of 32
 ;
-; Witness: L1 104320 (c1, continue, ctl-if2, ctl-kempston, ctl-sinclair,
-; gameover, hiscore, hiscore-typed, l1-l8).
+; Witness: L1 134640 (boss, c1, continue, ctl-if2, ctl-kempston, ctl-sinclair,
+; deaths-l7, force, gameover, hiscore, hiscore-typed, pause, restart, l1-l8).
 ScrollAttrRows:
   LD BC,$001E
   LDIR

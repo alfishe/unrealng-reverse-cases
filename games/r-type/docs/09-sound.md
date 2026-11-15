@@ -636,7 +636,7 @@ the interrupt.
 | `$11` | `$FD8D` | `$83` | level 2 wave command | chord | 1 | 0.02 s | 61 828 T | [wav](audio/sound-11.wav) |
 | `$12` | `$FD91` | `$83` | level 2 wave command | chord | 1 | 0.02 s | 65 280 T | [wav](audio/sound-12.wav) |
 | `$13` | `$FD95` | `$83` | level 2 wave command: a chord with no end | chord loop | endless | cut at 30 s | 65 817 T | [mp3](audio/sound-13.mp3) |
-| `$14` | `$FD9D` | `$81` | ForceDraw: the Force docks (1); ShieldControls' detach (never ran) | chords | 3 | 0.14 s | 62 225 T | [wav](audio/sound-14.wav) |
+| `$14` | `$FD9D` | `$81` | ForceDraw: the Force docks (1); ShieldControls' detach (once, recording `force`) | chords | 3 | 0.14 s | 62 225 T | [wav](audio/sound-14.wav) |
 | `$15` | `$5B64` | `$83` | LevelEnd: the level's end tune (8) | chord tune | 84 | 4.99 s | 62 439 T | [mp3](audio/sound-15.mp3) |
 | `$16` | `$5BC6` | `$41`, `$21` | the anti-air shots; InsertHiScore: the name entered (1) | chords | 4 | 0.19 s | 32 166 T | [wav](audio/sound-16.wav) |
 | `$17` | `$5BD0` | (`$81`) | nothing: unused, the script of `$18` | chord | 1 | 0.02 s | 61 975 T | [wav](audio/sound-17.wav) |
@@ -657,7 +657,8 @@ Notes on the table:
 - the scripts of `$15`-`$1E` live at `$5B64`, in the copy the entry makes from EntryCopySource `$7EE2`;
 - bits in parentheses are the simulation's choice for a sound no code starts;
 - a wave command 6 always uses bits `$83` (StartWave `$90EF`: `LD L,$83`), so the level sounds take channel 3;
-- BossDestroyed would start `$09` or `$0A` by the frame's parity, bits `$81`; it never ran;
+- after BossDestroyed, BossBlastOnce (`$C134`) starts `$09` or `$0A` by the frame's parity, bits `$81`: only in the
+  `boss` recording, whose kill is POKEd (156 starts, frames 12 375-12 995);
 - the WAV files are 44.1 kHz renders of the speaker bit; a sound over 2 s is an MP3 made by `lame -V 4`;
 - the renders: `python3 tools/sound_sim.py wavs docs/audio`.
 
@@ -867,4 +868,5 @@ The pitch figure of [9.4](#94-the-35-sounds-as-pitch-over-time) holds for the 12
   interrupt is lost and the tasks keep their beat.
 - **The spare commands**: 6 is bytes left over; 14 and 15 are chord variants (`$FB0F`, `$FB1F`) that no script uses.
 - **Known only from the code or the simulation**: sounds `$07`, `$0B`, `$17`, `$1F`-`$21` (never started); Silence on
-  channels 1 and 2; BossDestroyed's `$09`/`$0A` (no boss died by hits); the detach sound `$14` from ShieldControls.
+  channels 1 and 2. BossBlastOnce's `$09`/`$0A` and the detach sound `$14` from ShieldControls ran only in the
+  integration's recordings `boss` (the kill POKEd) and `force`.

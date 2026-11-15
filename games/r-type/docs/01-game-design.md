@@ -212,16 +212,18 @@ level are sheets of their own (`img/sprites/objects-level-N.png`, [doc 7](07-obj
 - **After a death:** the explosion plays on for 32 passes, about 3 s, while the level goes on moving. Then PILOT STAND
   BY ! for 80 frames, and the level is drawn again from its restart point.
 - **Restart points:** each level starts from its first column. When the scroll reaches one of the level's restart
-  columns, a later life starts 8 block columns before it, with the waves from that point.
-- **The shield:** a new life starts untouchable for a while; the first life with its fly-in for longer
-  (ShieldTimer `$38` against `$20`).
+  columns, a later life starts 8 block columns before it, with the waves from that point (recording `restart`: the
+  checkpoint 37 of level 1 passed, a life lost at 2667, the next life's screen from column 29,
+  [doc 7, 7.2.1](07-objects.md#721-the-header-byte-by-byte)).
+- **The shield:** a new life starts with the shield drawn around the ship for a while, the first life with its fly-in
+  for longer (ShieldTimer `$38` against `$20`); it does not protect ([doc 10, 10.9](10-gameplay-logic.md#109-the-shield)).
 
 ![Lives lost](img/play/life-lost.gif)
 
 *The end of `c1`: lives lost on level 1, frames 19 230-19 884, a picture every 8 frames. How to read it: the screen as
 the player sees it; watch the ship icons at the bottom right go down by one at each death, and the scenery go back
-to the restart point. The point: a death costs the ground gained since the restart point and nothing else; the score
-stays. Command: `python3 ../../kit/screen_anim.py --work work/docs/rtA/c1 --from 19230 --to 19884 --step 8 --width
+to the restart point. The point: a death costs the ground gained since the restart point and the weapons
+([doc 10, 10.2](10-gameplay-logic.md#102-the-weapon-state-over-a-level)); the score stays. Command: `python3 ../../kit/screen_anim.py --work work/docs/rtA/c1 --from 19230 --to 19884 --step 8 --width
 1050 docs/img/play/life-lost.gif`.*
 
 ### Continues
@@ -240,7 +242,7 @@ is another). Witnesses: `continue` (fire on the count, CREDIT 4), `gameover` (th
 ### The beam
 
 Holding fire charges the beam. The BEAM meter in the HUD fills as BeamCharge `$7ABF` grows by 2 each pass, up to
-`$40`. Releasing fire shoots the beam; its strength depends on the charge reached (thresholds `$14` and `$24`), and
+`$3E` (the next step, `$40`, is never stored). Releasing fire shoots the beam; its strength depends on the charge reached (thresholds `$14` and `$24`), and
 the beam is drawn and moved by MoveBeam `$9E6B` ([doc 5, 5.8](05-controls.md#58-the-fire-and-the-beam-charge),
 [doc 10](10-gameplay-logic.md)).
 
@@ -248,9 +250,9 @@ the beam is drawn and moved by MoveBeam `$9E6B` ([doc 5, 5.8](05-controls.md#58-
 
 The charge starts at 0 and grows by 2 a pass:
 
-1. `$40` is 64, so a full charge takes 32 passes.
+1. `$3E` is 62, so a full charge takes 31 passes.
 2. On level 2 a pass takes 4.68 frames on average ([doc 4, 4.5](04-game-loop.md#45-the-measured-pass-468-frames-on-level-2)).
-3. 32 x 4.68 = 150 frames, 3.0 s at 50.08 frames a second.
+3. 31 x 4.68 = 145 frames, 2.9 s at 50.08 frames a second.
 
 A busy screen makes the passes longer, and the beam takes longer to charge: the charge counts passes, not time.
 Witness: `c1` frame 18 630, the beam fired.
@@ -261,10 +263,10 @@ Pick-ups come out of carrier enemies. Each one taken is worth 400 points and pla
 
 | Pick-up | Effect |
 | --- | --- |
-| a laser crystal (kinds 2-5) | the Force arrives or grows a level (up to 3), and its laser becomes the crystal's (WeaponKind = kind - 2: 1 the bouncing laser, 2 the ground laser, 3 the anti-air laser) |
+| a laser crystal (kinds 3-5) | the Force arrives or grows a level (up to 3), and its laser becomes the crystal's (WeaponKind = kind - 2: 1 the bouncing laser, 2 the ground laser, 3 the anti-air laser) |
 | the bits (kind 8; kind 9 the lower one) | a bit device above the ship, then a second below |
 | the missiles (kind 7) | missiles fired with the shots (MissilesOn) |
-| the shield (kind 6) | the ship untouchable for a while, and 600 points more |
+| the shield (kind 6) | a shield drawn around the ship for a while (it does not protect: [doc 10, 10.9](10-gameplay-logic.md#109-the-shield)), and 600 points more |
 
 The Force sits at the ship's nose or its tail, or flies free after the detach key. It is kept across a level's end
 ([doc 4, 4.7](04-game-loop.md#47-the-level-start), [doc 10](10-gameplay-logic.md)).
@@ -321,5 +323,7 @@ beats the ninth is inserted, the table shown with ENTER YOUR NAME PILOT !, and t
 - **The immortal stretch after level 8:** LevelEnd at the digit `'8'` writes `RET` into ShipDies, so the ship cannot
   die between level 8's first level-end command and the wrap ([doc 4, 4.7](04-game-loop.md#47-the-level-start)).
   `ending` starts after it; the write is read from the code.
-- **The restart columns:** the rule "8 block columns before the restart column" is read from CheckRestart `$C2D6`;
-  the recordings show a restarted life but were not checked column by column.
+- **The restart columns** are no longer only from the code: `restart` (the integration's recording, with the
+  immortality POKE until frame 2640) passes the checkpoint 37, LevelRestartColumn `$C4AE` becomes 29, and the life
+  after the death at 2667 starts with MapColumn 37, its first screen from block column 29
+  ([doc 7, 7.2.1](07-objects.md#721-the-header-byte-by-byte)).

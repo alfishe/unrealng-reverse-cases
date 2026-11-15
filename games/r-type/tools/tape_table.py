@@ -17,15 +17,18 @@ T = 3500000.0
 DEST = {
     1: 'header: Program "R-TYPE", LINE 0, 4933 bytes',
     2: 'the BASIC at PROG `$5CCB-$700F`, code in it (entry `$5D06`)',
-    7: '`$9000` area (c1 frames 2550-2600), read by the code at `$FEE8`',
+    7: 'Stage2Start `$FEE8-$FFCF` (232 bytes) and its check byte',
     13: '`$4000-$57FF`, the loading screen (frames 2675-4200)',
     15: '`$8000-$82FF`, then copied to `$5800` (frame 4400)',
     17: '`$9710-$C4AD`, encrypted (frames 4400-7075), decrypted in place at frame 11700',
-    23: 'about `$FD80-$FDB6` (frame 7075)',
+    19: '`$FD7F`: the reader\'s own store key (2 bytes)',
+    23: 'BlockTable2 over `$FF49` (55 bytes)',
     25: '`$7000-$970F`, encrypted (frames 7100-9450), decrypted in place at frame 11700',
     27: '`$C545-$E7CD` (frames 9475-11625), moved to `$DD18-$FFA0` at `$61BD`',
-    29: '`$FE40-$FEB2` (frame 11650): LoadLevel `$FE03` and the level loader',
-    31: '`$61A8-$61D8` (frames 11675-11700): the last code, `JP $85FD` at `$61C6`',
+    29: 'Decipher `$FE40` and its leftover (115 bytes), run at 11 680',
+    31: 'Stage2End over `$FEFC` (49 bytes)',
+    33: 'the Tail `$61A8` (33 bytes), run at 11 697',
+    35: '`$61C9`: the Tail\'s rest and the check byte (15 bytes)',
 }
 for k in (39, 43, 47, 51, 55, 59, 63, 67):
     DEST[k] = 'header to `$6000` (18 bytes: the level digit at `$600D`, the length at `$6010`)'

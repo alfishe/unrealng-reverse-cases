@@ -11,8 +11,9 @@
 ; pixel bytes go to the pixel shadow. While DrawPrepare has the hits on, what
 ; was there is gathered into HitList.
 ;
-; Witness: L1 450223 (c1, continue, ctl-if2, ctl-kempston, ctl-sinclair,
-; ending, gameover, hiscore, hiscore-typed, l1-l8).
+; Witness: L1 503586 (boss, c1, continue, ctl-if2, ctl-kempston, ctl-sinclair,
+; deaths-l7, ending, force, gameover, hiscore, hiscore-typed, pause, restart,
+; l1-l8).
 DrawSprite:
   PUSH BC
   PUSH DE
@@ -103,8 +104,8 @@ l_8D5B:
 
 ; Draw an object mirrored left to right
 ;
-; Witness: L1 27030 (c1, continue, ctl-if2, ctl-kempston, ctl-sinclair, ending,
-; gameover, hiscore, hiscore-typed, l1-l8).
+; Witness: L1 31638 (boss, c1, continue, ctl-if2, ctl-kempston, ctl-sinclair,
+; deaths-l7, ending, force, gameover, hiscore, hiscore-typed, restart, l1-l8).
 DrawSpriteMirrored:
   PUSH BC
   PUSH DE
@@ -206,8 +207,9 @@ l_8DC9:
 
 ; Draw an object upside down
 ;
-; Witness: L1 26350 (c1, continue, ctl-if2, ctl-kempston, ctl-sinclair, ending,
-; gameover, hiscore, hiscore-typed, l1-l8).
+; Witness: L1 31842 (boss, c1, continue, ctl-if2, ctl-kempston, ctl-sinclair,
+; deaths-l7, ending, force, gameover, hiscore, hiscore-typed, pause, restart,
+; l1-l8).
 DrawSpriteFlipped:
   PUSH BC
   PUSH DE
@@ -281,7 +283,7 @@ l_8E1F:
 
 ; Draw an object mirrored and upside down
 ;
-; Witness: L1 13308 (ending, l1-l8).
+; Witness: L1 16125 (boss, deaths-l7, ending, force, restart, l1-l8).
 DrawSpriteBoth:
   PUSH BC
   PUSH DE
@@ -360,16 +362,17 @@ l_8E7B:
 
 ; D, E, HL = the size and cells of the level's object A (LevelObjects)
 ;
-; Witness: L1 198340 (c1, continue, ctl-if2, ctl-kempston, ctl-sinclair,
-; ending, gameover, hiscore, hiscore-typed, l1-l8).
+; Witness: L1 233581 (boss, c1, continue, ctl-if2, ctl-kempston, ctl-sinclair,
+; deaths-l7, ending, force, gameover, hiscore, hiscore-typed, restart, l1-l8).
 LevelObject:
   LD DE,(LevelObjects)
   JP ObjectEntry
 
 ; D, E, HL = the size and cells of the game's object A (GameObjects)
 ;
-; Witness: L1 317051 (c1, continue, ctl-if2, ctl-kempston, ctl-sinclair,
-; ending, gameover, hiscore, hiscore-typed, l1-l8).
+; Witness: L1 347730 (boss, c1, continue, ctl-if2, ctl-kempston, ctl-sinclair,
+; deaths-l7, ending, force, gameover, hiscore, hiscore-typed, pause, restart,
+; l1-l8).
 GameObject:
   LD (DrawTag),A
   LD DE,GameObjects
@@ -396,8 +399,9 @@ ObjectEntry:
 
 ; Write DrawTag into the SolidMap cell and the attribute into PlayAttrs
 ;
-; Witness: L1 1541974 (c1, continue, ctl-if2, ctl-kempston, ctl-sinclair,
-; ending, gameover, hiscore, hiscore-typed, l1-l8).
+; Witness: L1 1798477 (boss, c1, continue, ctl-if2, ctl-kempston, ctl-sinclair,
+; deaths-l7, ending, force, gameover, hiscore, hiscore-typed, pause, restart,
+; l1-l8).
 CellMark:
   LD A,(DrawTag)
   LD (DE),A
@@ -431,8 +435,9 @@ l_8EB7:
 ; here unless DrawPrepare made it a NOP: then the tag goes into HitList (14 at
 ; most) and a soft cell's ($FA) position into HitCells.
 ;
-; Witness: L1 2025510 (c1, continue, ctl-if2, ctl-kempston, ctl-sinclair,
-; ending, gameover, hiscore, hiscore-typed, l1-l8).
+; Witness: L1 2335443 (boss, c1, continue, ctl-if2, ctl-kempston, ctl-sinclair,
+; deaths-l7, ending, force, gameover, hiscore, hiscore-typed, pause, restart,
+; l1-l8).
 CellFree:
   LD A,B
   RRCA

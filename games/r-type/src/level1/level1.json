@@ -67,13 +67,33 @@
       "path": "work/stage1/rec/ctl-sinclair/l1.json",
       "lo": "C4AE",
       "hi": "F85A"
+    },
+    {
+      "path": "work/docs/rtB/rec/pause/l1.json",
+      "lo": "C4AE",
+      "hi": "F85A"
+    },
+    {
+      "path": "work/docs/integrate/rec/force/l1.json",
+      "lo": "C4AE",
+      "hi": "F85A"
+    },
+    {
+      "path": "work/docs/integrate/rec/boss/l1.json",
+      "lo": "C4AE",
+      "hi": "F85A"
+    },
+    {
+      "path": "work/docs/integrate/rec/restart/l1.json",
+      "lo": "C4AE",
+      "hi": "F85A"
     }
   ],
   "work": "work/stage2/mklevel1",
   "ref_builds": [
     [
       "stage1/rec/l1",
-      "l1: level 1 played from its load to the next search (the immortality POKE $91F2)"
+      "l1: level 1 played from its load to the next search (the immortality POKE `$91F2`)"
     ]
   ],
   "other_builds": []

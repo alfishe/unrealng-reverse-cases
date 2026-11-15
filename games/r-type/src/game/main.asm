@@ -103,7 +103,7 @@ MainWait:
 
 ; Copy the level's first restart column and wave entry into the live ones
 ;
-; Witness: L1 10 (c1, gameover, hiscore, l2-l8).
+; Witness: L1 11 (c1, deaths-l7, gameover, hiscore, l2-l8).
 RestartPoint:
   LD HL,(LevelWaves)
   LD (LevelRestartWave),HL
@@ -137,8 +137,8 @@ NewGameState:
 ; ShieldControls, Shooters, MissileTimer and the death patch at ShipDies + 3;
 ; ControlVector from ControlVectors by ControlMethod; ResumeWaves.
 ;
-; Witness: L1 55 (c1, continue, ctl-if2, ctl-kempston, ctl-sinclair, ending,
-; gameover, hiscore, hiscore-typed, l1-l8).
+; Witness: L1 64 (c1, continue, ctl-if2, ctl-kempston, ctl-sinclair, deaths-l7,
+; ending, gameover, hiscore, hiscore-typed, restart, l1-l8).
 ClearPlayState:
   LD IX,ClearList
 l_86C7:
@@ -187,8 +187,8 @@ l_86C7:
 ; Clears ScrollHalted and the BEAM meter, takes MapColumn and WavePtr from the
 ; restart point, DrawFirstScreen, stars on, DrawHud, the black sides.
 ;
-; Witness: L1 38 (c1, continue, ctl-if2, ctl-kempston, ctl-sinclair, gameover,
-; hiscore, hiscore-typed, l2-l8).
+; Witness: L1 47 (c1, continue, ctl-if2, ctl-kempston, ctl-sinclair, deaths-l7,
+; gameover, hiscore, hiscore-typed, restart, l2-l8).
 StartPlayField:
   XOR A
   LD (ScrollHalted),A

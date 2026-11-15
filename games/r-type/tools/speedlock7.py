@@ -8,7 +8,7 @@
 
 BASIC.bin is the BASIC block's data without its flag and checksum (4933 bytes at PROG $5CCB). Its machine code
 ($5D06, the hidden USR of line 0) copies the 4840 bytes from PROG+$5C to $EC00-$FEE7 and returns into them
-(PUSH DE / RET). There, 26 layers follow one another: each one is a short routine that first shifts the bytes
+(PUSH DE / RET). There, 119 rewrite loops follow one another (46 entries in src/loader/chain.ann): each one is a short routine that first shifts the bytes
 behind its own `LDDR` down by one (the code already run is garbled), then rewrites every byte from the end of its
 own code up to $FEE7, and runs into the bytes it has just rewritten, the next layer. The last one runs into the
 SpeedLock loader at $FB7E. A layer rewrites a byte in one of these ways (A is the key, made from `LD A,R` and a

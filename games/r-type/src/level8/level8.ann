@@ -44,6 +44,7 @@ $DA54 b L8Metatiles 9 ; The metatiles, 144 bytes each (4 x 4 cells of 9 bytes), 
 $E354 b L8Map 5 ; The map: 5 bytes a block column (184 columns), each byte a metatile (bits 0-5) and its drawer (bits 6-7)
 @res levels/level8/map.bin
 $E6EC b L8Waves ; The wave script: entries (scroll position, kind, script) RunWaves starts; then the enemies' movement scripts
+@res levels/level8/waves.bin
 $EBCA b L8Kinds ; The enemy kinds StartWave reads (LevelKinds)
 $EEAC w L8MoversA ; The first mover of each kind (16 words, LevelMoves)
 $EECC w L8MoversB ; The second mover of each kind (16 words, LevelMoves2)

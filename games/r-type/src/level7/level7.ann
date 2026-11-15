@@ -47,15 +47,17 @@ $D228 b L7Metatiles 9 ; The metatiles, 144 bytes each (4 x 4 cells of 9 bytes), 
 $E6F8 b L7Map 5 ; The map: 5 bytes a block column (74 columns), each byte a metatile (bits 0-5) and its drawer (bits 6-7)
 @res levels/level7/map.bin
 $E86A b L7Waves ; The wave script: entries (scroll position, kind, script) RunWaves starts; then the enemies' movement scripts
+@res levels/level7/waves.bin
+> The entry at $EC16 has command $5D: no handler, it falls through CommandWave and does nothing (a data slip).
 $F153 b L7Kinds ; The enemy kinds StartWave reads (LevelKinds)
 $F4B1 w L7MoversA ; The first mover of each kind (15 words, LevelMoves)
 $F4CF w L7MoversB ; The second mover of each kind (16 words, LevelMoves2)
 $F4EF c L7MoverA0 ; Mover A0
 > Witness: L1 0 (none).
 $F4F5 c L7MoverA1 ; Mover A1
-> Witness: L1 1719 (l7).
+> Witness: L1 1741 (deaths-l7, l7).
 $F503 c L7MoverA2 ; Mover A2
-> Witness: L1 245 (l7).
+> Witness: L1 304 (deaths-l7, l7).
 $F508 c L7MoverA3 ; Mover A3
 > Witness: L1 158 (l7).
 $F529 c L7MoverA4 ; Mover A4
@@ -69,13 +71,13 @@ $F5FA c L7MoverA7 ; Mover A7
 $F65C c L7MoverA8 ; Mover A8, A9
 > Witness: L1 196 (l7).
 $F66D c L7MoverA10 ; Mover A10, A11, A12
-> Witness: L1 4788 (l7).
+> Witness: L1 4867 (deaths-l7, l7).
 $F6BE c L7MoverA13 ; Mover A13, A14
-> Witness: L1 796 (l7).
+> Witness: L1 1052 (deaths-l7, l7).
 $F6FC c L7MoverB0 ; Mover B0
-> Witness: L1 4198 (l7).
+> Witness: L1 5322 (deaths-l7, l7).
 $F6FF c L7MoverB1 ; Mover B1
-> Witness: L1 8892 (l7).
+> Witness: L1 9299 (deaths-l7, l7).
 $F70A c L7MoverB2 ; Mover B2, B3
 > Witness: L1 1191 (l7).
 $F710 c L7MoverB4 ; Mover B4, B5
@@ -93,11 +95,11 @@ $F729 c L7MoverB9 ; Mover B9, B12
 $F72D c L7MoverB13 ; Mover B13
 > Witness: L1 67 (l7).
 $F731 c L7MoverB14 ; Mover B14
-> Witness: L1 57 (l7).
+> Witness: L1 113 (deaths-l7, l7).
 $F735 c L7MoverB15 ; Mover B15
-> Witness: L1 3 (l7).
+> Witness: L1 6 (deaths-l7, l7).
 $F526 b L7SpawnA ; A wave record (kind $24) the movers fill and pass to StartWaveAt
 $F56D b L7SpawnB ; A wave record the movers fill and pass to StartWaveAt
 $F6F9 b L7SpawnC ; A wave record the movers fill and pass to StartWaveAt
 $F768 c L7SlotBusy ; Return while the slot is free; else drop the return and go on at Mover B1 (Mover B15 calls it)
-> Witness: L1 245 (l7).
+> Witness: L1 304 (deaths-l7, l7).

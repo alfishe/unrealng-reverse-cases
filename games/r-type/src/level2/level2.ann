@@ -38,6 +38,7 @@ $D442 b L2Metatiles 9 ; The metatiles, 144 bytes each (4 x 4 cells of 9 bytes), 
 $E762 b L2Map 5 ; The map: 5 bytes a block column (67 columns), each byte a metatile (bits 0-5) and its drawer (bits 6-7)
 @res levels/level2/map.bin
 $E8B1 b L2Waves ; The wave script: entries (scroll position, kind, script) RunWaves starts; then the enemies' movement scripts
+@res levels/level2/waves.bin
 $F197 b L2Kinds ; The enemy kinds StartWave reads (LevelKinds)
 $F4BF w L2MoversA ; The first mover of each kind (10 words, LevelMoves)
 $F4D3 w L2MoversB ; The second mover of each kind (16 words, LevelMoves2)

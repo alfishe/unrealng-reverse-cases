@@ -249,8 +249,9 @@ and command in its caption there; the meter under the play area fills while fire
 Worked example: the Force at the tail (ForceAttached 2) and the ship at column 3. The detach key reaches `CP $04` with
 A = 3: carry, `RET C`. Nothing happens: the Force cannot be thrown backward off the left edge.
 
-Witness: FireBeam runs from here in every recording; the detach branch `$95CC`-`$95EA` never ran (stage 2 coverage),
-so the detach is known only from the code. [Doc 5, 5.9](05-controls.md#59-the-detach-key) has the key.
+Witness: FireBeam runs from here in every recording; the detach branch `$95CC`-`$95EA` and the recall `$95F3` ran
+only in `force` ([doc 5, 5.9](05-controls.md#59-the-detach-key) has the key and the frames): the detach at the tail
+at 2156 (state 5), the recall at 2180 (state 6), docked again at 2250.
 
 **The point**: one byte, `NOP` or `RET`, switches all the weapons. The game uses it for the fly-in, the boss's death
 and the level's end.
@@ -702,8 +703,8 @@ Witness: `l1`, MissilesOn 1 from the sample at 9340; FireMissiles started `$06` 
 ## 10.9 The shield
 
 ShipShield `$9577` runs every pass after MoveShip. While ShieldTimer is above 0 it counts it down and draws object
-`$62` around the ship, flipped on alternate frames. A new life starts with ShieldTimer `$30` (`$38` on the first
-play); the shield item sets it to `$30` too.
+`$62` around the ship, flipped on alternate frames. A new life starts with ShieldTimer `$20` (StartPlay `$8BD3`; `$38` on the first
+play); the shield item sets it to `$30`.
 
 No test reads ShieldTimer but ShipShield. The nose test and the hit test run before it in MoveShip, and the enemy
 shots test the ship's tags without it. So the shield is drawn, and the ship can still die under it.
@@ -845,8 +846,12 @@ Worked example: level 1's boss halts the screen at MapColumn 107 (frame 12 050 o
 for MapColumn 115 (frame 13 518) and blows the parts in slots 20-23, each with its points: the boss "dies" by the
 clock, 1468 frames after the halt.
 
-Witness: `l1` 13518 (L1MoverA8); BossDestroyed never ran in any recording (no boss died by hits), so its path is known
-only from the code.
+Witness: `l1` 13518 (L1MoverA8). BossDestroyed ran only in `boss` (the integration's recording, `l1`'s keys from c1's
+play start): at 10 856 the tail (mover A9) is out with slot 2's flags `$20`; slot 2's hits were POKEd to 1, but the
+shots did not reach it in 1500 frames, so at 12 374 slot 2 was POKEd free (`$850A` = 0). At 12 375 mover A9's
+`$F5A1` called BossDestroyed `$C19C` once; BossBlastOnce then ran its random explosions (`$C134` 156 times, each with
+sound `$09` or `$0A`) and its sweep (`$C164` 586 times) up to 12 995. The kill is POKEd; everything after it is the
+game's own code. No recording killed a boss by hits.
 
 **The point**: R-Type's bosses are timed set pieces. On level 1 the boss ends when the map's clock says so.
 
@@ -1300,9 +1305,8 @@ its first byte.
 
 ## 10.16 Notes and what is known only from the code
 
-- **Known only from the code**: the detach (ShieldControls `$95CC`-`$95EA`, never ran); the lower bit; BossDestroyed
-  and the boss blast; L1BossHit; level 8's immortal stretch;
-  the recall (state 6).
+- **Known only from the code**: the lower bit; L1BossHit; level 8's immortal stretch. The detach and the recall
+  (`force`) and BossDestroyed with the boss blast (`boss`, the kill POKEd) have their recordings now (10.3, 10.10).
 - **Kind 9 is the lower bit**, kind 8 the upper one (or the lower one when the upper is on).
 - **The beam never reaches `$40`**: the charge stops at `$3E`; the strongest beam needs `$24`.
 - **A kill with no free explosion record** skips AwardScore and adds the caller's DE as points (doc 7, 7.13).

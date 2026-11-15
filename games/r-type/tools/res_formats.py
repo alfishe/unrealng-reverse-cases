@@ -12,6 +12,7 @@ install(files) with the bytes of each @res entry.
 | `tables/NAME.bin`, `levels/levelN/objects.bin` | `.csv` | a header line of field names, one record a line (TABLES); a `tail` line holds bytes after the last whole record in hex |
 | `graphics/font.bin` | `graphics/font.png` | 8 x 8 glyphs, 16 a row; palette index 0 paper, 1 ink, 2 no glyph |
 | `levels/levelN/metatiles.bin` | `metatiles.png`, `metatiles-attrs.csv` | metatile n at x = 32 n (4 x 4 cells upright, index 0 paper, 1 ink); the CSV the 16 cell attributes of each metatile, row by row |
+| `levels/levelN/waves.bin` | `levels/levelN/waves.txt` | the wave script, one wave a line: block column, metatile column.scroll step, then `kind K at C,R` (the kind, the enemy's column and row) or `command N A` (kind `$63`: command N, its argument A); from the first `$FF` column byte on the bytes (the end mark and the kind records) as `bytes` lines in hex |
 | `levels/levelN/map.bin` | `levels/levelN/map.txt` | 5 lines (the metatile rows top to bottom), one token a block column: the metatile number and its drawer, `.` as stored, `m` mirrored, `f` upside down, `b` both |
 | anything else | the `.bin` itself | bytes (screens stay SCREEN$ files) |
 
@@ -41,7 +42,7 @@ TABLES = {
 }
 HEXFIELDS = {'address': 4, 'port': 2, 'mask': 2, 'switch': 2}
 SUFFIXES = {'text': ['.txt'], 'table': ['.csv'], 'glyphs': ['.png'], 'metatiles': ['.png', '-attrs.csv'],
-            'map': ['.txt']}
+            'map': ['.txt'], 'waves': ['.txt']}
 
 
 def kind(name):
@@ -58,6 +59,8 @@ def kind(name):
         return 'metatiles'
     if name.startswith('levels/') and base == 'map':
         return 'map'
+    if name.startswith('levels/') and base == 'waves':
+        return 'waves'
     return None
 
 
@@ -219,13 +222,47 @@ def map_build(files):
     return bytes(out)
 
 
+def waves_export(data):
+    lines = ['# the wave script: block column, metatile column.scroll step, then the kind and the enemy\'s column,row, or',
+             '# command N A (kind $63: 1 halt, 2 resume, 3 next wave slot A, 4 shooter limit A, 5 level end, 6 sound A);',
+             '# from the end mark ($FF) on: the bytes that follow (the kind records), in hex']
+    i = 0
+    while i + 5 <= len(data) and data[i] != 0xFF:
+        col, sub, k, lo, hi = data[i:i + 5]
+        what = f'command {lo} {hi}' if k == 0x63 else f'kind {k} at {lo},{hi}'
+        lines.append(f'{col} {sub >> 3}.{sub & 7} {what}')
+        i += 5
+    for j in range(i, len(data), 16):
+        lines.append('bytes ' + data[j:j + 16].hex(' ').upper())
+    return {'.txt': ('\n'.join(lines) + '\n').encode()}
+
+
+def waves_build(files):
+    out = bytearray()
+    for line in files['.txt'].decode().split('\n'):
+        t = line.split()
+        if not t or t[0].startswith('#'):
+            continue
+        if t[0] == 'bytes':
+            out += bytes.fromhex(''.join(t[1:]))
+            continue
+        mc, step = t[1].split('.')
+        sub = int(mc) << 3 | int(step)
+        if t[2] == 'command':
+            out += bytes([int(t[0]), sub, 0x63, int(t[3]), int(t[4])])
+        else:
+            c, r = t[5].split(',')
+            out += bytes([int(t[0]), sub, int(t[3]), int(c), int(r)])
+    return bytes(out)
+
+
 def export(name, data):
     """the editable files of a resource {path under src/res: bytes}, or {name: data} when it stays bytes"""
     k = kind(name)
     base = os.path.splitext(os.path.basename(name))[0]
     forms = {'text': lambda: text_export(data), 'table': lambda: table_export(data, base),
              'glyphs': lambda: glyphs_export(data), 'metatiles': lambda: metatiles_export(data),
-             'map': lambda: map_export(data)}.get(k, lambda: None)()
+             'map': lambda: map_export(data), 'waves': lambda: waves_export(data)}.get(k, lambda: None)()
     if not forms:
         return {name: data}
     return {name[:-4] + suf: b for suf, b in forms.items()}
@@ -247,6 +284,8 @@ def build_one(name):
         return glyphs_build(files, name)
     if k == 'metatiles':
         return metatiles_build(files, name)
+    if k == 'waves':
+        return waves_build(files)
     return map_build(files)
 
 

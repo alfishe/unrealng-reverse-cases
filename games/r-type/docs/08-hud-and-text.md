@@ -163,7 +163,7 @@ The font is upper case only: digits, letters, a few signs. Fifteen glyphs are no
 | `$24` | `$` | `!` | PILOT STAND BY !, MISSION OVER !, ENTER YOUR NAME PILOT !, THE EVIL BYDO EMPIRE ! |
 | `$25` | `%` | the ship: a life | LifeChar `$718D` |
 | `$26` | `&` | the copyright sign | "& 1987 BY IREM CORP." on the title |
-| `$28`-`$2B` | `(` `)` `*` `+` | "No." over four cells | StarChars `$73A8` "()*+ ": each high-score line |
+| `$28`-`$2B` | `(` `)` `*` `+` | "No." over four cells | NoText `$73A8` "()*+ ": each high-score line |
 | `$3A`, `$3B` | `:` `;` | the meter's left and right ends | BeamHudText `$83F3` |
 | `$3C` | `<` | the meter, empty | BeamHudText, BeamMeterEmpty `$72DE` |
 | `$3D` | `=` | a dash | "=BEAM" right of the meter |
@@ -175,8 +175,7 @@ The "=BEAM" string at Font+6 is the strangest: the six bytes `3D 42 45 41 4D` + 
 the `!` glyph and the first lines of `"`. No string of the game contains `!` or `"`, so those glyphs are free, and
 the author stored a string in them. Where the text needs an exclamation mark it uses `$`.
 
-The `src/game/game.ann` calls `$73A8` StarChars and says nothing reads it. PrintHiScores reads it at `$76B1` for
-every line of the table, and the font draws it as "No." (8.7).
+PrintHiScores reads NoText `$73A8` at `$76B1` for every line of the table, and the font draws it as "No." (8.7).
 
 The point: the font is the game's only tile set for the HUD; the meter, the lives and "No." are letters in it.
 
@@ -522,7 +521,7 @@ l_76AD: PUSH DE
         PUSH BC
         PUSH HL
         PUSH DE
-        LD HL,StarChars        ; "()*+ ": drawn as "No. "
+        LD HL,NoText        ; "()*+ ": drawn as "No. "
         CALL PrintText
         POP HL
         CALL PrintText         ; the entry's digit

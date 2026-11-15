@@ -11,7 +11,7 @@ What this covers:
 - DEFINE (ENTER on the title): ReadKey `$BF55`, its key codes, the duplicate check;
 - the path from ControlBits to the ship: MoveShip `$94F1`, its limits and its tilt;
 - the fire, the beam charge and its meter, the release in three strengths;
-- the Force's detach key, known only from the code;
+- the Force's detach key and the recall;
 - the pause (CAPS SHIFT + 1, CAPS SHIFT + 2) and the missing abort key;
 - the name entry of the high-score table, and why letter keys do nothing there.
 
@@ -64,10 +64,10 @@ The four methods differ only in where the six bits come from:
 | 1 | ReadIf2 `$8B0A` | keys 1-5 (Interface 2, the "Sinclair 2" joystick) | 1 2 3 4 5 | SPACE |
 | 2 | ReadKeys `$8B14` | the six keys of DefinedKeys `$7780` | as loaded Q W K O P | as loaded SPACE |
 | 3 | ReadKempston `$8B19` | port `$1F` | Kempston bits 1 0 2 3 4 | SPACE |
-| 4 | ReadCursor `$8B2D` | keys 6-0 (Interface 2, the "Sinclair 1" joystick) | 6 7 8 9 0 | SPACE |
+| 4 | ReadSinclair `$8B2D` | keys 6-0 (Interface 2, the "Sinclair 1" joystick) | 6 7 8 9 0 | SPACE |
 
-The name ReadCursor is the source's. The reader takes keys 6 7 8 9 0 as left right down up fire, the Sinclair
-joystick, not the cursor keys (those would be 5 8 6 7). The recording that witnesses it is called `ctl-sinclair`.
+The reader takes keys 6 7 8 9 0 as left right down up fire, the Sinclair joystick, not the cursor keys (those
+would be 5 8 6 7), hence the name ReadSinclair. The recording that witnesses it is called `ctl-sinclair`.
 
 ![The four methods on the keyboard, and ControlBits](img/controls/methods.png)
 
@@ -85,7 +85,7 @@ ControlVector `$74FC` holds the reader's address. ReadControls `$8B06` is two in
 
 ```asm
 ReadControls:                  ; $8B06
-        LD HL,(ControlVector)  ; one of ReadIf2, ReadKeys, ReadKempston, ReadCursor
+        LD HL,(ControlVector)  ; one of ReadIf2, ReadKeys, ReadKempston, ReadSinclair
         JP (HL)                ; the reader stores ControlBits and returns to the caller
 ```
 
@@ -98,7 +98,7 @@ ControlVectors `$778C`:
         ADD A,A                ; (method - 1) x 2
         LD H,$00
         LD L,A
-        LD DE,ControlVectors   ; $778C: ReadIf2, ReadKeys, ReadKempston, ReadCursor
+        LD DE,ControlVectors   ; $778C: ReadIf2, ReadKeys, ReadKempston, ReadSinclair
         ADD HL,DE
         LD A,(HL)
         INC HL
@@ -121,7 +121,7 @@ flowchart LR
     Read --> If2["ReadIf2 8B0A"]
     Read --> Keys["ReadKeys 8B14"]
     Read --> Kemp["ReadKempston 8B19"]
-    Read --> Sinc["ReadCursor 8B2D"]
+    Read --> Sinc["ReadSinclair 8B2D"]
     If2 --> Bits["ControlBits 74FA"]
     Keys --> Bits
     Kemp --> Bits
@@ -173,10 +173,10 @@ them. With both bits set (no real stick can) the XOR would clear both.
 
 Worked example: the stick right, port `$1F` = `$01`. `AND $03` is not zero, `$01 XOR $03 = $02`: bit 1, right.
 
-### ReadCursor: keys 6-0 through the bit-reverse table
+### ReadSinclair: keys 6-0 through the bit-reverse table
 
 ```asm
-ReadCursor:                    ; $8B2D
+ReadSinclair:                    ; $8B2D
         LD A,$EF
         IN A,($FE)             ; half-row 0 9 8 7 6: key 0 bit 0 ... key 6 bit 4
         LD B,$5D
@@ -300,7 +300,7 @@ The game reads these ports and no other (the only port it writes is `$FE`, [doc 
 | --- | --- | --- |
 | `$FEFE` ... `$7FFE`, any half-row | TestKey `$8B70`, ReadKey `$BF55`, CheckPause `$8BA4` | the keyboard: bits 0-4, 0 = down |
 | `$F7FE` | ReadIf2 `$8B0A`, ReadRow1 `$8BA0` | keys 1-5 (an Interface 2 joystick maps onto these keys) |
-| `$EFFE` | ReadCursor `$8B2D` | keys 6-0 (the other Interface 2 joystick) |
+| `$EFFE` | ReadSinclair `$8B2D` | keys 6-0 (the other Interface 2 joystick) |
 | `$BFFE` | DefineKeys `$BF92` | ENTER, bit 0 |
 | `$1F` (`$001F` from ProbeKempston, `$xx1F` from ReadKempston) | `$73F1`, `$8B19` | a Kempston: bits 0-4 high when pressed, 0 at rest |
 
@@ -414,7 +414,7 @@ l_C027: LD A,(KempstonAbsent)
         JR Z,l_C038
         LD A,$03               ; Kempston fire: method 3
         JR l_C040
-l_C038: CALL ReadCursor
+l_C038: CALL ReadSinclair
         BIT 4,A
         RET Z                  ; no fire anywhere: back to the title loop
         LD A,$04               ; key 0: method 4
@@ -830,7 +830,7 @@ columns a pass.
 *Figure 5.5: c1 frame 18630, the full beam crossing the playfield and the meter empty again. Screenshot from the c1
 recording.*
 
-The stage notes give the charge as "up to `$40`". The code compares the new value with `$40` and stores it only
+The charge stops at `$3E`: the code compares the new value with `$40` and stores it only
 when it differs, so `$40` is never stored. c1 shows `$3E` at the top.
 
 The point: the beam's strength has three steps, and the meter is cosmetic past `$24`: holding from pass 18 to pass
@@ -895,8 +895,11 @@ flowchart TD
 The key is read as held, not as a press. Holding it launches the Force; once the Force waits (state 3 or 7) the
 same held key recalls it. What the Force does in states 4 to 7 is in [doc 10](10-gameplay-logic.md).
 
-Known only from the code: `$95BC` (the first instruction after the bit test) ran in no recording. c1's N presses at
-18630 and 18676 came while the ship was dead (ShipFrame 0 at 18624), and ctl-kempston's SPACE came with no Force.
+c1's N presses at 18630 and 18676 came while the ship was dead (ShipFrame 0 at 18624), and ctl-kempston's SPACE came
+with no Force, so the stage 1 recordings never reach `$95BC`. Witness: `force` (the integration's recording: c1's play start with `l1`'s keys and POKE to frame 2100): the Force
+docked at the tail by 2126 (ForceAttached 2); N held from 2144 with the ship at column 8: `$95DF` ran once,
+ForceAttached 0 and state 5 at 2156; the Force waited (state 3) at 2166; N again from 2168: `$95F3` ran once, state 6
+at 2180; docked again at the tail at 2250.
 
 The point: one key both throws and calls back the Force. The column limits stop it leaving the playfield at once.
 

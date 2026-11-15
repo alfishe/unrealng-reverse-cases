@@ -6,8 +6,8 @@
 ;
 ; A = 1, then StarsSet writes it to the task's switch byte (TaskTable + 2).
 ;
-; Witness: L1 38 (c1, continue, ctl-if2, ctl-kempston, ctl-sinclair, gameover,
-; hiscore, hiscore-typed, l2-l8).
+; Witness: L1 47 (c1, continue, ctl-if2, ctl-kempston, ctl-sinclair, deaths-l7,
+; gameover, hiscore, hiscore-typed, restart, l2-l8).
 StarsOn:
   LD A,$01
 
@@ -20,8 +20,8 @@ StarsSet:
 
 ; Switch the star task off
 ;
-; Witness: L1 58 (c1, continue, ctl-if2, ctl-kempston, ctl-sinclair, ending,
-; gameover, hiscore, hiscore-typed, l1-l7).
+; Witness: L1 68 (boss, c1, continue, ctl-if2, ctl-kempston, ctl-sinclair,
+; deaths-l7, ending, gameover, hiscore, hiscore-typed, restart, l1-l7).
 StarsOff:
   XOR A
   JR StarsSet
@@ -48,8 +48,8 @@ PlayStars:
 ; Writes $3C into the star phase operand, patches the star step to LD A,8 / LD
 ; (HL),A and points the state pointer at $80D8.
 ;
-; Witness: L1 38 (c1, continue, ctl-if2, ctl-kempston, ctl-sinclair, gameover,
-; hiscore, hiscore-typed, l2-l8).
+; Witness: L1 47 (c1, continue, ctl-if2, ctl-kempston, ctl-sinclair, deaths-l7,
+; gameover, hiscore, hiscore-typed, restart, l2-l8).
 TitleStarsOn:
   LD A,$3C
   LD (l_BECA+$0001),A
@@ -106,11 +106,12 @@ ShadowLine4:
 TitleTexts:
   INCBIN "res/texts/title.bin",$0000,99
 
-; "ENTER YOUR NAME PILOT $"
+; `ENTER YOUR NAME PILOT $`
 EnterNameText:
   INCBIN "res/texts/enter-name.bin",$0000,23
 
-; the last control read: bit 0 up, 1 down, 2 left, 3 right, 4 fire, 5 detach
+; the last control read: bit 0 left, 1 right, 2 down, 3 up, 4 fire, 5 detach (1
+; = pressed)
 ControlBits:
   DEFB $00
 ControlMethod:

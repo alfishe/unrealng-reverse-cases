@@ -45,11 +45,11 @@ KeyNameFire:
 KeyNameDetach:
   DEFM "DETAC",$C8        ; "DETACH"
 
-; "PILOT STAND BY $": printed after a life is lost
+; `PILOT STAND BY $`: printed after a life is lost
 PilotStandByText:
   INCBIN "res/texts/pilot-stand-by.bin",$0000,17
 
-; "MISSION OVER $": printed when the last life is gone
+; `MISSION OVER $`: printed when the last life is gone
 MissionOverText:
   INCBIN "res/texts/mission-over.bin",$0000,14
 
@@ -70,6 +70,9 @@ BeamMeterStep:
 ; Indexed by the low nibble of an enemy kind's byte 2 less 1: place 3 with the
 ; digits 1-9, then place 4 with 1 (100-900 and 1000 points; known only from the
 ; code and the score in the level recordings).
+;
+; A kind whose score nibble is 11 or 12 reads past the 10 pairs: zeros, no
+; points (AddScore returns at E = 0).
 ScoreAwards:
   INCBIN "res/tables/score-awards.bin",$0000,20
 
@@ -263,8 +266,9 @@ TitleStars:
   DEFB $02,$01,$03,$1A,$00,$14,$02,$10
   DEFB $01,$08,$01,$1C,$01,$10,$01,$18
 
-; "()*+ ": unused (known only from the code: nothing reads it)
-StarChars:
+; "()*+ ": the font draws it as "No. " before each high-score line
+; (PrintHiScores $76B1)
+NoText:
   DEFM "()*+",$A0
 
 ; six bytes TitleLogo reads

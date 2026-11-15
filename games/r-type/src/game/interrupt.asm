@@ -8,8 +8,9 @@
 ; switch's bit 0 is set the counter counts down, and at 0 is reloaded and the
 ; task called.
 ;
-; Witness: L1 134792 (c1, continue, ctl-if2, ctl-kempston, ctl-sinclair,
-; ending, gameover, hiscore, hiscore-typed, l1-l8).
+; Witness: L1 159333 (boss, c1, continue, ctl-if2, ctl-kempston, ctl-sinclair,
+; deaths-l7, ending, force, gameover, hiscore, hiscore-typed, pause, restart,
+; l1-l8).
 Interrupt:
   PUSH AF
   PUSH BC
@@ -60,8 +61,9 @@ l_BE4E:
 
 ; JP (DE)
 ;
-; Witness: L1 173253 (c1, continue, ctl-if2, ctl-kempston, ctl-sinclair,
-; ending, gameover, hiscore, hiscore-typed, l1-l8).
+; Witness: L1 205616 (boss, c1, continue, ctl-if2, ctl-kempston, ctl-sinclair,
+; deaths-l7, ending, force, gameover, hiscore, hiscore-typed, pause, restart,
+; l1-l8).
 RunTask:
   EX DE,HL
   JP (HL)
@@ -75,8 +77,9 @@ TaskTable:
 
 ; Interrupt task 0: move the background stars in the empty cells
 ;
-; Witness: L1 44791 (c1, continue, ctl-if2, ctl-kempston, ctl-sinclair, ending,
-; gameover, hiscore, hiscore-typed, l1-l8).
+; Witness: L1 52613 (boss, c1, continue, ctl-if2, ctl-kempston, ctl-sinclair,
+; deaths-l7, ending, force, gameover, hiscore, hiscore-typed, pause, restart,
+; l1-l8).
 StarTask:
   LD IX,RowTable+$0004
   LD DE,PlayStarStates
@@ -95,8 +98,9 @@ l_BE84:
 
 ; Move one star; skip cells with something in them
 ;
-; Witness: L1 851029 (c1, continue, ctl-if2, ctl-kempston, ctl-sinclair,
-; ending, gameover, hiscore, hiscore-typed, l1-l8).
+; Witness: L1 999647 (boss, c1, continue, ctl-if2, ctl-kempston, ctl-sinclair,
+; deaths-l7, ending, force, gameover, hiscore, hiscore-typed, pause, restart,
+; l1-l8).
 StarStep:
   LD A,(DE)
   INC E
@@ -234,8 +238,9 @@ l_BF41:
 
 ; The star's screen byte and its SolidMap cell
 ;
-; Witness: L1 834718 (c1, continue, ctl-if2, ctl-kempston, ctl-sinclair,
-; ending, gameover, hiscore, hiscore-typed, l1-l8).
+; Witness: L1 979947 (boss, c1, continue, ctl-if2, ctl-kempston, ctl-sinclair,
+; deaths-l7, ending, force, gameover, hiscore, hiscore-typed, pause, restart,
+; l1-l8).
 StarCell:
   LD A,(DE)
   INC E
@@ -251,7 +256,7 @@ StarCell:
 
 ; Scan the keyboard: the key's half-row and bit when exactly one key is down
 ;
-; Witness: L1 50954 (c1, ending, l1-l8).
+; Witness: L1 52569 (c1, deaths-l7, ending, l1-l8).
 ReadKey:
   LD DE,$FF2F
   LD BC,$FEFE
@@ -301,7 +306,7 @@ ReadKeyNext:
 
 ; Wait for exactly one key
 ;
-; Witness: L1 47723 (c1, ending, l1-l8).
+; Witness: L1 49338 (c1, deaths-l7, ending, l1-l8).
 WaitKey:
   CALL ReadKey
   JR NZ,WaitKey
@@ -409,7 +414,7 @@ l_C027:
   LD A,$03
   JR l_C040
 l_C038:
-  CALL ReadCursor
+  CALL ReadSinclair
   BIT 4,A
   RET Z
   LD A,$04

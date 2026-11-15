@@ -4,8 +4,8 @@
 
 ; Start sound H with the channel bits L (the priority and the timbre)
 ;
-; Witness: L1 11980 (continue, ctl-if2, ctl-kempston, ctl-sinclair, ending,
-; gameover, hiscore, hiscore-typed, l1-l8).
+; Witness: L1 13762 (boss, continue, ctl-if2, ctl-kempston, ctl-sinclair,
+; deaths-l7, ending, force, gameover, hiscore, hiscore-typed, restart, l1-l8).
 PlaySound:
   DI
   PUSH AF
@@ -28,8 +28,8 @@ PlaySound:
 
 ; Find a channel at the priority, set its timbre and its script
 ;
-; Witness: L1 11980 (continue, ctl-if2, ctl-kempston, ctl-sinclair, ending,
-; gameover, hiscore, hiscore-typed, l1-l8).
+; Witness: L1 13762 (boss, continue, ctl-if2, ctl-kempston, ctl-sinclair,
+; deaths-l7, ending, force, gameover, hiscore, hiscore-typed, restart, l1-l8).
 SoundStart:
   LD C,L
   LD A,H
@@ -93,8 +93,9 @@ l_F8E0:
 
 ; Interrupt task 1: run channel 1's script
 ;
-; Witness: L1 43169 (continue, ctl-if2, ctl-kempston, ctl-sinclair, ending,
-; gameover, hiscore, hiscore-typed, l1-l8).
+; Witness: L1 51349 (boss, continue, ctl-if2, ctl-kempston, ctl-sinclair,
+; deaths-l7, ending, force, gameover, hiscore, hiscore-typed, pause, restart,
+; l1-l8).
 SoundTask1:
   LD IX,SoundData+$0067
   LD IY,SoundTask1
@@ -107,8 +108,9 @@ SoundTask1Tail:
 
 ; Interrupt task 2: run channel 2's script
 ;
-; Witness: L1 43638 (continue, ctl-if2, ctl-kempston, ctl-sinclair, ending,
-; gameover, hiscore, hiscore-typed, l1-l8).
+; Witness: L1 51953 (boss, continue, ctl-if2, ctl-kempston, ctl-sinclair,
+; deaths-l7, ending, force, gameover, hiscore, hiscore-typed, pause, restart,
+; l1-l8).
 SoundTask2:
   LD IX,SoundData+$0069
   LD IY,SoundTask2
@@ -121,8 +123,9 @@ SoundTask2Tail:
 
 ; Interrupt task 3: run channel 3's script
 ;
-; Witness: L1 45531 (continue, ctl-if2, ctl-kempston, ctl-sinclair, ending,
-; gameover, hiscore, hiscore-typed, l1-l8).
+; Witness: L1 53982 (boss, continue, ctl-if2, ctl-kempston, ctl-sinclair,
+; deaths-l7, ending, force, gameover, hiscore, hiscore-typed, pause, restart,
+; l1-l8).
 SoundTask3:
   LD IX,SoundData+$006B
   LD IY,SoundTask3
@@ -131,8 +134,9 @@ SoundTask3:
 ; One step of a channel's script: a command byte and its routine (the table at
 ; $FBEB)
 ;
-; Witness: L1 132338 (continue, ctl-if2, ctl-kempston, ctl-sinclair, ending,
-; gameover, hiscore, hiscore-typed, l1-l8).
+; Witness: L1 157284 (boss, continue, ctl-if2, ctl-kempston, ctl-sinclair,
+; deaths-l7, ending, force, gameover, hiscore, hiscore-typed, pause, restart,
+; l1-l8).
 SoundStep:
   LD L,(IX+$00)
   LD H,(IX+$01)
@@ -177,10 +181,12 @@ SoundEnd:
   SCF
   RET
 
-; Set the tone routines for timbre 1
+; Timbre for PlaySound bits $80: note length shift 2, mask 3, noise bursts high
+; byte >> 2
 ;
-; Witness: L1 67055 (continue, ctl-if2, ctl-kempston, ctl-sinclair, ending,
-; gameover, hiscore, hiscore-typed, l1-l8).
+; Witness: L1 78715 (boss, continue, ctl-if2, ctl-kempston, ctl-sinclair,
+; deaths-l7, ending, force, gameover, hiscore, hiscore-typed, pause, restart,
+; l1-l8).
 TimbreHigh:
   LD A,$04
   LD (l_F9EB+$0007),A
@@ -191,10 +197,10 @@ TimbreHigh:
   LD (NotePeriod+$0001),A
   RET
 
-; Timbre 2
+; Timbre for bits $40: shift 3, mask 7
 ;
-; Witness: L1 24872 (continue, ctl-if2, ctl-kempston, ctl-sinclair, gameover,
-; hiscore, hiscore-typed, l1-l8).
+; Witness: L1 27852 (boss, continue, ctl-if2, ctl-kempston, ctl-sinclair,
+; deaths-l7, force, gameover, hiscore, hiscore-typed, restart, l1-l8).
 TimbreMid:
   LD A,$02
   LD (l_F9EB+$0007),A
@@ -205,9 +211,10 @@ TimbreMid:
   LD (l_F9F7+$0007),A
   RET
 
-; Timbre 3
+; Timbre for bits $20 (any other non-zero): shift 4, mask 15
 ;
-; Witness: L1 40411 (continue, gameover, hiscore, hiscore-typed, l1-l8).
+; Witness: L1 50717 (boss, continue, deaths-l7, force, gameover, hiscore,
+; hiscore-typed, restart, l1-l8).
 TimbreLow:
   XOR A
   LD (l_F9EB+$0007),A
@@ -219,12 +226,13 @@ TimbreLow:
 
 ; SoundCall
 SoundCall:
-  PUSH IY                 ; command: call a sub-script
+  PUSH IY                 ; command 2 (Mark): keep the next step's place in
+                          ; place p, run on at once
 
 ; Keep the script pointer
 ;
-; Witness: L1 255 (continue, ctl-if2, ctl-kempston, ctl-sinclair, ending,
-; gameover, hiscore, hiscore-typed, l1-l7).
+; Witness: L1 290 (boss, continue, ctl-if2, ctl-kempston, ctl-sinclair, ending,
+; force, gameover, hiscore, hiscore-typed, pause, restart, l1-l7).
 SoundPush:
   LD HL,SoundData+$006D
   ADD HL,BC
@@ -243,7 +251,7 @@ SoundNop:
 ;
 ; Used by the routine at SoundLoop.
 SoundReturn:
-  LD HL,SoundData+$006D   ; command: back from a sub-script
+  LD HL,SoundData+$006D   ; command 3 (Back): go to the place kept in p
   ADD HL,BC
   LD D,(HL)
   LD (IX+$00),D
@@ -303,8 +311,9 @@ SoundSetScriptB:
 
 ; DE = the period of a note
 ;
-; Witness: L1 41852 (continue, ctl-if2, ctl-kempston, ctl-sinclair, ending,
-; gameover, hiscore, hiscore-typed, l1-l8).
+; Witness: L1 48828 (boss, continue, ctl-if2, ctl-kempston, ctl-sinclair,
+; deaths-l7, ending, force, gameover, hiscore, hiscore-typed, pause, restart,
+; l1-l8).
 NotePeriod:
   JR l_F9EB
   ADD A,A
@@ -334,8 +343,8 @@ l_FA06:
 
 ; Voices 1 and 2
 ;
-; Witness: L1 2854 (continue, ctl-if2, ctl-kempston, ctl-sinclair, ending,
-; gameover, hiscore, hiscore-typed, l1-l8).
+; Witness: L1 3112 (boss, continue, ctl-if2, ctl-kempston, ctl-sinclair,
+; ending, force, gameover, hiscore, hiscore-typed, pause, restart, l1-l8).
 TonePair12:
   POP IX
   LD A,$01
@@ -348,7 +357,7 @@ TonePair12:
 
 ; Voices 3 and 4
 ;
-; Witness: L1 964 (l1, l2).
+; Witness: L1 976 (boss, l1, l2).
 TonePair34:
   POP IX
 TonePair34A:
@@ -363,8 +372,8 @@ TonePushLast:
 
 ; Voices 1 and 2 sliding down
 ;
-; Witness: L1 1678 (continue, ctl-if2, ctl-kempston, ctl-sinclair, gameover,
-; hiscore, hiscore-typed, l1-l8).
+; Witness: L1 1965 (boss, continue, ctl-if2, ctl-kempston, ctl-sinclair,
+; deaths-l7, force, gameover, hiscore, hiscore-typed, restart, l1-l8).
 ToneDown12:
   POP IX
   LD A,$01
@@ -378,8 +387,9 @@ ToneDown12:
 
 ; Voices 3 and 4 sliding down
 ;
-; Witness: L1 4532 (continue, ctl-if2, ctl-kempston, ctl-sinclair, ending,
-; gameover, hiscore, hiscore-typed, l1-l8).
+; Witness: L1 5077 (boss, continue, ctl-if2, ctl-kempston, ctl-sinclair,
+; deaths-l7, ending, force, gameover, hiscore, hiscore-typed, pause, restart,
+; l1-l8).
 ToneDown34:
   POP IX
   LD A,$03
@@ -395,8 +405,8 @@ ToneDownLast:
 
 ; Voices 1 and 2 sliding up
 ;
-; Witness: L1 5931 (continue, ctl-if2, ctl-kempston, ctl-sinclair, gameover,
-; hiscore, hiscore-typed, l1-l8).
+; Witness: L1 7130 (boss, continue, ctl-if2, ctl-kempston, ctl-sinclair,
+; deaths-l7, force, gameover, hiscore, hiscore-typed, restart, l1-l8).
 ToneUp12:
   POP IX
   LD A,$01
@@ -410,8 +420,8 @@ ToneUp12:
 
 ; Voices 3 and 4 sliding up
 ;
-; Witness: L1 4967 (continue, ctl-if2, ctl-kempston, ctl-sinclair, gameover,
-; hiscore, hiscore-typed, l1-l8).
+; Witness: L1 6154 (boss, continue, ctl-if2, ctl-kempston, ctl-sinclair,
+; deaths-l7, force, gameover, hiscore, hiscore-typed, restart, l1-l8).
 ToneUp34:
   POP IX
   LD A,$03
@@ -609,24 +619,30 @@ TonePlayerNext:
 ; charging (FireBeam, 90); $03 a level 8 wave sound (wave command 6 at columns
 ; 35, 41, 48); $04 enemy hit (EnemyHit, 2492); $05 beam released (BeamRelease,
 ; 143); $06 missiles (FireMissiles, 482); $08 small explosion, $0A middle
-; explosion, $09 big explosion (AwardScore by the enemy's size, 1377/848/747;
-; BossDestroyed's $09 or $0A never ran); $09 also the ship hit (ShipDies, 38);
-; $0A also a life lost (LoseLife, 37) and the level 7 wave sound (columns
-; 73-74, 94); $0B a key defined (DefineKeys, DefineKey: never ran); $0C the
-; best pilots table entered (InsertHiScore, 10); $0D pick-up (TakePickup, 20);
-; $0E extra life (ExtraLifeSound, 6); $0F a soft cell hit (ProcessHitsNext,
-; 717); $10-$13 the level 2 wave sounds (columns 31-90: the boss's beat); $14
-; the Force docks (ForceDraw 1; ShieldControls never ran); $15 the level's end
-; tune (LevelEnd, 8); $16 the name entered (InsertHiScore, 1); $18 a shot
-; bounced off the scenery (BounceShot, 1576: a noise burst, NoiseBurst); $19,
-; $1D, $1E the control method chosen (SelectControl, 3 each); $1A, $1B mission
-; over (MissionOver, 4 each); $1C the Force on the ground (ForceGround, 507);
-; $22 the CONTINUE count (Continue, 21).
+; explosion, $09 big explosion (AwardScore by the enemy's size with bits $82,
+; the first free channel, TimbreHigh: size $10 to $08, $40 to $0A, $20 and $30
+; to $09;, 1377/848/747; BossDestroyed's $09 or $0A never ran); $09 also the
+; ship hit (ShipDies, 38); $0A also a life lost (LoseLife, 37) and the level 7
+; wave sound (columns 73-74, 94); $0B a key defined (DefineKeys, DefineKey:
+; never ran); $0C the best pilots table entered (InsertHiScore, 10); $0D
+; pick-up (TakePickup, 20); $0E extra life (ExtraLifeSound, 6); $0F a soft cell
+; hit (ProcessHitsNext, 717); $10-$13 the level 2 wave sounds (columns 31-90:
+; the boss's beat); $14 the Force docks (ForceDraw 1; ShieldControls never
+; ran); $15 the level's end tune (LevelEnd, 8); $16 the name entered
+; (InsertHiScore, 1); $18 a shot bounced off the scenery (BounceShot, 1576: one
+; Chord1 step at about 1900 Hz, bits $41; it shares its script $5BD0 with the
+; unused $17); $19, $1D, $1E the control method chosen (SelectControl, 3 each);
+; $1A, $1B mission over (MissionOver, 4 each); $1C the Force on the ground
+; (ForceGround, 507); $22 the CONTINUE count (Continue, 21).
 ;
 ; Sounds $07, $17 (the same script as $18) and $1F-$21 are started by no code
 ; and no wave script: known only from the table. $15-$1E have their scripts at
 ; $5B64-$5CFF, $1F-$21 at $F168-$F35C inside the level space (whatever the
 ; loaded level holds there), $22 at $72E8.
+;
+; The command table at $FBEB: 16 words: 0 End, 1 Rest (SoundNop), 2 Mark, 3
+; Back, 4 Repeat, 5 Loop, 6 spare bytes $F9C7, 7 Noise, 8-13 Chord1-6, 14-15
+; spare chord variants $FB0F/$FB1F (no script uses them).
 SoundData:
   INCBIN "res/sound/sound-data.bin",$0000,310
 

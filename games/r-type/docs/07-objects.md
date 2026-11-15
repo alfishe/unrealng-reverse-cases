@@ -203,6 +203,10 @@ space up to `$FA00` is free in every level.
 
 Witness: `build/level1.bin` to `build/level8.bin` rebuild the TZX identically ([doc 3](03-build-and-load.md#313-the-build)).
 
+The parts are resources the build reads (`src/res/levels/levelN/`): the sprites, the object table (`objects.csv`),
+the metatiles, the map (`map.txt`) and the wave script with the kind records after it (`waves.txt`, one wave a line,
+[7.3](#73-the-wave-script-runwaves-and-the-commands)); the kind table, the scripts, the movers and their code stay in `src/levelN/`.
+
 **The point**: a level is data and code in one block, tied to the game only by the header's fixed offsets. A new level
 needs no change in the game's code.
 
@@ -304,7 +308,11 @@ Worked example, level 1's header: `00 00 00 06 25 4B 88 E7 AF E8 44 EA F9 D7 71 
 - The objects lie at `$D7F9`, the map at `$E571`, the kinds at `$EFFB`, the movers at `$F365` and `$F385`.
 - At MapColumn 37 the restart column becomes 29 with the wave `$E8AF`; at 75 it becomes 67 with `$EA44`.
 
-Witness: the `l1` samples of MapColumn ([7.1](#71-the-game-variables)): it passes 37 and 75 on its way to 123.
+Witness: the `l1` samples of MapColumn ([7.1](#71-the-game-variables)): it passes 37 and 75 on its way to 123. A
+restart: `restart` (the integration's recording: c1's play start, POKE `$91F2` = `$C9` until frame 2640). At 2640
+MapColumn is 39, past the checkpoint 37, and LevelRestartColumn `$C4AE` is 29; the POKE undone, a life is lost at
+2667 to an enemy shot (`$C3CE`); the next life (StartPlay `$8BD3` at 2858) begins with MapColumn 37: the first screen
+covers the 8 block columns from 29, its right edge at the checkpoint.
 
 **The point**: a checkpoint is a map column, not a time. A life lost restarts one screen before the last checkpoint
 passed, with the waves from there.
@@ -1509,7 +1517,9 @@ Worked example: the ROM begins `F3 AF 11 FF FF C3 CB 11`. From address 1 the byt
 The other randomness is `LD A,R`: the interrupt's star field, level 1's mover A14 (kind 34 or 35), and movers of
 levels 3 and 4.
 
-Witness: known only from the code. No recording killed a boss by hits, so BossDestroyed never ran. The stars run in
+Witness: `boss` (the integration's recording, [doc 10, 10.10](10-gameplay-logic.md#1010-the-enemies-the-waves-and-the-bosses-of-each-level)):
+slot 2 POKEd free at 12 374, BossDestroyed at 12 375, BossBlastOnce's explosions (`$C134` 156 times) and sweep
+(`$C164` 586 times) to 12 995. No recording killed a boss by hits. The stars run in
 every recording.
 
 **The point**: the same ROM gives the same explosion. R-Type's random numbers are a replay of the ROM's bytes, and
@@ -1642,6 +1652,6 @@ kinds a level brings.
 - **Indestructible kinds score nothing**: their award 12 reads past the 10 pairs of ScoreAwards into zeros.
 - **EnemyDies with no free explosion** (all 20 busy) skips AwardScore, and AddScore then runs with the caller's DE.
   No recording was checked for it.
-- **Known only from the code**: command 2 (in no script); BossDestroyed `$C19C`, BossBlastOnce and NextRandom (no
-  recording killed a boss by hits); L1BossHit `$F42D`; mover A3's kill count; the level movers listed under "Known
+- **Known only from the code**: command 2 (in no script); a boss killed by hits (BossDestroyed `$C19C`,
+  BossBlastOnce and NextRandom ran only in `boss`, after a POKE freed the slot); L1BossHit `$F42D`; mover A3's kill count; the level movers listed under "Known
   only from the code" in `work/stage2/NOTES.md`.

@@ -4,8 +4,8 @@
 
 ; Paint column 0 and column 31 of the 24 attribute rows with C (0: black)
 ;
-; Witness: L1 56 (c1, continue, ctl-if2, ctl-kempston, ctl-sinclair, gameover,
-; hiscore, hiscore-typed, l1-l8).
+; Witness: L1 66 (boss, c1, continue, ctl-if2, ctl-kempston, ctl-sinclair,
+; deaths-l7, gameover, hiscore, hiscore-typed, restart, l1-l8).
 ClearSides:
   LD HL,$5800
   LD DE,$001F
@@ -48,7 +48,7 @@ l_76AD:
   PUSH BC
   PUSH HL
   PUSH DE
-  LD HL,StarChars
+  LD HL,NoText
   CALL PrintText
   POP HL
   CALL PrintText
@@ -126,12 +126,12 @@ DefinedKeys:
   INCBIN "res/tables/defined-keys.bin",$0000,12
 
 ; The four control readers by ControlMethod: ReadIf2, ReadKeys, ReadKempston,
-; ReadCursor
+; ReadSinclair
 ControlVectors:
   DEFW ReadIf2
   DEFW ReadKeys
   DEFW ReadKempston
-  DEFW ReadCursor
+  DEFW ReadSinclair
 
 ; the joystick methods' detach key: port $7F, bit 0 (SPACE)
 DetachKey:

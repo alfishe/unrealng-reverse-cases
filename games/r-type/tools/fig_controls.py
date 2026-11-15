@@ -86,7 +86,7 @@ def cmd_methods(args):
     m1.update({k: (short[n], green) for k, n in zip('67890', ['LEFT', 'RIGHT', 'DOWN', 'UP', 'FIRE'])})
     m1['SP'] = ('X', grey)
     keyboard(d, 12, 40, 'Methods 1 and 4: Interface 2 (blue, ReadIf2 $8B0A, keys 1-5) and Sinclair (green, '
-             'ReadCursor $8B2D, keys 6-0)', m1, fs, small)
+             'ReadSinclair $8B2D, keys 6-0)', m1, fs, small)
     m2 = {k: (short[n], yellow) for k, n in zip(loaded, MOVES)}
     keyboard(d, 12, 300, 'Method 2, the keys as loaded (DefinedKeys $7780)', m2, fs, small, key=40)
     m3 = {k: (short[n], yellow) for k, n in zip(c1, MOVES)}
