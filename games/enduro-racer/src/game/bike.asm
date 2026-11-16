@@ -2,16 +2,16 @@
 ; bike.asm: The bike: the controls, the lean and the steering, wheelies, jumps, falls and getting up, the collisions, off the road
 ;
 ; SPEED ($7C33-$7C34, 8.8 km/h) rises with THROTTLE (fast at low speed, then by a fixed $220, slower from 160 toward
-; 200: $C800 is the top) and falls with BRAKES ($580 a pass); RaceLoop applies them. ScrollStep = SPEED * 14 moves the
-; track. The lean (-3 to 3) follows LEFT and RIGHT one step a pass and returns toward 0 every second pass without
-; them; the sideways speed is SteerTable[speed] * LeanTable[lean] / 8 (at most 5), added to the lateral position
-; LateralX with the bend's push (BikeLateral). WHEELIE held lifts the front (pose 0) and counts passes (Wheelies); at
-; a ramp the speed is kept in proportion to the wheelie (8 passes: all of it; none: 3/4) and the jump's height comes
-; from the ramp's place and the speed. Hitting an object or a truck at 35 km/h or more is a fall (Crash): the bike
-; flies (JumpSpeed from the speed), lies for FallTime, the turn ends (the turn loop: the other player's turn, or a
-; restart of this one at the fall's x); slower, and side-on hits, are a bounce (BounceTime: 3 passes of random
-; steering). Off the road the speed is capped by the distance (OffRoad); stage 3's sand also makes the skid noise and
-; dust, and its gap (the water) slows hard.
+; 200: $C800, never reached, 199 the top) and falls with BRAKES ($580 a pass); RaceLoop applies them. ScrollStep =
+; SPEED * 14 moves the track. The lean (-3 to 3) follows LEFT and RIGHT one step a pass and returns toward 0 every
+; second pass without them; the sideways speed is SteerTable[speed] * LeanTable[lean] / 8 (its high byte capped at 5,
+; the low byte kept), added to the lateral position LateralX with the bend's push (BikeLateral). WHEELIE held lifts
+; the front (pose 0) and counts passes (Wheelies); at a ramp the speed is kept in proportion to the wheelie (8 passes:
+; all of it; none: 3/4) and the jump's height comes from the ramp's place and the speed. Hitting an object or a truck
+; at 35 km/h or more is a fall (Crash): the bike flies (JumpSpeed from the speed), lies for FallTime, the turn ends
+; (the turn loop: the other player's turn, or a restart of this one at the fall's x); slower, and side-on hits, are a
+; bounce (BounceTime: 3 passes of random steering). Off the road the speed is capped by the distance (OffRoad); stage
+; 3's sand also makes the skid noise and dust, and its gap (the water) slows hard.
 ;
 ; Poses (Pose, $9175): 0 wheelie, 1 and 2 in the air, 3 riding (the lean picks the sprite), 7 thrown, 8 and 9 down;
 ; BikePoses has the sprite of each (entries 3-6 the leans, mirrored for the other side).

@@ -16,7 +16,7 @@ CSV files have a header line; `$XX` hex, plain numbers decimal. `tail` lines hol
 | `objects.csv` | `ObjectList4` `$976B-$98EE` | 8 lists (type order 4 5 1 6 2 0 3 7): a `head` (farthest row, aligned row), then `entry` lines (row threshold, y offset, rows, width, address) |
 | `riders.csv` | `RiderSprites` `$917E-$9210` | 7 distance bands: threshold, 5 poses (rows +128 mirror, width +128 aligned, address) |
 | `riderstarts.csv` | `RiderStarts` `$9111-$9126` | x, acceleration, top speed, bend pose; the sixth rider's last 2 bytes are BikePoses' `$9127-$9128`, so a tail |
-| `stages.csv` | `StageTable` `$9E67` | 5 stages: horizon address, lines, the line under it |
+| `stages.csv` | `StageTable` `$9E67` | 5 stages: horizon address, lines, the picture's top line |
 | `stageparams.csv` | `StageParams` `$A187` | 5 stages: road routine, row builder, off-road routine, ground attribute, copy mode (0 for all), 2 unused bytes |
 | `collisions.csv` | `CollisionSizes` `$A1B9` | 8 object types: half width, height |
 | `lean.csv` | `LeanTable` `$8E56-$8E5C` | the steering force of each lean, -3 to 3 (the sign from the lean) |

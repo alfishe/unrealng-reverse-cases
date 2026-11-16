@@ -24,7 +24,7 @@ The commands for the figures and the windows are in [`work/docs/erA-NOTES.md`](.
 ## 3.1 The tape block by block
 
 `orig/EnduroRacer.tzx.zip` holds one file, `Enduro Racer.tzx` (TZX 1.20, 51 505 bytes). Its 160 TZX blocks are
-17 data blocks and the tone, pulse and pause blocks between them. The table gives each data block, the TZX blocks
+17 data blocks and the tone, pulse and group blocks between them. The table gives each data block, the TZX blocks
 from its first lead-in block to the block itself, and the times at signal speed.
 
 | # | TZX blocks | Kind | Bytes | First byte | Bit 0 / 1 (T) | Lead-in (s) | Data (s) | Pause (ms) | Ends at (s) | Loads to |
@@ -47,7 +47,7 @@ from its first lead-in block to the block itself, and the times at signal speed.
 | 16 | 155-156 | SpeedLock: game | 4096 | `11` | 565 / 1130 | 0.02 | 15.71 | 0 | 218.21 | `$82C8` |
 | 17 | 157-158 | SpeedLock: game and the check byte | 3585 | `FF` | 565 / 1130 | 0.02 | 13.89 | 0 | 232.12 | `$92C8` |
 
-The tape plays 232.1 s, 11 606 frames at 50 Hz; TZX block 159 is a text block. Blocks 1-4 are the ROM's standard
+The tape plays 232.1 s, 11 606 frames at 50 Hz; TZX block 159 is a group end (`$22`), as are 70 and the other ends of SpeedLock's groups. Blocks 1-4 are the ROM's standard
 blocks. Blocks 5-17 are SpeedLock 2's: no flag byte, no ROM checksum. The "first byte" of a SpeedLock block is just
 its first data byte. Between blocks 6 and 17 each gap is one pulse block of 875 / 1 750 T pulses: the 21-bit end mark
 that joins the blocks into one stream with no pause (3.5).
@@ -187,7 +187,7 @@ sequenceDiagram
 **How it works.**
 
 ```text
-line 0 (4th): POKE word(ERR_SP), VARS          ; shown as CHANS, CH_ADD
+line 0 (4th): POKE word(ERR_SP), VARS          ; shown as CURCHL, X_PTR
                -> memory[$FFFA] = $621A
 sixth line: junk -> error -> the ROM returns through ERR_SP -> $621A = Chain1
 ```
@@ -231,7 +231,7 @@ Chain1's last R (`$E5`) plus 40 M1 cycles. Chain2 itself starts with nine bytes 
 **Chain3 `$FCD1`.** 137 rounds of a running XOR over `$FD2C-$FFBF` (660 bytes). Round n starts with A = key[n] - C,
 where key[n] is the byte at `$FCA3` + n (the decoders' own bytes) and C is the last value of the round before. Each
 byte becomes A = A XOR byte. After the rounds, the sum of the 137 bytes from `$FF37` must be `$36FE`. Then Chain3
-wipes `$FCD1-$FD0D` with `$C9` (`RET`) and jumps to LoaderStart `$FF37`. A wrong sum falls into Crash `$FD1D`, which
+wipes `$FCD1-$FD0D` with `$C9` (`RET`) and jumps to LoaderStart `$FF37`. A wrong sum falls into Crash `$FD20`, which
 clears the RAM until the machine resets.
 
 **How it works.**
@@ -317,7 +317,7 @@ at `$36FE` (`tools/speedlock2.py check`).
 
 ![Chain1 at work: the 797 bytes XORed with R and copied to the top of RAM, then Chain2 over them](img/routines/Chain1.gif)
 
-*`c1` frames 1 574-1 577, a half frame a picture. How to read: the map at the top is `$FC00-$FFFF`, 32 bytes a
+*`c1` frames 1 574-1 578, a quarter frame a picture. How to read: the map at the top is `$FC00-$FFFF`, 32 bytes a
 row; the hex view under it is `$FCA0-$FF... ` as the bytes arrive; the code panel shows Chain1's filler, the `LDIR`
 that wipes `$63E0-$FF42` (the whole map turns red), then Chain1Loop, Chain2Loop and the start of Chain3. The point:
 the loader appears byte by byte at `$FCA3` already partly readable, and Chain2 rewrites it again in place. Command:
@@ -366,7 +366,7 @@ between them. Command: `python3 tools/fig_speedlock.py`.*
 **The store.** Every byte t read from the tape is stored as ((t XOR k) + a) AND 255. k and a are the operands of
 Store `$FE04` for every byte but a block's last, and of StoreLast `$FE3C` for the last. They start as k = `$98`,
 a = `$0B`. Block 9 loads `$3E $07` over Store's first instruction: `LD A,$07`, so k becomes 7. Block 10 loads 
-`$3E $07 $AD $C6` over StoreLast's: k becomes 7 there too. From then on the keys are new.
+`$3E $07 $AD $C6` over StoreLast's: k becomes 7 there too. From then on k is 7; a stays `$0B`.
 
 **The running check.** H keeps the XOR of all tape bytes. The last block's last byte is chosen so that H ends at 0.
 
@@ -377,8 +377,8 @@ address, the length less one, and the `$7FFD` value (`$10`, ROM 1 and bank 0 on 
 | ---: | --- | --- | ---: |
 | 1 | `$70C8` | `$11FF` | 7 |
 | 2 | `$A0C8` | `$0FFF` | 8 |
-| 3 | `$FE04` | 1 | 9: Store's k and a |
-| 4 | `$FE3C` | 3 | 10: StoreLast's keys |
+| 3 | `$FE04` | 1 | 9: Store's k (`$3E $07`; a stays `$0B`) |
+| 4 | `$FE3C` | 3 | 10: StoreLast's k (`$3E $07 $AD $C6`: k, then the unchanged `XOR L` and `ADD A`; a stays) |
 | 5 | `$5BC8` | `$14FF` | 11 |
 | 6 | `$FF63` | `$16` | 12: the new tail |
 | 7 | `$B0C8` | `$4957` | 13 |
@@ -514,7 +514,7 @@ frames. In `c1` the jump to `$5B00` comes at frame 11 632 and Start runs at fram
 **Witness.** `work/stage1/images/loaded.cpu.bin` (frame 11 633 T 0) against `entry.cpu.bin` (11 646 T 14 544): the
 only difference is the shift. `src/game/entry.asm` Mover.
 
-**The point.** The game's real layout appears only twelve frames before it starts. A snapshot of memory during the
+**The point.** The game's real layout appears only fourteen frames before it starts. A snapshot of memory during the
 load shows every byte `$5E0` too low.
 
 ## 3.7 The stages from power-on
@@ -536,7 +536,7 @@ flowchart TD
 *The frames of `c1` (48K): the ROM's loads from `kit/rs.py stages`, the POKE from the memory of `$FFFA`, the
 decoders from the traces of 3.4. `m128` runs the same stages at other frames (its ROM loads at frames 618 and later).*
 
-![The whole load of c1: the screen and the memory every 100 frames](img/load/load-c1.gif)
+![The whole load of c1: the screen and the memory every 300 frames](img/load/load-c1.gif)
 
 *`c1` frames 600-11 700, one picture every 300 frames. How to read: left, the memory `$4000-$FFFF`, 256 bytes a row,
 the bytes written since the last picture in yellow; right, the screen. The point: the screen arrives first (block 6),
@@ -550,7 +550,8 @@ frames 1 622-11 632, is 10 010 of them. Everything before it takes 974 frames, m
 BASIC; the three decoders take 48.
 
 **The point.** Seven stages before the game: two in BASIC, one in Stage0, three decoders, the loader, Mover. Only the
-loader takes time: the rest is under 50 frames.
+tape takes time (the loader, and the ROM loading the BASICs); the code between the blocks, the three decoders and
+Mover, is under 50 frames.
 
 ## 3.8 The build
 
@@ -630,13 +631,15 @@ ZXDB lists seven POKEs (`Enduro Racer (1987)(Activision Inc).pok`). Each is one 
 | `42971,1` | `$A7DB` | immune to obstacles | the head-on `CALL Crash` becomes `LD BC,nn` |
 | `43151,1` | `$A88F` | immune to trucks | TruckCrash's `CALL` becomes `LD BC,nn` |
 | `41457,58` | `$A1F1` | keep speed off road | the off-road slow-down's store becomes a load |
-| `43033,58` | `$A819` | keep speed by obstacles | Bounce's store becomes a load |
-| `43622,58` | `$AA66` | keep speed in turns | the lean's slow-down store becomes a load |
+| `43033,58` | `$A819` | keep speed by obstacles | RampSpeed's store (the ramp's speed cut) becomes a load |
+| `43622,58` | `$AA66` | keep speed in turns | the slow-down store of full lean (x `$FF`) and of a bounce (x `$FA`) becomes a load |
 | `43177,0` | `$A8A9` | keep speed by motorbike collisions | the rider bounce's `LD (HL),A` becomes `NOP` |
 
 The value 58 is `$3A`, the opcode of `LD A,(nn)`: it turns a `LD (nn),A` (`$32`) into a load from the same address,
 so the store does nothing. The value 1 is `$01`, `LD BC,nn`: it turns a `CALL` (`$CD`) into a load that skips the
-call. The value 0 is `NOP`. The stage 1 recording `stages` ran with the trucks' POKE among others, to reach the late stages.
+call. The value 0 is `NOP`. The recording `stages` ran with the trucks' POKE among others, to reach the late stages; `stages`, `truck` and
+`fall5` ran with `43033,58`, so their ramps show no speed cut (the ramp's cut is witnessed in `c1` and the
+`tech-*` recordings).
 
 **Worked example.** `POKE 43649,58` writes `$3A` to `$AA81`. TimerTick's `$32 $1F $5E`, `LD (Timer),A`, becomes
 `$3A $1F $5E`, `LD A,(Timer)`. The timer is read back instead of written, so it never counts down.

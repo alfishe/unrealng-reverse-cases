@@ -25,7 +25,7 @@ Each term once, here; the documents use these names and no others.
 | bend | bits 0-1 of a segment byte (Bend `$5E2F`): one of three profiles (BendProfiles) shifts each row's centre sideways (BendRows), pushes the bike outward and scrolls the horizon; bit 4 (BendDir) is its side |
 | big digit | a 16 x 15 digit of BigDigits `$7C54`, used for the stage and the timer |
 | bounce | BounceTime passes of forced steering and SPEED x 250/256 after a side-on hit, a rider or a landing |
-| CheatStep | the cheat's operand: CAPS SHIFT + Q fixes ScrollStep at `$1000` on stages 1-3 |
+| CheatStep | the cheat's operand: CAPS SHIFT + Q, read down on a pass, toggles it; it fixes ScrollStep at `$1000` on stages 1-3 |
 | crest | bits 2-3 of a segment byte (Crest `$5E31`): a column of CrestTable moves each row's screen line (RoadLines) up or down; a rise or a dip, the road straight |
 | element | one track command `TL x`: type T (high nibble), a gap of L x 2 units from the previous element, and its x; doc 7 (7.4) |
 | EXTENDED PLAY | the 50 seconds (at most 99) added to the timer at the end of stages 1-4 |
@@ -44,6 +44,6 @@ Each term once, here; the documents use these names and no others.
 | segment | 128 distance units of the track, one byte of StageList: the bend (bits 0-1), the crest (2-3), the bend's side (4), the stage's last segment (5) |
 | SpeedLock 2 | the tape protection: an R-keyed decoder chain and a loader with its own signal and changing store keys |
 | technique run | one of doc 10's runs: c1's play start replayed with c1's keys and one change (`tools/play_techniques.py` for the samples and GIFs), recorded as `tech-ramp-wheelie`, `tech-land-wheelie`, `tech-brake-bend` and `tech-cheat` ([WALKTHROUGH 6.0](../WALKTHROUGH.md#60-the-recordings)) |
-| time bonus | at a stage's end, the timer's tens and units as the score's 100 000s and 10 000s digits: 10 000 points a timer second left |
+| time bonus | at a stage's end, the timer's tens and units as the score's 100 000s and 10 000s digits: 10 000 points a timer second left, plus the last pass's speed points still in the lower digits of ScoreDigits |
 | timer second | one step of Timer `$5E1F`: 10 passes, about 80 frames (1.6 s) without falls; the timer is held while the rider gets up |
 | unit | the track's distance unit; a pass moves SPEED x 14 / 256 units, a segment is 128 |

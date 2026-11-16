@@ -272,7 +272,7 @@ Witness: L1 28577 (c1, crash, ctl, fall5, m128, names, stages, tech-brake-bend, 
 
 **128K: channel C's volume from SkidLevel, the noise period from SPEED, noise on C and tone off**
 
-In: A = SkidLevel. Volume = ((A >> 2) AND 3) + `$0B`, at most 15; noise period = SPEED >> 4 (SPEED 0: EngineTone instead); AyVolumeC and AyNoise written, mixer AND `$1F` OR 4.
+In: A = SkidLevel. Volume = ((A >> 2) AND 3) + `$0B`, 11-14 (the clamp to 15 never fires); noise period = SPEED >> 4 (SPEED 0: EngineTone instead); AyVolumeC and AyNoise written, mixer AND `$1F` OR 4.
 
 Known only from the code: SkidLevel is set by the sand of stage 3 (OffRoadSand), and no recording left the road there on the 128K.
 
@@ -652,7 +652,7 @@ Witness: L1 8 (c1, ctl, tech-brake-bend, tech-cheat, tech-land-wheelie, tech-ram
 
 ### `WaitKey` (`$854A`)
 
-**Wait for every key up, then for a key: NC and A = its character (`$40` Kempston fire), or C after BC units**
+**Wait for every key up, then for a key: NC and A = its character (`$40` on the Kempston method: any stick bit, a direction or fire, at port `$001F`), or C after BC units**
 
 In: BC = the timeout (B = `$FF`: none). Each unit is a DelayBC(`$9A13`) and a scan; the count is WaitCount. Used by the menus, the credits, the lap table, between turns.
 
@@ -987,7 +987,7 @@ Witness: L1 1 (names).
 
 **One step of the name entry: a beeper blip rising in pitch for a few calls after a pick (NameSound counts down, the period is NameSound + 8), then a pause**
 
-NameSound (the LD A operand) is set to `$28` by a pick and counts down: 191 edges of period NameSound + 8, then a quiet wait of 191 x (`$32` - NameSound) turns. At 0 only the wait: the entry's pace.
+NameSound (the LD A operand) is set to `$28` by a pick and counts down: 191 edges of period NameSound + 8, then a quiet wait of 191 x (`$31` - NameSound) turns, NameSound taken after the count (CPL, ADD A,`$32`): every call with a blip takes the same time. At 0 only the wait of 191 x `$31` turns, a shorter call.
 
 Recorded: stages: the name entry; the OUT (`$FE`) at `$8AFF`.
 
@@ -1844,7 +1844,7 @@ Witness: L1 3230 (c1, crash, fall5, m128, stages, tech-brake-bend, tech-cheat, t
 
 ### `SetHorizon` (`$9E3A`)
 
-**HorizonAddr, HorizonRows, HorizonBottom from StageTable[Stage]; the clear count `$C0` - rows - bottom**
+**HorizonAddr, HorizonRows, HorizonBottom from StageTable[Stage]; the clear count `$C0` - rows - top**
 
 Witness: L1 54 (c1, crash, ctl, fall5, m128, stages, truck, twoplayer).
 
@@ -2052,9 +2052,9 @@ Witness: L1 568 (c1, crash, ctl, fall5, m128, stages, tech-brake-bend, tech-chea
 
 ### `GroundTexture` (`$A301`)
 
-**Stages 3 and 5: the ground's dots, a ROM byte XOR the column as the random x, masks from DotMasks; many tries per row; on stage 5 8-pixel dashes; about 140 000 T (2 frames) a pass**
+**Stages 3 and 5: the ground's dots, a ROM byte XOR the column as the random x, masks from DotMasks; many tries per row; on stage 5 dots and 8-pixel dashes; about 140 000 T (2 frames) a pass**
 
-RandomPtr (`$A45B`) walks the ROM `$0000-$1FFF` by 4 * ScrollStep's high byte each pass; for each line of RowList, a dot left of the left edge or right of the right edge (stage 3), or between them (stage 5).
+RandomPtr (`$A45B`) walks the ROM `$0000-$1FFF` by 4 * ScrollStep's high byte each pass; for each line of RowList a band, centre (`$80` + BendRows scaled) -/+ half the byte at `$7F80` + row: stage 3 puts a dot inside the band (between the road's edges), nothing outside; stage 5 draws only left of the band, a dot within half a band-width of its left edge, an 8-pixel dash further out.
 
 Recorded: stages: stages 3 and 5.
 
@@ -2201,9 +2201,9 @@ Witness: L1 25 (c1, crash, ctl, fall5, m128, stages, truck, twoplayer).
 
 ### `CheatKey` (`$A659`)
 
-**CAPS SHIFT and Q: toggle CheatStep (a fixed ScrollStep of `$1000` on stages 1-3)**
+**CAPS SHIFT and Q: toggle CheatStep on every pass both read down (a fixed ScrollStep of `$1000` on stages 1-3)**
 
-A step of `$1000` is SPEED 293, faster than the throttle gives. The recording tech-cheat holds CAPS SHIFT + Q at frame 126.
+A step of `$1000` is SPEED 293, faster than the throttle gives; it also makes BikeControl read SteerTable at `$8E7D`, past its end, and BikeLateralPush push with `$10`. The recording tech-cheat holds CAPS SHIFT + Q at frame 126.
 
 Witness: L1 1 (tech-cheat).
 
@@ -2392,7 +2392,7 @@ Witness: L1 19 (c1, crash, fall5, m128, names, stages, truck, twoplayer).
 
 ### `StageEnd` (`$AB0A`)
 
-**The stage's last segment passed: the time bonus (the timer's tens and units as the 100 000s and 10 000s digits: 10 000 points a second left), StageTime, Stage + 1; the finish after stage 5**
+**The stage's last segment passed: the time bonus (the timer's tens and units as the 100 000s and 10 000s digits: 10 000 points a second left, plus the last pass's speed points still in ScoreDigits+3..+6), StageTime, Stage + 1; the finish after stage 5**
 
 Reached by NextSegment's JP NZ with its return address on the stack (POP HL). Stages 1-4: the big stage digit, ExtendedTime 32, Timer + 50 (at most 99), StageStart. After stage 5: SPEED 0, the rider of 0-3 with the largest row byte (unsigned: a rider just behind the bike, row `$FF`, beats one ahead) is put on row 0 at the bike's x with speed and top 2 (FinishRider) and the run goes on to FinishCheck.
 

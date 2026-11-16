@@ -87,10 +87,11 @@ scenery repeats, and one pattern of trees serves many stretches.
 ### In short
 
 Stage `$5E23` (0-4) picks a 4-byte StageTable entry and a 10-byte StageParams entry. SetHorizon `$9E3A` copies the
-horizon's address, its lines and the line under it. StageStart `$A4DA` writes the StageParams routines into three
-instructions of the race loop. It also colours the HUD row and the ground.
+horizon's address, its lines and the picture's top line. StageStart `$A4DA` writes the StageParams routines into four
+places: RacePass's two calls (RowBuilderCall `$A68B`, RoadCall `$A68E`), BikeRoadPlace's jump (OffRoadJump `$B07A`)
+and BlitMode `$9943` in the sprite code. It also colours the sky rows and the ground.
 
-| Stage | StageTable: horizon, lines, bottom | StageParams: road, rows, off-road | ground attribute | what it gives |
+| Stage | StageTable: horizon, lines, top | StageParams: road, rows, off-road | ground attribute | what it gives |
 | --- | --- | --- | --- | --- |
 | 1 | `$E5E0`, 32, `$50` | DrawRoad `$931E`, RoadRowsCrest `$9CB7`, OffRoad `$A1D9` | `$20` | mountains, green |
 | 2 | `$E9E0`, 9, `$53` | the same | `$30` | clouds, yellow sand |
@@ -114,7 +115,7 @@ StageStart (each stage, after StageEnd too):
     p = StageParams + 10 * Stage
     BlitMode JR = p[7]
     RoadCall CALL = word(p + 0); RowBuilderCall CALL = word(p + 2); OffRoadJump JP = word(p + 4)
-    attributes $58A0-$59BF = $68                              (the HUD rows)
+    attributes $58A0-$59BF = $68                              (the sky rows 5-13)
     if Stage != 4: attributes $59C0-$5AFF = p[6]               (the ground)
     SplashOn = BendOp = $87 if Stage is odd (stages 2 and 4) else 0
 ```
@@ -152,7 +153,7 @@ flowchart TD
     B --> C["SetHorizon: StageTable entry"]
     C --> D["SetTune"]
     D --> E["StageParams entry: patch RoadCall, RowBuilderCall, OffRoadJump, BlitMode"]
-    E --> F["HUD rows attribute 68"]
+    E --> F["sky rows attribute 68"]
     F --> G{"Stage 4, the fifth?"}
     G -- no --> H["ground attribute from byte 6"]
     G -- yes --> I["ground left as it is"]
@@ -165,12 +166,12 @@ flowchart TD
 ### Worked example and witness
 
 Stage 3 has Stage = 2. Its StageTable entry is at `$9E67 + 8 = $9E6F`: `C0 E2 19 57`. So HorizonAddr is `$E2C0`, the
-picture has 25 lines, and the line under it is `$57`. The clear count is `$C0 - 25 - $57 = $50`. Its StageParams
+picture has 25 lines, and its top line is `$57`. The clear count is `$C0 - 25 - $57 = $50`. Its StageParams
 entry is at `$A187 + 20 = $A19B`. Its rows word is `$999A`, RoadRowsJump: the builder that draws the ramps' rows.
 
 The `stages` samples show the values arrive at each stage's first sampled frame:
 
-| Frame | Stage | HorizonAddr `$5CEF` | lines | bottom | StageListPtr |
+| Frame | Stage | HorizonAddr `$5CEF` | lines | top | StageListPtr |
 | --- | --- | --- | --- | --- | --- |
 | 0 | 0 | `$E5E0` | 32 | `$50` | `$5E84` |
 | 3 346 | 1 | `$E9E0` | 9 | `$53` | `$5EA0` |
@@ -623,7 +624,7 @@ and its address. Drawn by `python3 tools/fig_objects.py fig-types docs/img/objec
 
 ```text
 ObjectWalk (each pass):
-    JumpRows = $FF $FF $FF $FF; GapMarks = $7F $7F
+    JumpRows = $FF $FF $FF $FF; GapMarks = $FF $7F           (bit 7 of the first byte: no mark)
     DrawStack = TrackStack
     c = (ScrollStep + TrackDistance).high + 1        the rows the bike covers this pass
     b = -TrackDistance.high                           the row of the element passed last
@@ -883,8 +884,9 @@ MoveRiders (each pass), for each rider not out:
 ### Assembly
 
 ```asm
+MoveRidersIx:            ; $A21F: DEFB $DD, entered once
 MoveRidersLoop:          ; $A220
-  LD HL,Riders
+  LD HL,Riders            ; from $A21F: LD IX,Riders; from $A220: LD HL,Riders
   EXX
   BIT 7,(IX+$00)          ; out of the race
   JP NZ,l_A2F9
@@ -892,7 +894,7 @@ MoveRidersLoop:          ; $A220
   AND A
   JR Z,l_A259
   ...
-  LD HL,BackBuffer+$0750  ; $FD10: minus $02F0
+  LD HL,-$02F0            ; $A24D: the gravity
   ADD HL,DE
   LD (IX+$0D),L           ; jump speed
   LD (IX+$0E),H
@@ -914,6 +916,11 @@ l_A2AB:
   LD DE,(ScrollStep)
   SBC HL,DE               ; - the bike's step
 ```
+
+The first line is two instructions in one. MoveRiders `$A21A` sets B = 6 and DE = 15 and runs on into MoveRidersIx
+`$A21F`, a single `DEFB $DD`: from there the bytes `DD 21 80 5C` read `LD IX,Riders`, the first rider. The loop's `JP NZ,MoveRidersLoop` (`$A2FD`) comes
+back to `$A220`, where `21 80 5C` alone is `LD HL,Riders`: a load into HL that nothing reads (the `EXX` after it
+switches to the other set). The next rider's IX comes from `ADD IX,DE` at `$A2FA`.
 
 ```mermaid
 flowchart TD
@@ -948,7 +955,7 @@ docs/img/routines/MoveRiders.gif`.*
 
 *Top: the four bikes in `c1` from the countdown, with SPEED in grey. All start at row 0 beside the bike. Rider 0 (top
 speed 10) stays near; riders 2 and 3 fall behind and wrap to 255 at once. Bottom: stage 4 in `stages`, the bike at
-199 km/h: both trucks fall through row 0 and come back from 255, rider 5 (top 6) faster than rider 4 (top 7). Drawn by
+199 km/h: both trucks fall through row 0 and come back from 255, rider 5 (top 6) falls back faster than rider 4 (top 7). Drawn by
 `python3 tools/fig_objects.py fig-ring docs/img/objects/ring.png work/docs/erC/c1-vars.jsonl
 work/docs/erC/st-vars.jsonl`.*
 
@@ -1034,7 +1041,7 @@ OtherPlayer `$5E45` in a two-player game, so each player keeps a place on the tr
 | `$5E2B` | StageListPtr | 2 | the next segment byte | 7.3 |
 | `$5E2D` | BendDir, BendPrev, Bend, CrestPrev, Crest | 5 | the segment, decoded: BendDir the bend's side, Bend the bend, Crest the rise or dip | 7.3 |
 | `$5E32` | FallX | 1 | x at a fall, the restart's x | [10](10-gameplay-logic.md) |
-| `$5E33` | GapMarks | 2 | the rows of the two `F0` marks, `$7F` none | 7.4 |
+| `$5E33` | GapMarks | 2 | the rows of the two `F0` marks; reset to `$FF` `$7F` each pass, bit 7 of the first byte set: none | 7.4 |
 | `$5E35` | Segments | 1 | segments passed | 7.3 |
 | `$5E36` | VarObject | 1 | the type × 2 of element `$A` | 7.4 |
 | `$5E37` | TrackStack | 13 | depth and two call frames | 7.4 |
@@ -1071,3 +1078,8 @@ OtherPlayer `$5E45` in a two-player game, so each player keeps a place on the tr
   entry has such a pair (known only from the code).
 - RiderNoRamp `$A271`: JumpRows always held an end mark within four, so the fall-through is never needed (known only
   from the code).
+- JumpRows has no bound: ObjectWalk (`$A740-$A745`) stores each ramp row at JumpRowPtr and moves it on with no check.
+  A fifth ramp in view would write past the four bytes, onto JumpRowPtr `$5CF9` itself. Whether the track ever puts
+  five ramps in rows 0-127 is not known (known only from the code).
+- MoveRiders runs into MoveRidersIx `$A21F`, a lone `DEFB $DD`: there the bytes read `LD IX,Riders`. Each later
+  rider re-enters at `$A220`, where the same bytes read `LD HL,Riders`, which the `EXX` after it makes harmless (7.8).

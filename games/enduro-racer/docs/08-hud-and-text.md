@@ -474,7 +474,8 @@ l_A14E: INC E
         ...                     ; DE to the next attribute row
 ```
 
-CountdownBeeps sounds a beep when Countdown AND 3 is 2: a short high one for 3, 2, 1 and a long low one for GO.
+CountdownBeeps sounds a beep when Countdown AND 3 is 2: a short low one for 3, 2 and 1, and a long one an octave
+higher for GO (half-period 112 turns against 224, [9.6](09-sound.md#96-the-main-loops-beeper-sounds)).
 The throttle and the timer start when Countdown drops below 8, while "1" shows.
 
 ```mermaid
@@ -516,8 +517,10 @@ some passes only makes them flash:
 | LAPTIME m'ss"hh | ExtendedPlay | column 8, line 88 | every pass of ExtendedTime |
 
 ExtendedPlay also lowers TopClip to line 72, so that CopyBuffer copies the lines the words are on
-([6.10](06-rendering.md#610-one-picture-built-the-order-the-copy-and-the-erase)), and beeps while the count is above
-`$14`.
+([6.10](06-rendering.md#610-one-picture-built-the-order-the-copy-and-the-erase)), and beeps on three of its passes:
+the decremented count with bit 1 set, bit 0 clear and `$14` or more, that is 30, 26 and 22 (ExtendedTime starts at
+`$20`, `$AB7D`). DEMO is printed with PrintString, so SetAttr also writes attribute `$20` under it (DE = `$0420`,
+`$A8CB`); 1UP and 2UP go through PrintGlyph only and leave the attributes alone.
 
 HudPlayer prints PlayerChar (`1` or `2`) and then the codes `$55` and `$50`, U and P, with PrintGlyph only: the
 attribute is the road's.
@@ -575,12 +578,13 @@ NameEntry:
         else take the character under the cursor:
             "?": done
             "=": one character back, blanked (not before the first)
-            else: write it into the row's name and print it at column B, line 48
+            else: write it into the row's name and print it at column B, line 48 + 16 x the table row
         after 8 characters (column 20): done
 ```
 
 The state lives in three operands: the name pointer (the `LD HL` at `$8A16`, operand `$8A17`), the name's column B
-and line C (the `LD BC` at `$8A19`, operand `$8A1A`: C = `$30`, B from 12), and the cursor (DrawCursor's `LD BC`,
+and line C (the `LD BC` at `$8A19`, operand `$8A1A`: ScoreCheck `$897E-$898A` sets C = 48 + 16 × the row the name
+takes, 48 for the top row and 112 for the fifth, and B = 12), and the cursor (DrawCursor's `LD BC`,
 operand `$83EB`).
 
 ```asm
@@ -603,7 +607,7 @@ NameDelete:
         ...
 l_8A38: LD (HL),A
         INC HL
-l_8A3A: LD (l_8A07+$0010),HL
+l_8A3A: LD (NamePtr+$0001),HL
         LD E,$42
         CALL PrintChar
         CP $20
@@ -611,7 +615,7 @@ l_8A3A: LD (l_8A07+$0010),HL
 NameSpace:
         DEC B                   ; after a delete's blank: the column steps back
 l_8A47: LD A,B
-        LD (l_8A07+$0014),A
+        LD (NamePlace+$0002),A
         CP $14
         JR C,l_89F6             ; fewer than 8: on
 ```

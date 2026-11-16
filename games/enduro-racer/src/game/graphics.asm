@@ -172,7 +172,8 @@ GetUp:
 Players:
   DEFB $00                ; 1 or 2
 Speed:
-  DEFB $00,$00            ; SPEED, 8.8 km/h ($7C34 the whole part, 0-200)
+  DEFB $00,$00            ; SPEED, 8.8 km/h ($7C34 the whole part, 0-199: the
+                          ; throttle's curve nears $C800 and never reaches it)
 TotalTime:
   DEFB $00,$00,$00        ; the player's total (minutes, seconds, hundredths)
 SavedSp:
@@ -183,7 +184,9 @@ InGap:
 ScoreDigits:
   DEFB $00,$00,$00,$00,$00,$00,$00 ; 7 digits (0-9) AddScore adds, read back
                                    ; from $7C42: the speed's each pass, the
-                                   ; time bonus at $7C3D
+                                   ; time bonus at $7C3D (with $7C3F-$7C42 as
+                                   ; the last ScoreAdd left them: the bonus
+                                   ; carries that pass's speed points)
   DEFB $00,$00,$00        ; unused
 RunLines:
   DEFB $00,$00,$00,$00,$00,$00,$00,$00 ; DrawRoadRun's work: lines, x positions

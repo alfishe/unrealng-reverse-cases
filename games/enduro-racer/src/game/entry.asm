@@ -142,7 +142,10 @@ HorizonAddr:
 HorizonRows:
   DEFB $E4                ; its rows
 HorizonBottom:
-  DEFB $A0                ; the line under it (StageTable byte 3)
+  DEFB $A0                ; the picture's top line (StageTable byte 3):
+                          ; DrawHorizonAt clears from TopClip down to it, then
+                          ; copies the picture from it (the bottom of the
+                          ; clear, not of the picture)
 HorizonScroll:
   DEFB $C8,$12            ; the horizon's scroll position, 8.8
                           ; (HorizonScrollStep)
@@ -203,7 +206,9 @@ Score:
 Timer:
   DEFB $00                ; seconds left, BCD (game over at 0)
 Tenths:
-  DEFB $00                ; passes to the next second, 10 down to 1
+  DEFB $00                ; passes to the next second, 9 down to 0 (TimerTick
+                          ; reads it first: at 0 the timer's step and 10 again,
+                          ; then one off)
 TimerAtStart:
   DEFB $00,$00            ; Timer and Tenths at the stage's start (StageTime)
 Stage:

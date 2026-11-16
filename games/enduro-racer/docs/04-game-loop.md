@@ -14,7 +14,7 @@ What this covers:
 
 The recordings it rests on ([WALKTHROUGH](../WALKTHROUGH.md)):
 
-- `c1`: power-on on the 48K, the original tape at signal speed, the attract loop, the menu, stage 1 to the time-out;
+- `c1`: power-on on the 48K, the TOSEC `[SpeedLock 2]` copy at signal speed, the attract loop, the menu, stage 1 to the time-out;
 - `reset3`: stage 3 played to the jump that resets the machine (frame 6759);
 - `m128`: the same tape on the 128K, for the 128K test.
 
@@ -155,7 +155,7 @@ flowchart LR
     D --> E["Interrupt"]
 ```
 
-**Worked example.** At frame 17 950 of `c1` the interrupt came while the CPU was at `$9016` in BlitHead. With `$FF`
+**Worked example.** At frame 17 950 of `c1` the interrupt came while the CPU was at `$9016` in ShiftRight (the `c` entry ShiftRightHead `$8FF8`). With `$FF`
 on the bus the CPU read the word at `$B2FF`: `$64` from `$B2FF` and `$64` from `$B300`, so `$6464`. The trace shows
 the read of `$B2FF` and the first instruction at `$6464` (the `JR`), then `$643C`. With `$00` on the bus it would
 read `$B200-$B201`, also `$6464`.
@@ -260,7 +260,7 @@ flowchart TD
     C --> D["read the pushed PC into the JP at 6523"]
     D --> E["IntSavedSp + 2"]
     E --> F{"where did the push write"}
-    F -->|"RowTable FE00-FF81"| G["RowEntry: the row address again"]
+    F -->|"RowTable FE00-FF7F, and FF80-FF81"| G["RowEntry: the row address again"]
     F -->|"the stack FF82-FFFF"| H["leave it"]
     F -->|"elsewhere"| I["IntZeroBytes: 0, 0"]
     G --> J["IntSound"]
@@ -283,7 +283,7 @@ flowchart TD
 | `$6452` | writes `$F4`, `$FF` to `$6586` | IntSavedSp = `$FFF4` |
 | `$6457` | writes `$18`, `$90` to `$6524` | IntReturn becomes `JP $9018` |
 | `$6466` | A = `$FF`, L = `$F2` | the real stack: no repair |
-| `$6523` | `JP $9018` at T 27 281 | back in BlitHead, 25 457 T after the entry |
+| `$6523` | `JP $9018` at T 27 281 | back in ShiftRight (ShiftRightHead `$8FF8`), 25 457 T after the entry |
 
 The instruction before the interrupt was at `$9016`, a 2-byte instruction, so `$9018` is right.
 
@@ -316,7 +316,7 @@ back what the data should hold there. It looks only at the address, H and L:
 
 | Where the push wrote | H, L | IntRepair does | Why it is right |
 | --- | --- | --- | --- |
-| RowTable `$FE00-$FF81` | `$FE`, or `$FF` with L below `$82` | RowEntry recomputes the entry | RowTable holds a computable address for each line |
+| RowTable `$FE00-$FF7F` (and `$FF80-$FF81`, which the L test lets through) | `$FE`, or `$FF` with L below `$82` | RowEntry recomputes the entry | RowTable holds a computable address for each line |
 | the real stack `$FF82-$FFFF` | `$FF`, L `$82` or more | nothing | a normal push; IntExit skips it anyway |
 | anywhere else in RAM | any other | IntZeroBytes writes 0, 0 | the only other SP user an interrupt meets there is ClearLines, which pushes zeros |
 | the ROM `$0000-$3FFF` | `$00`-`$3F` | IntZeroBytes writes 0, 0 into the ROM | nothing: the push itself was lost (4.9) |
@@ -488,7 +488,7 @@ frames, 8.0 on average.
 **The order of one pass.**
 
 1. Countdown: while Countdown is not 0, the pass counts it down and shows 3, 2, 1, GO in attribute blocks.
-2. RaceCount `$A64E`: PassCount `$7C2E` + 1; CAPS SHIFT and Q toggle CheatStep (4.8).
+2. RaceCount `$A64E`: PassCount `$7C2E` + 1; CAPS SHIFT and Q toggle CheatStep ([doc 05, 5.11](05-controls.md#511-the-cheat-key)).
 3. RaceStep: ScrollStep = SPEED x 14.
 4. RacePass `$A67E`:
    - AyEffectTick, AdvanceTrack (the track moves on by ScrollStep), ScrollBends;
@@ -581,7 +581,8 @@ flowchart TD
 - PassCount reads 78 at the start of frame 17 946 and 79 at the start of 17 954. The pass's `INC` came in frames
   17 945 and 17 953, 8 frames apart.
 - ScrollStep = 138 x 14 = 1 932 = `$078C` in 8.8, 7.5 track units: a segment of 128 units takes 17 passes.
-- The trace of the 8 frames is 559 091 T. BlitHead takes 21.6 %, EngineSound 17.1 %, CopyRows 15.3 %, Multiply
+- The trace of the 8 frames is 559 091 T. BlitRow and BlitNext (the `c` entry BlitHead's span, [doc 02,
+  2.6](02-architecture.md#26-the-frame-budget)) take 21.6 %, EngineSound 17.1 %, CopyRows 15.3 %, Multiply
   8.6 %, ShiftLeftHead 7.9 %, DrawRoad 3.5 %, HorizonHidden 3.4 %, RoadRowsCrest 3.1 %.
 
 ![RaceLoop: one 8-frame pass, the back buffer filled, then copied to the screen](img/routines/RaceLoop.gif)
@@ -619,7 +620,8 @@ are the passes with a crash noise (4.7). Command: `python3 tools/fig_passes.py w
 | --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: |
 | Passes | 1 | 43 | 183 | 280 | 97 | 29 | 8 | 5 | 1 | 1 |
 
-The 17-frame pass ends at frame 14 172, in the countdown's last passes, with its beeps. The 70-frame pass is the pause at frame 14 552-14 621 (H
+The 17-frame pass ends at frame 14 172, in the countdown's last passes: probably GO's beep (BeepTone `$AB95`
+busy-waits, 256 edges for GO against 64 for 3, 2, 1), not traced. The 70-frame pass is the pause at frame 14 552-14 621 (H
 held, then a key). The demo race of `c1` (frames 12 400-13 418) took 8.24 frames a pass on average.
 
 **Witness.** `c1-samples.json` (PassCount `$7C2E` per frame); the WALKTHROUGH's pass histogram (the same 648
@@ -637,7 +639,7 @@ The 13 passes of 11 and 12 frames are not caused by more drawing. The trace of t
 | --- | ---: | ---: |
 | CrashSoundD | 213 532 | 23.5 % |
 | EngineSound | 119 216 | 13.1 % |
-| BlitHead | 109 666 | 12.1 % |
+| BlitRow, BlitNext (BlitHead's span) | 109 666 | 12.1 % |
 | CopyRows | 90 360 | 9.9 % |
 | HorizonHidden | 69 640 | 7.7 % |
 | Multiply | 64 566 | 7.1 % |
@@ -680,9 +682,10 @@ frames and the rest is 9 frames, within the normal range for a screen with a rid
 
 ## 4.8 The timer, the countdown and the delays
 
-**The timer.** Timer `$5E1F` holds the seconds in BCD; Tenths `$5E20` counts passes from 10 down. TimerTick takes
-one off Tenths each pass. At 0 it takes one off the Timer (`DEC A`, `DAA`), prints it, and sets Tenths back to 10. So
-a timer second is 10 passes, about 80 frames, 1.6 s of real time.
+**The timer.** Timer `$5E1F` holds the seconds in BCD; Tenths `$5E20` counts passes, 9 down to 0. TimerTick looks
+at Tenths first: at 0 it takes one off the Timer (`DEC A`, `DAA`), prints it, and reloads 10. Then it takes one off
+Tenths and stores it (9 after a reload). So a timer second is 10 passes, about 80 frames, 1.6 s of real time, and the
+timer's step comes on the pass after Tenths was stored as 0.
 
 Throttle skips TimerTick in three cases: during the countdown (Countdown 8 or more), while the rider gets up (GetUp
 `$7C31` not 0) and in a demo. So the timer stops while the rider is down.
@@ -694,11 +697,11 @@ Throttle ... TimerTick, at the end of a pass:
     if Countdown >= 8 or GetUp: goto RaceLoop      ; no tick
     ...
     if DemoMode: goto RaceLoop
-    Tenths -= 1
-    if Tenths == 0:
+    if Tenths == 0:                                ; Tenths holds 9..0
         if Timer: Timer -= 1 (BCD)
         PrintTimer; Tenths = 10
-    if Timer == 0 and SPEED == 0: RaceOver
+    Tenths -= 1
+    if Tenths == 0 and Timer == 0 and SPEED == 0: RaceOver
 ```
 
 ```asm
@@ -734,11 +737,13 @@ flowchart TD
     B -->|yes| Z["RaceLoop: no tick"]
     B -->|no| C{"DemoMode"}
     C -->|yes| Z
-    C -->|no| D["Tenths - 1"]
-    D --> E{"Tenths was 0"}
+    C -->|no| E{"Tenths reads 0"}
     E -->|yes| F["Timer - 1 BCD, PrintTimer, Tenths = 10"]
-    E -->|no| G{"Timer 0 and SPEED 0"}
-    F --> G
+    E -->|no| D["Tenths - 1, stored"]
+    F --> D
+    D --> T{"stored 0"}
+    T -->|no| Z
+    T -->|yes| G{"Timer 0 and SPEED 0"}
     G -->|no| Z
     G -->|yes| H["RaceOver"]
 ```
@@ -748,12 +753,15 @@ flowchart TD
 - Tenths reads 5, 4, 3, 2 at frames 16 000, 16 002, 16 009, 16 015, one step a pass;
 - the bike crashes; GetUp is set from frame 16 022 to 16 106;
 - Tenths stays at 2 for 13 passes, from 16 015 to 16 104, while the rider gets up;
-- then Tenths goes 1, 0 (frames 16 112, 16 119) and the timer drops from 38 to 37 at 16 127.
+- then Tenths goes 1, 0 (frames 16 112, 16 119) and the timer drops from 38 to 37 at 16 127: one pass after
+  Tenths was stored as 0, the pass that reads the 0, takes the second off and stores 9.
 
 Over the whole stage 1 race the rider spent 382 frames getting up, in 5 falls. The 58 timer seconds from 59 to 1
 took 5 068 frames: 87 frames a second with the falls, 81 without them.
 
-**The countdown.** StartRace sets Countdown. RaceLoop counts it down by one a pass and shows 3, 2, 1, GO. MoveRiders
+**The countdown.** NewGame sets Countdown to 16 (not in a demo; a fall's end sets `$80`, which StartRace turns
+into 0 or 1: no countdown after a fall). RaceLoop counts it down by one a pass and shows 3, 2, 1 at 15, 11 and 7 and
+GO at 3; the display clears at 0. MoveRiders
 waits until Countdown is under 8, and Throttle ignores the keys while it is 8 or more. In `c1` Countdown read 11 at
 frame 14 075, 8 at 14 100 and 2 at 14 155.
 

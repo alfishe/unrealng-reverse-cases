@@ -4,9 +4,9 @@
 ; NewGame clears both player blocks (Player, the current one at $5E0D, and OtherPlayer at $5E45, 56 bytes each), and
 ; the turn loop swaps them before each turn, skipping a player whose Timer is 0. With one player the second block's
 ; timer stays 0, so every turn is player 1's. PlayTurn draws the HUD and runs the race (JP StartRace); it returns at a
-; stage's end (the timer still running: the next turn) or at game over (Timer 0: the records, the lap table, the high
-; score entry). With two players a key is waited for between turns (twoplayer). The game ends, back to Attract, when
-; both timers are 0.
+; fall's end (the timer still running: the next turn; a stage's end goes on to StageStart in the same turn) or at game
+; over (Timer 0: the records, the lap table, the high score entry). With two players a key is waited for between turns
+; (twoplayer). The game ends, back to Attract, when both timers are 0.
 ;
 ; Times are BCD pairs: seconds (a value of $60 or more is one minute more) and hundredths. Records ($5E00) holds the
 ; five stage records and their total; a stage time shorter than its record replaces it at game over (RecordStages).
@@ -574,8 +574,10 @@ NameGrid:
 ; pause
 ;
 ; NameSound (the LD A operand) is set to $28 by a pick and counts down: 191
-; edges of period NameSound + 8, then a quiet wait of 191 x ($32 - NameSound)
-; turns. At 0 only the wait: the entry's pace.
+; edges of period NameSound + 8, then a quiet wait of 191 x ($31 - NameSound)
+; turns, NameSound taken after the count (CPL, ADD A,$32): every call with a
+; blip takes the same time. At 0 only the wait of 191 x $31 turns, a shorter
+; call.
 ;
 ; Recorded: stages: the name entry; the OUT ($FE) at $8AFF.
 ;
@@ -899,9 +901,11 @@ LeanTable:
 ; The steering force at each speed: index ScrollStep's high byte * 2 (0-20), 21
 ; bytes
 ;
-; BikeControl reads $8E5D + 2 * (ScrollStep >> 8); the speed is at most 200,
-; the step at most $AF0, so the index stays at or below 20 and only every
-; second byte is read.
+; BikeControl reads $8E5D + 2 * (ScrollStep >> 8); the speed is at most 199,
+; the step at most $AE2, so the index stays at or below 20 and only every
+; second byte is read; except under the cheat: ScrollStep $1000 gives index 32,
+; $8E7D, past SteerTail, the opcode $06 of render.asm's first LD B,$80 (full
+; lean 0.5 pixel a pass, a game bug).
 SteerTable:
   INCBIN "res/tables/steer.bin",$0000,21
 SteerTail:

@@ -14,7 +14,7 @@ What this covers:
 
 The recordings it rests on ([WALKTHROUGH](../WALKTHROUGH.md)):
 
-- `c1`: power-on on the 48K, the original tape at signal speed, the attract loop, the menu, stage 1 to the time-out;
+- `c1`: power-on on the 48K, the TOSEC `[SpeedLock 2]` copy at signal speed, the attract loop, the menu, stage 1 to the time-out;
 - `stages` and `ctl`: from `c1`'s states, all five stages and every control method;
 - `m128`: the same tape on the 128K.
 
@@ -54,8 +54,8 @@ script in [`work/docs/erA-NOTES.md`](../work/docs/erA-NOTES.md).*
 has 2 439 bytes of code in 30 routines, about 81 bytes a routine. The graphics module alone, 26 068 bytes, is more
 than twice all the code.
 
-**The point.** The game is small (11.5 KB of code) and its pictures are big (26 KB). The 48K is full: there is no
-free kilobyte left. The leftovers in 2.7 are what the authors did not clean up, not spare room.
+**The point.** The game is small (11.5 KB of code) and its pictures are big (26 KB). The 48K is nearly full: about
+4 KB of it is dead weight (2.7) that could have been freed, but the authors did not need the room.
 
 ## 2.2 The memory map
 
@@ -69,8 +69,8 @@ space with the track tables of the load. Command: `python3 tools/fig_memmap.py`.
 | Range | Name | Kind | What |
 | --- | --- | --- | --- |
 | `$4000-$5AFF` | the screen | screen | the copied back buffer from line 40, the HUD on lines 0-39 |
-| `$5B00-$5B7F` | RowList | work | the road's rows, one byte a screen line |
-| `$5B80-$5BFF` | BendRows | work | each road row's height offset |
+| `$5B00-$5B7F` | RowList | work | the road's lines, top down: a RoadLines index each, `$FE` a gap, `$FF` the end |
+| `$5B80-$5BFF` | BendRows | work | each road row's x centre (the bend's sideways shift) |
 | `$5C00-$5C7F` | RoadLines | work | the road's line table |
 | `$5C80-$5CFF` | Riders, JumpHeight, HorizonAddr | work | 6 riders of 15 bytes; the jump; the stage's horizon |
 | `$5D00-$5DFF` | ReverseTable | table | each byte with its bits reversed (Init builds it) |
@@ -92,7 +92,7 @@ space with the track tables of the load. Command: `python3 tools/fig_memmap.py`.
 | `$E2C0-$EAFF` | the horizons | graphics | dunes `$E2C0`, mountains `$E5E0`, clouds `$E9E0`, 32 bytes a row |
 | `$EB00-$FDFF` | BackBuffer (TrackTables at the load) | buffer | screen lines 40-191, 32 bytes a line |
 | `$FE00-$FF7F` | RowTable | table | the address of each of the 192 lines |
-| `$FF80-$FFFF` | StackArea | stack | the stack `$FFE4-$FFFF`; the loader's leftovers below it |
+| `$FF80-$FFFF` | StackArea | stack | the stack `$FFE6-$FFFF` (SP reaches `$FFE4`); the loader's leftovers below it |
 
 The back buffer is split in two. Lines 40-63 lie plainly from `$EB00`, 32 bytes a line. Lines 64-191 lie at the
 screen's own addresses plus `$A600`, so the copy to the screen is a fixed offset. RowTable holds each line's address
@@ -151,8 +151,9 @@ Command: `python3 ../../kit/heatmap.py work/stage1/merged-play.json docs/img/arc
 | back buffer `$EB00-$FDFF` | no | the copy | every pass |
 | RowTable, stack `$FE00-$FFFF` | no | DrawRoad's pops | the interrupt's repairs, the stack |
 
-**The stack.** Init sets SP to 0, so the first push lands at `$FFFE-$FFFF`. The lowest byte a `PUSH`, `CALL` or the
-interrupt wrote in `$FF80-$FFFF` is `$FFE4` in `c1`'s play and in `stages`: the stack is `$FFE4-$FFFF`, 28 bytes.
+**The stack.** Init sets SP to 0, so the first push lands at `$FFFE-$FFFF`. In `c1`'s play and in `stages` SP goes down to
+`$FFE4`, and the lowest byte a `PUSH`, `CALL` or the interrupt wrote in `$FF80-$FFFF` is `$FFE6`: the stack uses
+`$FFE6-$FFFF`, 26 bytes (SP reaches 2 lower).
 The handler has its own 32 bytes, IntStack, of which it uses `$6574-$6583`. Many other bytes have "stack" writes in
 the L1: `$FE4C-$FF75` and the back buffer. Those are the interrupt's pushes while SP was a data pointer, repaired by
 the handler ([doc 04, 4.4](04-game-loop.md#44-the-repair-of-the-pushed-word)).
@@ -165,8 +166,8 @@ the handler ([doc 04, 4.4](04-game-loop.md#44-the-repair-of-the-pushed-word)).
 | `stages` | 23 908 | `$FFE4` | `$FFE6` |
 | `ctl` | 4 316 | `$FFE6` | `$FFEA` |
 
-**The point.** The game needs 28 bytes of stack. The 128 bytes of StackArea give it room, and the bytes below
-`$FFE4` are the loader's leftovers, never touched.
+**The point.** The game needs 26 bytes of stack. The 128 bytes of StackArea give it room, and the bytes below
+`$FFE6` are the loader's leftovers, never touched.
 
 ## 2.4 From the tape to play: the images
 
@@ -219,15 +220,15 @@ The variables a reader needs to follow a race, with the `.ann`'s names:
 | --- | --- | --- | --- |
 | Stage | `$5E23` | 0-4 the stages, 5 after the finish | `$AB31 LD ($5E23),A` in StageEnd |
 | Timer | `$5E1F` | seconds, BCD | the infinite-time POKE at `$AA81` |
-| Tenths | `$5E20` | 10 down to 1, one a pass | TimerTick ([doc 04, 4.8](04-game-loop.md#48-the-timer-the-countdown-and-the-delays)) |
+| Tenths | `$5E20` | 9 down to 0, one a pass; at 0 the timer's step and back to 10, stored 9 | TimerTick ([doc 04, 4.8](04-game-loop.md#48-the-timer-the-countdown-and-the-delays)) |
 | Score | `$5E18-$5E1E` | 7 ASCII digits, spaces before | `"  59601"` at `c1` frame 19 183 |
-| Countdown | `$5E24` | from 11 at GO down to 0 | `c1-samples.json` |
+| Countdown | `$5E24` | from 16 down to 0, one a pass: 3, 2, 1 shown at 15, 11, 7, GO at 3; the throttle from 7 | `c1-samples.json` |
 | PassCount | `$7C2E` | + 1 a pass | RaceCount |
 | Beeper | `$7C2F` | `$FF` the 48K ROM, else 0 | RomSum |
 | DemoMode | `$7C30` | 0, or 8-15 in a demo | Attract |
 | GetUp | `$7C31` | not 0 while the rider gets up | `c1-samples.json` |
 | Players | `$7C32` | 1 or 2 | Menu |
-| Speed | `$7C33-$7C34` | 8.8; `$7C34` is the km/h, 0-200 | PrintSpeed |
+| Speed | `$7C33-$7C34` | 8.8; `$7C34` is the km/h, 0-199 | PrintSpeed |
 | ScrollStep | `$9136` | SPEED x 14, 8.8 | RaceStep |
 | LateralX | `$913F` | the bike across the road | BikeControl |
 | Pose, Lean | `$9175`, `$9176` | the bike's sprite and lean | DrawBike |
@@ -253,14 +254,16 @@ work/stage1/c1-play/l1.json docs/img/arch/budget-modules.png --by module`.*
 ![Where the T-states of c1's stage 1 go, by routine, the top 24](img/arch/budget-routines.png)
 
 *The same L1 by routine. How to read: one bar a routine, its share. The point: three routines take nearly half the
-time: BlitHead (the scaled sprites, 17.3 %), EngineSound (the beeper engine in the interrupt, 14.8 %) and CopyRows
-(the back buffer to the screen, 13.9 %). HorizonHidden counts the rest of DrawHorizon after its entry. Command:
+time: the sprite row blitter (BlitRow and BlitNext, charged to the `c` entry BlitHead `$90B3`, 17.3 %), EngineSound (the beeper engine in the interrupt, 14.8 %) and CopyRows
+(the back buffer to the screen, 13.9 %). A bar is a `c` entry of `game.ann` and holds every entry point inside its span: BlitHead is BlitRow and BlitNext
+(the stub at `$90B3` itself never runs), ShiftLeftHead is ShiftLeft and BlitRows, HorizonHidden the rest of
+DrawHorizon after its entry. Command:
 `python3 ../../kit/fig_budget.py work/stage1/c1-play/l1.json docs/img/arch/budget-routines.png --by routine --top
 24`.*
 
 | Module | Share | The big routines in it |
 | --- | ---: | --- |
-| render | 42.6 % | BlitHead 17.3 %, CopyRows 13.9 %, ShiftLeftHead 5.4 % |
+| render | 42.6 % | BlitHead's span (BlitRow, BlitNext) 17.3 %, CopyRows 13.9 %, ShiftLeftHead's span (ShiftLeft, BlitRows) 5.4 % |
 | sound | 15.3 % | EngineSound 14.8 % |
 | road | 13.9 % | DrawRoad 8.7 % |
 | flow | 9.5 % | Multiply 4.8 %, Divide 4.6 % (the maths lives in flow) |
@@ -272,7 +275,7 @@ time: BlitHead (the scaled sprites, 17.3 %), EngineSound (the beeper engine in t
 | bike | 0.5 % | BikeControl |
 
 **Worked example.** One pass of 8 frames at frames 17 945-17 952 is 559 091 T. EngineSound took 95 871 T of it,
-four bursts of about 24 000 T; CopyRows 85 485 T, the one copy of the buffer; BlitHead 120 537 T for the riders,
+four bursts of about 24 000 T; CopyRows 85 485 T, the one copy of the buffer; BlitRow and BlitNext (BlitHead's span) 120 537 T for the riders,
 the trees and the bike ([doc 04, 4.6](04-game-loop.md#46-the-free-running-race-loop)).
 
 **Witness.** `work/stage1/c1-play/l1.json`; `c1/traces/17945_0-17953_0.uatr` through `work/docs/erA/prof.py`.
@@ -350,11 +353,11 @@ flowchart LR
     RP --> T3["row builder: RoadRowsCrest or RoadRowsJump"]
     RP --> T4["DrawRoad: DrawRoadRow, Multiply"]
     RP --> T5["GroundTexture"]
-    RP --> T6["MoveRiders, DrawRiders: BlitHead"]
-    RP --> T7["BikeControl, DrawBike: BlitHead"]
+    RP --> T6["MoveRiders, DrawRiders: BlitRows, BlitRow"]
+    RP --> T7["BikeControl, DrawBike: BlitRows, BlitRow"]
     RP --> T8["HorizonScrollStep"]
     RP --> OW["ObjectWalk A6D9"]
-    OW --> O1["DrawObject: BlitHead, Divide"]
+    OW --> O1["DrawObject: BlitRows, BlitRow, Divide"]
     OW --> O2["Bounce, Crash, Ramp: CrashSound"]
     OW --> RH["RiderHits A839"]
     RH --> CB["CopyBuffer 98F5: CopyRows"]
@@ -367,7 +370,8 @@ flowchart LR
 *The order of [doc 04, 4.6](04-game-loop.md#46-the-free-running-race-loop), with the routines each step spends its
 time in (2.6).*
 
-**Worked example.** In the pass of `c1` frames 17 945-17 952, BlitHead (render) takes 21.6 % of the T-states. It is
+**Worked example.** In the pass of `c1` frames 17 945-17 952, the row blitter (BlitRow and BlitNext, BlitHead's
+span, render) takes 21.6 % of the T-states. It is
 called from three modules: DrawRiders (objects), DrawBike (bike) and DrawObject (objects). Render is the module
 everything else ends in.
 

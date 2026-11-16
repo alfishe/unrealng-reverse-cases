@@ -576,7 +576,7 @@ stateDiagram-v2
     Idle --> Bounce: PlayEffect 2 (a side-on hit, a rider, a ramp)
     Fall --> Fall: a pass, volumes 15 down to 2
     Fall --> Silent: step 0, TuneRequest 0
-    Bounce --> Bounce: one pass, volume 15 then 14
+    Bounce --> Bounce: one pass at volume 15
     Bounce --> Idle: step 13, the tune comes back
     Silent --> Idle: SetTune at the next turn
 ```
@@ -597,8 +597,8 @@ step 15. The machine is a 48K, so none of this was heard, but the tune state fol
 
 The skid noise. On stage 3 the sand beside the road sets SkidLevel `$645F` (OffRoadSand: (distance off the road -
 `$24`) / 4, or 3 in a gap of the road), and a fall on the sand of stages 3 and 5 adds 3 a pass (FallSand). On the
-128K, EngineSkid `$689E` then replaces the engine tone with noise on channel C: volume ((SkidLevel / 4) AND 3) + 11, at
-most 15; the noise period SPEED / 16. [ay-skid.wav](audio/ay-skid.wav) is SkidLevel 8 at 120 km/h: R6 = 7, R10 = 13,
+128K, EngineSkid `$689E` then replaces the engine tone with noise on channel C: volume ((SkidLevel / 4) AND 3) + 11,
+11-14 (the clamp to 15 at `$68A4` never fires); the noise period SPEED / 16. [ay-skid.wav](audio/ay-skid.wav) is SkidLevel 8 at 120 km/h: R6 = 7, R10 = 13,
 R7 = `$1C` (tone C off, noise C on), under tune 1. On the 48K SkidLevel is never read.
 
 **The point**: one noise and one counter make both the crash and the knock. The fall's end doubles as the game's way
@@ -626,13 +626,13 @@ next the gap. It starts where L stands. On the 128K it returns at once with carr
 there.
 
 The countdown beeps at Countdown values whose low two bits are 2: 14, 10 and 6 give the short 3, 2 and 1, and 2 gives
-the long GO, one octave lower (gap 112 against 224 turns, and 256 edges against 64). EXTENDED PLAY beeps three times
-as it flashes after a stage's end. Its DE is loaded as `LD DE,TrackPatterns+$0174` in the listing: the constant
-`$6080` happens to equal that address (9.8).
+the long GO, one octave higher (gap 112 against 224 turns: a shorter half-period is a higher note; and 256 edges
+against 64). EXTENDED PLAY beeps three times as it flashes after a stage's end.
 
-NameEntrySound makes 191 edges at NameSound + 8 turns, then waits 191 x (50 - NameSound) turns. A pick sets NameSound
-to `$28`, and each call counts it down by one. So each step's blip is higher than the last, and every call takes the
-same 150 791 T: the pitch rises while the pace of the entry stays fixed.
+NameEntrySound counts NameSound down by one, makes 191 edges at NameSound + 8 turns, then waits 191 x (49 - NameSound)
+turns (`CPL`, `ADD A,$32`), NameSound taken after the count. A pick sets NameSound to `$28`, so each step's blip is
+higher than the last, and the 40 calls after a pick take the same 150 791 T: the pitch rises while the pace stays
+fixed. A call with NameSound already 0 has no blip, only the wait of 191 x 49 turns, and is shorter.
 
 ```text
 BeepTone(D edges, E turns):     repeat D: OUT ($FE), bit4; bit4 ^= $10; wait E DJNZ turns
@@ -640,7 +640,7 @@ CrashSoundD(D):                 if Beeper == 0: return NC
                                 repeat D: OUT ($FE), ROM[$0300 + L++] & $10; wait (ROM[$0300 + L++] & $1F) + $30
                                 return C
 NameEntrySound:                 if NameSound: NameSound -= 1; 191 edges of NameSound + 8 turns
-                                wait 191 x (50 - NameSound) turns
+                                wait 191 x (49 - NameSound) turns
 ```
 
 ```asm

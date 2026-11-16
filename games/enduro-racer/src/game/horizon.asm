@@ -367,7 +367,7 @@ RotateTable:
   ORG $9E3A
 
 ; HorizonAddr, HorizonRows, HorizonBottom from StageTable[Stage]; the clear
-; count $C0 - rows - bottom
+; count $C0 - rows - top
 ;
 ; Witness: L1 54 (c1, crash, ctl, fall5, m128, stages, truck, twoplayer).
 SetHorizon:
@@ -391,8 +391,8 @@ SetHorizon:
   LD (l_9E9F+$0046),A
   RET
 
-; The five stages' horizons: the picture's address (a word), its lines, the
-; line under it (5 x 4 bytes)
+; The five stages' horizons: the picture's address (a word), its lines, its top
+; line (5 x 4 bytes)
 ;
 ; Mountains/32/$50, Clouds/9/$53, Dunes/25/$57, Mountains/32/$50, Clouds/9/$5A.
 ; src/res/tables/stages.csv.

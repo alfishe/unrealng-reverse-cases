@@ -381,11 +381,12 @@ RaceCount:
   RRA
   JR C,RaceStep
 
-; CAPS SHIFT and Q: toggle CheatStep (a fixed ScrollStep of $1000 on stages
-; 1-3)
+; CAPS SHIFT and Q: toggle CheatStep on every pass both read down (a fixed
+; ScrollStep of $1000 on stages 1-3)
 ;
-; A step of $1000 is SPEED 293, faster than the throttle gives. The recording
-; tech-cheat holds CAPS SHIFT + Q at frame 126.
+; A step of $1000 is SPEED 293, faster than the throttle gives; it also makes
+; BikeControl read SteerTable at $8E7D, past its end, and BikeLateralPush push
+; with $10. The recording tech-cheat holds CAPS SHIFT + Q at frame 126.
 ;
 ; Witness: L1 1 (tech-cheat).
 CheatKey:
@@ -690,9 +691,9 @@ l_A81C:
 ; This entry point is used by the routine at RacePass.
 RiderHits:
   POP AF                  ; the riders on the bike's row (not in the air, not
-                          ; getting up, not in a demo): a truck within 9 is a
-                          ; fall, a rider within 5 a bounce and SPEED - SPEED /
-                          ; 4
+                          ; getting up, not in a demo): a truck closer than 9
+                          ; is a fall, a rider closer than 5 a bounce and SPEED
+                          ; - SPEED / 4
   LD (VarObject),A
   LD A,(JumpHeight+$0001)
   AND A
@@ -1045,8 +1046,8 @@ l_AA69:
   AND A
   JP NZ,RaceLoop
 TimerTick:
-  LD A,(Tenths)           ; Tenths down; at 0: Timer - 1 (BCD), PrintTimer,
-                          ; Tenths 10
+  LD A,(Tenths)           ; Tenths read first; at 0: Timer - 1 (BCD),
+                          ; PrintTimer, 10; then Tenths - 1 stored (9..0)
   AND A
   JR NZ,l_AA89
   LD A,(Timer)
@@ -1163,8 +1164,9 @@ l_AAFC:
   RET
 
 ; The stage's last segment passed: the time bonus (the timer's tens and units
-; as the 100 000s and 10 000s digits: 10 000 points a second left), StageTime,
-; Stage + 1; the finish after stage 5
+; as the 100 000s and 10 000s digits: 10 000 points a second left, plus the
+; last pass's speed points still in ScoreDigits+3..+6), StageTime, Stage + 1;
+; the finish after stage 5
 ;
 ; Reached by NextSegment's JP NZ with its return address on the stack (POP HL).
 ; Stages 1-4: the big stage digit, ExtendedTime 32, Timer + 50 (at most 99),

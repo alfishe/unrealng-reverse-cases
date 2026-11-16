@@ -821,8 +821,9 @@ KeyMap:
 GetKey:
   LD B,$FF
 
-; Wait for every key up, then for a key: NC and A = its character ($40 Kempston
-; fire), or C after BC units
+; Wait for every key up, then for a key: NC and A = its character ($40 on the
+; Kempston method: any stick bit, a direction or fire, at port $001F), or C
+; after BC units
 ;
 ; In: BC = the timeout (B = $FF: none). Each unit is a DelayBC($9A13) and a
 ; scan; the count is WaitCount. Used by the menus, the credits, the lap table,

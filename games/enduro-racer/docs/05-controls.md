@@ -12,13 +12,14 @@ What this covers:
 - the throttle and the brakes, checked against a recording (5.8);
 - the wheelie (5.9);
 - pause, reset and the demo's key: one byte shared by two instructions (5.10);
-- two players (5.12).
+- the cheat key, CAPS SHIFT and Q, and what it does to the steering (5.11);
+- two players: the turn loop and the swap of the player blocks (5.12).
 
 The recordings it rests on ([WALKTHROUGH](../WALKTHROUGH.md)):
 
 | Recording | Load | Used for |
 | --- | --- | --- |
-| `c1` | power-on on the 48K, `LOAD ""`, the original tape at signal speed, `tests/inputs/c1.txt` | the menu toured (13 282-13 945), KEYBOARD picked, stage 1 with Q, O, P, A, SPACE, H (14 075 on) |
+| `c1` | power-on on the 48K, `LOAD ""`, the TOSEC `[SpeedLock 2]` copy at signal speed, `tests/inputs/c1.txt` | the menu toured (13 282-13 945), KEYBOARD picked, stage 1 with Q, O, P, A, SPACE, H (14 075 on) |
 | `ctl` | `work/stage1/rec/c1/loaded.szx`, `tests/inputs/ctl.txt` | every method picked and driven, Kempston included; DEFINE KEYS with THROTTLE set to W (3 629) |
 | `twoplayer` | `work/stage1/rec/c1/menu-kb.szx`, `tests/inputs/twoplayer.txt` | TWO PLAYERS: the turns |
 
@@ -151,7 +152,7 @@ MenuControl:
         CALL MenuSelect         ; A = the method picked
         JP C,MenuDraw           ; timeout
         LD (ControlMethod),A
-        LD DE,RowTable+$0020    ; = $FE20: port $FE, $20 = JR NZ
+        LD DE,$FE20             ; D = port $FE, E = $20 (JR NZ)
         CP $01
         JR NZ,l_8237
         LD DE,$1F28             ; Kempston: port $1F, $28 = JR Z
@@ -183,8 +184,8 @@ PatchTest:                      ; $830B
         RET
 ```
 
-The source writes the keyboard's DE as `RowTable+$0020`. The value is right (`$FE20`), but it is not an address:
-D is the port and E an opcode. The same constant appears at `$82CF`. Both should read `$FE20`.
+The keyboard's DE, `$FE20` (here and at `$82CD`), is a port and an opcode, not an address: D is the port and E
+the `JR NZ`. It happens to equal RowTable + `$20`; the source writes it as the plain constant.
 
 Worked example, KEMPSTON picked: IX = ControlTable + 10, DE = `$1F28`. The first PatchTest writes C = 0, D = `$1F`,
 B = `$08`, E = `$28`, so the first test becomes `3E 00 DB 1F E6 08 28 02`: `LD A,0 / IN A,($1F) / AND 8 / JR Z`. Up on
@@ -198,13 +199,13 @@ joystick with the keyboard's code.
 
 ## 5.4 What an emulator must decode
 
-The game makes two kinds of port reads:
+The game makes three port reads:
 
 | Read | Address on the bus | What must answer |
 | --- | --- | --- |
 | `LD A,row / IN A,($FE)` | `row × 256 + $FE` | the ULA: bits 0-4 of the half rows whose address bit is 0, low when a key is down |
 | `LD A,0 / IN A,($1F)` | `$001F` | the Kempston interface: bits 0-4 right, left, down, up, fire, high when pressed |
-| `IN A,($1F)` in WaitKey and KeyOrFire | `A × 256 + $1F` | the Kempston again; only A5 = 0 matters to the interface |
+| `IN A,($1F)` in WaitKey, WaitPress and KeyOrFire | `$001F` (A = ControlMethod - 1 = 0 there too) | the Kempston again, any of bits 0-4 |
 
 - The Kempston is decoded by A5 = 0 alone. The game never reads `$1F` with A5 = 1.
 - ScanKeys (5.6) reads one half row at a time and needs exactly one key of that half row down (`CP E`). An emulator
@@ -322,14 +323,17 @@ How to read:
 - Codes 1-4 are SYMBOL SHIFT, ENTER, SPACE and CAPS SHIFT; KeyNames prints them SYM, ENT, SPC, CPS.
 
 **GetKey `$8548` and WaitKey `$854A`.** WaitKey first waits until every key is up, then for a key, each step a
-delay of `$9A13` and a scan. On the KEMPSTON method it also takes the fire button (returned as `$40`). GetKey is
-WaitKey with no timeout.
+delay of `$9A13` and a scan. On the KEMPSTON method any stick bit, a direction or fire (`IN A,($1F)` / `AND $1F`), also
+counts as a key: the release wait waits for the stick to be centred, and a push returns `$40`. KeyOrFire
+(KempstonFire `$84EC`), which ends the demo, reads it the same way, so any direction ends the demo too. In the
+menus MenuSelect then reads ReadControls: up (THROTTLE) moves the bar up, fire alone (BRAKES) picks, any other
+direction moves it down. GetKey is WaitKey with no timeout.
 
 ```text
 WaitKey(timeout BC):          # B = $FF: no timeout
-    repeat: delay; if no key (and no Kempston fire): break; count down -> timeout: C
+    repeat: delay; if no key (and, on method 1, the stick centred): break; count down -> timeout: C
     repeat: delay; A = ScanKeys(); if A != $FF: return NC, A
-            if method 1 and Kempston fire: return NC, $40
+            if method 1 and IN($001F) AND $1F: return NC, $40     # any direction or fire
             count down -> timeout: C
 ```
 
@@ -419,8 +423,11 @@ ScrollStep is SPEED × 14, so its high byte steps every 256 / 14 = 18.3 km/h.
 How to read:
 
 - One curve per lean. Negative leans are the same, subtracted.
-- The flat tops are the cap: the high byte held at 5 with the low byte kept, so lean 3 stays between 5.5 and 5.8.
-- Above 127 km/h even full lean steers less: at 200 km/h lean 3 gives 3.5 pixels a pass.
+- The flat tops are the cap: the high byte held at 5 with the low byte kept, so a capped value lies anywhere in
+  `$0500-$05FF`, 5.0 to 6.0 pixels; lean 3 gives 5.2-5.8 below 128 km/h.
+- Below 55 km/h lean 2 even beats lean 3: below 37 km/h 255 x 80 / 8 = `$09F6` is capped to `$05F6`, 5.96, while
+  255 x 173 / 8 = `$158A` becomes `$058A`, 5.54; at 37-54 km/h 5.84 against 5.78.
+- Above 127 km/h even full lean steers less: at 199 km/h lean 3 gives 3.55 pixels a pass.
 
 Worked example, 100 km/h at lean 3:
 
@@ -449,7 +456,9 @@ Witness, `memory_at` (Lean, HeldKeys) every 4 frames: 14 375 `00 01`, 14 383 `01
 
 ![BikeControl](img/routines/BikeControl.gif)
 
-*Animation 5.3: BikeControl and ReadControls in `c1` frame 14 403 (Q and P held), window 14403:66500-14403:68100. The
+*Animation 5.3: BikeControl and ReadControls in `c1` frame 14 403 (Q and P held), window 14403:66500-14403:68100;
+the first pictures are still in DrawRiders (`$9708`, T 66 527) and the last in DrawBike (`$9FC1`, T 68 093):
+BikeControl and ReadControls fill the middle (TestReset at T 66 932, `l_AE50` at T 67 742). The
 view is the bike's variables from ScrollStep `$9136` on, as hex. Command: `python3 ../../kit/routine_anim.py --work
 work/docs/erB/c1 --window 14403:66500-14403:68100 --listing build/game.lst --view buffer:9136:16x5:hex --range
 9100-91FF --row-bytes 32 --pc 85B0-85F8,ACDF-AEFF --pictures 60 --delay 120 --title "..." --out
@@ -459,7 +468,8 @@ What to watch: the seven `IN`s; D built bit by bit; Lean (`$9176`) changing by o
 LateralX (`$913F`) moved.
 
 The point: steering is a speed, not a position. The lean picks how fast the bike drifts, the speed table makes it
-weaker at high speed, and the cap makes full lean the same at every speed below 127 km/h.
+weaker at high speed, and the cap holds every lean of 2 or 3 near 5 and a fraction pixels a pass at low speed, so
+below 55 km/h lean 2 steers as hard as full lean, a little harder even.
 
 ## 5.8 Throttle and brakes
 
@@ -467,13 +477,13 @@ Throttle `$A9DC` runs at the end of each pass, after RaceControls' ReadControls:
 
 ```text
 Throttle:
-    if in the air: skip to the drag
+    if in the air: no throttle, no brakes, no drag; on to PrintSpeed and TimerTick
     if Countdown >= 8 or GetUp: back to RaceLoop (no throttle, no timer)
     if Timer == 0: SPEED -= $0940 (9.25 km/h), floored at 0
     elif THROTTLE:
         if SPEED < 20:    SPEED += (SPEED + 1) / 4          # 8.8: (HL + 256) / 4
         elif SPEED < 160: SPEED += $0220 (2.125 km/h)
-        else:             SPEED += ($C800 - SPEED) / 16     # toward 200
+        else:             SPEED += ($C800 - SPEED) >> 4     # toward 200, never reaching it: 199 at most
     elif BRAKES: SPEED -= $0580 (5.5 km/h), floored at 0
     drag: full lean (Pose 3, Lean ±3): SPEED = SPEED * $FF / 256
           a bounce: SPEED = SPEED * $FA / 256
@@ -546,9 +556,11 @@ Worked example, from `memory_at`:
 The arithmetic is exact: `$2055 + 12 × $0220 = $39D5`, and `$5795 − 5 × $0580 = $3C15`.
 
 From standstill the climb takes about 14 passes to 20 km/h, 66 passes from 20 to 160, and then halves the gap to 200
-every 11 passes. At 8 frames a pass that is about 13 s to 160 km/h.
+every 11 passes. The step is the gap >> 4, always smaller than the gap and 0 once the gap is under 16 (`$0010`), so
+SPEED stops at `$C7F1-$C7FF`: 199 km/h is the top (`stages` frame 22 204 shows SPEED 199), and full lean's drag
+takes it to 198. At 8 frames a pass that is about 13 s to 160 km/h.
 
-The point: SPEED is a three-part curve with a soft top at 200. Because it changes once a pass, the bike accelerates
+The point: SPEED is a three-part curve with a soft top at 199, just under 200. Because it changes once a pass, the bike accelerates
 more slowly in real time where the passes are slow.
 
 ## 5.9 The wheelie
@@ -665,20 +677,107 @@ CheatStep:
 ```
 
 With CheatStep on, stages 1-3 run with ScrollStep `$1000`: the track moves as at SPEED 293, faster than the throttle
-can give. SPEED itself, the score and the steering do not change. The toggle flips each pass the two keys are held,
-so a press must last about one pass.
+can give. SPEED itself and the score do not change, but the steering does, a game bug known from the code:
+
+- BikeControl reads SteerTable `$8E5D` at 2 x ScrollStep's high byte. With `$1000` the index is 32: `$8E7D`, past
+  SteerTable and SteerTail (`$8E5D-$8E7C`), the first byte of `render.asm`, the opcode `$06` of `LD B,$80`.
+- Full lean then gives 6 x 173 / 8 = 129 = `$0081`, 0.5 pixel a pass, against 3.55 at 199 km/h without the cheat.
+- BikeLateralPush multiplies the bend's factor by the same high byte: `$10` instead of at most `$0A`, so the bends
+  push 1.6 times harder. With the cheat on, the bike can hardly hold the road in a bend.
+
+The toggle flips on every pass the two keys read down (it is not edge-triggered), so a press must last about one
+pass; an even number of passes turns it back off.
+
+```mermaid
+flowchart TD
+    A["RaceCount: a pass"] --> B{"CAPS SHIFT and Q down"}
+    B -->|yes| C["CheatStep = NOT CheatStep"]
+    B -->|no| D["RaceStep: DE = SPEED x 14"]
+    C --> D
+    D --> E{"CheatStep and stage 1-3"}
+    E -->|no| G["ScrollStep = DE"]
+    E -->|yes| F["ScrollStep = 1000 hex"]
+    F --> H["BikeControl: SteerTable index 32, past the table: 0.5 pixel at full lean"]
+    G --> I["BikeControl: SteerTable index 0-20"]
+```
 
 Witness: the recording `tech-cheat` (WALKTHROUGH 6.0) holds CAPS SHIFT + Q at c1's play: CheatKey `$A659`
 once at its frame 126, CheatFixedStep `$A674` 51 times.
 
-The point: the cheat is a track speed, not a bike speed. The HUD still shows the real SPEED.
+The point: the cheat is a track speed, not a bike speed. The HUD still shows the real SPEED, but the steering
+reads its table past the end.
 
 ## 5.12 Two players
 
 ONE/TWO PLAYERS flips Players `$7C32` between 1 and 2 (`XOR 3`). The two players share the controls and take turns:
 a turn ends when the player falls and lies, or the time runs out. Player `$5E0D` and OtherPlayer `$5E45` keep each
-player's state between turns; the HUD shows 1UP or 2UP ([doc 8](08-hud-and-text.md)). The turn logic is in
-[doc 10](10-gameplay-logic.md).
+player's state between turns; the HUD shows 1UP or 2UP ([doc 8](08-hud-and-text.md)). [Doc 10](10-gameplay-logic.md)
+has the rules around the turns; the loop itself is here.
+
+```text
+NewGame:
+    clear Player $5E0D and OtherPlayer $5E45 (56 bytes each); Countdown 16 in both (not in a demo)
+    OtherPlayer.Timer = $60; with two players Player.Timer = $60 too
+TurnLoop:                                   # $87BD
+    swap Player and OtherPlayer, 56 bytes
+    if Timer == 0: goto TurnLoop            # this player's game is over: skip him
+    PlayTurn()                              # $87FC: the HUD, the race until a fall's end or Timer 0
+    if Timer == 0 and OtherPlayer.Timer == 0: Attract     # both games over
+    if Timer != 0 and Players == 2: Delay; GetKey         # the key that hands the turn over
+    goto TurnLoop
+```
+
+```asm
+TurnLoop:                       ; $87BD
+        LD B,$38                ; swap the blocks (56 bytes)
+        LD IX,Player
+l_87C3: LD A,(IX+$00)
+        LD C,(IX+$38)
+        LD (IX+$38),A
+        LD (IX+$00),C
+        INC IX
+        DJNZ l_87C3
+        LD A,(Timer)
+        AND A
+        JR Z,TurnLoop           ; a player with Timer 0 is skipped
+        CALL PlayTurn           ; the turn
+        LD A,(Timer)
+        AND A
+        LD A,(OtherPlayer+$0012) ; the other's Timer
+        JR NZ,TurnNext
+        AND A
+        JP Z,Attract            ; both 0: the game is over
+TurnSkip:
+        JR TurnLoop
+TurnNext:
+        AND A                   ; one player: on; two: Delay and GetKey first
+        JR Z,TurnLoop
+        LD A,(Players)
+        DEC A
+        JR Z,TurnLoop
+        CALL Delay
+        CALL GetKey
+        JR TurnLoop
+```
+
+```mermaid
+flowchart TD
+    A["NewGame: both blocks cleared"] --> B["TurnLoop: swap the 56-byte blocks"]
+    B --> C{"this player's Timer 0"}
+    C -->|yes| B
+    C -->|no| D["PlayTurn: race, stage after stage"]
+    D --> E{"the turn ended by"}
+    E -->|"a fall's end"| F{"two players"}
+    F -->|yes| G["Delay, GetKey"]
+    G --> B
+    F -->|no| B
+    E -->|"Timer 0"| H{"the other's Timer 0"}
+    H -->|yes| I["Attract"]
+    H -->|no| B
+```
+
+A stage's end does not end a turn: StageEnd jumps straight to StageStart for the same player. With one player
+OtherPlayer's Timer stays 0, so the swap after a fall brings player 1 back at once.
 
 | Frame of `twoplayer` | What happens |
 | --- | --- |
@@ -699,12 +798,15 @@ The point: two players are two saved states of one player, swapped at the turn.
 - A method is 10 bytes of ControlTable; PatchControls writes them, with the port and the jump's opcode, into
   ReadControls' seven tests. The game starts on SINCLAIR LEFT.
 - The Kempston is read at `$001F` with `JR Z`; the keyboard at `$xxFE` with `JR NZ`.
-- MenuSelect: SPACE or fire picks, THROTTLE goes up, any other key down.
+- MenuSelect: SPACE or fire picks, THROTTLE goes up, any other key down; on the Kempston any stick bit counts as a
+  key.
 - DEFINE KEYS uses ScanKeys, which needs exactly one key per half row.
-- The lean moves one step a pass; the sideways speed is SteerTable × LeanTable / 8, capped near 5.8 pixels a pass.
-- SPEED rises by `(SPEED + 1) / 4` below 20, 2.125 a pass to 160, then toward 200; brakes take 5.5 a pass.
+- The lean moves one step a pass; the sideways speed is SteerTable × LeanTable / 8, its high byte capped at 5 (up
+  to 6.0 pixels a pass); below 55 km/h lean 2 beats lean 3.
+- SPEED rises by `(SPEED + 1) / 4` below 20, 2.125 a pass to 160, then toward 200, stopping at 199; brakes take 5.5
+  a pass.
 - RESET and the demo's exit share the byte `$08`: the offset of PauseJump's `JR Z` and RaceQuit's `EX AF,AF'`.
-- CAPS SHIFT + Q toggles a fixed track speed on stages 1-3.
+- CAPS SHIFT + Q toggles a fixed track speed on stages 1-3, on every pass they are held; it breaks the steering.
 
 Known only from the code in this document:
 

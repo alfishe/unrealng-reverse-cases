@@ -148,7 +148,8 @@ def cmd_rows(args):
                   [0x70, 0x80, 0x90, 0xA0, 0xB0, 0xC0])
         pts = [(x0 + r * w / 128, py + (min(max(v, 0x70), 0xC0) - 0x70) * h / 0x50) for r, v in enumerate(lines)]
         d.line(pts, fill=(90, 150, 250), width=2)
-        drawn = [v for v in rowlist if v < 0xFE]
+        live_list = bytes(rowlist).split(b'\xff')[0]   # up to the $FF terminator; the rest is stale
+        drawn = [v for v in live_list if v < 0xFE]
         d.text((x0 + 6, py + h - 34), f'RowList: {len(drawn)} lines drawn,', fill=K.DIM, font=fs)
         d.text((x0 + 6, py + h - 18), f'{len(set(drawn))} distinct rows', fill=K.DIM, font=fs)
         # BendRows: row (x) against the shift

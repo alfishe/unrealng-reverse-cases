@@ -41,7 +41,7 @@ The recordings it rests on ([WALKTHROUGH 6.0](../WALKTHROUGH.md#60-the-recording
   `tech-ramp-wheelie` (frame 1 412, c1 15 487) and is skipped at the same ramp in `tech-land-wheelie`; CheatKey
   `$A659` runs once in `tech-cheat` (frame 126, c1 14 201) and CheatFixedStep `$A674` 51 times after it.
 
-A sample of frame N is the memory at the start of frame N. A pass is one turn of the race loop: 6 to 12 frames, 8.6
+A sample of frame N is the memory at the start of frame N. A pass is one turn of the race loop: 6 to 12 frames, 8.0
 on average in `c1`'s play ([doc 4](04-game-loop.md)). SPEED is the high byte of the 8.8 word at `$7C33`. It is shown
 as km/h. The figures' scripts are `tools/fig_gameplay.py` and `tools/play_techniques.py`.
 
@@ -53,7 +53,7 @@ Everything in a race is counted in passes, not in frames. The bike moves ScrollS
 pass. A rider moves its own speed a pass. The timer counts a second every ten passes. The score adds SPEED every pass.
 So a heavy picture, which makes a pass longer, slows the whole race down together, and the rules stay fair.
 
-The bike is always in one of seven states. BikeControl `$ACDF` picks the state each pass from four variables:
+The bike is always in one of seven states. BikeControl `$ACDF` picks the state each pass from six variables:
 
 | Variable | Address | Meaning |
 | --- | --- | --- |
@@ -138,9 +138,11 @@ The figure is the course of one whole game: `c1`'s only turn, the timer from 60 
 speed to 0. Each fall is followed by flat TIME: the timer stands still while the rider gets up (10.6). One ramp, at
 15 487, adds 25 380 points in 140 frames, two fifths of the final score (10.7).
 
-Worked example: the timer second of `c1`. TIME read 60 at 14 105 and 0 at 19 259, 59.1 timer seconds later. That is
-5 154 frames, 87 frames a timer second: 8.7 frames a pass, 1.75 real seconds a timer second. The TIME on the screen
-is slower than a clock by that much.
+Worked example: the timer second of `c1`. Timer turns from `$60` to `$59` between frames 14 112 and 14 116 and
+reaches 0 near 19 255: about 5 140 frames, 1.7 real seconds a timer second ([8.6](08-hud-and-text.md#86-the-timer)). That span
+holds the five falls' 382 frames, in which the timer stands still while the rider gets up (TimerTick does not run:
+Throttle returns to RaceLoop at `$A9ED-$A9F1`); without them a timer second is about 80 frames, ten passes of 8.0. The
+TIME on the screen is slower than a clock by that much.
 
 **The point**: the pass is the game's only clock. No frame counter, no interrupt timer enters the rules.
 
@@ -175,8 +177,10 @@ a pass whatever is held.
 
 Two more factors are applied after that, on the ground:
 
-- a bounce: SPEED × `$FA` / 256 a pass (−2.3 %);
-- full lean (±3) or any pose but 3 (the wheelie, a bend lean in the air is not counted): SPEED × `$FF` / 256 (−0.4 %).
+- a bounce: SPEED's high byte × `$FA` / 256 a pass, truncated (−2.3 %, at least 1 km/h);
+- full lean: with Pose 3 and Lean ±3, SPEED's high byte × `$FF` / 256, truncated: one whole km/h less a pass (with
+  THROTTLE held, +1.125 instead of +2.125). Only the high byte is multiplied (`$AA61-$AA66`): the bounce's × `$FA`
+  is truncated the same way.
 
 The "gears" are only the three bands. The engine note of doc 9 has its own three steps at 60 and 130.
 
@@ -276,7 +280,7 @@ flowchart TD
     F -- no --> K{"BRAKES?"}
     K -- yes --> L["SPEED - 5.5"]
     K -- no --> M["no change"]
-    E --> N["bounce: x 250/256; full lean or pose not 3: x 255/256"]
+    E --> N["bounce: high byte x 250/256; Pose 3 at Lean 3: whole km/h - 1"]
     H --> N
     I --> N
     J --> N
@@ -293,7 +297,7 @@ pass (red). Right, the change of SPEED in one pass against SPEED, one line for e
 tools/fig_gameplay.py speed docs/img/gameplay/speed.png work/docs/erC/c1-vars.jsonl`.*
 
 The dots lie on the model for the first 45 passes. Then `c1` brakes at 14 515 and pauses. After that its slope is a
-little below the model's, from the weave: c1 keeps O or P held at full lean, and each such pass loses 1/256.
+little below the model's, from the weave: c1 keeps O or P held at full lean, and each such pass loses one whole km/h.
 
 Worked example: the first passes of `c1`. Countdown reads 7 at 14 105, so the pass that follows is the first that
 counts THROTTLE. SPEED is then `$0000`, `$0040`, `$0090`, `$00F4`, `$0171`, `$020D` ... The high byte, shown on
@@ -318,11 +322,12 @@ Steering is a sideways speed, not a position. LEFT and RIGHT move Lean `$9176` o
 With neither held, the lean steps back toward 0 every second pass. The sideways speed is:
 
 ```text
-sideways = SteerTable[ScrollStep.high] * LeanTable[lean + 3] / 8      (8.8, at most 5.xx)
+sideways = SteerTable[2 * ScrollStep.high] * LeanTable[lean + 3] / 8  (8.8, the high byte at most 5)
 ```
 
-LeanTable `$8E56` is `$AD $50 $28 $00 $28 $50 $AD`. SteerTable `$8E5D` falls with the speed: 255 at rest, 125 at
-30 km/h, 42 at 199. So steering is strong and capped at 5 below about 90 km/h, and weak at full speed. Doc 5 (5.7)
+LeanTable `$8E56` is `$AD $50 $28 $00 $28 $50 $AD`. SteerTable `$8E5D`, read at 2 × ScrollStep's high byte
+(`$AE15-$AE20`), falls with the speed: 255 up to 36 km/h, 125 at 55-73 km/h, 42 at 199. So a full lean is capped at
+5 below 128 km/h, and weak at full speed (3.55). Doc 5 (5.7)
 traces the lean itself.
 
 A bend pushes the bike outward. The push is BikeLateralPush `$AE64`:
@@ -330,7 +335,7 @@ A bend pushes the bike outward. The push is BikeLateralPush `$AE64`:
 ```text
 push = ScrollStep.high * factor / 256        factor $52, $8F, $A4 for bend 1, 2, 3 (BendPrev)
 push is doubled on stages 2 and 4 (BendOp: ADD A,A), signed by BendDir
-LateralX += sideways + push (+ the bounce's push again during a bounce); clamped to -92 .. +92
+LateralX += sideways + push (+ the bounce's push again during a bounce); clamped to -91 .. +92
 ```
 
 The segment's bits 0-1 hold the bend. The source calls the field Bend ([doc 7](07-objects.md), 7.3).
@@ -341,7 +346,7 @@ Beyond d = `$24` the stage's off-road routine (StageParams) caps SPEED each pass
 | Stage | Routine | Off the road |
 | --- | --- | --- |
 | 1, 2, 4 | OffRoad `$A1D9` | SPEED × (256 − ((d − 36) / 2 + 1)) / 256 + 1, a pass |
-| 3 | OffRoadSand `$A1F6` | the same, and SkidLevel = (d − 36) / 4 (dust); on the road a gap (InGap) sets SkidLevel 3 and caps SPEED as at d = 60 |
+| 3 | OffRoadSand `$A1F6` | the same, and SkidLevel = (d − 36) / 4 (dust); on the road a gap (InGap) sets SkidLevel 3 and caps SPEED as at d = 48 (A = `$0C` into OffRoad's `l_A1E0`) |
 | 5 | OffRoadStage5 `$A1F5` | only one side counts; then as stage 3 |
 
 At the clamp (LateralX ±92, d = 116) the cap is × 215/256 a pass: 16 % a pass, about half the speed in four passes.
@@ -360,7 +365,7 @@ BikeControl, riding on the ground:
 BikeLateral (every pass):
     push = (ScrollStep.high, doubled on stages 2 and 4) * factor[BendPrev] / 256, negated if BendDir == 1
     HorizonScrollStep = push
-    LateralX += BounceSpeed (twice in a bounce) + push; clamp the high byte to -92 .. +92
+    LateralX += BounceSpeed (twice in a bounce) + push; clamp the high byte to -91 .. +92 ($A5 .. $5C)
 ```
 
 ### Assembly
@@ -435,7 +440,7 @@ flowchart TD
     Q -- yes --> R["push doubled"]
     Q -- no --> S["LateralX += sideways + push"]
     R --> S
-    S --> T["clamp to -92 .. 92"]
+    S --> T["clamp to -91 .. 92"]
     T --> U["BikeRoadPlace: d off the middle"]
     U --> V{"d beyond 36?"}
     V -- yes --> W["the stage's off-road cap"]
@@ -449,8 +454,9 @@ both in LateralX units a pass, against SPEED. Right, the same at SPEED 199, with
 and 4. Made from the image's SteerTable and LeanTable by `python3 tools/fig_gameplay.py steer
 docs/img/gameplay/steer.png`.*
 
-The cap at 5 keeps the sideways speed's low byte, so below about 50 km/h lean 2 steers a little harder than lean 3
-(5.96 against 5.54 at rest). The figure shows the game's main rule. Below about 90 km/h a full lean beats every bend. Above about 150 km/h bend
+The cap at 5 keeps the sideways speed's low byte, so below about 55 km/h lean 2 steers a little harder than lean 3
+(5.96 against 5.54 at rest; below 55 km/h). The figure shows the game's main rule. Below about 146 km/h a full lean
+beats every bend. Above it bend
 3 pushes harder than a full lean can steer, and on stages 2 and 4 even bend 1 does at full speed (6.4 against 3.55).
 A rider who keeps the throttle open in a hard bend drifts off the road, and the off-road cap then takes the speed.
 
@@ -764,7 +770,7 @@ Crash `$AF02` throws the bike: JumpHeight from the ground under the bike, JumpSp
 FallTime 9 with bit 7 the side of the road. Each pass of the fall:
 
 - SPEED × `$D0` / 256 (−19 %), so 134 km/h is gone in about 20 passes;
-- in the air: pose 8 while rising, the arc as a jump;
+- in the air: pose 7 (Crash's) while rising, pose 8 once falling, the arc as a jump;
 - on the ground: pose 9 and FallTime − 1 a pass;
 - on stages 3 and 5, on the sand, the skid noise (FallSand).
 
@@ -788,8 +794,9 @@ BikeControl, FallTime != 0:
     count = (FallTime - 1) AND $7F
     if count == 0: FallX = LateralX; Countdown = $80; RaceOver (the turn ends)
     SPEED = SPEED * $D0 / 256
-    if in the air and rising: Pose = 8; BikeLateral (the arc)
-    elif in the air above the ground line: BikeLateral
+    if in the air and rising: BikeLateral (the arc; Pose stays 7)
+    Pose = 8                                          # falling
+    if above the ground line (RoadLines[$0C]): BikeLateral
     else: Pose = 9; FallTime -= 1; FallSand
 GetUpSlide (GetUp != 0):
     GetUp -= 3 (or += 3 on the other side), stop at 0; LateralX.high = GetUp
@@ -844,7 +851,7 @@ l_ACFA:
 ```mermaid
 stateDiagram-v2
     [*] --> Thrown: Crash (pose 7, FallTime 9)
-    Thrown --> Thrown: rising, pose 8, SPEED x 208/256
+    Thrown --> Thrown: rising pose 7, falling pose 8, SPEED x 208/256
     Thrown --> Lying: below the ground line
     Lying --> Lying: pose 9, FallTime - 1, SPEED x 208/256
     Lying --> TurnEnds: count 0 (FallX, Countdown 128, RaceOver)
@@ -897,7 +904,8 @@ the digits go one place higher: the pass adds SPEED × 10.
 **The checkpoint.** A stage ends at its last segment (bit 5 of the segment byte, doc 7). NextSegment jumps to
 StageEnd `$AB0A`, which:
 
-- adds the timer's two digits to the score at the 100 000s and 10 000s: Timer × 10 000;
+- adds the timer's two digits to the score at the 100 000s and 10 000s, with ScoreDigits+3..+6 still holding the last
+  pass's speed: Timer × 10 000 plus that pass's points again;
 - writes the stage's time into StageTimes (StageTime: TimerAtStart − Timer, in timer seconds);
 - Stage + 1;
 - stages 1-4: draws the next stage's big digit, sets ExtendedTime 32 (EXTENDED PLAY and the lap time printed into the
@@ -917,7 +925,7 @@ TimerTick (each pass, after Throttle):
     Tenths -= 1
     if Tenths == 0 and Timer == 0 and SPEED == 0: RaceOver
 StageEnd (the stage's last segment passed):
-    Score += Timer * 10 000; StageTime; FormatTime; Segments = 0; Stage += 1
+    Score += Timer * 10 000 + the last pass's digits; StageTime; FormatTime; Segments = 0; Stage += 1
     if Stage < 5: BigDigit; ExtendedTime = 32; Timer = min(Timer + $50, $99); StageStart
     else: the finish (10.8)
 ```
@@ -986,7 +994,7 @@ l_AB8C:
 
 ```mermaid
 flowchart TD
-    A["NextSegment: bit 5 set"] --> B["StageEnd: Score += Timer x 10 000"]
+    A["NextSegment: bit 5 set"] --> B["StageEnd: Score += Timer x 10 000 + last pass"]
     B --> C["StageTime into StageTimes; Stage + 1"]
     C --> D{"Stage 5?"}
     D -- no --> E["big digit; EXTENDED PLAY 32 passes"]
@@ -1003,8 +1011,8 @@ work/docs/erC/st --from 3310 --to 3440 --step 3 --width 1050 --delay 120 --hold 
 docs/img/play/race-checkpoint.gif`.*
 
 Worked example: the end of stage 1 in `stages`. At 3 342 Stage is 0, Timer 60 (the Infinite Time POKE keeps it), SPEED
-199, Score 101 374, StageListPtr `$5E9F`. At 3 344 the score is 701 772. That is 101 374 + 600 000 (Timer 60 ×
-10 000) + 2 × 199 (two passes). At 3 346 Stage is 1 and Timer 99: 60 + 50 = 110, kept at 99. The lap time printed is
+199, Score 101 374, StageListPtr `$5E9F`. At 3 344 the score is 701 772. That is 101 374 + 199 (the one pass
+between) + 600 199 (the bonus, Timer 60 × 10 000, with that pass's digits added again). At 3 346 Stage is 1 and Timer 99: 60 + 50 = 110, kept at 99. The lap time printed is
 1'39"82. With the POKE the timer never moved, and StageTime's subtraction borrowed: 99 seconds (10.13).
 
 The score of `c1` (figure in 10.1): it grows by SPEED a pass on the ground. The pass from 15 475 adds 187. The ramp's
@@ -1189,8 +1197,8 @@ for a key with player 1's timer stopped at 44 (frames 4 296-10 194). SPACE start
 52 s. Player 2 falls too; then 1UP plays again with its own time
 and score at 20 672.
 
-In `c1`, with one player, the swap itself can be seen. The sample of 19 069 holds Timer 0, Countdown 16 and a blank
-score: the other block, swapped in for a moment at the fall's end and swapped out because its timer is 0. At 19 071
+In `c1`, with one player, the swap itself can be seen. The sample of 19 069 holds Timer 0, Countdown 16 and a score
+of 0: the other block, swapped in for a moment at the fall's end and swapped out because its timer is 0. At 19 071
 player 1's block is back (Timer 2.2, Countdown `$80`).
 
 The animation of a turn's end is the fall of 10.6: its last pictures are the new turn.
@@ -1252,7 +1260,7 @@ MoveRidersLoop:          ; $A220
   AND A
   JR Z,l_A259
   ...
-  LD HL,BackBuffer+$0750  ; $FD10: minus $02F0
+  LD HL,-$02F0            ; $A24D: the gravity
   ADD HL,DE
   LD (IX+$0D),L           ; jump speed
   LD (IX+$0E),H
@@ -1398,8 +1406,11 @@ Witness: `work/docs/erC/tech/*.jsonl` (each first line names the start, the scri
 
 RaceCount reads CAPS SHIFT every pass. With it held, CheatKey `$A659` reads Q. With both held it flips the operand
 of CheatStep `$A66F` (`LD A,n`: 0 or `$FF`). With CheatStep on, on stages 1-3, ScrollStep is `$1000` whatever SPEED
-is: the track moves as at SPEED 293. SPEED, the score, the steering and the collisions keep using SPEED. StartRace
-clears CheatStep at each turn. Doc 5 (5.11) has the key test.
+is: the track moves as at SPEED 293. SPEED, the score and the collisions keep using SPEED; the steering does not.
+BikeControl reads SteerTable `$8E5D` at 2 × ScrollStep's high byte: with `$1000` that is `$8E7D`, past the table's
+end, SetRowTable's first byte (`$06`), so a full lean moves the bike 0.5 pixel a pass. BikeLateralPush multiplies the bend by the
+same high byte: `$10` against at most `$0A` without the cheat, a push 1.6 times harder. StartRace clears CheatStep at
+each turn. Doc 5 (5.11) has the key test.
 
 The toggle flips every pass the keys are held. So the cheat stays on only if the keys are let go after an odd number
 of passes.
@@ -1411,6 +1422,8 @@ RaceCount: if CAPS SHIFT and Q: CheatStep = ~CheatStep
 RaceStep:  DE = SPEED * 14
            if CheatStep and Stage < 3: DE = $1000
 RacePass:  ScrollStep = DE
+BikeControl:     sideways = SteerTable[2 * ScrollStep.high] ...  # cheat: $8E7D, the code byte $06
+BikeLateralPush: push = bend * ScrollStep.high                  # cheat: $10, at most $0A otherwise
 ```
 
 ### Assembly
@@ -1463,8 +1476,8 @@ Worked example: the run `cheat` holds CAPS SHIFT + Q from 14 200. At 14 202 Chea
 go. ScrollStep is `$1000` from then on, while SPEED goes 6, 8, 10, ... 89 by 14 508 as in c1. In 500 frames the bike
 covers about as much track as c1 does at full speed.
 
-**The point**: the cheat is a track speed, not a bike speed. It is also the only way to see stage 1 faster than
-SPEED 199 allows.
+**The point**: the cheat is a track speed, not a bike speed, and it breaks the steering: the bends push harder while
+a full lean nearly stops working. It is also the only way to see stage 1 faster than SPEED 199 allows.
 
 Witness: the CAPS SHIFT test at `$A657` in every race recording, CheatKey L1 1 (tech-cheat); the run `cheat` (`work/docs/erC/tech/cheat.jsonl`) and its recording
 `tech-cheat`: CheatKey once at frame 126, CheatFixedStep `$A674` 51 times.
@@ -1479,20 +1492,23 @@ Witness: the CAPS SHIFT test at `$A657` in every race recording, CheatKey L1 1 (
 | the finish rider | StageEnd picks the largest *unsigned* row: a rider just behind the bike (row 232) beats one ahead (10.8) | `stages` 12 958 |
 | the lap time under Infinite Time | StageTime subtracts with a borrow from the tenths: 0 seconds becomes `$99` (1'39") | `stages` 3 422 |
 | the hundredths | StageTime's hundredths digit is PassCount's units: a filler, not a time | every lap time |
-| the ramp's JumpSpeed | Ramp writes only the high byte: a ramp taken in the air keeps the old low byte (`$16F0`) | `reset3` 6 714 |
+| the ramp's JumpSpeed | Ramp writes only the high byte (`$A824`), and JumpSpeed keeps its last value after a landing: every ramp after the first inherits a low byte, on the ground too (`$16F0`) | `reset3` 6 600, 6 714 |
 | the cheat's toggle | it flips every pass both keys are held (10.12) | the run `cheat` |
 | the steering cap | the cap sets the high byte to 5 and keeps the low byte: at rest lean 2 gives 5.96, lean 3 only 5.54 (10.3) | the figure of 10.3, from the tables |
 
 ### The stage 3 reset
 
-A ramp can be hit in the air: ObjectHit only asks that the bike be lower than the ramp's height above the ground. In
-`reset3` two ramps of stage 3 came 114 frames apart. At full speed (the Keep Speed By Obstacles POKE, or 8 wheelie passes) the bike leaves
-the first ramp, comes down onto the second and is thrown again from where it is. The two arcs add up.
+In `reset3` two ramps of stage 3 came 114 frames apart. At full speed (the Keep Speed By Obstacles POKE) the bike
+leaves the first ramp and lands in the very pass that meets the second: the landing (BikeLateral) and Ramp fall in
+one pass. Ramp takes the ground from RoadLines[0], and on stage 3 that pass's RoadLines was built earlier in the same
+pass by RoadRowsJump, which lifts the rows while the bike is in the air (JumpHeight `$25A6` the pass before). So
+RoadLines[0] reads 168, not 191, and the second arc starts 23 rows higher, at 25, with the same JumpSpeed `$16`.
 
 ```text
 reset3:   6 600  JumpHeight $0206, JumpSpeed $16F0   the first ramp
           6 660  $6746 at the top
-          6 714  $1906, JumpSpeed $16F0              the second ramp, hit at height $19
+          6 710  $25A6, RoadLines[0] 168              in the air, the rows lifted
+          6 714  $1906, JumpSpeed $16F0, BounceTime 6 landed and met the second ramp in one pass
           6 756  $7696                               the top: $76 = 118 rows
           6 760  RoadTopRow $FF                      the road's top row below 0: the reset follows
 ```
@@ -1502,15 +1518,15 @@ Ramp:
   LD A,D                  ; D = RoadLines[0]: the ground under the bike
   CPL
   ADD A,$C2
-  LD (JumpHeight+$0001),A ; the height of the ground, not of the bike: the next arc starts here
+  LD (JumpHeight+$0001),A ; from RoadLines[0]: on stage 3 the lifted view of the jump
 ```
 
 ```mermaid
 flowchart TD
     A["ramp 1 at 199 km/h"] --> B["arc 1: up to 103 rows"]
-    B --> C{"ramp 2 met before landing?"}
+    B --> C{"ramp 2 met in the landing pass?"}
     C -- no --> D["landing"]
-    C -- yes --> E["Ramp again: JumpSpeed 22 from height 25"]
+    C -- yes --> E["Ramp again: JumpSpeed 22 from height 25, RoadLines 0 still lifted"]
     E --> F["arc 2: up to 118 rows"]
     F --> G["RoadTopRow below 0: FF"]
     G --> H["DrawRoad's SP in the ROM"]
@@ -1528,9 +1544,12 @@ work/docs/erC/r3 --ttd work/stage1/rec/reset3/session.ttd --port-base 37795`.*
 Worked example: the samples above, from `work/docs/erC/r3-vars.jsonl`. The first arc starts at height 2 with
 JumpSpeed `$16`: its top is 103 rows (`$67`). The second starts at 25 with the same speed, and is at 118 (`$76`) at
 6 756, still rising.
-RoadTopRow goes 5, 4, 3, 1, 0 during the rise, and `$FF` at 6 760. Without the POKE a player needs 8 wheelie passes
-before the first ramp to keep 199 km/h. Then the ramps' tax does not cut the speed, and the same chain can happen.
-That case is known only from the code.
+RoadTopRow goes 5, 4, 3, 1, 0 during the rise, and `$FF` at 6 760. The samples at 6 710 and 6 714 (RoadLines[0]
+168, BounceTime 6, Wheelies 0) were read from `reset3` with `memory_at`.
+
+Without the POKE the second ramp always costs a quarter of the speed: the landing clears Wheelies (`$AED5`) and Ramp
+counts 0 in a bounce (`$A7FC-$A802`), so 8 wheelie passes help only the first ramp. 199 km/h becomes 149 and JumpSpeed
+`$14` instead of `$16`: the chain starts a slower arc, and whether it still reaches the reset is not known.
 
 **The point**: the game trusts the jump's height never to exceed the screen. Two ramps close together break that, and
 the road routine's stack trick turns a drawing error into a crash of the whole machine.
@@ -1557,6 +1576,9 @@ What makes Enduro Racer's code worth reading:
    crash's noise read ROM bytes (doc 9). There is no random-number generator.
 6. **Steering is a speed**, the table falling with speed, against a bend whose push grows with speed (10.3).
 7. **Two players are two copies of a block** (10.9).
+8. **One byte, two instructions.** MoveRidersIx `$A21F` is a lone `DEFB $DD`: entered there, `DD 21 80 5C` reads
+   `LD IX,Riders`; the loop re-enters one byte later, where `21 80 5C` is `LD HL,Riders`, harmless before the `EXX`
+   ([7.8](07-objects.md#78-the-riders-and-the-trucks)).
 
 ### Pseudocode
 
@@ -1624,5 +1646,6 @@ of them. `fall5` keeps the Keep Speed POKEs of the `stages` state it starts from
 24 times there, its other side never. What is left:
 
 - OffRoadStage5's test on the other side, and a stage 5 fall without any POKE.
-- The stage 3 reset without POKEs: needs 8 wheelie passes before a pair of ramps at full speed; not run.
+- The stage 3 reset without POKEs: the second ramp always takes the quarter tax (the landing clears Wheelies), so the
+  second arc is slower; whether it still reaches the reset is not known; not run.
 - A tie in RecordStages (equal seconds, compare the hundredths): no recorded stage time had a record's seconds.

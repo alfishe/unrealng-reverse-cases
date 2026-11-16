@@ -932,8 +932,9 @@ l_9C8D:
   LD SP,(SavedSp)
   RET
 
-; Eight pixel masks for GroundTexture's dots ($FF $7F $3F $1F $0F $07 $03 $01:
-; a dot of width 8 - n)
+; Eight bytes for GroundTexture's dots ($FF $7F $3F $1F $0F $07 $03 $01): the
+; entry for x AND 7, plus 1, is the dot's one pixel ($80, $40, ...; 0 for x AND
+; 7 = 0, no dot)
 DotMasks:
   INCBIN "res/tables/dotmasks.bin",$0000,8
 
@@ -1178,12 +1179,14 @@ l_9E0A:
   ORG $A301
 
 ; Stages 3 and 5: the ground's dots, a ROM byte XOR the column as the random x,
-; masks from DotMasks; many tries per row; on stage 5 8-pixel dashes; about 140
-; 000 T (2 frames) a pass
+; masks from DotMasks; many tries per row; on stage 5 dots and 8-pixel dashes;
+; about 140 000 T (2 frames) a pass
 ;
 ; RandomPtr ($A45B) walks the ROM $0000-$1FFF by 4 * ScrollStep's high byte
-; each pass; for each line of RowList, a dot left of the left edge or right of
-; the right edge (stage 3), or between them (stage 5).
+; each pass; for each line of RowList a band, centre ($80 + BendRows scaled)
+; -/+ half the byte at $7F80 + row: stage 3 puts a dot inside the band (between
+; the road's edges), nothing outside; stage 5 draws only left of the band, a
+; dot within half a band-width of its left edge, an 8-pixel dash further out.
 ;
 ; Recorded: stages: stages 3 and 5.
 ;

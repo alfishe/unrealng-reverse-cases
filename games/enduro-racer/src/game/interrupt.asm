@@ -5,9 +5,10 @@
 ; (DrawRoad pops row addresses from RowTable $FE00, DrawHorizon pushes zeros into the back buffer, BlitRows pops
 ; rows), so the return address the interrupt pushes lands in that data. Interrupt saves SP in IntSavedSp, takes its
 ; own stack (IntStack, $6574-$6583), reads the return address from where it was pushed into the operand of the JP at
-; IntReturn, and repairs the two bytes: inside RowTable ($FE00-$FF81) it writes back the row address that belongs
-; there (RowEntry), anywhere else (the back buffer, where the pushes write zeros) it writes zeros; at the real stack
-; ($FF82-$FFFF) it leaves them. It returns by EI and the patched JP, not RET.
+; IntReturn, and repairs the two bytes: inside RowTable ($FE00-$FF7F, and $FF80-$FF81, which the L test lets through)
+; it writes back the row address that belongs there (RowEntry), anywhere else (the back buffer, where the pushes write
+; zeros) it writes zeros; at the real stack ($FF82-$FFFF) it leaves them. It returns by EI and the patched JP, not
+; RET.
 ;
 ; Then the sound: a change of TuneRequest at a tune's mark starts the other tune (the two AY channels, PlayChannel) or
 ; silences it; the channels step every interrupt; EngineSound runs every second one. One entry a frame (c1: 1.00 a

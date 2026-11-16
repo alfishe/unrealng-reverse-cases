@@ -74,7 +74,7 @@ The menu offers five control methods (CHANGE CONTROL MODE). DEFINE KEYS sets the
 
 | Action | KEYBOARD (default) | What it does |
 | --- | --- | --- |
-| THROTTLE | Q | speed up, to at most 200 km/h |
+| THROTTLE | Q | speed up, to at most 199 km/h (the curve nears 200 and never reaches it) |
 | WHEELIE | A | lift the front wheel; held into a ramp, it keeps the speed |
 | LEFT, RIGHT | O, P | lean; the bike drifts sideways by the lean and the speed |
 | BRAKES | SPACE (fire) | slow down |
@@ -146,7 +146,7 @@ printed into it.
 | TIME | top middle | the timer in big digits, seconds counting down from 60 |
 | SCORE | top right | the score, seven digits |
 | STAGE | second row left | the stage, 1 to 5, in big digits |
-| SPEED | second row right | SPEED in km/h, 0 to 200 |
+| SPEED | second row right | SPEED in km/h, 0 to 199 |
 | 2UP | bottom right of the race | the second player's turn (two players only) |
 
 In a demo the HUD shows DEMO. EXTENDED PLAY and LAPTIME flash over the race at a stage's start (1.6).
@@ -188,7 +188,7 @@ flowchart LR
     S5 --> F["the finish at 17 920"]
 ```
 
-**Worked example.** At the top speed, 200 km/h, a pass moves the track by SPEED x 14 / 256 = 10.9 units. Stage 1 is
+**Worked example.** At the top speed, 199 km/h, a pass moves the track by SPEED x 14 / 256 = 10.9 units. Stage 1 is
 4 096 units: 375 passes. Ten passes are one timer second, so a perfect stage 1 takes 37.5 timer seconds of the 60.
 Stage 2 is the shortest: 2 944 units, 27 timer seconds at full speed.
 
@@ -202,23 +202,26 @@ few falls on stage 1 already eat the margin.
 
 ### The timer
 
-The timer starts at 60 and counts down one every 10 passes of the race loop. A pass takes 8 frames on average
+The timer starts at 60 and counts down one every 10 passes of the race loop. Tenths `$5E20` holds 9 down to 0:
+each pass TimerTick looks at it first; at 0 it takes one off the timer (BCD), prints it and reloads 10, then it takes
+one off and stores it. A pass takes 8 frames on average
 ([doc 4](04-game-loop.md)), so a timer second is about 80 frames, 1.6 real seconds. The timer stops during the
 countdown, while the rider gets up, and in the demo. At 0 the throttle no longer works. The bike rolls to a stop, and
 when SPEED reaches 0 the turn is over.
 
 ```text
-each pass (not in the demo):
-    Tenths -= 1
-    if Tenths == 0:
+each pass (not in the demo, the countdown or getting up):
+    if Tenths == 0:                                  ; Tenths holds 9..0
+        if Timer > 0: Timer -= 1 (BCD)
+        PrintTimer
         Tenths = 10
-        if Timer > 0: Timer -= 1 (BCD); PrintTimer
-        if Timer == 0 and SPEED == 0: RaceOver        ; StageTime, the turn ends
+    Tenths -= 1
+    if Tenths == 0 and Timer == 0 and SPEED == 0: RaceOver   ; StageTime, the turn ends
 ```
 
 ```asm
 TimerTick:                  ; $AA73
-  LD A,(Tenths)           ; Tenths down; at 0: Timer - 1 (BCD), PrintTimer, Tenths 10
+  LD A,(Tenths)           ; Tenths read first; at 0: Timer - 1 (BCD), PrintTimer, 10; then Tenths - 1 stored (9..0)
   AND A
   JR NZ,l_AA89
   LD A,(Timer)
@@ -248,11 +251,13 @@ RaceOver:                   ; $AA9E
 flowchart TD
     A["a pass ends"] --> B{"demo"}
     B -->|yes| Z["next pass"]
-    B -->|no| C["Tenths - 1"]
-    C --> D{"Tenths = 0"}
-    D -->|no| Z
-    D -->|yes| E["Timer - 1 unless 0, Tenths = 10"]
-    E --> F{"Timer = 0 and SPEED = 0"}
+    B -->|no| D{"Tenths reads 0"}
+    D -->|yes| E["Timer - 1 unless 0, print it, Tenths = 10"]
+    D -->|no| C["Tenths - 1, stored"]
+    E --> C
+    C --> T{"Tenths stored 0"}
+    T -->|no| Z
+    T -->|yes| F{"Timer = 0 and SPEED = 0"}
     F -->|no| Z
     F -->|yes| G["RaceOver: the stage time, the turn ends"]
 ```
@@ -267,20 +272,22 @@ held it for 382 frames while the rider got up; without them it is 81 frames a ti
 When the bike passes a stage's last segment, StageEnd `$AB0A` runs:
 
 - the time bonus: the timer's two digits are added to the score as hundred-thousands and ten-thousands, so each
-  second left is worth 10 000 points;
+  second left is worth 10 000 points, plus the last pass's speed points, which stay in the lower digits of the add
+  buffer (ScoreDigits);
 - the stage's time goes to the lap table (StageTime: the timer at the start less the timer now);
 - stages 1-4: the next stage's number, EXTENDED PLAY and the last LAPTIME flash over the race, and the timer gets 50
   more seconds, at most 99;
-- after stage 5: SPEED 0; the leading rider is placed at the bike and rides away; when it is far enough ahead, the
-  timer is set to 0 and the game ends (the finish).
+- after stage 5: SPEED 0; of riders 0-3, the one with the largest row byte (unsigned, so a rider just behind the
+  bike wins) is placed at the bike and rides away; when it is far enough ahead, the timer is set to 0 and the game
+  ends (the finish).
 
 ```text
 StageEnd:
-    score += Timer * 10000                           ; the time bonus
+    score += Timer * 10000 + the last pass's speed points  ; the time bonus; ScoreDigits+3..+6 are not cleared
     StageTimes[stage] = TimerAtStart - Timer
     stage += 1
     if stage < 5: Timer = min(Timer + 50, 99); EXTENDED PLAY; StageStart
-    else:         SPEED = 0; the leading rider rides away; Timer = 0 when it is ahead: the finish
+    else:         SPEED = 0; the rider of 0-3 with the largest row byte rides away; Timer = 0 when it is ahead
 ```
 
 ```asm
@@ -319,7 +326,7 @@ flowchart TD
     C --> D{"it was stage 5"}
     D -->|no| E["timer + 50, at most 99"]
     E --> F["EXTENDED PLAY, the next stage"]
-    D -->|yes| G["SPEED 0, the leading rider rides away"]
+    D -->|yes| G["SPEED 0, the rider with the largest row byte rides away"]
     G --> H["timer 0: game over"]
 ```
 
@@ -399,8 +406,8 @@ Each pass the objects near the bike are tested against it (CollisionSizes, [doc 
 - Any other object, hit head-on at 35 km/h or more, is a fall: the bike is thrown, lies for a while, and the rider
   gets up at SPEED 0.
 - Slower, or side-on, it is a bounce: 3 passes of steering out of control and a little speed lost.
-- A rival rider within 5 of the bike is a bounce, and SPEED drops by a quarter.
-- A truck (a rider marked as one) within 9 of the bike is a fall.
+- A rival rider closer than 5 to the bike is a bounce, and SPEED drops by a quarter.
+- A truck (a rider marked as one) closer than 9 to the bike is a fall.
 - Off the road the speed is capped by how far off the bike is. Stage 3's water slows the bike hard.
 
 The riders' tests do not run in the air, while getting up, or in the demo.
@@ -428,7 +435,7 @@ l_A7CF:                     ; an object head-on
 ```
 
 **Worked example.** A rider at SPEED 160 touches a rival: SPEED - 160 / 4 = 120. At SPEED 34 the same bike hits a
-boulder head-on and only bounces; at 35 it falls. A ramp taken at 200 with no wheelie sends the bike off at 150.
+boulder head-on and only bounces; at 35 it falls. A ramp taken at 199 with no wheelie sends the bike off at 199 x 192 / 256 = 149.
 
 **Witness.** `crash` (falls and getting up, no POKE); `c1` (5 falls, a jump); the code for the rest (1.11).
 
@@ -446,8 +453,8 @@ more every head-on contact is a fall that costs seconds.
 ## 1.7 Two players and the demo
 
 **Two players.** ONE / TWO PLAYERS in the menu toggles the mode. Each player has a block of state: the score, the
-timer, the stage and the track position. The players take turns. A turn ends at a fall or at a stage's end; the
-other player's block is swapped in, and a key is waited for. A player whose timer is 0 is skipped. The game ends when
+timer, the stage and the track position. The players take turns. A turn ends when the player falls (or the time runs out); a stage's end does not pass the
+turn (StageEnd goes straight on to StageStart). The other player's block is swapped in, and a key is waited for. A player whose timer is 0 is skipped. The game ends when
 both timers are 0. 2UP marks the second player's turns.
 
 ```mermaid
@@ -457,7 +464,7 @@ flowchart TD
     C -->|yes| D{"both timers 0"}
     D -->|yes| E["game over: the tables"]
     D -->|no| B
-    C -->|no| F["PlayTurn: race until a fall, a stage's end or timer 0"]
+    C -->|no| F["PlayTurn: race, stage after stage, until a fall or timer 0"]
     F --> B
 ```
 
@@ -467,10 +474,12 @@ With one player the second block's timer stays 0, so every turn is the first pla
 HUD and the game drives the bike. The demo scores nothing and its timer does not run. A key ends it and opens the
 menu.
 
-**Worked example.** In `twoplayer` player 1's timer reaches 0 at frame 9 294; from then on every turn is player 2's
-(2UP at frame 10 892), and the game ends at frame 20 672 when player 2's timer is 0 too.
+**Worked example.** In `twoplayer` player 1 falls and lies with the timer stopped at 44 (frames 4 296-10 194); a
+key hands the turn to player 2 (2UP, 52 s, frame 10 892), who falls too; at frame 20 672 player 1 races again with his
+own time, 41, and score, 13 688. The turns alternate on a fall.
 
-**Witness.** `twoplayer` (frames 63, 9 294, 10 892, 20 672); `c1` frames 12 400-13 418 (the demo);
+**Witness.** `twoplayer` (frames 63, 9 294, 10 892, 20 672; the still of 9 294 is named `p1-time-up`, but it shows
+player 1 down with TIME 44); `c1` frames 12 400-13 418 (the demo);
 `src/game/flow.asm` NewGame and PlayTurn.
 
 **The point.** A fall passes the turn. In a two-player game the falls set the rhythm of the turns.
@@ -502,7 +511,9 @@ flowchart TD
 
 **Worked example.** `c1` ended stage 1 at 56 % with 59 674 points: below the lowest row, so no name entry. Only the
 time bonus brings a score near 200 000: finishing stage 1 with 15 seconds left gives 150 000 at once. In `stages`
-the infinite-time POKE gave stages 2 and 4 a time of 0'00"60 (the timer never moved), and those became the records.
+the infinite-time POKE kept the timer still, so StageTime subtracted equal seconds: stage 2 got 0'00"00 and stage 4
+0'00"60 (the tenths' difference), and those became the records; on stages 1, 3 and 5 the tenths borrowed one and the
+seconds wrapped to 99: 1'39"82, 1'39"53, 1'39"60 (`stages` frame 22 204, `docs/img/play/stages-022204-table-held.png`).
 
 ![The high scores and the name grid in stages](img/play/stages-022308-hiscore.png)
 
@@ -518,12 +529,16 @@ stage of points.
 ## 1.9 The cheat key
 
 CAPS SHIFT and Q together toggle a fixed track step of `$1000` on stages 1-3: SPEED 293 in effect, faster than the
-throttle can give. The recording `tech-cheat` holds CAPS SHIFT + Q at c1's play: CheatKey `$A659` (in
+throttle can give. The toggle flips on every pass the two keys read down, so a press must be about one pass long (an
+even number of passes turns it back off). SPEED and the score do not change, but the steering does: BikeControl reads
+SteerTable `$8E5D` at 2 x ScrollStep's high byte, here `$8E7D`, past the table's end (a code byte, `$06`), so full
+lean drifts only 0.5 pixel a pass, while the bends push with `$10` instead of at most `$0A`, 1.6 times harder (a game
+bug, known from the code; [doc 05, 5.11](05-controls.md#511-the-cheat-key)). The recording `tech-cheat` holds CAPS SHIFT + Q at c1's play: CheatKey `$A659` (in
 `src/game/race.asm`) runs once at its frame 126 and CheatFixedStep `$A674` 51 times after it ([doc 10](10-gameplay-logic.md), 10.12).
 
 ```mermaid
 flowchart LR
-    A["CAPS SHIFT and Q"] --> B["CheatStep toggled"]
+    A["CAPS SHIFT and Q read down this pass"] --> B["CheatStep toggled"]
     B --> C{"stage 1 to 3"}
     C -->|yes| D["ScrollStep = 1000 hex every pass"]
     C -->|no| E["the normal step"]

@@ -3,8 +3,8 @@
 What this covers:
 
 - the screen layout and the back buffer `$EB00-$FDFF` (6.1);
-- RowTable `$FE00` and SetRowTable `$8E7D`: one table of line addresses that every drawing routine reads with SP
-  (6.2);
+- RowTable `$FE00` and SetRowTable `$8E7D`: one table of line addresses that every drawing routine uses; the sprite,
+  road and copy loops pop it with SP, the printer and ClearLines read it with HL or DE (6.2);
 - the road model: Perspective `$7800`, RoadLines `$5C00`, the row builders, RowList `$5B00`, RoadTopRow (6.3);
 - the bend and the crest: BendRows `$5B80` shifts the rows sideways, CrestTable `$7A00` moves RoadLines up or down (6.4);
 - DrawRoad `$931E`: the pre-shifted edges, SP walking RowTable, Multiply's patched return, the runs (6.5);
@@ -50,8 +50,8 @@ The race screen has three bands:
 
 Everything below line 40 is drawn into a back buffer and copied to the screen once a pass. The buffer has no
 attributes. The colours are fixed per band: StartRace writes the attribute rows 5-13 (`$58A0`, 288 bytes) as `$68`,
-the sky's cyan, and rows 14-23 with byte 6 of the stage's StageParams entry, the ground's colour
-([7.2](07-objects.md#72-stagetable-and-stageparams)).
+the sky's cyan, and rows 14-23 with byte 6 of the stage's StageParams entry, the ground's colour, on stages 1-4; stage 5 does not
+write it and keeps stage 4's `$70` ([7.2](07-objects.md#72-stagetable-and-stageparams)).
 
 The buffer is not one block in screen order:
 
@@ -109,17 +109,22 @@ c1's table at T 0 of frame 15 200, in the race:
 | 72 | `$EE20` | the buffer, screen order |
 | 191 | `$FDE0` | the buffer, screen order |
 
-The routines read the table with SP. Each one sets SP to `$FE00 + 2 × line` and pops one address a line:
+The sprite, road, horizon and big-digit loops read the table with SP. Each one sets SP to `$FE00 + 2 × line` and
+pops one address a line. BigDigit `$8498`:
 
 ```asm
-        LD L,A                  ; A = the first line
-        LD H,$7F
+        LD H,$7F                ; L = the first line
         ADD HL,HL               ; HL = $FE00 + 2 x line
         LD (SavedSp),SP
         LD SP,HL
-loop:   POP DE                  ; DE = this line's address, SP on the next line's
+l_84A0: POP HL                  ; HL = this line's address, SP on the next line's
+        LD A,L
+        OR C                    ; plus the column
         ...                     ; write the line
 ```
+
+PrintGlyph (`$8395-$83A3`) reads its entry with `LD A,(HL)` / `INC L` / `LD H,(HL)`, and ClearLines reads it
+through DE.
 
 A `POP` takes 10 T and gives the address and the step to the next line at once. The cost is the stack: an
 interrupt in the middle pushes its return address into RowTable. The handler writes the two bytes back from a copy
@@ -136,10 +141,10 @@ flowchart LR
 ```
 
 Worked example: the score's first digit at column 25, line 8, in frame 15 206. PrintGlyph sets HL =
-`$FE00 + 2 × 8 = $FE10` and reads `$4020` there. Plus column 25 that gives `$4039`. Figure 6.12 lists PrintGlyph's write routine
+`$FE00 + 2 × 8 = $FE10` and reads `$4020` there. Plus column 25 that gives `$4039`. Figure 6.7 lists PrintGlyph's write routine
 `l_8398` reading `$FE10-$FE1F`: lines 8-15, one entry a line.
 
-Witness: the `memory_at` values above; the writers map of Figure 6.12.
+Witness: the `memory_at` values above; the writers map of Figure 6.7.
 
 The point: one table decides whether a routine draws on the screen or into the buffer. The same printer writes the
 HUD on the screen and a menu into the buffer.
@@ -191,8 +196,9 @@ RoadRowsMake:
         if RoadLines[row] > C:
             repeat (RoadLines[row] - C) times: RowList.append(row)
             C = RoadLines[row]
-    RowList.append($FF)
-    stage 5 on the flat: five more entries of the nearest row
+    if row 1 added lines:                    # else the RET at $9E08: no new terminator
+        if stage 5 and CrestPrev == 0: five more entries of row 1
+        RowList.append($FF)
 ```
 
 ```asm
@@ -267,8 +273,8 @@ and fills the far end from the profile; BlendBend brings it back to 0 after the 
 to the row's centre before the scale (6.5). The far rows move sideways a lot, the near ones hardly: the road turns.
 Three more facts tie Bend to a bend:
 
-- BikeLateralPush pushes the bike sideways by ScrollStep × `$52`, `$8F` or `$A4` for BendPrev 1, 2, 3, signed by
-  BendDir: the pull of a bend ([5.7](05-controls.md#57-the-lean-and-the-steering)).
+- BikeLateralPush pushes the bike sideways by ScrollStep's high byte (doubled on stages 2 and 4) × `$52`, `$8F` or
+  `$A4` / 256 for BendPrev 1, 2, 3, signed by BendDir: the pull of a bend ([5.7](05-controls.md#57-the-lean-and-the-steering)).
 - The horizon rotates only while that push is not 0 (6.7).
 - RowList does not change: a bend moves no row up or down.
 
@@ -278,14 +284,18 @@ than the crest land above the top line and RoadRowsMake skips them: the road end
 
 ```text
 RoadRowsCrest:
-    if Crest == 0 and CrestPrev == 0: the flat lines
-    for each row:
-        if the row is within the segment's progress (SegmentLeft):
-            RoadLines[row] = $70 + Perspective[row] * CrestTable[crest][row] / 512
-        else:
-            RoadLines[row] = $70 + Perspective[row] / 2
+    if CrestPrev == 0:                                    # entering a crest, or none
+        if Crest == 0 or SegmentLeft.high == $80: RoadRowsMake   # RoadLines left as it is
+        for row in SegmentLeft.high .. 127:               # only the far rows the segment has reached
+            RoadLines[row] = $70 + Perspective[row] * CrestTable[Crest][..] / 512
+    else:                                                 # inside or leaving a crest
+        for each row: RoadLines[row] = $70 + Perspective[row] * CrestTable[CrestPrev, phase][..] / 512
     RoadRowsMake
 ```
+
+Three cases, then: RoadLines untouched (no crest coming, or the segment not yet begun: SegmentLeft's high byte
+`$80`), a partial crest (the far rows from SegmentLeft's high byte up), and a full crest (every row). The flat lines
+come from RoadRowsFlat, which SegmentDecode calls when the crest was 0.
 
 ![RoadLines on a crest, BendRows on a bend](img/render/rows.png)
 
@@ -298,7 +308,9 @@ How to read:
 
 - RoadLines is drawn with line 112 at the top, as on the screen. The flat curve reaches line 191 at row 0.
 - At 15 100 row 0 lands on `$9E`, line 158, and the far rows stay near line `$76`. The lines below 158 are ground.
-- At 15 300 RoadLines is the flat curve, and BendRows rises from 0 at row 0 to `$BD` at row 127.
+- At 15 300 a crest begins: CrestPrev 0, Crest 1, SegmentLeft's high byte `$6B`. Only rows `$6B-$7F` have the
+  crest's lines (RoadLines ends `77 77 77`, RoadTopRow 6); at 15 400 the high byte is `$06` and RoadLines ends `$78`,
+  RoadTopRow 7. BendRows rises from 0 at row 0 to `$BD` at row 127. RowList holds 69 lines.
 
 Worked example, frame 15 100: RowList is `7c 2e 29 24 20 1d ... 01 01 01 01 ff`, 38 lines. After row 124 at the top
 it jumps to row 46: rows 47 to 123 land on lines already taken and are skipped. RoadTopRow is 5.
@@ -370,6 +382,8 @@ for each line, row = RowList[i]:
     set = EdgePatterns if bit 2 of (row + phase) else EdgePatterns2   # the stripes
     half = RowScale[$80 + row]                                 # half the road's width
     if RowList[i + 1] == row: DrawRoadRun; continue
+    if BendRows[row] == $FF or BendRows[row] + the bike's offset leaves the byte's range:
+        DrawRoadOff: POP; next line                            # $9443: the row is off the road
     centre = $80 +/- (BendRows[row] + the bike's offset) * RowScale[row] / 64   # Multiply
     POP DE                                                     # this line's address
     write set[class][(centre - half) AND 7], 3 bytes, at DE + (centre - half) / 8
@@ -475,7 +489,7 @@ Worked example, the traced pass:
 2. The far lines take about 1 200 T each: DrawRoadLoop begins at T 23 370, 24 559, 25 743, ...
 3. The first run begins at 15199:55519. DrawRoadRun's setup with Divide takes about 4 000 T, then DrawRoadRunLine
    about 380 T a line.
-4. DrawRoadEnd runs at 15200:47877. With the interrupt the whole road took 94 670 T, 1.35 frames.
+4. DrawRoadEnd runs at 15200:47877. With the interrupt the whole road took 94 630 T, 1.35 frames.
 
 Witness: the trace `15199_0-15207_0.uatr`. In the writers map (Figure 6.11) the edges were last written by `l_93EC`
 (the left edge's `LDI`s, 93 writes), `l_9429` (the right edge's, 57) and `l_958D` (the runs, 39).
@@ -493,10 +507,18 @@ GroundTexture:
     RandomPtr += 4 * (ScrollStep >> 8), kept in $0000-$1FFF       # the ROM as random numbers
     for each road row of RowList, from the nearest up:
         tries = from the row's spacing (Divide)                    # more tries for near rows
+        centre = $80 + (BendRows[row] + the bike's offset) scaled by RowScale[row]   # as DrawRoad
+        left, right = centre -/+ ($7F80 + row) / 2                 # the band, clamped to 0..$FF
         for each try:
-            x = ROM[RandomPtr++] XOR its low address byte
-            stage 3: if x is left of the left edge or right of the right edge: one dot (DotMasks $9CAF)
-            stage 5: if x is between the edges: an 8-pixel dash, split over two bytes
+            x = (ROM[RandomPtr++] XOR its low address byte) + centre
+            if x < left:
+                stage 3: nothing
+                stage 5: if x > left - (right - left) / 2: one dot  # within half a band of the edge
+                         else: an 8-pixel dash, $FF shifted by x AND 7 over two bytes
+            else if x < right:
+                stage 3: one dot (DotMasks $9CAF + (x AND 7), plus 1)
+                stage 5: nothing
+            else: nothing                                          # right of the band
 ```
 
 ```asm
@@ -508,15 +530,46 @@ l_A3CF: LD HL,$0000             ; the ROM pointer, kept in the operand
         ADD A,$00               ; patched per row
         LD (l_A3CF+$0001),HL
         CP $00                  ; the left edge, patched per row
-        JR NC,l_A418            ; right of it: the right side's test
+        JR NC,l_A418            ; x >= left: the band's test
         LD C,A
         LD A,(Stage)
         CP $04
-        JR C,l_A43B             ; stage 3: the left-side dot
-        ...                     ; stage 5: a dash, LD A,$FF shifted by x AND 7
+        JR C,l_A43B             ; stage 3: nothing left of the band
+        ...                     ; stage 5: a dot near the edge (JR C,l_A424), else a dash
+l_A418: CP $00                  ; the right edge, patched per row
+        JR NC,l_A43B            ; x >= right: nothing on either stage
+        LD C,A
+        LD A,(Stage)
+        CP $02
+        JR NZ,l_A43B            ; stage 5: nothing inside the band
+l_A424: ...                     ; one dot: (DotMasks + (x AND 7)) + 1 ORed in
 ```
 
-Stage 5 has no edges (RoadNone), so its road is only these dashes. Stage 3's sand is dots outside the edges.
+The dot's byte is the DotMasks entry plus one: `$7F` + 1 = `$80`, `$3F` + 1 = `$40`, one pixel at bit 7 - (x AND 7).
+For x AND 7 = 0 the entry `$FF` + 1 is 0, so an eighth of the tries draw nothing.
+
+The band comes from the row (`$A380-$A3CB`). Its centre is DrawRoad's: `$80` plus the row's BendRows shift (`$5B80`
++ row) and the bike's offset (the operand GroundTexture copies from `$93A0`), scaled by RowScale (`$7F00` + row).
+Left and right are that centre minus and plus half the byte at `$7F80` + row, clamped to 0 and `$FF`. DrawRoad puts
+the edges at the centre minus and plus the whole byte (6.5), so the band is the middle half of the road. On stage 3
+the dots fall there, on the road's surface; the animation's last picture has them all between the chequered left
+edge and the right one, and the sand beside the road stays clear. Stage 5 has no edges (RoadNone): its ground is the
+dashes and dots left of the band; the band and everything right of it stay plain yellow.
+
+```mermaid
+flowchart TD
+    X["x = ROM byte XOR its address' low byte + centre"] --> L{"x < left?"}
+    L -- yes --> S5{"stage 5?"}
+    S5 -- no --> N1["stage 3: nothing"]
+    S5 -- yes --> H{"x > left - (right - left)/2?"}
+    H -- yes --> D1["one dot"]
+    H -- no --> DA["8-pixel dash"]
+    L -- no --> R{"x < right?"}
+    R -- no --> N2["nothing"]
+    R -- yes --> S3{"stage 3?"}
+    S3 -- yes --> D2["one dot"]
+    S3 -- no --> N3["stage 5: nothing"]
+```
 
 ![GroundTexture on stage 3](img/routines/GroundTexture.gif)
 
@@ -526,7 +579,7 @@ the memory map is the ROM `$0000-$1FFF` that it reads as random numbers. Command
 --range 0000-1FFF --row-bytes 128 --pc A301-A45A,8B98-8BEC --pictures 60 --title "..." --out
 docs/img/routines/GroundTexture.gif`.*
 
-What to watch: the dots appearing beside the road from the bottom up; the ROM reads (blue) moving along in one run.
+What to watch: the dots appearing between the road's edges from the bottom up; the ROM reads (blue) moving along in one run.
 
 Worked example, the stage 3 pass at 5 400: DrawRoad ran from 5400:33783 to 5401:68840, GroundTexture from 5401:68867
 to 5404:131, 9 035 instructions of its own: about 140 000 T, two frames. The ground costs more than the road.
@@ -566,7 +619,7 @@ step:
 
 | Step | Right | Left | How |
 | --- | --- | --- | --- |
-| 8 pixels | RotateBytes | RotateBytes | a byte along each line; never runs |
+| 8 pixels | RotateBytesRight `$92C0` | RotateBytesLeft `$92ED` | a byte along each line; never runs |
 | 4 pixels | RotateRight4 | RotateLeft4 | `RRD` / `RLD` |
 | 1 pixel | RotateRight1 `$9211` | RotateLeft1 | `RR (HL)` / `RL (HL)` along each line |
 
@@ -611,12 +664,13 @@ Worked example, the pass at frame 15 299 (HorizonSpeed `$FD70` at T 0):
 2. RotateRight1 runs at 15299:11102-34078: 22 976 T.
 3. RotateRight1 runs again at 15299:34287-57279: 22 992 T.
 
-Each pixel of rotation costs a third of a frame.
+Each pixel of rotation costs about 718 T a line: a third of a frame for the 32-line mountains (stages 1 and 4),
+about 18 000 T for the 25-line dunes (stage 3) and 6 500 T for the 9-line clouds (stages 2 and 5).
 
 Witness: the trace `work/docs/erB/c1/traces/15299_10600-15299_57400.uatr`.
 
-The point: the horizon turns by rotating its own bytes, not by drawing at an offset. A sharp bend costs the pass a
-third of a frame per pixel.
+The point: the horizon turns by rotating its own bytes, not by drawing at an offset. A sharp bend costs the pass up to a
+third of a frame per pixel (the mountains), less on the other stages.
 
 ## 6.8 The sprites: one blitter
 
@@ -720,18 +774,18 @@ object lists and the rider bands are in [7.6](07-objects.md#76-the-object-types-
 [7.8](07-objects.md#78-the-riders-and-the-trucks); this section shows them on the screen.
 
 **The riders.** DrawRiders `$9615` draws each rider of Riders `$5C80` (15 bytes each; byte 4, the distance's high
-byte, is the row). RiderSprites `$917E` has seven bands. A band is the row threshold and five poses (rows with bit 7
-for mirrored, width with bit 7 for aligned, address). The first three poses (`src/res/tables/riders.csv`):
+byte, is the row). RiderSprites `$917E` has seven bands. A band is the row threshold and five poses (rows with bit 7:
+never mirrored, otherwise mirrored when BendDir is 1; width with bit 7 for aligned; address). The first three poses (`src/res/tables/riders.csv`):
 
-| Band | Rows below | Pose 0 | Pose 1 | Pose 2 |
+| Band | Rows below | Pose 0 | Pose 1 (mirrored on BendDir 1) | Pose 2 (mirrored on BendDir 1) |
 | --- | --- | --- | --- | --- |
-| 0 | 5 | 60 × 3 bytes, mirrored | 46 × 5, aligned | 47 × 4 |
-| 1 | 11 | 54 × 3, mirrored | 41 × 5 | 42 × 3 |
-| 2 | 18 | 44 × 3, mirrored | 34 × 4 | 34 × 3 |
-| 3 | 26 | 36 × 3, mirrored | 27 × 3 | 28 × 2 |
-| 4 | 36 | 28 × 2, mirrored | 22 × 3 | 22 × 2 |
-| 5 | 55 | 21 × 2, mirrored | 18 × 2 | 18 × 2 |
-| 6 | 80 | 17 × 2, mirrored | 14 × 2 | 14 × 2 |
+| 0 | 5 | 60 × 3 bytes, never mirrored | 46 × 5, aligned | 47 × 4 |
+| 1 | 11 | 54 × 3, never mirrored | 41 × 5 | 42 × 3 |
+| 2 | 18 | 44 × 3, never mirrored | 34 × 4 | 34 × 3 |
+| 3 | 26 | 36 × 3, never mirrored | 27 × 3 | 28 × 2 |
+| 4 | 36 | 28 × 2, never mirrored | 22 × 3 | 22 × 2 |
+| 5 | 55 | 21 × 2, never mirrored | 18 × 2 | 18 × 2 |
+| 6 | 80 | 17 × 2, never mirrored | 14 × 2 | 14 × 2 |
 
 A rider at row 80 or beyond is not drawn.
 
@@ -807,13 +861,14 @@ work/docs/erB/c1 --window 15201:20850-15201:53560 --listing build/game.lst --vie
 8000-80FF --row-bytes 32 --pc 9FBE-A099,970C-977F,8F29-917D --pictures 60 --title "..." --out
 docs/img/routines/DrawBike.gif`.*
 
-Worked example: the mirror costs more than the draw. MirrorCarry ran 15201:23439-40682, 17 243 T, 2 585
+Worked example: the mirror costs more than the draw. DrawMirrored's copy loop (`$9723-$9750`) ran 15201:23439-40682, 17 243 T, 2 585
 instructions; BlitRow then took about 12 000 T (15201:41384-53448).
 
 **The splash and the dust.** DrawSplash `$A09A` (the stages with SplashOn) draws one of two frames under the bike:
 `$DED3` (20 lines × 5 bytes) and `$DF37` (15 × 3), by PassCount's bit 0. DrawDust `$A0AE` draws the dust beside the
 bike while SkidLevel is up: `$DF64` (12 × 4) and `$DF94` (14 × 4). Neither draws in the air or when stopped. Both go
-through DrawShifted, at an x from DustOffsets by the pose.
+through DrawShifted, at an x from DustOffsets `$A0F3` by the pose. DustCarry `$A0DC` is an `INC H` for an index that
+crosses a page; DustOffsets is 10 bytes at `$A0F3`, so the index never leaves the page and the `INC H` never runs.
 
 ![DrawDust](img/routines/DrawDust.gif)
 
@@ -836,7 +891,7 @@ thresholds 5-80 put most of them near the bike, where a size step would show.
 | Step | Routine | From | T |
 | --- | --- | --- | ---: |
 | 1 | RoadRowsCrest, RoadRowsMake | 15199:15 | 23 100 |
-| 2 | DrawRoad with DrawRoadRun | 15199:23135 | 94 670 with an interrupt |
+| 2 | DrawRoad with DrawRoadRun | 15199:23135 | 94 630 with an interrupt |
 | 3 | GroundTexture (returns), MoveRiders | 15200:47944 | 2 900 |
 | 4 | DrawRiders: three riders | 15200:50853 | 38 350 |
 | 5 | BikeControl, BikeLateralPush | 15201:19379 | 1 480 |
@@ -903,7 +958,7 @@ StageParams, and it is 0 for all five stages, so the `JR` falls on CopyLower.
 DrawHorizon:
     ClearLines(TopClip .. the picture's top)          # sky lines drawn on this pass
     copy the picture: HorizonRows lines, POP DE + 32 LDI each
-    ClearLines(the $C0 - rows - top lines below it)   # the whole road area
+    ClearLines(the $C0 - rows - top lines below it)   # 80 on stages 1, 3, 4; 100 on 2; 93 on 5
 ```
 
 ```asm
@@ -984,7 +1039,8 @@ Witness: `beam_timeline.py` over the trace `work/docs/erB/c1/traces/15204_0-1520
 (ClearLines) and `l_9E9F` (the picture copy) right after the copy in frame 15 205.
 
 The point: the erase is the next pass's background, drawn whole. There is no dirty list, no mask and no saved
-background. The price is the 80 road lines written twice a pass and a copy that can tear.
+background. The price is the lines below the picture (80 on stages 1, 3 and 4, 100 on stage 2, 93 on stage 5) written twice a
+pass and a copy that can tear.
 
 ## 6.11 The code against the screen
 
@@ -1028,8 +1084,8 @@ The point: below the HUD the screen has one writer, the copy. Everything else ha
 
 - The race draws lines 40-191 into a back buffer `$EB00-$FDFF`. Lines 64-191 keep the screen's order and go out as
   one 4 096-byte block; lines 40-63 are linear and go one by one.
-- RowTable `$FE00` holds every line's address; SetRowTable points it at the buffer or the screen. Every drawing
-  routine pops line addresses from it with SP.
+- RowTable `$FE00` holds every line's address; SetRowTable points it at the buffer or the screen. The sprite, road
+  and copy loops pop line addresses from it with SP; the printer and ClearLines read it with HL or DE.
 - The road is 128 rows. RoadLines maps rows to lines, RowList lines to rows; RoadTopRow places the list in RowTable.
 - Bend is a sideways shift (BendRows); Crest moves RoadLines (the far rows hidden behind the crest).
 - DrawRoad writes two pre-shifted 3-byte edges a line; Multiply returns by a patched `JP` because SP is in RowTable.
@@ -1042,6 +1098,6 @@ The point: below the HUD the screen has one writer, the copy. Everything else ha
 Known only from the code in this document:
 
 - stage 5's five extra RowList entries (6.3);
-- the 8-pixel shift path RotateBytes (6.7);
+- the 8-pixel shift paths RotateBytesRight and RotateBytesLeft (6.7);
 - BlitCopyPop, which no stage selects (6.10);
 - DustCarry, the page crossing of DustOffsets (6.9).

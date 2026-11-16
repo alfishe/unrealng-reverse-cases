@@ -416,9 +416,9 @@ l_6893:
 ; 128K: channel C's volume from SkidLevel, the noise period from SPEED, noise
 ; on C and tone off
 ;
-; In: A = SkidLevel. Volume = ((A >> 2) AND 3) + $0B, at most 15; noise period
-; = SPEED >> 4 (SPEED 0: EngineTone instead); AyVolumeC and AyNoise written,
-; mixer AND $1F OR 4.
+; In: A = SkidLevel. Volume = ((A >> 2) AND 3) + $0B, 11-14 (the clamp to 15
+; never fires); noise period = SPEED >> 4 (SPEED 0: EngineTone instead);
+; AyVolumeC and AyNoise written, mixer AND $1F OR 4.
 ;
 ; Known only from the code: SkidLevel is set by the sand of stage 3
 ; (OffRoadSand), and no recording left the road there on the 128K.
