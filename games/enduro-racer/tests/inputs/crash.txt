@@ -1,0 +1,46 @@
+# crash: from c1's play start (KEYBOARD, the countdown over), no POKE: throttle held and steered hard to one
+# side into the roadside, then the other, then into riders ahead; the falls and the restarts
+# Start: work/stage1/rec/c1/play.szx
+0 Q
+200 Q P
+320 Q
+620 Q O
+740 Q
+1040 Q P
+1160 Q
+1460 Q O
+1580 Q
+1880 Q P
+2000 Q
+2300 Q O
+2420 Q
+2620 Q A
+2660 Q
+2760 Q A
+2800 Q
+2900 Q A
+2940 Q
+3040 Q A
+3080 Q
+3180 Q A
+3220 Q
+3320 Q A
+3360 Q
+3460 Q A
+3500 Q
+3600 Q A
+3640 Q
+3740 Q A
+3780 Q
+3880 Q A
+3920 Q
+4020 Q A
+4060 Q
+4160 Q A
+4200 Q
+4300 Q A
+4340 Q
+4440 Q A
+4480 Q
+4580 -
+4580 END

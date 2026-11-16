@@ -1,0 +1,28 @@
+{
+  "image_cmd": [
+    "sh",
+    "-c",
+    "mkdir -p work/mkgame && cp work/stage1/images/entry.cpu.bin work/mkgame/original.bin"
+  ],
+  "image": "work/mkgame/original.bin",
+  "lo": "5B00",
+  "hi": "10000",
+  "device": "ZXSPECTRUM48",
+  "bases": {
+    "5": "4000",
+    "2": "8000",
+    "0": "C000"
+  },
+  "read_builds": [
+    "game"
+  ],
+  "ref_builds": [
+    [
+      "game",
+      "c1's play from the entry"
+    ]
+  ],
+  "header": [
+    "; Enduro Racer, Activision 1987: the game image at its entry $8000 (c1, frame 11646 T 14544), after SpeedLock 2 and its mover."
+  ]
+}

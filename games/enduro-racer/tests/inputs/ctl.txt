@@ -1,0 +1,168 @@
+# ctl: from c1's loaded state (control SINCLAIR LEFT, the power-on default): for each method the menu picks it,
+# START GAME, the method's throttle, left, right, wheelie, brakes held in turn, then RESET (R) back to the menu.
+# Kempston: up throttle, left, right, down wheelie, fire brakes; Sinclair right (keys 6-0: left right down up fire):
+# 9 throttle, 6 left, 7 right, 8 wheelie, 0 brakes; Sinclair left (keys 1-5: left right down up fire): 4 throttle,
+# 1 left, 2 right, 3 wheelie, 5 brakes; cursor (5 left, 8 right, 6 down, 7 up, 0 fire): 7 throttle, 5 left, 8 right,
+# 6 wheelie, 0 brakes (the joystick mappings are the guess this recording tests); last DEFINE KEYS: THROTTLE
+# redefined to W and used
+# Start: work/stage1/rec/c1/loaded.szx
+0 ENTER
+4 -
+34 ENTER
+38 -
+68 ENTER
+72 -
+102 ENTER
+106 -
+136 ENTER
+140 -
+165 ENTER
+169 -
+194 SPACE
+198 -
+228 SPACE
+232 -
+262 ENTER
+266 -
+291 ENTER
+295 -
+320 SPACE
+324 -
+454 4
+654 4 1
+679 4 2
+704 4 3
+734 5
+774 -
+784 R
+790 -
+850 ENTER
+854 -
+884 ENTER
+888 -
+913 ENTER
+917 -
+942 SPACE
+946 -
+976 ENTER
+980 -
+1005 ENTER
+1009 -
+1034 ENTER
+1038 -
+1063 SPACE
+1067 -
+1097 ENTER
+1101 -
+1126 ENTER
+1130 -
+1155 SPACE
+1159 -
+1289 KU
+1489 KU KL
+1514 KU KR
+1539 KU KD
+1569 KF
+1609 -
+1619 R
+1625 -
+1685 ENTER
+1689 -
+1719 ENTER
+1723 -
+1748 ENTER
+1752 -
+1777 SPACE
+1781 -
+1811 ENTER
+1815 -
+1840 SPACE
+1844 -
+1874 ENTER
+1878 -
+1903 ENTER
+1907 -
+1932 SPACE
+1936 -
+2066 9
+2266 9 6
+2291 9 7
+2316 9 8
+2346 0
+2386 -
+2396 R
+2402 -
+2462 ENTER
+2466 -
+2496 ENTER
+2500 -
+2525 ENTER
+2529 -
+2554 SPACE
+2558 -
+2588 ENTER
+2592 -
+2617 ENTER
+2621 -
+2646 SPACE
+2650 -
+2680 ENTER
+2684 -
+2709 ENTER
+2713 -
+2738 SPACE
+2742 -
+2872 7
+3072 7 5
+3097 7 8
+3122 7 6
+3152 0
+3192 -
+3202 R
+3208 -
+3268 ENTER
+3272 -
+3302 ENTER
+3306 -
+3331 ENTER
+3335 -
+3360 SPACE
+3364 -
+3394 ENTER
+3398 -
+3423 SPACE
+3427 -
+3457 ENTER
+3461 -
+3486 SPACE
+3490 -
+3520 ENTER
+3524 -
+3549 SPACE
+3553 -
+3583 W
+3589 -
+3629 ENTER
+3633 -
+3658 ENTER
+3662 -
+3687 ENTER
+3691 -
+3716 ENTER
+3720 -
+3745 ENTER
+3749 -
+3774 ENTER
+3778 -
+3803 SPACE
+3807 -
+3837 ENTER
+3841 -
+3866 SPACE
+3870 -
+4000 W
+4200 W O
+4225 W P
+4250 R
+4256 -
+4316 END
