@@ -42,7 +42,7 @@ $FEB3 c ReadMarkBits ; Read one mark bit into L by two edges (threshold $DB)
 > In: L with its marker, B the count. Loops by JP NC to $FEB1 for 0 bits; returns when the marker leaves L. Used by StoreLast for the 21-bit end mark.
 > Witness: L1 231 (c1).
 $FEC9 c ProbeTape ; Load block 5 to $A000, sample the EAR 255 times to $9000 and check the samples
-> Called by LoaderStart with IX = $A000, DE = $11: block 5 (the ROM bytes of $0032-$0042, a decoy later overwritten). Then 255 samples by SampleEar to $9000-$90FE and CheckSamples; a bad tape sets LoadFailed. A copy without the tone after block 5 fails here.
+> Called by LoaderStart with IX = $A000, DE = $11: block 5 (18 tape bytes: the ROM bytes of $0032-$0042 decoded with k = $98, a = $0B, then the block's last byte; a decoy later overwritten). Then 255 samples by SampleEar to $9000-$90FE and CheckSamples; a bad tape sets LoadFailed. A copy without the tone after block 5 fails here.
 > Witness: L1 1 (c1).
 $FEDE c SampleEar ; Count the EAR changes in 255 reads into E
 > Witness: L1 255 (c1).

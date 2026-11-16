@@ -30,7 +30,7 @@ $5CE7 SavedSp2 ; DrawRoad's SP while it walks RowList (and RoadRowsJump's)
 $5CE9 JumpHeight ; the bike's height in the air, 8.8 ($5CEA the whole part; 0 on the ground)
 $5CEF HorizonAddr ; the stage's horizon (StageTable)
 $5CF1 HorizonRows ; its rows
-$5CF2 HorizonBottom ; the picture's top line (StageTable byte 3): DrawHorizonAt clears from TopClip down to it, then copies the picture from it (the bottom of the clear, not of the picture)
+$5CF2 HorizonTop ; the picture's top line (StageTable byte 3): DrawHorizonAt clears from TopClip down to it, then copies the picture from it
 $5CF3 HorizonScroll ; the horizon's scroll position, 8.8 (HorizonScrollStep)
 $5CF5 JumpRows ; up to four rows of ramps (type 0 objects) this pass, $FF the end: MoveRiders makes riders jump there
 $5CF9 JumpRowPtr ; the next free JumpRows place
@@ -230,7 +230,7 @@ $80EC RomSum ; the 128K test: sum ROM $3B00-$3BFF
 $80FE ; Beeper = $FF on the 48K ROM
 
 @module menu ; The attract loop, the main menu, the control methods, DEFINE KEYS, the text printer, the keys
-@about Attract wipes the screen and scrolls four credit lines up from the bottom (CreditList), then waits about 4 seconds (250 WaitKey units) for a key; with none it starts a demo race (DemoMode 8-15, the low bits of the distance) through NewGame. A key gives Menu: START GAME, ONE/TWO PLAYERS, CHANGE CONTROL MODE, DEFINE KEYS, chosen by MenuSelect (SPACE or fire picks, THROTTLE moves up, any other key down; about 22 seconds with no key go back to Attract).
+@about Attract wipes the screen and scrolls four credit lines up from the bottom (CreditList), then waits about 5 seconds (250 WaitKey units) for a key; with none it starts a demo race (DemoMode 8-15, the low bits of the distance) through NewGame. A key gives Menu: START GAME, ONE/TWO PLAYERS, CHANGE CONTROL MODE, DEFINE KEYS, chosen by MenuSelect (SPACE or fire picks, THROTTLE moves up, any other key down; about 23 seconds with no key go back to Attract).
 @about The control methods (ControlTable, ControlMethod): 0 KEYBOARD (the keys of DEFINE KEYS, Q A O P SPACE by default), 1 KEMPSTON, 2 SINCLAIR RIGHT, 3 SINCLAIR LEFT, 4 CURSOR. PatchControls writes a method's five half-row bytes and masks into ReadControls' code (and DE = $FE20, or $1F28 for the Kempston: port $FE with JR NZ, or port $1F with JR Z); PAUSE (H) and RESET (R) are always keys. ReadControls returns D: bit 0 throttle, 1 wheelie, 2 left, 3 right, 4 brakes (fire), 5 pause, 6 reset.
 @about The printer draws 8x8 characters of Font through RowTable (PrintChar: A the code, B the column, C the pixel line, E the attribute; B moves on), so the same code draws on the screen or, with RowTable pointing at it, into the back buffer.
 $810C c Attract ; Wipe, scroll the credits up, wait for a key; none: a demo race; a key: Menu
@@ -398,9 +398,9 @@ $87BD TurnLoop ; swap the blocks (56 bytes); a player with Timer 0 is skipped
 $87D9 ; the turn
 $87E9 c TurnSkip ; The player's game is over but the other's is not: next turn
 > Known only from the code: in twoplayer both games ended in the same round of turns.
-$87EB TurnNext ; one player: on; two: Delay and GetKey first
-$87FC c PlayTurn ; A turn: the HUD (frames, TOP, the best score, STAGE, TIME, SPEED, SCORE), JP StartRace; at game over the tables
-> The pixel lines 0-63 cleared, their attributes $69; HudLayout's texts; two frames (FrameChars); DrawScore; the best score (HiScores' first row) at column 5; the stage in big digits; PrintTimer; SPEED 0; CALL GameEntry (JP StartRace). Back with Timer nonzero: RET (the next turn). Timer 0: the game is over: RecordStages, the totals (TotalTime = the player's finished stages, Records' total), the lap table (LapTable), then the high scores (ScoreCheck).
+$87EB TurnNext ; the other's Timer 0 or one player: on; else Delay and GetKey first
+$87FC c PlayTurn ; A turn: the HUD (frames, TOP, the best score, STAGE, TIME, SPEED, SCORE), GameEntry, a jump through GameEntryJump to StartRace; at game over the tables
+> The pixel lines 0-63 cleared, their attributes $69; HudLayout's texts; two frames (FrameChars); DrawScore; the best score (HiScores' first row) at column 5; the stage in big digits; PrintTimer; SPEED 0; CALL GameEntry (JP GameEntryJump, JP StartRace). Back with Timer nonzero: RET (the next turn). Timer 0: the game is over: RecordStages, the totals (TotalTime = the player's finished stages, Records' total), the lap table (LapTable), then the high scores (ScoreCheck).
 > Recorded: c1, m128: game over by the timer in stage 1; stages: game over after the finish; twoplayer: turns.
 > Witness: L1 25 (c1, crash, ctl, fall5, m128, stages, truck, twoplayer).
 $885D ; the race
@@ -699,7 +699,7 @@ $9DF1 RoadRowsMake ; RowList from RoadLines (each line once, rows that share a l
 $9DFC ; RoadTopRow: $FF when the last row is at line $70
 
 @module horizon
-$9E3A c SetHorizon ; HorizonAddr, HorizonRows, HorizonBottom from StageTable[Stage]; the clear count $C0 - rows - top
+$9E3A c SetHorizon ; HorizonAddr, HorizonRows, HorizonTop from StageTable[Stage]; the clear count $C0 - rows - top
 > Witness: L1 54 (c1, crash, ctl, fall5, m128, stages, truck, twoplayer).
 $9E67 b StageTable 4 ; The five stages' horizons: the picture's address (a word), its lines, its top line (5 x 4 bytes)
 > Mountains/32/$50, Clouds/9/$53, Dunes/25/$57, Mountains/32/$50, Clouds/9/$5A. src/res/tables/stages.csv.
@@ -708,9 +708,9 @@ $9E7B c DrawHorizon ; From TopClip: draw the horizon's lines into the back buffe
 > Witness: L1 5137 (c1, crash, ctl, fall5, m128, names, stages, tech-brake-bend, tech-cheat, tech-land-wheelie, tech-ramp-wheelie, truck, twoplayer).
 $9E7E c DrawHorizonAt ; from line A (StartRace: 40)
 > Witness: L1 5162 (c1, crash, ctl, fall5, m128, names, stages, tech-brake-bend, tech-cheat, tech-land-wheelie, tech-ramp-wheelie, truck, twoplayer).
-$9E86 c HorizonHidden ; The top line below the horizon's bottom: no picture lines (B = 0 path)
-> Known only from the code: TopClip never went below the horizon.
-$9E88 ; B = the picture's lines to draw
+$9E86 c HorizonHidden ; TopClip below the picture's top line: start at HorizonTop, nothing to clear above the picture (B = 0 path)
+> Known only from the code: TopClip never went below the picture's top line.
+$9E88 ; B = the lines to clear above the picture (HorizonTop - TopClip)
 $9EF1 ClearLines ; clear B lines: SP = each line's end, 16 PUSH of zeros, then JP (IY)
 
 @module objects
@@ -847,15 +847,15 @@ $A88F c TruckCrash ; A truck head-on: Crash
 > Witness: L1 5 (stages, truck).
 $A892 c RiderBounce ; JR to the HUD
 > Witness: L1 5 (stages, truck).
-$A8BB HudFlash ; every 8 passes: DEMO, or nUP with two players, at column 28
+$A8BB HudFlash ; on 4 passes of every 8 (PassCount AND 4 = 0): DEMO, or nUP with two players, at column 28, line $B0 (in the race picture)
 $A8D6 t DemoText ; DEMO
 @res texts/demo.bin
 $A8DA c HudPlayer ; Two players: PlayerChar, U, P (the font's own glyphs for "UP")
 > Witness: L1 2433 (c1, crash, ctl, fall5, m128, names, stages, tech-brake-bend, tech-cheat, tech-land-wheelie, tech-ramp-wheelie, truck, twoplayer).
 $A8F0 ExtendedPlay ; ExtendedTime: EXTENDED PLAY flashing and LAPTIME, with a beep
 @isub $A905 LD DE,$6080 ; the beep: D = $60 edges, E = $80 turns (not an address)
-$A92B CountdownBeeps ; Countdown AND 3 = 2: a beep (64 x $E0 for 3-2-1, 256 x $70 for GO)
-$A948 ; CopyBuffer and DrawHorizon; DrawnTop, TopClip = HorizonBottom
+$A92B CountdownBeeps ; Countdown AND 3 = 2: a beep (64 x $E0 for 3-2-1, 256 x $70 for GO); the 3-2-1 passes (Countdown 4 or more) skip CopyBuffer and DrawHorizon
+$A948 ; CopyBuffer and DrawHorizon; DrawnTop, TopClip = HorizonTop
 $A95A FinishCheck ; Stage 5 (after the finish): the leading rider's distance below $40 ends the game
 $A961 FinishRider ; LD IX,nn: nn = the rider with the largest row byte (StageEnd at the finish)
 $A974 ScoreAdd ; not falling: ScoreDigits = the speed's digits (hundreds, tens, units; one place higher in the air: SPEED x 10), AddScore

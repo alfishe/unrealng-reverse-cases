@@ -228,7 +228,7 @@ MenuSelect `$85F9` highlights an item and waits:
 MenuSelect(item, list HL, colour E):
     loop:
         paint the item's bar: attribute (attr AND $47) OR E
-        A = WaitKey($04E2)                    # all keys up first, then a key; about 22 s
+        A = WaitKey($04E2)                    # all keys up first, then a key; about 23 s
         if timeout: return C                  # the menu goes back to the attract
         if A == 3 (SPACE): return item
         D = ReadControls()
@@ -322,12 +322,13 @@ How to read:
 - Each cell gives the key, its KeyMap index and the D at the match.
 - Codes 1-4 are SYMBOL SHIFT, ENTER, SPACE and CAPS SHIFT; KeyNames prints them SYM, ENT, SPC, CPS.
 
-**GetKey `$8548` and WaitKey `$854A`.** WaitKey first waits until every key is up, then for a key, each step a
-delay of `$9A13` and a scan. On the KEMPSTON method any stick bit, a direction or fire (`IN A,($1F)` / `AND $1F`), also
-counts as a key: the release wait waits for the stick to be centred, and a push returns `$40`. KeyOrFire
-(KempstonFire `$84EC`), which ends the demo, reads it the same way, so any direction ends the demo too. In the
-menus MenuSelect then reads ReadControls: up (THROTTLE) moves the bar up, fire alone (BRAKES) picks, any other
-direction moves it down. GetKey is WaitKey with no timeout.
+**GetKey `$8548` and WaitKey `$854A`.** WaitKey first waits until every key is up, then for a key, each step a delay
+of `$9A13` and a scan: DelayBC runs 154 + 18 x 256 = 4 762 `DJNZ` turns, about 62 000 T, so a unit is a little under a
+frame with the scan and the interrupts (about 0.94): 250 units are about 5 s, `$04E2` about 23 s. On the KEMPSTON
+method any stick bit, a direction or fire (`IN A,($1F)` / `AND $1F`), also counts as a key: the release wait waits for
+the stick to be centred, and a push returns `$40`. KeyOrFire (KempstonFire `$84EC`), which ends the demo, reads it the
+same way, so any direction ends the demo too. In the menus MenuSelect then reads ReadControls: up (THROTTLE) moves the
+bar up, fire alone (BRAKES) picks, any other direction moves it down. GetKey is WaitKey with no timeout.
 
 ```text
 WaitKey(timeout BC):          # B = $FF: no timeout
@@ -723,7 +724,7 @@ TurnLoop:                                   # $87BD
     if Timer == 0: goto TurnLoop            # this player's game is over: skip him
     PlayTurn()                              # $87FC: the HUD, the race until a fall's end or Timer 0
     if Timer == 0 and OtherPlayer.Timer == 0: Attract     # both games over
-    if Timer != 0 and Players == 2: Delay; GetKey         # the key that hands the turn over
+    if OtherPlayer.Timer != 0 and Players == 2: Delay; GetKey   # the turn really passes: a key hands it over
     goto TurnLoop
 ```
 
@@ -766,12 +767,13 @@ flowchart TD
     B --> C{"this player's Timer 0"}
     C -->|yes| B
     C -->|no| D["PlayTurn: race, stage after stage"]
+    D -.->|"RESET: RaceQuit"| M["the menu: the game abandoned"]
     D --> E{"the turn ended by"}
-    E -->|"a fall's end"| F{"two players"}
+    E -->|"a fall's end"| F{"two players and the other's Timer not 0"}
     F -->|yes| G["Delay, GetKey"]
     G --> B
     F -->|no| B
-    E -->|"Timer 0"| H{"the other's Timer 0"}
+    E -->|"Timer 0: the time-out or the finish"| H{"the other's Timer 0"}
     H -->|yes| I["Attract"]
     H -->|no| B
 ```

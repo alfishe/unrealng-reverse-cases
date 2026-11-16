@@ -46,19 +46,31 @@ shows the high score table and the loop starts again. A key goes to Menu `$8178`
 The menu has four items: START GAME, ONE or TWO PLAYERS, CHANGE CONTROL MODE, DEFINE KEYS. SPACE or fire executes
 an item. Any other key moves to the next one. A time-out with no key goes back to Attract.
 
-START GAME runs NewGame `$8755`. NewGame sets up both players' blocks and enters TurnLoop `$87BD`. Each turn swaps
-the two 56-byte player blocks and calls PlayTurn `$87FC` for the player whose timer is not 0. PlayTurn draws the HUD
-and calls GameEntry `$8E50`, a `JP StartRace`. StartRace `$A45D` sets the stage up and falls into RaceLoop `$A5FE`.
+START GAME runs NewGame `$8755`. NewGame sets up both players' blocks and enters TurnLoop `$87BD`. Each turn swaps the
+two 56-byte player blocks and calls PlayTurn `$87FC` for the player whose timer is not 0. PlayTurn draws the HUD and
+calls GameEntry `$8E50`, a jump through GameEntryJump `$98EF` to StartRace. StartRace `$A45D` sets the stage up and
+falls into RaceLoop `$A5FE`.
 
-The race loop leaves in two ways:
+The race loop leaves in four ways, and a key leaves the game:
 
-1. the timer is 0 and SPEED is 0: TimerTick jumps to RaceOver `$AA9E`, and RaceEnd returns to PlayTurn;
-2. the player presses RESET (R by default): RaceQuit `$A9C3` ends the turn the same way.
+1. the timer is 0 and SPEED is 0: TimerTick jumps to RaceOver `$AA9E`, and RaceEnd `$AAA1` returns to PlayTurn
+   with the timer 0;
+2. a fall ends: when the fall's count runs out, BikeControl sets FallX and Countdown `$80`, drops its own return and
+   RaceEndFall `$ACF7` jumps to RaceOver, so RaceEnd returns to PlayTurn with the timer still running;
+3. after the finish of stage 5: FinishCheck `$A95A` waits until the finish rider's row reaches `$40`, then sets the
+   timer to 0 and jumps to RaceEnd, which returns to PlayTurn;
+4. in a demo: AdvanceTrack takes one off DemoMode a segment, and at 0 DemoEnd `$AF91` drops three return addresses
+   and jumps to RaceEnd, which returns to AttractScores `$8163`, after Attract's `CALL NewGame`.
 
-A stage's end does not leave the loop. StageEnd `$AB0A` adds the time bonus, sets the next stage up and jumps back
-to RaceLoop. After stage 5 the stage number is 5 and the bike is no longer drawn: the finish rider runs instead.
+RESET (R by default), or any key in a demo, is not a turn's end. RaceQuit `$A9C3` drops two return addresses
+(PlayTurn's and TurnLoop's), calls RaceEnd and jumps to Menu `$8178`: the game is abandoned.
 
-Back in PlayTurn, a timer not 0 means the turn ended by a reset; PlayTurn returns and the next turn starts. A timer of
+A stage's end does not leave the loop either. AdvanceTrack's NextSegment `$AF97` jumps to StageEnd `$AB0A` on a
+segment byte with bit 5 set. StageEnd drops AdvanceTrack's return, adds the time bonus and, on stages 1-4, sets the
+next stage up through StageStart `$A4DA`, which falls into RaceLoop. After stage 5 the stage number is 5, the bike
+is no longer drawn and the finish rider runs instead; StageEnd jumps straight to RaceLoop.
+
+Back in PlayTurn, a timer not 0 means the turn ended by a fall; PlayTurn returns and the next turn starts. A timer of
 0 means game over: RecordStages, LapTable, ScoreCheck, NameEntry and ShowScores. When both players' timers are 0,
 TurnLoop goes back to Attract.
 
@@ -68,7 +80,6 @@ stateDiagram-v2
     Mover --> Init: JP 8000, JP 80B8
     Init --> Attract: IM 2, EI
     Attract --> Demo: no key in 250 waits
-    Demo --> Attract: demo over
     Attract --> Menu: a key
     Menu --> Attract: no key
     Menu --> Menu: players, control mode, define keys
@@ -78,25 +89,32 @@ stateDiagram-v2
     PlayTurn --> StartRace: HUD, JP StartRace
     StartRace --> RaceLoop
     RaceLoop --> RaceLoop: one pass
-    RaceLoop --> StageEnd: the stage's end
+    RaceLoop --> StageEnd: NextSegment, bit 5
     StageEnd --> RaceLoop: next stage, timer plus 50
     RaceLoop --> GameOver: timer 0 and SPEED 0
-    RaceLoop --> TurnLoop: RESET key
+    RaceLoop --> GameOver: stage 5, the finish rider at row 40
+    RaceLoop --> TurnLoop: a fall's end, timer running
+    RaceLoop --> Menu: RESET key
+    Demo --> Menu: a key
+    Demo --> Attract: DemoEnd, DemoMode 0
     GameOver --> TurnLoop: lap table, scores, name
     TurnLoop --> Attract: both timers 0
 ```
 
-*The states, with the frames of `c1` where each was first seen: Mover at 11 632, Init 11 646, the credits 11 882,
-the demo's timer at 12 408, the menu 13 418, GO at 14 075, timer 0 at 19 258, SPEED 0 at 19 300, the lap table
-19 465, the next demo at 21 138. The frames come from `c1-samples.json` (Timer `$5E1F`, Speed `$7C34`) and the
-screenshots in `docs/img/play`.*
+*The states, with the frames of `c1` where each was first seen: Mover at 11 632, Init 11 646, the credits 11 882, the
+demo's timer at 12 408, the menu 13 418, the countdown 14 022-14 182 (GO from 14 144), timer 0 at 19 258, SPEED 0 at
+19 300, the lap table 19 465, the next demo at 21 138. The frames come from `c1-samples.json` (Timer `$5E1F`, SPEED,
+the high byte `$7C34`) and the screenshots in `docs/img/play`.*
 
 **Witness.** In `c1-samples.json` the timer reads `$60` from frame 12 408 (the demo starts with 60), `$00` from
 19 258, and `$60` again at 21 138 (the next demo). SPEED reads 17 at 19 265 and 0 at 19 300: the bike rolls to a stop
 after the time-out, as Throttle's `$0940` a pass says (4.8).
+The fall's exit shows in the same samples: FallTime `$916E` reads 137 from frame 15 843 and counts down to 129;
+at 16 019 Countdown `$5E24` reads 128 (`$80`) with the timer at 38: the turn ended by the fall, the timer running.
 
-**The point.** The program is one loop with a hub. Every way out of a race goes through PlayTurn and TurnLoop back
-to Attract. Nothing restarts the machine on purpose; 4.9 is the exception, and it is a bug.
+**The point.** The program is one loop with a hub. A race ends back in PlayTurn (a fall, the time-out, the finish) or,
+in a demo, in Attract; only RESET skips both and goes to the menu. Nothing restarts the machine on purpose; 4.9 is the
+exception, and it is a bug.
 
 ## 4.2 The IM 2 vector: 257 bytes of `$64`
 
@@ -491,17 +509,26 @@ frames, 8.0 on average.
 2. RaceCount `$A64E`: PassCount `$7C2E` + 1; CAPS SHIFT and Q toggle CheatStep ([doc 05, 5.11](05-controls.md#511-the-cheat-key)).
 3. RaceStep: ScrollStep = SPEED x 14.
 4. RacePass `$A67E`:
-   - AyEffectTick, AdvanceTrack (the track moves on by ScrollStep), ScrollBends;
+   - AyEffectTick, AdvanceTrack (the track moves on by ScrollStep), ScrollBends. On a segment byte with bit 5 set
+     AdvanceTrack's NextSegment `$AF97` jumps to StageEnd `$AB0A` (the stage's end): StageEnd drops AdvanceTrack's
+     return and goes back to RaceLoop through StageStart, so the rest of that pass never runs. In a demo, DemoEnd
+     `$AF91` leaves here too when DemoMode reaches 0 (4.1);
    - the stage's row builder and road routine, two `CALL nn` patched by StartRace from StageParams `$A187`: DrawRoad
      with RoadRowsCrest on stages 1, 2 and 4, DrawRoad with RoadRowsJump on stage 3, RoadNone on stage 5;
-   - GroundTexture (the ground's dots), MoveRiders (not during the countdown), DrawRiders;
-   - BikeControl and DrawBike (not after the finish), DrawDust, DrawSplash, HorizonScrollStep, BikeHitX.
+   - GroundTexture (the ground's dots), MoveRiders (once Countdown is under 8), DrawRiders;
+   - BikeControl and DrawBike (not after the finish), DrawDust, DrawSplash, HorizonScrollStep, BikeHitX. When a
+     fall's count runs out, BikeControl drops its return and jumps to RaceOver (RaceEndFall `$ACF7`): the turn ends
+     there.
 5. ObjectWalk `$A6D9`: the track from the bike forward, each object drawn (DrawObject); the ones on the bike's row
    tested for a collision (Bounce, Crash, Ramp); then RiderHits `$A839`, the other riders and the trucks.
-6. HudFlash `$A8BB` (DEMO, or 1UP / 2UP, every 8 passes), ExtendedPlay, CountdownBeeps.
+6. HudFlash `$A8BB` (DEMO, or 1UP / 2UP, on 4 passes of every 8), ExtendedPlay, CountdownBeeps `$A92B`. On the
+   passes of 3, 2 and 1 (Countdown 14, 10 and 6) CountdownBeeps beeps and jumps over step 7 to FinishCheck: those
+   passes copy no picture. On GO's pass (Countdown 2) it beeps and goes on.
 7. CopyBuffer `$98F5` and DrawHorizon `$9E7B`: the back buffer to the screen, the horizon drawn into place.
-8. FinishCheck `$A95A` (the stage's end), ScoreAdd `$A974` (the speed's digits to the score), RaceControls `$A9A8`
-   (the keys, pause, reset).
+8. FinishCheck `$A95A`: on stage 5 only (after the finish), while the finish rider's row is under `$40` it goes
+   back to RaceLoop (the rest of the pass is skipped); at `$40` it sets the timer to 0 and jumps to RaceEnd, the
+   game's end. On stages 0-4 it falls into ScoreAdd `$A974` (the speed's digits to the score) and RaceControls
+   `$A9A8` (the keys, pause; RESET and a key in a demo leave for the menu through RaceQuit `$A9C3`).
 9. Throttle `$A9DC` (SPEED from throttle and brakes), PrintSpeed, TimerTick `$AA73` (4.8); back to RaceLoop.
 
 **How it works.**
@@ -512,15 +539,21 @@ RaceLoop:
     PassCount += 1
     ScrollStep = SPEED * 14
     move the track, the bends
+        if a segment with bit 5 is passed: StageEnd; goto RaceLoop     # the stage's end, NextSegment
+        if a demo and DemoMode reaches 0: DemoEnd                      # back to AttractScores
     build the road rows; draw the road         ; per stage
-    ground, riders, bike, dust, splash, horizon step
+    ground, riders (they move once Countdown < 8), bike, dust, splash, horizon step
+        if the fall's count ran out: RaceOver                           # the turn ends, timer running
     walk the objects: draw, collide
     riders and trucks: collide
     HUD flashes, extended play, beeps
-    copy the back buffer to the screen; draw the horizon
-    stage end?  -> StageEnd, then RaceLoop
+    if not a 3, 2 or 1 beep's pass:
+        copy the back buffer to the screen; draw the horizon
+    if Stage == 5:                                                      # FinishCheck, after the finish
+        if FinishRider.row < $40: goto RaceLoop
+        Timer = 0; RaceEnd                                              # the game is over
     score += speed digits
-    keys: pause, reset
+    keys: pause; RESET (or a key in a demo): RaceEnd, Menu
     SPEED from the controls
     print SPEED; tick the timer
     if timer == 0 and SPEED == 0: RaceOver
@@ -560,16 +593,22 @@ flowchart TD
     A["RaceLoop: countdown"] --> B["PassCount + 1, cheat key"]
     B --> C["ScrollStep = SPEED x 14"]
     C --> D["track, bends"]
+    D -->|"NextSegment: bit 5"| L["StageEnd: bonus, next stage"]
+    L --> A
+    D -->|"demo, DemoMode 0"| DE["DemoEnd: RaceEnd, AttractScores"]
     D --> E["row builder, road: per stage"]
     E --> F["ground, riders, bike, dust, splash, horizon step"]
+    F -->|"a fall's end"| P["RaceOver"]
     F --> G["ObjectWalk: draw, collide"]
     G --> H["RiderHits"]
     H --> I["HUD flash, extended play, beeps"]
+    I -->|"the pass of 3, 2 or 1"| K
     I --> J["CopyBuffer, DrawHorizon"]
-    J --> K{"FinishCheck"}
-    K -->|"stage end"| L["StageEnd"]
-    L --> A
+    J --> K{"FinishCheck: Stage 5, after the finish?"}
+    K -->|"yes, rider row under 40"| A
+    K -->|"yes, rider row 40"| Q["Timer 0, RaceEnd: game over"]
     K -->|"no"| M["ScoreAdd, RaceControls, Throttle"]
+    M -->|"RESET"| RQ["RaceQuit: RaceEnd, Menu"]
     M --> N["PrintSpeed, TimerTick"]
     N --> O{"timer 0 and SPEED 0"}
     O -->|no| A
@@ -578,7 +617,7 @@ flowchart TD
 
 **Worked example.** One pass of `c1`, frames 17 945-17 952, SPEED 138:
 
-- PassCount reads 78 at the start of frame 17 946 and 79 at the start of 17 954. The pass's `INC` came in frames
+- PassCount reads 79 at the start of frame 17 946 and 80 at the start of 17 954 (it was 78 up to 17 945). The pass's `INC` came in frames
   17 945 and 17 953, 8 frames apart.
 - ScrollStep = 138 x 14 = 1 932 = `$078C` in 8.8, 7.5 track units: a segment of 128 units takes 17 passes.
 - The trace of the 8 frames is 559 091 T. BlitRow and BlitNext (the `c` entry BlitHead's span, [doc 02,
@@ -607,22 +646,25 @@ frame can show the upper part of the new picture and the lower part of the old o
 shows in about one frame in eight. Command: `python3 ../../kit/beam_timeline.py --work work/docs/erA/c1 --window
 17945:0-17953:0 --listing build/game.lst --machine 48k --frames 8 --out docs/img/loop/beam-pass-c1.png`.*
 
-**The length of a pass.** `c1`'s stage 1 had 648 passes from GO (frame 14 075) to the time-out (19 265).
+**The length of a pass.** `c1`'s stage 1 had 648 passes from frame 14 075 (the countdown's "2") to the time-out
+(19 265).
 
 ![Pass lengths in c1: the histogram, each pass over the race with the speed, and the timer](img/loop/passes.png)
 
-*`c1-samples.json`, frames 14 075-19 265. How to read: left, the passes by their length in frames (red: the
-commonest, 8); top right, each pass's length as a dot at its end frame, the speed in grey; bottom right, the timer.
-The point: the pass length barely follows the speed; it follows what is on screen. The red dots, 11 frames and more,
-are the passes with a crash noise (4.7). Command: `python3 tools/fig_passes.py work/docs/erA/c1-samples.json`.*
+*`c1-samples.json`, frames 14 075-19 265. How to read: left, the passes by their length in frames (red: the commonest,
+8); top right, each pass's length as a dot at its end frame, the speed in grey; bottom right, the timer. The point:
+the pass length barely follows the speed; it follows what is on screen. The red dots, 11 frames and more, are the
+passes with a crash noise (4.7), except the 17 (GO's beep) and the 70 (the pause). Command: `python3
+tools/fig_passes.py work/docs/erA/c1-samples.json`.*
 
 | Frames a pass | 5 | 6 | 7 | 8 | 9 | 10 | 11 | 12 | 17 | 70 |
 | --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: |
 | Passes | 1 | 43 | 183 | 280 | 97 | 29 | 8 | 5 | 1 | 1 |
 
-The 17-frame pass ends at frame 14 172, in the countdown's last passes: probably GO's beep (BeepTone `$AB95`
-busy-waits, 256 edges for GO against 64 for 3, 2, 1), not traced. The 70-frame pass is the pause at frame 14 552-14 621 (H
-held, then a key). The demo race of `c1` (frames 12 400-13 418) took 8.24 frames a pass on average.
+The 17-frame pass (14 155-14 172, Countdown 2) is GO's beep: CountdownBeeps calls BeepTone `$AB95` with DE = `$0070`
+on that pass (256 edges, 112 turns apart, against 64 for 3, 2, 1), and the pass waits for it. The 70-frame pass is the
+pause at frame 14 552-14 621 (H held, then a key). The demo race of `c1` (frames 12 400-13 418) took 8.24 frames a
+pass on average.
 
 **Witness.** `c1-samples.json` (PassCount `$7C2E` per frame); the WALKTHROUGH's pass histogram (the same 648
 passes); `c1/traces/17945_0-17953_0.uatr` with `work/docs/erA/prof.py` for the T-states per routine.

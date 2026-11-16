@@ -152,7 +152,7 @@ StartRace:
   CALL SetHorizon
   LD A,$28
   CALL DrawHorizonAt
-  LD A,(HorizonBottom)
+  LD A,(HorizonTop)
   LD (TopClip),A
   LD (DrawnTop),A
   LD A,(DemoMode)
@@ -776,8 +776,9 @@ l_A8B4:
   DJNZ l_A855
 ; This entry point is used by the routine at RampSpeed.
 HudFlash:
-  LD A,(PassCount)        ; every 8 passes: DEMO, or nUP with two players, at
-                          ; column 28
+  LD A,(PassCount)        ; on 4 passes of every 8 (PassCount AND 4 = 0): DEMO,
+                          ; or nUP with two players, at column 28, line $B0 (in
+                          ; the race picture)
   AND $04
   JR NZ,ExtendedPlay
   LD BC,$1CB0
@@ -843,7 +844,8 @@ l_A91F:
   CALL PrintString
 CountdownBeeps:
   LD A,(Countdown)        ; Countdown AND 3 = 2: a beep (64 x $E0 for 3-2-1,
-                          ; 256 x $70 for GO)
+                          ; 256 x $70 for GO); the 3-2-1 passes (Countdown 4 or
+                          ; more) skip CopyBuffer and DrawHorizon
   LD C,A
   AND $03
   CP $02
@@ -860,11 +862,11 @@ l_A940:
   JR NC,FinishCheck
 l_A948:
   CALL CopyBuffer         ; CopyBuffer and DrawHorizon; DrawnTop, TopClip =
-                          ; HorizonBottom
+                          ; HorizonTop
   CALL DrawHorizon
   LD A,(TopClip)
   LD (DrawnTop),A
-  LD A,(HorizonBottom)
+  LD A,(HorizonTop)
   LD (TopClip),A
 FinishCheck:
   LD A,(Stage)            ; Stage 5 (after the finish): the leading rider's

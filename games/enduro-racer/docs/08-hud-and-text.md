@@ -281,7 +281,8 @@ Each pass, ScoreAdd `$A974` turns the speed into digits and AddScore `$86C9` add
 
 ```text
 ScoreAdd:                                   # each pass, not while falling
-    ScoreDigits[0..6] = 0
+    ScoreDigits[3] = ScoreDigits[6] = 0     # the partial clear: [4], [5] (and [3] in the air) are rewritten below;
+                                            # [0]-[2] are not touched
     whole = SPEED's whole km/h
     on the ground: ScoreDigits[4], [5], [6] = hundreds, tens, units of whole
     in the air:    ScoreDigits[3], [4], [5] = the same, one place left (x 10)
@@ -407,6 +408,10 @@ each pass (after the countdown's first half):
 
 A timer second is 10 passes, not a real second. Its length depends on the pass.
 
+A race starts with Tenths 0, so the first tick finds it at 0 and borrows a second at once: TIME shows 59 from the
+first pass that reaches the throttle, and 60 only during the countdown's first half (`memory_at`: Timer, Tenths `60 00`
+at 14 112, `59 09` at 14 116, 8.8's witness).
+
 Worked example, `c1`: Timer turns from `$60` to `$59` between frames 14 112 and 14 116 and reaches 0 near 19 255.
 Sixty timer seconds took about 5 140 frames, 103 s: 1.7 s per timer second on average, the 382 frames of the five
 falls included (the timer is held while the rider gets up); without them about 80 frames, 1.6 s ([doc 1](01-game-design.md)). In the traced pass the tick ran
@@ -444,6 +449,14 @@ l_AABC: LD A,$20
 
 PrintNumber divides by 10 by repeated subtraction and recurses for the higher digits, so the digits come out left
 to right.
+
+Worked example: SPEED 100 goes through no INC B: the blank at column 24, the digits "100" at 25-27. A pass later at 99
+the first `CP $64` sets the carry, B becomes 25: the blank wipes the "1" at 25 and "99" lands at 26-27. At 9 B
+becomes 26 and the digit is at 27. The countdown's animation (Animation 8.4) shows SPEED leaving 0 through 1 and 2
+digits.
+
+Witness: PrintSpeed `$AAAB` L1 4950 (c1, crash, ctl, fall5, m128, names, stages and the four technique runs;
+`build/game.lst`).
 
 The point: the blank in front wipes the digit a longer number left behind; the number itself is never cleared.
 
@@ -549,6 +562,103 @@ rows, one per stage, and TOTAL.
 
 *Figure 8.5: `c1` frame 19 465, after the time-out on stage 1: the records, 56 % of stage 1 driven, TOTAL. From the
 recording's stills.*
+
+PlayTurn goes on to the table only when GameEntry returns with Timer 0; with time left it returns at once (`$8864`).
+RecordStages first updates the records of the stages finished (Stage `$5E23` is their count), then SumTimes fills
+the two TOTAL times; LapTable prints the rows:
+
+```text
+RecordStages:                               # PlayTurn, Timer 0 after the race
+    for i in 0 .. Stage - 1:                # the finished stages
+        t = StageTimes[i]; r = Records[i]    # word: low byte seconds (BCD), high byte hundredths
+        if t.seconds < r.seconds or (t.seconds == r.seconds and t.hundredths < r.hundredths):
+            Records[i] = t                  # the second test is RecordTie
+    if Stage > 0: TotalTime = SumTimes(StageTimes, Stage)
+    Records+10 = SumTimes(Records, 5)       # the record's TOTAL
+LapTable:
+    RECORD, PLAYER headings
+    for row in 0 .. 4 (line 88 + 16 x row):
+        the digit row + 1 at column 7; Records[row] at column 11
+        if row == Stage:  LapPercent        # the stage the turn ended in
+        elif row < Stage: StageTimes[row] at column 20
+        else: nothing                       # not reached
+    TOTAL: the record's total; the player's only if Stage > 0
+LapPercent:
+    n = Segments + the segments from StageListPtr to the stage's last (bit 5), inclusive
+    percent = high byte of 100 x low byte of (Segments x 256 / n)    # Divide, then Multiply
+    PrintNumber(percent) ending at column 23, then "@" (drawn as %)
+```
+
+```asm
+RecordStages:                   ; $8865
+        LD IX,Records
+        LD A,(Stage)
+        AND A
+        JR Z,l_889C             ; no stage finished: only the record's TOTAL
+        LD B,A
+        LD C,A
+l_8871: LD H,(IX+$0F)           ; StageTimes[i] (Records + 14)
+        LD L,(IX+$0E)
+        LD A,(IX+$00)           ; the record's seconds
+        CP L
+        JR C,l_888B             ; the record is faster: keep it
+        JR NZ,l_8885            ; the player is faster: replace
+RecordTie:                      ; equal seconds: the hundredths
+        LD A,H
+        CP (IX+$01)
+        JR NC,l_888B
+l_8885: LD (IX+$00),L           ; the new record
+        LD (IX+$01),H
+        ...
+LapPercent:                     ; $88E9
+        PUSH BC
+        LD A,(Segments)         ; the segments driven
+        LD D,A
+        LD HL,(StageListPtr)
+l_88F1: INC A                   ; count to the stage's last segment
+        BIT 5,(HL)
+        INC HL
+        JR Z,l_88F1
+        LD E,A                  ; E = the stage's segments
+        CALL Divide             ; HL = D x 256 / E
+        LD A,$64
+        CALL Multiply           ; DE = 100 x L
+        LD A,D                  ; the percent
+        POP BC
+        LD B,$17
+        LD E,$78
+        CALL PrintNumber
+        LD A,$40                ; "@", the font's %
+        CALL PrintChar
+```
+
+```mermaid
+flowchart TD
+    A["PlayTurn: GameEntry returned"] --> B{"Timer 0?"}
+    B -- no --> Z["back to the menu, no table"]
+    B -- yes --> C["RecordStages: for each finished stage"]
+    C --> D{"player's seconds below the record's? (equal: the hundredths, RecordTie)"}
+    D -- yes --> E["the record replaced"]
+    D -- no --> F["the record kept"]
+    E --> G["SumTimes: the player's TOTAL (Stage > 0), the record's TOTAL"]
+    F --> G
+    G --> H["LapTable: per row, RECORD"]
+    H --> I{"row against Stage"}
+    I -- "below: finished" --> J["PLAYER: the stage's time"]
+    I -- "equal: the turn ended here" --> K["PLAYER: LapPercent, %"]
+    I -- "above" --> L["PLAYER: blank"]
+```
+
+Worked example: c1's 56 %. The turn ends on stage 1 (Stage 0) with Segments 18 and StageListPtr `$5E92`
+(`c1-vars.jsonl` from 19 259 on). Stage 1's last segment is `$5E9F`, so the count from `$5E92` gives 14 and n = 32,
+stage 1's length. Divide: 18 × 256 / 32 = 144 (`$0090`); Multiply: 100 × 144 = 14 400 = `$3840`; the high byte `$38`
+is 56. RecordStages finds no finished stage and skips to the record's TOTAL (5 × 0'59"99 = 4'59"95, as in Figure 8.5).
+
+Witness: in `c1` RecordStages `$8865` L1 1 (the jump to `$889C`), LapTable `$88A8` L1 1, LapPercent `$88E9` L1 1;
+in `stages` (all five stages finished) the compare `$8871` L1 5, the replacement `$8885` L1 2, the player's times
+`$8912` L1 5 and no LapPercent. Counts from `work/stage1/rec/<run>/l1.json`. Doc 10
+([10.8](10-gameplay-logic.md#108-the-time-out-game-over-the-finish-and-the-lap-table)) has the turn's end that leads
+here.
 
 Known only from the code: RecordTie, two times with the same seconds.
 
@@ -676,6 +786,60 @@ text and the cursor a frame of font characters.
 - **MenuSelect** paints the selected item's attribute bar ([5.5](05-controls.md#55-the-menu-and-menuselect)).
 - **The credits** print the four lines of `credits.txt` and scroll the whole screen up a pixel line at a time
   (ScrollUp `$84B2`, through RowTable), and the attributes every 8 calls.
+
+ScrollUp walks RowTable with HL in the alternate set, so that each copy's source becomes the next copy's
+destination; the attributes move only when the counter in its own `LD A,n` operand (ScrollPhase) wraps to 0:
+
+```text
+ScrollUp:                                   # Attract, once per scroll step of a credit line
+    dst = $4000                             # line 0
+    for line in 1 .. 191:
+        src = RowTable[line]
+        copy 32 bytes src -> dst            # CopyRows with A = 1
+        dst = src
+    ScrollPhase = (ScrollPhase + 1) AND 7
+    if ScrollPhase == 0: copy 22 x 32 attribute bytes $5820 -> $5800   # rows 1-22 to 0-21
+```
+
+```asm
+ScrollUp:                       ; $84B2
+        LD HL,RowTable+$0001
+        LD DE,$4000             ; line 0: the first destination
+        EXX
+        LD B,$BF                ; 191 lines
+l_84BB: EXX
+        INC HL
+        LD A,(HL)               ; RowTable[line]
+        INC L
+        PUSH HL
+        LD H,(HL)
+        LD L,A                  ; HL = the line's address: the source
+        PUSH HL
+        LD A,$01
+        CALL Copy32             ; 32 bytes
+        POP DE                  ; the source is the next destination
+        POP HL
+        EXX
+        DJNZ l_84BB
+ScrollPhase:
+        LD A,$00                ; the operand counts 1-7, 0 moves the attributes
+        INC A
+        AND $07
+        LD (ScrollPhase+$0001),A
+        RET NZ
+        LD HL,$5820
+        LD DE,$5800
+        LD A,$16                ; 22 attribute rows
+        JP Copy32
+```
+
+Worked example: one call. RowTable[1] is `$4100`, so the first copy is line 1 `$4100` to line 0 `$4000`; the second
+is line 2 `$4200` to line 1 `$4100`; the eighth is line 8 `$4020` to line 7 `$4700`, across a character row. The last
+is line 191 `$57E0` to line 190 `$56E0`, and line 191 keeps its bytes. Attract sets ScrollPhase to 1 before the
+first record, so the 7th, 15th, 23rd ... calls move the attributes, one row for every 8 pixel lines.
+
+Witness: ScrollUp `$84B2` L1 820 (c1, m128, names, stages); in `c1` 328 calls and the attribute copy `$84D6` 40 times
+(`work/stage1/rec/c1/l1.json`): the credits from frame 11 646 and after the game (Figure 8.7).
 
 ![The method window](img/play/c1-013578-control-popup.png)
 

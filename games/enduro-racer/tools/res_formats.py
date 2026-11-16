@@ -68,7 +68,7 @@ TABLES = {
     'riders': (21, [('threshold', 'd')] + [(f'{f}{p}', k) for p in range(5)
                                           for f, k in (('rows', 'd'), ('width', 'd'), ('address', 'w'))]),
     'objects': (6, []),  # objects_export: eight lists, a head (farthest row, aligned row) then 6-byte entries
-    'stages': (4, [('horizon', 'w'), ('lines', 'd'), ('bottom', 'x')]),
+    'stages': (4, [('horizon', 'w'), ('lines', 'd'), ('top', 'x')]),
     'stageparams': (10, [('road', 'w'), ('rows', 'w'), ('offroad', 'w'), ('attribute', 'x'), ('copy_mode', 'd'),
                          ('unused1', 'x'), ('unused2', 'x')]),
     'collisions': (2, [('half_width', 'd'), ('height', 'd')]),

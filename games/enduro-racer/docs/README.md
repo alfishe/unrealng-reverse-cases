@@ -42,6 +42,7 @@ Each term once, here; the documents use these names and no others.
 | row | a road row 0-127, 0 the nearest; RoadLines gives each row its line |
 | RowTable | `$FE00-$FF7F`: the address of each of the 192 pixel lines; SetRowTable points lines 40-191 at the back buffer during the race, so every drawing routine and the printer draw there |
 | segment | 128 distance units of the track, one byte of StageList: the bend (bits 0-1), the crest (2-3), the bend's side (4), the stage's last segment (5) |
+| SPEED | the speed in km/h, 0-199: the high byte, `$7C34`, of the 8.8 word Speed `$7C33` (the low byte is the fraction); doc 10 (10.2) |
 | SpeedLock 2 | the tape protection: an R-keyed decoder chain and a loader with its own signal and changing store keys |
 | technique run | one of doc 10's runs: c1's play start replayed with c1's keys and one change (`tools/play_techniques.py` for the samples and GIFs), recorded as `tech-ramp-wheelie`, `tech-land-wheelie`, `tech-brake-bend` and `tech-cheat` ([WALKTHROUGH 6.0](../WALKTHROUGH.md#60-the-recordings)) |
 | time bonus | at a stage's end, the timer's tens and units as the score's 100 000s and 10 000s digits: 10 000 points a timer second left, plus the last pass's speed points still in the lower digits of ScoreDigits |

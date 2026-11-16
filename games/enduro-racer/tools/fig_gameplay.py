@@ -237,7 +237,7 @@ def cmd_techniques(out, tech_dir, c1_path):
     ax.plot(f0, [r['Speed'] >> 8 for r in r0], color='#7f7f7f', lw=1.4, label='c1 (no wheelie)')
     ax.plot(f1, [r['Speed'] >> 8 for r in r1], color='#d62728', lw=1.4, label='WHEELIE from 15 380')
     ax.axvline(15486, color='black', lw=0.6, ls=':')
-    ax.text(15490, 160, 'the ramp (15 486)', fontsize=10)
+    ax.text(15490, 160, 'JumpHeight set (sample 15 486)', fontsize=10)
     ax.set_ylabel('SPEED')
     ax.set_title('A wheelie into a ramp keeps the speed')
     ax.legend(loc='lower left', fontsize=10)

@@ -141,11 +141,10 @@ HorizonAddr:
   DEFB $09,$12            ; the stage's horizon (StageTable)
 HorizonRows:
   DEFB $E4                ; its rows
-HorizonBottom:
+HorizonTop:
   DEFB $A0                ; the picture's top line (StageTable byte 3):
                           ; DrawHorizonAt clears from TopClip down to it, then
-                          ; copies the picture from it (the bottom of the
-                          ; clear, not of the picture)
+                          ; copies the picture from it
 HorizonScroll:
   DEFB $C8,$12            ; the horizon's scroll position, 8.8
                           ; (HorizonScrollStep)

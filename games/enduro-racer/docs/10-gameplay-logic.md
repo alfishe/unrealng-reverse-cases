@@ -38,11 +38,13 @@ The recordings it rests on ([WALKTHROUGH 6.0](../WALKTHROUGH.md#60-the-recording
   nothing else. No POKE. The four runs with a change are also TTD recordings with the same keys
   (`tools/record.py tech-<run>`, `work/stage1/rec/tech-<run>/session.ttd`, WALKTHROUGH 6.0); a recording's
   frame F is c1's frame 14 075 + F. Their L1s witness the routines: RampCap `$A808` runs once in
-  `tech-ramp-wheelie` (frame 1 412, c1 15 487) and is skipped at the same ramp in `tech-land-wheelie`; CheatKey
+  `tech-ramp-wheelie` (frame 1 412, c1 15 487: with the wheelie the ramp comes two frames later than in c1) and is skipped at the same ramp in `tech-land-wheelie`; CheatKey
   `$A659` runs once in `tech-cheat` (frame 126, c1 14 201) and CheatFixedStep `$A674` 51 times after it.
 
-A sample of frame N is the memory at the start of frame N. A pass is one turn of the race loop: 6 to 12 frames, 8.0
-on average in `c1`'s play ([doc 4](04-game-loop.md)). SPEED is the high byte of the 8.8 word at `$7C33`. It is shown
+A sample of frame N is the memory at the start of frame N. An event is named by the frame its code runs in, so its
+result shows first in the next frame's sample: c1 takes the ramp in frame 15 485 and JumpHeight is set in the sample
+of 15 486. A pass is one turn of the race loop: 6 to 12 frames, 8.0
+on average in `c1`'s play ([doc 4](04-game-loop.md)). SPEED is the high byte, `$7C34`, of the 8.8 word Speed `$7C33`. It is shown
 as km/h. The figures' scripts are `tools/fig_gameplay.py` and `tools/play_techniques.py`.
 
 ## 10.1 The race as rules
@@ -135,8 +137,8 @@ frames of a fall. The bottom panel is SPEED in grey and TIME in red, both agains
 tools/fig_gameplay.py score docs/img/gameplay/score.png work/docs/erC/c1-vars.jsonl`.*
 
 The figure is the course of one whole game: `c1`'s only turn, the timer from 60 to 0 in stage 1. Five falls cut the
-speed to 0. Each fall is followed by flat TIME: the timer stands still while the rider gets up (10.6). One ramp, at
-15 487, adds 25 380 points in 140 frames, two fifths of the final score (10.7).
+speed to 0. Each fall is followed by flat TIME: the timer stands still while the rider gets up (10.6). One ramp, taken in
+frame 15 485, adds 25 380 points in 140 frames, two fifths of the final score (10.7).
 
 Worked example: the timer second of `c1`. Timer turns from `$60` to `$59` between frames 14 112 and 14 116 and
 reaches 0 near 19 255: about 5 140 frames, 1.7 real seconds a timer second ([8.6](08-hud-and-text.md#86-the-timer)). That span
@@ -162,7 +164,7 @@ buffer:7C2E:16x1:hex --range 5E00-7CFF --pictures 60 --title "ScoreAdd, Throttle
 
 ### In short
 
-Throttle `$A9DC` changes SPEED `$7C33` (8.8) once a pass. It does nothing in the air, during the countdown (8 or
+Throttle `$A9DC` changes Speed `$7C33` (8.8; SPEED is its high byte `$7C34`) once a pass. It does nothing in the air, during the countdown (8 or
 more) or while the rider gets up. THROTTLE (bit 0 of the controls) adds one of three amounts, by the speed's band:
 
 | SPEED | Added a pass | In km/h a pass | The feel |
@@ -597,7 +599,7 @@ flowchart TD
 
 ![c1 frames 15 460-15 690: the ramp, the jump and the bounce](img/play/race-jump.gif)
 
-*`c1` frames 15 460-15 690, a picture every 5 frames: the ramp at 15 487 taken at 188 km/h with no wheelie, the
+*`c1` frames 15 460-15 690, a picture every 5 frames: the ramp taken in frame 15 485 at 188 km/h with no wheelie, the
 flight in pose 2 then 1, the landing at 15 629 and the 6-pass bounce. Command: `python3 ../../kit/screen_anim.py
 --work work/docs/erC/c1 --from 15460 --to 15690 --step 5 --width 1050 --delay 120 --hold 1500
 docs/img/play/race-jump.gif`.*
@@ -610,7 +612,7 @@ down. It lands at 15 627: Pose 3, BounceTime 6, and SPEED falls 141, 139, 137, 1
 
 ![c1 frame 15 485: Ramp](img/routines/Ramp.gif)
 
-*ObjectHit and Ramp in frame 15 485 of `c1`, with `$7C2E-$7C3D` under the memory map (SPEED is `$7C33-$7C34`: `BC
+*ObjectHit and Ramp in frame 15 485 of `c1`, with `$7C2E-$7C3D` under the memory map (the word Speed is `$7C33-$7C34`: `6A
 BC` before, `6A 8D` after). The frame ends in the beeper noise. Command: `python3 ../../kit/routine_anim.py --work
 work/docs/erC/c1 --window 15485:0-15486:0 --listing build/game.lst --pc A758-A838 --view buffer:7C2E:16x1:hex
 --range 5C00-7CFF --pictures 60 --title "Ramp: c1 frame 15 485, SPEED 188 to 141" --out
@@ -1360,7 +1362,7 @@ flowchart TD
 ![The technique runs against c1](img/gameplay/techniques.png)
 
 *How to read it: each panel is a run of `tools/play_techniques.py` (colour) against `c1` (grey). Top: SPEED and
-JumpHeight around the ramp at 15 486, with no wheelie and with 13 wheelie passes. Bottom left: SPEED after the
+JumpHeight around the ramp (taken in frame 15 485, JumpHeight set in the sample of 15 486), with no wheelie and with 13 wheelie passes. Bottom left: SPEED after the
 landing with and without WHEELIE. Bottom right: SPEED with BRAKES in the blue band against c1's hit of rider 1. Made
 by `python3 tools/fig_gameplay.py techniques docs/img/gameplay/techniques.png work/docs/erC/tech
 work/docs/erC/c1-vars.jsonl`, after the runs of `tools/play_techniques.py` named below (ramp-plain, ramp-wheelie, land-wheelie, brake-bend,
@@ -1368,8 +1370,8 @@ cheat), each with `--gif` into `docs/img/play/race-<run>.gif`.*
 
 ![The run ramp-wheelie: a wheelie into the ramp](img/play/race-ramp-wheelie.gif)
 
-*The run `ramp-wheelie`, frames 15 380-15 699, a picture every 4 frames: the front wheel up from 15 381, the ramp at
-15 488 taken at 188 km/h in pose 1. Command: `python3 tools/play_techniques.py ramp-wheelie --gif
+*The run `ramp-wheelie`, frames 15 380-15 699, a picture every 4 frames: the front wheel up from 15 381, the ramp
+taken in frame 15 487 (JumpHeight set in the sample of 15 488) at 188 km/h in pose 1. Command: `python3 tools/play_techniques.py ramp-wheelie --gif
 docs/img/play/race-ramp-wheelie.gif`.*
 
 ![The run land-wheelie: no bounce at the landing](img/play/race-land-wheelie.gif)
@@ -1509,7 +1511,7 @@ reset3:   6 600  JumpHeight $0206, JumpSpeed $16F0   the first ramp
           6 660  $6746 at the top
           6 710  $25A6, RoadLines[0] 168              in the air, the rows lifted
           6 714  $1906, JumpSpeed $16F0, BounceTime 6 landed and met the second ramp in one pass
-          6 756  $7696                               the top: $76 = 118 rows
+          6 756  $7696, JumpSpeed $0550              still rising: $76 = 118 rows, the last sample before the reset
           6 760  RoadTopRow $FF                      the road's top row below 0: the reset follows
 ```
 
@@ -1527,7 +1529,7 @@ flowchart TD
     B --> C{"ramp 2 met in the landing pass?"}
     C -- no --> D["landing"]
     C -- yes --> E["Ramp again: JumpSpeed 22 from height 25, RoadLines 0 still lifted"]
-    E --> F["arc 2: up to 118 rows"]
+    E --> F["arc 2: past 118 rows, still rising"]
     F --> G["RoadTopRow below 0: FF"]
     G --> H["DrawRoad's SP in the ROM"]
     H --> I["an interrupt there: the return address lost"]
@@ -1543,7 +1545,8 @@ work/docs/erC/r3 --ttd work/stage1/rec/reset3/session.ttd --port-base 37795`.*
 
 Worked example: the samples above, from `work/docs/erC/r3-vars.jsonl`. The first arc starts at height 2 with
 JumpSpeed `$16`: its top is 103 rows (`$67`). The second starts at 25 with the same speed, and is at 118 (`$76`) at
-6 756, still rising.
+6 756, still rising (JumpSpeed `$0550`: with the gravity of `$02F0` a pass it would go on to about 123 and 126
+rows); the reset cuts the arc off before its top.
 RoadTopRow goes 5, 4, 3, 1, 0 during the rise, and `$FF` at 6 760. The samples at 6 710 and 6 714 (RoadLines[0]
 168, BounceTime 6, Wheelies 0) were read from `reset3` with `memory_at`.
 
@@ -1571,14 +1574,22 @@ What makes Enduro Racer's code worth reading:
 3. **One multiply for everything.** Multiply `$8BAE` (A × L into DE) gives ScrollStep, the steering, the bend's
    push, the ramp's cost, the falls, the off-road cap and the stage's parameter address. The rules are written as
    factors over 256.
-4. **The ring of riders** (10.10): a one-byte distance makes four riders a never-ending field.
-5. **Randomness from the R register and the ROM.** A bounce steers by `LD A,R / AND $0C`. The engine's and the
-   crash's noise read ROM bytes (doc 9). There is no random-number generator.
-6. **Steering is a speed**, the table falling with speed, against a bend whose push grows with speed (10.3).
-7. **Two players are two copies of a block** (10.9).
+4. **The ring of riders** ([10.10](#1010-the-opponents-ai), [7.8](07-objects.md#78-the-riders-and-the-trucks)): a
+   one-byte distance makes four riders a never-ending field. Witness: MoveRiders `$A21A` L1 4292; in `c1` 777
+   calls (`work/stage1/rec/c1/l1.json`).
+5. **Randomness from the R register and the ROM** ([9.4](09-sound.md#94-the-engine-on-both-machines)). A bounce steers by `LD A,R / AND $0C`
+   (`$ADA6`, in the asm below). The engine's and the crash's noise read ROM bytes. There is no random-number
+   generator. Witness: `$ADA6` runs 6 times in `c1` (`work/stage1/rec/c1/l1.json`).
+6. **Steering is a speed** ([10.3](#103-steering-bends-and-the-roads-edge)), the table falling with speed, against
+   a bend whose push grows with speed: BikeControl reads SteerTable `$8E5D` at 2 × ScrollStep's high
+   byte. Witness: BikeControl `$ACDF` L1 4343, BikeLateralPush L1 4150.
+7. **Two players are two copies of a block** ([10.9](#109-two-players-and-turns)): TurnLoop `$87BD` swaps the 56
+   bytes of Player `$5E0D` and OtherPlayer `$5E45` before each turn. Witness: TurnLoop runs 3 times in `twoplayer`
+   (`work/stage1/rec/twoplayer/l1.json`); PlayTurn L1 23.
 8. **One byte, two instructions.** MoveRidersIx `$A21F` is a lone `DEFB $DD`: entered there, `DD 21 80 5C` reads
    `LD IX,Riders`; the loop re-enters one byte later, where `21 80 5C` is `LD HL,Riders`, harmless before the `EXX`
-   ([7.8](07-objects.md#78-the-riders-and-the-trucks)).
+   ([7.8](07-objects.md#78-the-riders-and-the-trucks)). Witness: in `c1` `$A21F` is entered 777 times (once a call)
+   and `$A220` 3 885 times, five a call.
 
 ### Pseudocode
 

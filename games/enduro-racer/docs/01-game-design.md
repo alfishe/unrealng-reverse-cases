@@ -45,7 +45,7 @@ cost time, not the game.
 
 ```mermaid
 flowchart LR
-    A["the credits scroll"] -->|"no key for about 4 s"| D["the demo race"]
+    A["the credits scroll"] -->|"no key for about 5 s"| D["the demo race"]
     D -->|"a key"| M["the menu"]
     A -->|"a key"| M
     M -->|"START GAME"| C["countdown 3 2 1 GO"]
@@ -105,11 +105,11 @@ lap table, EXTENDED PLAY and the stage numbers are printed over the race itself.
 | ---: | --- | --- | --- |
 | 1 | the loading screen | `c1` 8 282 | the bike and rider, FROM SEGA, PRESENTED BY ACTIVISION; loaded as tape block 6 |
 | 2 | the credits | `c1` 11 882 | four lines scrolled up: ENDURO RACER FROM SEGA, PRESENTED BY ACTIVISION, PROGRAMMED BY GIGA GAMES, GRAPHICS BY FOCUS |
-| 3 | the demo | `c1` 12 482 | a race the game drives, DEMO on the HUD |
+| 3 | the demo | `c1` 12 482 | a race the game drives, DEMO flashing in the race's corner |
 | 4 | the menu | `c1` 13 418 | START GAME, ONE / TWO PLAYERS, CHANGE CONTROL MODE, DEFINE KEYS |
 | 5 | CHANGE CONTROL MODE | `c1` 13 578 | the five methods in a popup |
 | 6 | DEFINE KEYS | `c1` 13 878 | EXIT and the seven keys, each with its key |
-| 7 | the countdown | `c1` 14 075 | 3, 2, 1, GO as big red blocks, the riders on the line |
+| 7 | the countdown | `c1` 14 075 | the countdown's 2 as big red blocks (3, 2, 1, GO in turn), the riders on the line |
 | 8 | stage 1 | `c1` 16 281 | grass, mountains, trees; a ramp across the road |
 | 9 | paused | `c1` 14 621 | the race frozen (H) |
 | 10 | a fall | `crash` 3 320 | the bike down, SPEED 0 |
@@ -124,7 +124,7 @@ lap table, EXTENDED PLAY and the stage numbers are printed over the race itself.
 | 19 | the lap table, 5 stages | `stages` 22 204 | five records and five times |
 | 20 | the high scores | `stages` 22 308 | five rows and the name grid |
 | 21 | the name entered | `stages` 22 708 | the new row on top |
-| 22 | two players | `twoplayer` 10 892 | 2UP in the corner |
+| 22 | two players | `twoplayer` 10 892 | 2UP flashing in the race's corner |
 | 23 | the 128K | `m128` 14 689 | the same play; the engine on the AY |
 | 24 | stage 3, the reset | `reset3` 6 662 | the bike high above the road just before the machine resets |
 
@@ -147,9 +147,9 @@ printed into it.
 | SCORE | top right | the score, seven digits |
 | STAGE | second row left | the stage, 1 to 5, in big digits |
 | SPEED | second row right | SPEED in km/h, 0 to 199 |
-| 2UP | bottom right of the race | the second player's turn (two players only) |
+| 1UP / 2UP | bottom right of the race picture (column 28, line 176), flashing on 4 passes of 8 | whose turn it is (two players only) |
 
-In a demo the HUD shows DEMO. EXTENDED PLAY and LAPTIME flash over the race at a stage's start (1.6).
+In a demo DEMO flashes in the same place. EXTENDED PLAY and LAPTIME flash over the race at a stage's start (1.6).
 
 **The point.** Two numbers drive a race: TIME and SPEED. The score follows the speed by itself.
 
@@ -395,7 +395,7 @@ the timer (blue) and the score (green) share one frame axis; the shaded spans ar
 score rises steeply only in the air (frames 15 500-15 650); each of the five falls is about 250 frames of standing
 still and a restart from 0; the race ends with the timer at 0 at 56 % of stage 1.*
 
-**Witness.** The same samples: Score `$5E18`, SPEED `$7C34`, JumpHeight `$5CEA`.
+**Witness.** The same samples: Score `$5E18`, SPEED (the high byte, `$7C34`), JumpHeight+1 `$5CEA`.
 
 ### Crashes, bounces, ramps and jumps
 
@@ -453,13 +453,14 @@ more every head-on contact is a fall that costs seconds.
 ## 1.7 Two players and the demo
 
 **Two players.** ONE / TWO PLAYERS in the menu toggles the mode. Each player has a block of state: the score, the
-timer, the stage and the track position. The players take turns. A turn ends when the player falls (or the time runs out); a stage's end does not pass the
-turn (StageEnd goes straight on to StageStart). The other player's block is swapped in, and a key is waited for. A player whose timer is 0 is skipped. The game ends when
-both timers are 0. 2UP marks the second player's turns.
+timer, the stage and the track position. The players take turns. A turn ends when a fall ends (or the time runs out);
+RESET leaves the game for the menu; a stage's end does not pass the turn (StageEnd goes straight on to StageStart).
+The other player's block is swapped in, and, when the other player still has time, a key is waited for. A player whose
+timer is 0 is skipped. The game ends when both timers are 0. 1UP or 2UP flashes in the corner on each player's turns.
 
 ```mermaid
 flowchart TD
-    A["NewGame: both blocks cleared, timers 60"] --> B["swap the players' blocks"]
+    A["NewGame: both blocks cleared, the timer 60 (both timers with two players)"] --> B["swap the players' blocks"]
     B --> C{"this player's timer is 0"}
     C -->|yes| D{"both timers 0"}
     D -->|yes| E["game over: the tables"]
@@ -470,9 +471,10 @@ flowchart TD
 
 With one player the second block's timer stays 0, so every turn is the first player's.
 
-**The demo.** Left alone for about 4 seconds after the credits, the game starts a race of its own. DEMO is on the
-HUD and the game drives the bike. The demo scores nothing and its timer does not run. A key ends it and opens the
-menu.
+**The demo.** Left alone for about 5 seconds after the credits, the game starts a race of its own. DEMO flashes in the
+race's corner and the game drives the bike. The demo scores nothing and its timer does not run. A key ends it and
+opens the menu. Left alone, it ends by itself after 8 to 15 segments (DemoMode counts them down) and the high score
+table follows.
 
 **Worked example.** In `twoplayer` player 1 falls and lies with the timer stopped at 44 (frames 4 296-10 194); a
 key hands the turn to player 2 (2UP, 52 s, frame 10 892), who falls too; at frame 20 672 player 1 races again with his
@@ -557,7 +559,7 @@ flowchart LR
 | the credits | `c1` 11 882 |
 | the demo | `c1` 12 400-13 418 |
 | the menu | `c1` 13 418 |
-| stage 1 starts (countdown) | `c1` 14 075 |
+| stage 1 starts (countdown) | `c1` 14 022 |
 | the first jump | `c1` about 15 500 |
 | the first fall | `c1` about 15 850 |
 | the timer at 0 | `c1` 19 265 |

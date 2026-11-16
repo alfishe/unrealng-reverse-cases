@@ -345,6 +345,14 @@ no edges: its road routine is RoadNone `$9A91`, which only sets IX = RowList for
 `$FEE0 + 2 × RoadTopRow`: RowTable's entry for line `$70 + RoadTopRow`. Then it walks RowList, one entry and one
 `POP` per line, for at most 80 lines.
 
+The start line and RowList do not meet exactly. With RoadTopRow = RoadLines[127] − `$71`, the first `POP` takes line
+RoadLines[127] − 1, while RoadRowsMake writes its first entry for line RoadLines[127] + 1 (6.3): every entry is drawn
+two lines above the line RoadLines gives it. On the flat road (`$70` + Perspective / 2, read from the image's table
+at `$7800`) RoadLines[127] is 120, RoadTopRow 7 and SP starts at line 119; the first entry is row 124 (line 121 in
+RoadLines), and the 68 entries fill lines 119-186 for RoadLines' 121-188. `c1` frame 14 075 (the GO picture, flat
+stage start) shows it: the right edge's first pixels are on line 119, none on 118. Whether the objects, placed by
+RoadLines, sit two lines low against the edges by that was not measured.
+
 ```asm
 DrawRoad:                       ; $931E
         CALL GapRowsJump        ; stage 3: the gap's rows become $FE
@@ -609,7 +617,7 @@ StageTable `$9E67` gives each stage its picture, 32 bytes a line, and the line w
 *Figure 6.4: the Mountains picture `$E5E0`, 256 × 32, as extracted into `src/res/horizons/mountains.png`. The clouds
 and the dunes are in the same folder.*
 
-SetHorizon `$9E3A` copies the stage's entry into HorizonAddr, HorizonRows and HorizonBottom, and writes
+SetHorizon `$9E3A` copies the stage's entry into HorizonAddr, HorizonRows and HorizonTop, and writes
 `$C0 − rows − top` into the count of DrawHorizon's last clear (6.10): the number of lines below the picture.
 
 **The rotation.** The picture lives in RAM and is turned in place. HorizonScrollStep `$99F0` adds HorizonSpeed / 2

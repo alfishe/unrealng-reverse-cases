@@ -159,7 +159,7 @@ The second BASIC, `end2`, loads over the first. It has five lines numbered 0 and
 | 0 | `BORDER 0: PAPER 0: INK 0: BRIGHT 1: CLS: POKE 23624,0` | black screen and border |
 | 0 | `POKE (PEEK 23641+256*PEEK 23642),PEEK 23649` and the next byte | E_LINE's word = WORKSP |
 | 0 | `POKE (PEEK 23633+256*PEEK 23634),PEEK 23647` and the next byte | uses 23613 and 23627: the word at ERR_SP = VARS |
-| 0 | `POKE 23662,PEEK 23618: POKE 23663,PEEK 23619: POKE 23664,PEEK 23621` | OLDPPC = NEWPPC |
+| 0 | `POKE 23662,PEEK 23618: POKE 23663,PEEK 23619: POKE 23664,PEEK 23621` | OLDPPC = NEWPPC, OSPPC = NSPPC (CONTINUE resumes at the current statement) |
 | 40 079 | no line: length 42 626 | its bytes are LoaderTape; the interpreter raises an error on them |
 
 The fourth line is the trick. Its digits are decoys: LIST shows 23633, 23634, 23647 and 23648 (CURCHL and
@@ -346,9 +346,11 @@ instruction changes it) and the decoders' own bytes (any patch to Chain2 changes
 LoaderStart `$FF37` clears the attributes (the screen goes black), probes the tape, loads the screen and every other
 block in one chain, and jumps to the tail.
 
-**The probe.** ProbeTape loads block 5 (18 bytes, the ROM's own bytes of `$0032-$0042`, to `$A000`, a decoy) and
-then samples the EAR bit 255 times into `$9000`. CheckSamples sums two windows of the samples and sets LoadFailed
-`$FF36` if the tone after block 5 is missing: a copy made without that tone fails here.
+**The probe.** ProbeTape loads block 5 (18 bytes on the tape, DE = `$11`: the ROM's own 17 bytes of `$0032-$0042` once
+decoded with k = `$98`, a = `$0B`, then a last byte that is not the ROM's (`$11` decoded against the ROM's `$20`, the
+block's last, which the loader treats apart); to `$A000`, a decoy) and then samples the EAR bit 255 times into
+`$9000`. CheckSamples sums two windows of the samples and sets LoadFailed `$FF36` if the tone after block 5 is
+missing: a copy made without that tone fails here.
 
 **The signal.** Block 6 has a leader of 2 100 T tone pieces broken by 1 163 / 711 T pulse pairs, a long pair of
 3 150 T, and the 6-bit mark %111010 = `$3A`. Then the bytes follow, a bit as two equal pulses: 565 T for 0 and

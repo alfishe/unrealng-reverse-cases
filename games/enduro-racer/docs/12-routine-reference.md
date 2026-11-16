@@ -906,9 +906,9 @@ Known only from the code: in twoplayer both games ended in the same round of tur
 
 ### `PlayTurn` (`$87FC`)
 
-**A turn: the HUD (frames, TOP, the best score, STAGE, TIME, SPEED, SCORE), JP StartRace; at game over the tables**
+**A turn: the HUD (frames, TOP, the best score, STAGE, TIME, SPEED, SCORE), GameEntry, a jump through GameEntryJump to StartRace; at game over the tables**
 
-The pixel lines 0-63 cleared, their attributes `$69`; HudLayout's texts; two frames (FrameChars); DrawScore; the best score (HiScores' first row) at column 5; the stage in big digits; PrintTimer; SPEED 0; CALL GameEntry (JP StartRace). Back with Timer nonzero: RET (the next turn). Timer 0: the game is over: RecordStages, the totals (TotalTime = the player's finished stages, Records' total), the lap table (LapTable), then the high scores (ScoreCheck).
+The pixel lines 0-63 cleared, their attributes `$69`; HudLayout's texts; two frames (FrameChars); DrawScore; the best score (HiScores' first row) at column 5; the stage in big digits; PrintTimer; SPEED 0; CALL GameEntry (JP GameEntryJump, JP StartRace). Back with Timer nonzero: RET (the next turn). Timer 0: the game is over: RecordStages, the totals (TotalTime = the player's finished stages, Records' total), the lap table (LapTable), then the high scores (ScoreCheck).
 
 Recorded: c1, m128: game over by the timer in stage 1; stages: game over after the finish; twoplayer: turns.
 
@@ -1814,7 +1814,7 @@ Witness: L1 5182 (c1, crash, ctl, fall5, m128, names, stages, tech-brake-bend, t
 | Runs (c1: a 48K from power-on, the TOSEC [SpeedLock 2] copy at signal speed, the menu tour, stage 1 to the time out) | 779 calls, 152,866 t-states own (0.01 %) |
 | Runs (the other recordings) | 4,403 calls (`stage1/rec/stages` 1,789, `stage1/rec/crash` 575, `stage1/rec/m128` 575 and 9 more) |
 | Called from | `IntVector` (tail), `RacePass` |
-| Reads | `$5CEF`-`$5CF4` (`HorizonAddr`, `HorizonRows`, `HorizonBottom`, `HorizonScroll`); `$9A82`-`$9A8E` (`RotateTable+3`) |
+| Reads | `$5CEF`-`$5CF4` (`HorizonAddr`, `HorizonRows`, `HorizonTop`, `HorizonScroll`); `$9A82`-`$9A8E` (`RotateTable+3`) |
 | Writes | `$5CF3`-`$5CF4` (`HorizonScroll`) |
 
 ### `HorizonBytes` (`$9A18`)
@@ -1844,7 +1844,7 @@ Witness: L1 3230 (c1, crash, fall5, m128, stages, tech-brake-bend, tech-cheat, t
 
 ### `SetHorizon` (`$9E3A`)
 
-**HorizonAddr, HorizonRows, HorizonBottom from StageTable[Stage]; the clear count `$C0` - rows - top**
+**HorizonAddr, HorizonRows, HorizonTop from StageTable[Stage]; the clear count `$C0` - rows - top**
 
 Witness: L1 54 (c1, crash, ctl, fall5, m128, stages, truck, twoplayer).
 
@@ -1855,7 +1855,7 @@ Witness: L1 54 (c1, crash, ctl, fall5, m128, stages, truck, twoplayer).
 | Called from | `StartRace` |
 | Calls | `Multiply` |
 | Reads | `$5E23` (`Stage`); `$9E67`-`$9E7A` (`StageTable`) |
-| Writes | `$5CEF`-`$5CF2` (`HorizonAddr`, `HorizonRows`, `HorizonBottom`); `$9EE5` (`l_9E9F+70`) |
+| Writes | `$5CEF`-`$5CF2` (`HorizonAddr`, `HorizonRows`, `HorizonTop`); `$9EE5` (`l_9E9F+70`) |
 
 ### `DrawHorizon` (`$9E7B`)
 
@@ -1871,7 +1871,7 @@ Witness: L1 5137 (c1, crash, ctl, fall5, m128, names, stages, tech-brake-bend, t
 | Runs (the other recordings) | 4,362 calls (`stage1/rec/stages` 1,786, `stage1/rec/crash` 573, `stage1/rec/m128` 572 and 9 more) |
 | Called from | `IntVector` (tail), `HudPlayer` |
 | Calls | `DrawHorizonAt` (falls into) |
-| Reads | `$5CEF`-`$5CF2` (`HorizonAddr`, `HorizonRows`, `HorizonBottom`); `$916C` (`TopClip`) |
+| Reads | `$5CEF`-`$5CF2` (`HorizonAddr`, `HorizonRows`, `HorizonTop`); `$916C` (`TopClip`) |
 | Writes | `$7C38`-`$7C39` (`SavedSp`); `$FE9E`-`$FE9F` (`RowTable+158`) |
 
 ### `DrawHorizonAt` (`$9E7E`)
@@ -1885,14 +1885,14 @@ Witness: L1 5162 (c1, crash, ctl, fall5, m128, names, stages, tech-brake-bend, t
 | Runs (c1: a 48K from power-on, the TOSEC [SpeedLock 2] copy at signal speed, the menu tour, stage 1 to the time out) | 784 calls, 94,097 t-states own (0.01 %) |
 | Runs (the other recordings) | 3,817 calls (`stage1/rec/stages` 1,788, `stage1/rec/m128` 576, `stage1/rec/crash` 574 and 4 more) |
 | Called from | `DrawHorizon` (falls into), `StartRace` |
-| Reads | `$5CF2` (`HorizonBottom`) |
+| Reads | `$5CF2` (`HorizonTop`) |
 | Writes | `$7C38`-`$7C39` (`SavedSp`); `$FE80`-`$FE81` (`RowTable+128`); `$FE9E`-`$FE9F` (`RowTable+158`) |
 
 ### `HorizonHidden` (`$9E86`)
 
-**The top line below the horizon's bottom: no picture lines (B = 0 path)**
+**TopClip below the picture's top line: start at HorizonTop, nothing to clear above the picture (B = 0 path)**
 
-Known only from the code: TopClip never went below the horizon.
+Known only from the code: TopClip never went below the picture's top line.
 
 | | |
 | --- | --- |
@@ -2195,7 +2195,7 @@ Witness: L1 25 (c1, crash, ctl, fall5, m128, stages, truck, twoplayer).
 | Runs (the other recordings) | 17 calls (`stage1/rec/ctl` 5, `stage1/rec/m128` 4, `stage1/rec/twoplayer` 3 and 4 more) |
 | Called from | `IntVector` (tail), `GameEntryJump` (tail), `HudPlayer` (tail), `RaceQuit` (tail), `StageEnd` (tail) |
 | Calls | `Multiply`, `SetRowTable`, `ClearBendRows`, `RoadRowsFlat`, `SetHorizon`, `DrawHorizonAt`, `CountGlyph`, `CountGlyphC`, `SetTune`, `SegmentDecode`, `SetBendDir`, `BlendBend` |
-| Reads | `$58A0`-`$5AFE` (screen); `$5C80`-`$5CD8` (`Riders`); `$5CF2`-`$5CFF` (`HorizonBottom`, `HorizonScroll`, `JumpRows`, `JumpRowPtr` and 3 more); `$5E1F`-`$5E43` (`Timer`, `Tenths`, `TimerAtStart`, `Stage` and 15 more); `$5E80`-`$5EA0` (`StageList`); `$5EB7`-`$5ED1` (`StageList+55`); 7 more ranges |
+| Reads | `$58A0`-`$5AFE` (screen); `$5C80`-`$5CD8` (`Riders`); `$5CF2`-`$5CFF` (`HorizonTop`, `HorizonScroll`, `JumpRows`, `JumpRowPtr` and 3 more); `$5E1F`-`$5E43` (`Timer`, `Tenths`, `TimerAtStart`, `Stage` and 15 more); `$5E80`-`$5EA0` (`StageList`); `$5EB7`-`$5ED1` (`StageList+55`); 7 more ranges |
 | Writes | `$58A0`-`$5AFF` (screen); `$5B80`-`$5BFF` (`BendRows`); `$5C80`-`$5CFF` (`Riders`, `DrawStack`, `SavedSp2`, `JumpHeight` and 9 more); `$5E21`-`$5E34` (`TimerAtStart`, `Stage`, `Countdown`, `SegmentLeft` and 10 more); `$645F`-`$6463` (`SkidLevel`, `TuneMark`, `TuneRequest`, `EffectTime` and 1 more); `$7C2E`-`$7C3E` (`PassCount`, `Beeper`, `DemoMode`, `GetUp` and 6 more); 12 more ranges |
 | Ports in | `$FBFE`, `$FEFE` |
 
@@ -2245,7 +2245,7 @@ Witness: L1 5203 (c1, crash, ctl, fall5, m128, names, stages, tech-brake-bend, t
 | Runs (the other recordings) | 4,418 runs of its first instruction, entered by a jump (`stage1/rec/stages` 1,795, `stage1/rec/crash` 577, `stage1/rec/m128` 577 and 9 more) |
 | Called from | `IntVector` (tail), `RampSpeed` (tail) |
 | Calls | `Multiply`, `DrawRoad`, `DrawRiders`, `RoadRowsJump`, `HorizonScrollStep`, `RoadNone`, `RoadRowsCrest`, `DrawObject`, `DrawBike`, `DrawSplash`, `DrawDust`, `PlayEffect`, `MoveRiders`, `GroundTexture`, `RampSpeed` (tail), `TrackStep`, `CrashSound`, `AyEffectTick`, `BikeControl`, `Crash`, `AdvanceTrack`, `ScrollBends` |
-| Reads | `$5C00` (`RoadLines`); `$5CEA`-`$5CFC` (`JumpHeight+1`, `HorizonAddr`, `HorizonRows`, `HorizonBottom` and 4 more); `$5E27`-`$5E43` (`TrackPtr`, `TrackDistance`, `StageListPtr`, `BendDir` and 9 more); `$5F10`-`$60D1` (`TrackPatterns+4`, `Track`); `$6156`-`$6159` (`Track+134`); `$6178`-`$61EE` (`Track+168`); 9 more ranges |
+| Reads | `$5C00` (`RoadLines`); `$5CEA`-`$5CFC` (`JumpHeight+1`, `HorizonAddr`, `HorizonRows`, `HorizonTop` and 4 more); `$5E27`-`$5E43` (`TrackPtr`, `TrackDistance`, `StageListPtr`, `BendDir` and 9 more); `$5F10`-`$60D1` (`TrackPatterns+4`, `Track`); `$6156`-`$6159` (`Track+134`); `$6178`-`$61EE` (`Track+168`); 9 more ranges |
 | Writes | `$5CDA`-`$5CFE` (`DrawStack`, `SavedSp2`, `JumpHeight`, `HorizonAddr` and 7 more); `$5E33`-`$5E34` (`GapMarks`); `$7C34` (`Speed+1`); `$9175` (`Pose`); `$A1C9`-`$A1CB` (`BounceTime`, `BounceDir`, `BikeHitX`) |
 
 ### `RampCap` (`$A808`)
@@ -2272,7 +2272,7 @@ Witness: L1 19 (c1, crash, m128, stages, tech-land-wheelie, tech-ramp-wheelie, t
 | Runs (the other recordings) | 18 runs of its first instruction, entered by a jump (`stage1/rec/stages` 12, `stage1/rec/truck` 2, `stage1/rec/crash` 1 and 3 more) |
 | Called from | `IntVector` (tail), `RacePass` (tail), `RiderBounce` (tail) |
 | Calls | `Multiply`, `PlayEffect`, `RacePass` (tail), `RiderBounce` (tail), `PrintSpeed`, `CrashSoundD`, `AyEffectTick` |
-| Reads | `$5C80`-`$5CD7` (`Riders`); `$5CEA`-`$5CF2` (`JumpHeight+1`, `HorizonAddr`, `HorizonRows`, `HorizonBottom`); `$5E0D` (`Player`); `$5E1F`-`$5E24` (`Timer`, `Tenths`, `TimerAtStart`, `Stage` and 1 more); `$7C2E`-`$7C41` (`PassCount`, `Beeper`, `DemoMode`, `GetUp` and 6 more); `$7C53` (`ExtendedTime`); 3 more ranges |
+| Reads | `$5C80`-`$5CD7` (`Riders`); `$5CEA`-`$5CF2` (`JumpHeight+1`, `HorizonAddr`, `HorizonRows`, `HorizonTop`); `$5E0D` (`Player`); `$5E1F`-`$5E24` (`Timer`, `Tenths`, `TimerAtStart`, `Stage` and 1 more); `$7C2E`-`$7C41` (`PassCount`, `Beeper`, `DemoMode`, `GetUp` and 6 more); `$7C53` (`ExtendedTime`); 3 more ranges |
 | Writes | `$5E1F`-`$5E20` (`Timer`, `Tenths`); `$5E36` (`VarObject`); `$6461` (`TuneRequest`); `$7C33`-`$7C42` (`Speed`, `TotalTime`, `SavedSp`, `InGap` and 1 more); `$7C53` (`ExtendedTime`); `$916C`-`$916D` (`TopClip`, `DrawnTop`); 2 more ranges |
 
 ### `TruckCrash` (`$A88F`)
@@ -2299,7 +2299,7 @@ Witness: L1 5 (stages, truck).
 | Runs | not reached in `stage1/rec/c1`; in the other recordings 5 runs of its first instruction, entered by a jump (`stage1/rec/stages` 4, `stage1/rec/truck` 1) |
 | Called from | `IntVector` (tail), `RampSpeed` (tail) |
 | Calls | `PrintString`, `PlayEffect`, `RampSpeed` (tail), `HudPlayer` (tail), `CrashSound` |
-| Reads | `$5CEA`-`$5CF2` (`JumpHeight+1`, `HorizonAddr`, `HorizonRows`, `HorizonBottom`); `$5E1F`-`$5E24` (`Timer`, `Tenths`, `TimerAtStart`, `Stage` and 1 more); `$7C2E`-`$7C41` (`PassCount`, `Beeper`, `DemoMode`, `GetUp` and 6 more); `$7C53` (`ExtendedTime`); `$916C`-`$9176` (`TopClip`, `DrawnTop`, `FallTime`, `Wheelies` and 2 more); `$A1C9` (`BounceTime`) |
+| Reads | `$5CEA`-`$5CF2` (`JumpHeight+1`, `HorizonAddr`, `HorizonRows`, `HorizonTop`); `$5E1F`-`$5E24` (`Timer`, `Tenths`, `TimerAtStart`, `Stage` and 1 more); `$7C2E`-`$7C41` (`PassCount`, `Beeper`, `DemoMode`, `GetUp` and 6 more); `$7C53` (`ExtendedTime`); `$916C`-`$9176` (`TopClip`, `DrawnTop`, `FallTime`, `Wheelies` and 2 more); `$A1C9` (`BounceTime`) |
 | Writes | `$5E1F`-`$5E20` (`Timer`, `Tenths`); `$6461` (`TuneRequest`); `$7C33`-`$7C42` (`Speed`, `TotalTime`, `SavedSp`, `InGap` and 1 more); `$7C53` (`ExtendedTime`); `$916C`-`$916D` (`TopClip`, `DrawnTop`); `$AD8B` (`HeldKeys+1`) |
 
 ### `HudPlayer` (`$A8DA`)
@@ -2314,7 +2314,7 @@ Witness: L1 2433 (c1, crash, ctl, fall5, m128, names, stages, tech-brake-bend, t
 | Runs (the other recordings) | 2,104 runs of its first instruction, entered by a jump (`stage1/rec/stages` 867, `stage1/rec/crash` 288, `stage1/rec/m128` 227 and 9 more) |
 | Called from | `IntVector` (tail), `RiderBounce` (tail) |
 | Calls | `PrintString`, `PrintGlyph`, `KeyOrFire`, `ReadControls`, `AddScore`, `CopyBuffer`, `DrawHorizon`, `StartRace` (tail), `BeepTone` |
-| Reads | `$5CEA`-`$5CF2` (`JumpHeight+1`, `HorizonAddr`, `HorizonRows`, `HorizonBottom`); `$5E1F`-`$5E24` (`Timer`, `Tenths`, `TimerAtStart`, `Stage` and 1 more); `$7C30`-`$7C41` (`DemoMode`, `GetUp`, `Players`, `Speed` and 4 more); `$7C53` (`ExtendedTime`); `$916C`-`$9176` (`TopClip`, `DrawnTop`, `FallTime`, `Wheelies` and 2 more); `$A1C9` (`BounceTime`) |
+| Reads | `$5CEA`-`$5CF2` (`JumpHeight+1`, `HorizonAddr`, `HorizonRows`, `HorizonTop`); `$5E1F`-`$5E24` (`Timer`, `Tenths`, `TimerAtStart`, `Stage` and 1 more); `$7C30`-`$7C41` (`DemoMode`, `GetUp`, `Players`, `Speed` and 4 more); `$7C53` (`ExtendedTime`); `$916C`-`$9176` (`TopClip`, `DrawnTop`, `FallTime`, `Wheelies` and 2 more); `$A1C9` (`BounceTime`) |
 | Writes | `$5E1F`-`$5E20` (`Timer`, `Tenths`); `$6461` (`TuneRequest`); `$7C33`-`$7C42` (`Speed`, `TotalTime`, `SavedSp`, `InGap` and 1 more); `$916C`-`$916D` (`TopClip`, `DrawnTop`); `$AD8B` (`HeldKeys+1`) |
 
 ### `RaceQuit` (`$A9C3`)
@@ -2701,7 +2701,7 @@ Witness: L1 231 (c1).
 
 **Load block 5 to `$A000`, sample the EAR 255 times to `$9000` and check the samples**
 
-Called by LoaderStart with IX = `$A000`, DE = `$11`: block 5 (the ROM bytes of `$0032-$0042`, a decoy later overwritten). Then 255 samples by SampleEar to `$9000-$90FE` and CheckSamples; a bad tape sets LoadFailed. A copy without the tone after block 5 fails here.
+Called by LoaderStart with IX = `$A000`, DE = `$11`: block 5 (18 tape bytes: the ROM bytes of `$0032-$0042` decoded with k = `$98`, a = `$0B`, then the block's last byte; a decoy later overwritten). Then 255 samples by SampleEar to `$9000-$90FE` and CheckSamples; a bad tape sets LoadFailed. A copy without the tone after block 5 fails here.
 
 Witness: L1 1 (c1).
 

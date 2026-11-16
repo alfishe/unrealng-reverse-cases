@@ -430,8 +430,9 @@ ReadMarkBits:
 ; Load block 5 to $A000, sample the EAR 255 times to $9000 and check the
 ; samples
 ;
-; Called by LoaderStart with IX = $A000, DE = $11: block 5 (the ROM bytes of
-; $0032-$0042, a decoy later overwritten). Then 255 samples by SampleEar to
+; Called by LoaderStart with IX = $A000, DE = $11: block 5 (18 tape bytes: the
+; ROM bytes of $0032-$0042 decoded with k = $98, a = $0B, then the block's last
+; byte; a decoy later overwritten). Then 255 samples by SampleEar to
 ; $9000-$90FE and CheckSamples; a bad tape sets LoadFailed. A copy without the
 ; tone after block 5 fails here.
 ;

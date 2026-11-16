@@ -101,7 +101,8 @@ TurnSkip:
   JR TurnLoop
 ; This entry point is used by the routine at NewGame.
 TurnNext:
-  AND A                   ; one player: on; two: Delay and GetKey first
+  AND A                   ; the other's Timer 0 or one player: on; else Delay
+                          ; and GetKey first
   JR Z,TurnLoop
   LD A,(Players)
   DEC A
@@ -110,15 +111,16 @@ TurnNext:
   CALL GetKey
   JR TurnLoop
 
-; A turn: the HUD (frames, TOP, the best score, STAGE, TIME, SPEED, SCORE), JP
-; StartRace; at game over the tables
+; A turn: the HUD (frames, TOP, the best score, STAGE, TIME, SPEED, SCORE),
+; GameEntry, a jump through GameEntryJump to StartRace; at game over the tables
 ;
 ; The pixel lines 0-63 cleared, their attributes $69; HudLayout's texts; two
 ; frames (FrameChars); DrawScore; the best score (HiScores' first row) at
 ; column 5; the stage in big digits; PrintTimer; SPEED 0; CALL GameEntry (JP
-; StartRace). Back with Timer nonzero: RET (the next turn). Timer 0: the game
-; is over: RecordStages, the totals (TotalTime = the player's finished stages,
-; Records' total), the lap table (LapTable), then the high scores (ScoreCheck).
+; GameEntryJump, JP StartRace). Back with Timer nonzero: RET (the next turn).
+; Timer 0: the game is over: RecordStages, the totals (TotalTime = the player's
+; finished stages, Records' total), the lap table (LapTable), then the high
+; scores (ScoreCheck).
 ;
 ; Recorded: c1, m128: game over by the timer in stage 1; stages: game over
 ; after the finish; twoplayer: turns.

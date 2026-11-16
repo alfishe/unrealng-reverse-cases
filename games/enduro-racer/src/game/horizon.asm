@@ -366,8 +366,8 @@ RotateTable:
 
   ORG $9E3A
 
-; HorizonAddr, HorizonRows, HorizonBottom from StageTable[Stage]; the clear
-; count $C0 - rows - top
+; HorizonAddr, HorizonRows, HorizonTop from StageTable[Stage]; the clear count
+; $C0 - rows - top
 ;
 ; Witness: L1 54 (c1, crash, ctl, fall5, m128, stages, truck, twoplayer).
 SetHorizon:
@@ -383,7 +383,7 @@ SetHorizon:
   LD (HorizonRows),A
   LD H,A
   LD A,(IX+$03)
-  LD (HorizonBottom),A
+  LD (HorizonTop),A
   LD L,A
   LD A,$C0
   SUB H
@@ -415,20 +415,22 @@ DrawHorizon:
 ; twoplayer).
 DrawHorizonAt:
   LD L,A
-  LD A,(HorizonBottom)
+  LD A,(HorizonTop)
   LD C,A
   SUB L
   JR NC,l_9E88
 
-; The top line below the horizon's bottom: no picture lines (B = 0 path)
+; TopClip below the picture's top line: start at HorizonTop, nothing to clear
+; above the picture (B = 0 path)
 ;
-; Known only from the code: TopClip never went below the horizon.
+; Known only from the code: TopClip never went below the picture's top line.
 HorizonHidden:
   LD L,C
   XOR A
 ; This entry point is used by the routine at DrawHorizonAt.
 l_9E88:
-  LD B,A                  ; B = the picture's lines to draw
+  LD B,A                  ; B = the lines to clear above the picture
+                          ; (HorizonTop - TopClip)
   LD H,$7F
   ADD HL,HL
   LD (SavedSp),SP

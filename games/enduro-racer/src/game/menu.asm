@@ -1,10 +1,10 @@
 ; --------------------------------------------------------------------------------------------------------------------
 ; menu.asm: The attract loop, the main menu, the control methods, DEFINE KEYS, the text printer, the keys
 ;
-; Attract wipes the screen and scrolls four credit lines up from the bottom (CreditList), then waits about 4 seconds
+; Attract wipes the screen and scrolls four credit lines up from the bottom (CreditList), then waits about 5 seconds
 ; (250 WaitKey units) for a key; with none it starts a demo race (DemoMode 8-15, the low bits of the distance) through
 ; NewGame. A key gives Menu: START GAME, ONE/TWO PLAYERS, CHANGE CONTROL MODE, DEFINE KEYS, chosen by MenuSelect
-; (SPACE or fire picks, THROTTLE moves up, any other key down; about 22 seconds with no key go back to Attract).
+; (SPACE or fire picks, THROTTLE moves up, any other key down; about 23 seconds with no key go back to Attract).
 ;
 ; The control methods (ControlTable, ControlMethod): 0 KEYBOARD (the keys of DEFINE KEYS, Q A O P SPACE by default), 1
 ; KEMPSTON, 2 SINCLAIR RIGHT, 3 SINCLAIR LEFT, 4 CURSOR. PatchControls writes a method's five half-row bytes and masks

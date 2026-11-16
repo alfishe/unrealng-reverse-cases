@@ -90,7 +90,7 @@ space with the track tables of the load. Command: `python3 tools/fig_memmap.py`.
 | `$B200-$B300` | Im2Table | IM 2 | 257 bytes of `$64` ([doc 04, 4.2](04-game-loop.md#42-the-im-2-vector-257-bytes-of-64)) |
 | `$B306-$E2BF` | the sprites | graphics | objects, riders, trucks, the bike, splash, dust: plain bitmaps, no masks |
 | `$E2C0-$EAFF` | the horizons | graphics | dunes `$E2C0`, mountains `$E5E0`, clouds `$E9E0`, 32 bytes a row |
-| `$EB00-$FDFF` | BackBuffer (TrackTables at the load) | buffer | screen lines 40-191, 32 bytes a line |
+| `$EB00-$FDFF` | TrackTables `$EB00`, OldGraphics `$F0B0`, BackBuffer `$F5C0` at the load; the back buffer in play | buffer | screen lines 40-191, 32 bytes a line |
 | `$FE00-$FF7F` | RowTable | table | the address of each of the 192 lines |
 | `$FF80-$FFFF` | StackArea | stack | the stack `$FFE6-$FFFF` (SP reaches `$FFE4`); the loader's leftovers below it |
 
@@ -178,7 +178,7 @@ flowchart LR
     C --> D["Mover 5B00: LDDR up by 5E0, frame 11 632"]
     D --> E["Start 8000, Init 80B8: IM 2, ROM test, 11 646"]
     E --> F["credits, demo, menu: 11 882-13 418"]
-    F --> G["play: RaceLoop A5FE, GO at 14 075"]
+    F --> G["play: RaceLoop A5FE, countdown 14 022-14 182, GO from 14 144"]
 ```
 
 *The stages of `c1` (48K, signal speed), from `kit/rs.py stages` and `c1-samples.json`; [doc 03](03-build-and-load.md)
@@ -225,7 +225,7 @@ The variables a reader needs to follow a race, with the `.ann`'s names:
 | Countdown | `$5E24` | from 16 down to 0, one a pass: 3, 2, 1 shown at 15, 11, 7, GO at 3; the throttle from 7 | `c1-samples.json` |
 | PassCount | `$7C2E` | + 1 a pass | RaceCount |
 | Beeper | `$7C2F` | `$FF` the 48K ROM, else 0 | RomSum |
-| DemoMode | `$7C30` | 0, or 8-15 in a demo | Attract |
+| DemoMode | `$7C30` | 0; in a demo it starts at 8-15 and counts down by one a segment, the demo ending at 0 (DemoEnd) | Attract, AdvanceTrack |
 | GetUp | `$7C31` | not 0 while the rider gets up | `c1-samples.json` |
 | Players | `$7C32` | 1 or 2 | Menu |
 | Speed | `$7C33-$7C34` | 8.8; `$7C34` is the km/h, 0-199 | PrintSpeed |
@@ -348,13 +348,16 @@ flowchart LR
     RL["RaceLoop A5FE"] --> RC["RaceCount: PassCount + 1"]
     RC --> RS["RaceStep: Multiply"]
     RS --> RP["RacePass A67E"]
-    RP --> T1["AdvanceTrack: TrackStep"]
+    RP --> T1["AdvanceTrack: TrackStep, NextSegment"]
+    T1 -.->|"bit 5: JP"| SE["StageEnd AB0A: back to RaceLoop"]
+    T1 -.->|"DemoMode 0: JP"| DE["DemoEnd AF91: RaceEnd"]
     RP --> T2["ScrollBends, BlendBend"]
     RP --> T3["row builder: RoadRowsCrest or RoadRowsJump"]
     RP --> T4["DrawRoad: DrawRoadRow, Multiply"]
     RP --> T5["GroundTexture"]
     RP --> T6["MoveRiders, DrawRiders: BlitRows, BlitRow"]
     RP --> T7["BikeControl, DrawBike: BlitRows, BlitRow"]
+    T7 -.->|"a fall's end: JP"| RO["RaceOver AA9E"]
     RP --> T8["HorizonScrollStep"]
     RP --> OW["ObjectWalk A6D9"]
     OW --> O1["DrawObject: BlitRows, BlitRow, Divide"]
@@ -362,17 +365,23 @@ flowchart LR
     OW --> RH["RiderHits A839"]
     RH --> CB["CopyBuffer 98F5: CopyRows"]
     CB --> DH["DrawHorizon 9E7B: ClearLines"]
-    DH --> FC["FinishCheck, ScoreAdd, RaceControls"]
-    FC --> TH["Throttle, PrintSpeed, TimerTick"]
+    DH --> FC{"FinishCheck A95A: Stage 5?"}
+    FC -.->|"yes: rider row under 40"| RL
+    FC -.->|"yes: row 40, Timer 0"| RE["RaceEnd"]
+    FC -->|"no"| SA["ScoreAdd, RaceControls"]
+    SA -.->|"RESET: RaceQuit"| MN["RaceEnd, Menu"]
+    SA --> TH["Throttle, PrintSpeed, TimerTick"]
+    TH -.->|"Timer 0, SPEED 0"| RO
     TH --> RL
 ```
 
 *The order of [doc 04, 4.6](04-game-loop.md#46-the-free-running-race-loop), with the routines each step spends its
-time in (2.6).*
+time in (2.6). The dotted edges are the jumps that leave the pass early: a stage's end is found in AdvanceTrack
+(NextSegment, bit 5 of the segment byte), not in FinishCheck, which acts only after the finish (Stage 5).*
 
 **Worked example.** In the pass of `c1` frames 17 945-17 952, the row blitter (BlitRow and BlitNext, BlitHead's
 span, render) takes 21.6 % of the T-states. It is
-called from three modules: DrawRiders (objects), DrawBike (bike) and DrawObject (objects). Render is the module
+called from two modules by three routines: DrawRiders and DrawObject (objects), DrawBike (bike). Render is the module
 everything else ends in.
 
 **Witness.** `src/game/race.asm` RacePass and ObjectWalk; the trace of `c1` frames 17 945-17 952.

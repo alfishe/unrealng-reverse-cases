@@ -106,8 +106,8 @@ Bytes 7-9 of each StageParams entry are 0. Byte 7 is BlitMode's JR offset ([doc 
 ```text
 SetHorizon:
     e = StageTable + 4 * Stage
-    HorizonAddr = word(e + 0); HorizonRows = e[2]; HorizonBottom = e[3]
-    clear count = $C0 - HorizonRows - HorizonBottom          (patched into the clear loop)
+    HorizonAddr = word(e + 0); HorizonRows = e[2]; HorizonTop = e[3]
+    clear count = $C0 - HorizonRows - HorizonTop          (patched into the clear loop)
 
 StageStart (each stage, after StageEnd too):
     TimerAtStart = Timer
@@ -306,7 +306,7 @@ to the BendDir 1 side on level ground. The samples show the decode: Crest 3 from
 In `c1`, SegmentLeft starts at `$8000` with StageListPtr `$5E80`. At frame 14 631 (pass 171) it is `$03C0` and
 ScrollStep is `$0348` (60 km/h). The next pass leaves `$03C0 - $0348 = $0078`: its high byte is 0, so the segment
 ends. SegmentLeft becomes `$0078 + $8000 = $8078` and StageListPtr `$5E81`: the sample of 14 639 shows both. The
-second byte is `$80` again, so nothing else changes. StageListPtr then steps every 128 units: `$5E82` at 14 867,
+second byte is `$80` again, so nothing else changes. StageListPtr then steps every 128 units: `$5E82` at 14 859,
 `$5E83` at 15 013, `$5E84` at 15 139.
 
 The point: one byte a segment keeps a 4 096-unit stage in 32 bytes. The road builder needs only the bend and the
@@ -676,7 +676,7 @@ l_9F39:
 
 ```mermaid
 flowchart TD
-    A["ObjectWalk: DrawStack = TrackStack; row = minus TrackDistance"] --> B{"row 80 or more?"}
+    A["ObjectWalk: DrawStack = TrackStack; row = minus TrackDistance"] --> B{"row 128 or more (bit 7)?"}
     B -- yes --> R["RiderHits; the walk ends"]
     B -- no --> C{"type A?"}
     C -- yes --> D["type = VarObject"]
@@ -1021,7 +1021,7 @@ OtherPlayer `$5E45` in a two-player game, so each player keeps a place on the tr
 | `$5CDA` | DrawStack | 13 | ObjectWalk's copy of TrackStack | 7.6 |
 | `$5CE9` | JumpHeight | 2 | the bike's height in the air, 8.8 | [10](10-gameplay-logic.md) |
 | `$5CEF` | HorizonAddr | 2 | from StageTable | 7.2 |
-| `$5CF1` | HorizonRows, HorizonBottom | 1, 1 | from StageTable | 7.2 |
+| `$5CF1` | HorizonRows, HorizonTop | 1, 1 | from StageTable | 7.2 |
 | `$5CF5` | JumpRows | 4 | the ramp rows of this pass, `$FF` the end | 7.6, 7.8 |
 | `$5CF9` | JumpRowPtr | 2 | the next free JumpRows byte | 7.6 |
 | `$5CFB` | DrawTrackPtr | 2 | ObjectWalk's track pointer | 7.6 |
