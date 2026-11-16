@@ -172,7 +172,7 @@ $7A97 BeamMeter ; the BEAM meter's column
 $7A98 ShieldTimer ; the passes the ship carries the shield ($38 at the first start, $20 at a later life, $30 from the pick-up)
 $7A99 ScoreChanged ; non-zero when AddScore changed the score: CheckExtraLife prints it
 $7A9A WaveOverride ; a wave command 3 value: the next wave's slot
-$7A9B LevelEndTimer ; counts down after the level's end command
+$7A9B LevelEndTimer ; the level's end: $41 (command 5) acts at once, $3F (a boss blast) after 31 passes
 $7A9C DrawTag ; the tag DrawSprite writes into SolidMap for each cell
 $7A9D StarFrame ; the star task's counter
 $7A9E ShooterLimit ; wave command 4: how many enemies may fire at once
@@ -476,9 +476,10 @@ $92FA c InsertHiScore ; Find the score's place, shift the lower entries, take th
 $93D0 c MoveMissiles ; Move the homing missiles, count MissileTimer down
 > Witness: L1 33322 (boss, c1, continue, ctl-if2, ctl-kempston, ctl-sinclair, deaths-l7, ending, force, gameover, hiscore, hiscore-typed, pause, restart, l1-l8).
 $93F0 c MoveMissile ; Move one missile along its frame lists, turning toward a target
+> At each list's end MissileTurn: in state 1 the first live slot one or two columns ahead (not the other missile's target) is the target; above or below the missile's row it turns once, diagonally, then climbs or dives for good. The missile ends on scenery, a hit, column 31 or more, or row 21 or more (l1 11550: missile A takes slot 3 and turns up).
 > Witness: L1 76378 (boss, c1, continue, ctl-if2, ctl-kempston, ctl-sinclair, deaths-l7, ending, force, gameover, hiscore, hiscore-typed, pause, restart, l1-l8).
 $9455 MissileDrawer ; the drawer picked by the frame, patched into the CALL below
-$946B MissileTurn ; the frame list ended: the next one by state
+$946B MissileTurn ; the frame list ended: state 1 looks for a target, 2-3 climb, 4-5 dive
 $94F1 c MoveShip ; Move the ship by the controls, tilt it while it climbs or dives, test what it touches
 > Witness: L1 33322 (boss, c1, continue, ctl-if2, ctl-kempston, ctl-sinclair, deaths-l7, ending, force, gameover, hiscore, hiscore-typed, pause, restart, l1-l8).
 $9577 c ShipShield ; While ShieldTimer runs: the shield; then the fire and detach controls
@@ -700,7 +701,7 @@ $C225 c StartWaveAt ; Start a wave from a record at HL, for the levels' code
 $C23F c AddScore ; Add D to the score digit E, carrying
 > Witness: L1 1635 (boss, c1, continue, deaths-l7, ending, force, gameover, hiscore, hiscore-typed, restart, l1-l8).
 $C25E c LevelEnd ; The level's end: at each step of LevelEndTimer the next part, then the next level
-> Acts when (LevelEndTimer - 1) AND $1F = 0. LevelDigit '8': '9', the waves on, ShipDies+3 = RET (immortal), play goes on; '9': '0', then the normal end, so LoadLevel loads level 1 (the wrap).
+> Acts when (LevelEndTimer - 1) AND $1F = 0. LevelDigit '8': '9', the waves on, ShipDies+3 = RET (immortal), ShieldControls left RET (unarmed) until ClearPlayState, play goes on; '9': '0', then the normal end, so LoadLevel loads level 1 (the wrap).
 > Witness: L1 33322 (boss, c1, continue, ctl-if2, ctl-kempston, ctl-sinclair, deaths-l7, ending, force, gameover, hiscore, hiscore-typed, pause, restart, l1-l8).
 $C2C5 c ClearTextRow ; Clear the text row
 > Witness: L1 90 (c1, continue, ctl-if2, ctl-kempston, ctl-sinclair, deaths-l7, ending, gameover, hiscore, hiscore-typed, pause, restart, l1-l8).

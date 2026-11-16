@@ -23,6 +23,12 @@ MoveMissiles:
 
 ; Move one missile along its frame lists, turning toward a target
 ;
+; At each list's end MissileTurn: in state 1 the first live slot one or two
+; columns ahead (not the other missile's target) is the target; above or below
+; the missile's row it turns once, diagonally, then climbs or dives for good.
+; The missile ends on scenery, a hit, column 31 or more, or row 21 or more (l1
+; 11550: missile A takes slot 3 and turns up).
+;
 ; Witness: L1 76378 (boss, c1, continue, ctl-if2, ctl-kempston, ctl-sinclair,
 ; deaths-l7, ending, force, gameover, hiscore, hiscore-typed, pause, restart,
 ; l1-l8).
@@ -95,7 +101,8 @@ MissileDrawer:
   JR Z,l_9411
   RET
 MissileTurn:
-  LD A,(IX+$05)           ; the frame list ended: the next one by state
+  LD A,(IX+$05)           ; the frame list ended: state 1 looks for a target,
+                          ; 2-3 climb, 4-5 dive
   CP $01
   JR Z,l_949B
   CP $02

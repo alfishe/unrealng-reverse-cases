@@ -1909,6 +1909,8 @@ Witness: L1 33322 (boss, c1, continue, ctl-if2, ctl-kempston, ctl-sinclair, deat
 
 **Move one missile along its frame lists, turning toward a target**
 
+At each list's end MissileTurn: in state 1 the first live slot one or two columns ahead (not the other missile's target) is the target; above or below the missile's row it turns once, diagonally, then climbs or dives for good. The missile ends on scenery, a hit, column 31 or more, or row 21 or more (l1 11550: missile A takes slot 3 and turns up).
+
 Witness: L1 76378 (boss, c1, continue, ctl-if2, ctl-kempston, ctl-sinclair, deaths-l7, ending, force, gameover, hiscore, hiscore-typed, pause, restart, l1-l8).
 
 | | |
@@ -3355,7 +3357,7 @@ Witness: L1 1635 (boss, c1, continue, deaths-l7, ending, force, gameover, hiscor
 
 **The level's end: at each step of LevelEndTimer the next part, then the next level**
 
-Acts when (LevelEndTimer - 1) AND `$1F` = 0. LevelDigit '8': '9', the waves on, ShipDies+3 = RET (immortal), play goes on; '9': '0', then the normal end, so LoadLevel loads level 1 (the wrap).
+Acts when (LevelEndTimer - 1) AND `$1F` = 0. LevelDigit '8': '9', the waves on, ShipDies+3 = RET (immortal), ShieldControls left RET (unarmed) until ClearPlayState, play goes on; '9': '0', then the normal end, so LoadLevel loads level 1 (the wrap).
 
 Witness: L1 33322 (boss, c1, continue, ctl-if2, ctl-kempston, ctl-sinclair, deaths-l7, ending, force, gameover, hiscore, hiscore-typed, pause, restart, l1-l8).
 

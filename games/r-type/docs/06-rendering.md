@@ -44,8 +44,9 @@ ClearSides `$7680` paints the attributes of columns 0 and 31 black on black for 
 columns is ever seen.
 
 Column 31 is not empty, though. The scroll writes each new column of scenery there, hidden, and shifts its pixels
-into column 30 one pixel a pass ([6.4](#64-scrollrows-the-copy-the-erase-and-the-shift)). Column 0 is where shifted
-pixels fall off.
+into column 30 one pixel a pass ([6.4](#64-scrollrows-the-copy-the-erase-and-the-shift)). Column 1 is where shifted
+pixels fall off (the run stops before column 0, `$88F1`, and ShiftRun1's `AND A` clears the carry); column 0 is never
+written in play.
 
 The renderer keeps one byte a cell in three tables and one shadow of the playfield's pixels:
 
@@ -364,7 +365,8 @@ So the scenery moves 8 pixels in 8 passes, and the cell grid follows it by one c
 steps 2-6 is the one that appears 2 to 6 passes later, at step 0.
 
 While the scroll stands (ScrollHalted `$7A8E` non-zero: a boss, or wave command 1, [doc 7](07-objects.md)), steps 0
-and 2-6 return early, ScrollAttrs does nothing, and ScrollRows skips the scenery. FrameCounter still counts. Wave command 1 (`$90B5`) also patches
+and 2-6 cut and flush nothing (step 0, ScrollNewColumn, still advances MetaColumn, MapColumn and MapBlockPtr before its
+ScrollHalted test, `$899F-$89BE`, so the map columns count on: the bosses' clock, [doc 10, 10.10](10-gameplay-logic.md#1010-the-enemies-the-waves-and-the-bosses-of-each-level)), ScrollAttrs does nothing, and ScrollRows skips the scenery. FrameCounter still counts. Wave command 1 (`$90B5`) also patches
 CellFreeEmpty's first two bytes to `SCF` / `RET`, so every empty cell is free while the scenery stands still;
 ResumeWaves `$90F7` puts the code back.
 
@@ -404,7 +406,9 @@ pass, and the copy into the screen is one column of 20 cells.
 
 ## 6.4 ScrollRows: the copy, the erase and the shift
 
-ScrollRows `$8842` is the only routine that writes the playfield in play (6.8 shows it). For each of the 20 rows of
+In play the playfield has one regular writer, ScrollRows `$8842` (6.8 shows it). Three others bypass the shadow: the
+stars (StarStep, 6.6), the SoftCellsOn users (ExplodeSoftCell and the ground objects of the level code, 6.5) and
+DrawFirstScreen before play. For each of the 20 rows of
 RowTable it does three things.
 
 First, the row's attributes go from PlayAttrs to the screen, columns 1-30, with `LDDR`:
@@ -450,20 +454,25 @@ Then it walks the row from column 31 to column 1 and decides each cell by its ta
 ```text
 for column = 31 down to 1:
     tag = SolidMap[row][column]
-    if tag >= $DC:                              # scenery
+    if tag >= $DC:                              # scenery: its tag is kept
         if ScrollHalted: continue
         run = the scenery cells from here leftwards, plus the cell after them (none past column 1)
         shift the 8 lines of the run 1 pixel left, right to left, the carry passing between cells
         resume at the run's left non-scenery cell (LD L,E): its tag then copies or erases it
-    elif tag != 0:                              # a sprite drew itself here in this pass
+        continue                                # the shift path never reaches $88CD
+    if tag != 0:                                # a sprite drew itself here in this pass
         copy the cell's 8 lines from the shadow (screen + $2000) to the screen
         DrawnMap[row][column] = 1
     elif DrawnMap[row][column] == 1:            # a sprite was here and nothing redrew it
         clear the cell's 8 lines on the screen
         DrawnMap[row][column] = 0
+    # $88CD, reached only by the copy and the erase paths (tags below $DC)
     if tag == $9C and FrameCounter AND 7 != 7: keep the tag
     else: SolidMap[row][column] = 0             # sprite tags live one pass
 ```
+
+The scenery's tags `$DC` and up are never cleared here: the scenery path (`$88E6`, the ShiftRun chain, ShiftRunDone)
+and the halted branch skip `$88CD`, so the scenery stays in SolidMap until ScrollAttrs moves it a cell left.
 
 The scenery is never copied: its pixels live only on the screen, and ScrollRows shifts them in place. Sprites are
 copied from the shadow, and only the cells tagged in this pass.
@@ -638,8 +647,8 @@ l_8D4C: INC HL
 
 DrawSpriteMirrored `$8D65`, DrawSpriteFlipped `$8DD3` and DrawSpriteBoth `$8E29` are the same loop with the lines
 reversed through BitReverse or written bottom up. GameObject `$8E8C` and LevelObject `$8E85` look up an object's
-width, height and cells (4 bytes an entry) and set DrawTag `$7A9C`. For the game's own objects the tag is the
-object's number.
+width, height and cells (4 bytes an entry). GameObject `$8E8C` sets DrawTag `$7A9C` to the object's number;
+LevelObject `$8E85` jumps to ObjectEntry and leaves DrawTag to its caller (level 1 `$F4A3`: `$DC` + slot).
 
 ### Whether a cell may be drawn
 
@@ -749,7 +758,8 @@ free at once, and one with scenery to its right goes on to the ScrollStep test, 
 when `+2` is scenery too (`CP $DC`, NC). So the scenery-to-the-right rule is off. SoftCellsOff `$C3EE` puts back `$60` and `$D0` (`RET NC`). Three users switch it on:
 
 - DrawFirstScreen ([6.6](#66-the-first-screen-and-the-stars)), which draws the scenery itself;
-- the level code that places ground objects (level 1 `$F4A3`): DrawTag = `$DC` + slot, a scenery tag, so the object
+- the level code that places ground objects (level 1 `$F4A3`; also levels 2 `$F5E5`, `$F617`, 4 `$F31F`, `$F473` and
+  7 `$F662`): DrawTag = `$DC` + slot, a scenery tag, so the object
   scrolls with the ground;
 - ExplodeSoftCell `$A4E5`, which clears a soft cell and its neighbours.
 
@@ -938,16 +948,17 @@ How to read:
 
 ![Who wrote the screen in one pass](img/render/writers-l2.png)
 
-*Figure 6.6: every screen byte written in one pass of l2 (7535-7539), by routine. ShiftRun1-31 (the shift chain) and
-`l_8846` (the attribute `LDDR`) write almost all of it; `l_8881` is the sprite copy from the shadow, `l_88B3` the
-erase. No other routine writes the playfield. Command: `python3 ../../kit/writers_map.py --work work/docs/rtB/l2
---window 7535:0-7540:0 --listing build/game.lst --view screen --sources --width 1050 --out
-docs/img/render/writers-l2.png`.*
+*Figure 6.6: every screen byte written in one ScrollRows of l2 (7535:19300-7538:46300, from the pass's first row to
+its end at 7538:46042), by routine. ShiftRun1-31 (the shift chain) and `l_8846` (the attribute `LDDR`) write almost
+all of it; `l_8881` is the sprite copy from the shadow, `l_88B3` the erase. No soft cell was drawn in this pass.
+Command: `python3 ../../kit/writers_map.py --trace work/docs/rtB/l2/traces/7535_19300-7538_46300.uatr --listing
+build/game.lst --view screen --sources --width 1050 --title "Writers of the screen in one pass of l2: ScrollRows from
+7535:19395 to 7538:46042" --out docs/img/render/writers-l2.png`.*
 
-Witness: 3853 of the 6912 screen bytes were written in the pass, 4503 writes: 600 attribute bytes by the `LDDR`,
+Witness: 3853 of the 6912 screen bytes were written in the pass, 3855 writes (each byte about once): 600 attribute bytes by the `LDDR`,
 216 sprite bytes copied, 48 erased, the rest shifted.
 
-The point: the screen has one writer in play. A bug in a picture is a bug in a tag or the shadow.
+The point: apart from the stars and the soft cells, the screen has one writer in play. A bug in a picture is a bug in a tag or the shadow.
 
 ## 6.9 The scroll against the beam
 
@@ -968,7 +979,7 @@ section follows ScrollRows alone. The trace of the pass gives the start of each 
 | 10-14 | 7537 | 32221, 40885, 49505, 58499, 66292 |
 | 15-19 | 7538 | 4151, 11873, 19772, 28904, 37481 (the end at 46042) |
 
-A row takes 8 000-10 000 T. The long gaps are the frame interrupt (`Im2Jump` `$8383`, [doc 4](04-game-loop.md)):
+A row takes about 7 700-10 400 T. The long gaps are the frame interrupt (`Im2Jump` `$8383`, [doc 4](04-game-loop.md)):
 it ran from 7536:1832 to 7536:33540 and from 7537:1834 to 7537:29066, 31 700 and 27 200 T, but only from 7538:1838
 to 7538:2794 in frame 7538.
 

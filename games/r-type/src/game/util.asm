@@ -435,8 +435,9 @@ l_C251:
 ; level
 ;
 ; Acts when (LevelEndTimer - 1) AND $1F = 0. LevelDigit '8': '9', the waves on,
-; ShipDies+3 = RET (immortal), play goes on; '9': '0', then the normal end, so
-; LoadLevel loads level 1 (the wrap).
+; ShipDies+3 = RET (immortal), ShieldControls left RET (unarmed) until
+; ClearPlayState, play goes on; '9': '0', then the normal end, so LoadLevel
+; loads level 1 (the wrap).
 ;
 ; Witness: L1 33322 (boss, c1, continue, ctl-if2, ctl-kempston, ctl-sinclair,
 ; deaths-l7, ending, force, gameover, hiscore, hiscore-typed, pause, restart,

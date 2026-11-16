@@ -797,7 +797,8 @@ l_9AD5: XOR A
         LD (BeamMeter),A
         LD BC,$140B
         LD HL,BeamMeterEmpty   ; ten '<'
-        JP PrintTextNormal
+        CALL PrintTextNormal
+l_9AE8: ...                    ; the Force and the bits fire too (doc 10, 10.5)
 ```
 
 | BeamCharge at release | Passes held | Fires | BeamShot object | BeamPower |
@@ -1034,11 +1035,23 @@ l_9394: LD A,(NameLetter)
         INC A
         LD (NamePos),A
         ...                    ; the next place
+l_93AF: LD A,(NamePos)         ; '\': rub out
+        AND A
+        JR Z,l_9387            ; the first place: only the sound
+        DEC A
+        LD (NamePos),A
+        POP HL
+        LD (HL),$20            ; blank the current place (where the '\' stood)
+        DEC HL                 ; back one: l_9354 writes the '\' there
+        PUSH HL
+        JR l_9387
 ```
 
 The letters run A to Z, then `[` `\` `]` (`$5B`-`$5D`). The font draws `[` as a blank, `\` as a rub-out sign and `]`
-as an end sign ([doc 8](08-hud-and-text.md)). Fire on `\` steps back one place and blanks it. Fire on `]`, or fire
-on the ninth place, ends the entry with sound `$16`.
+as an end sign ([doc 8](08-hud-and-text.md)). Fire on `\` blanks the current place and steps back one; the next
+pass of `l_9354` writes NameLetter, still `\`, on the previous place, so the letter there shows `\` until a new
+letter is picked over it. At the first place the fire gives only the sound. Fire on `]`, or fire on the ninth place,
+ends the entry with sound `$16`.
 
 ```mermaid
 flowchart TD
@@ -1051,7 +1064,7 @@ flowchart TD
     P --> D["sound 0C, 12 frames"]
     N --> D
     D --> W
-    F -->|"rub-out"| BK["back one place, blank it"]
+    F -->|"rub-out"| BK["blank this place, back one (not at the first place); the sign stands there"]
     F -->|"end sign"| E["blank it, sound 16: done"]
     F -->|"a letter"| Q{"ninth place?"}
     Q -->|"yes"| E2["keep it, sound 16: done"]

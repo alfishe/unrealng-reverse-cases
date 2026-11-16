@@ -21,8 +21,9 @@ l_FE46:
   JR NZ,l_FE46
   JP $61A8
 
-; The rest of the block: an older copy of the second stage's code (the store
-; hook setup, the stack and IM settings), never run
+; The rest of the block: a copy of this tape's Stage2End ($FE53-$FE83, 49
+; bytes), the whole Tail ($FE84-$FEA4, 33 bytes) and the first 14 bytes of
+; Stage2Start ($FEA5-$FEB2), never run
 DecipherLeftover:
   DEFB $3A,$B3,$FE,$B7,$C4,$CB,$FB,$FD
   DEFB $21,$3A,$5C,$ED,$56,$21,$58,$27

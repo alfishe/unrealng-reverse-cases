@@ -126,15 +126,21 @@ stateDiagram-v2
     StandBy --> Play: 80 frames
     Play --> MissionOver: the last life lost
     MissionOver --> NameEntry: a high score
-    MissionOver --> Continue: no high score
-    NameEntry --> Continue: the name, the table
+    MissionOver --> Credit: no high score
+    NameEntry --> Credit: the name, the table
+    Credit --> Continue: a credit left
+    Credit --> Title: no credit, level 1 in memory
+    Credit --> Search: no credit, another level (level 1 loaded)
     Continue --> Play: fire
-    Continue --> Title: 0, or no credit
+    Continue --> Title: 0, level 1 in memory
+    Continue --> Search: 0, another level (level 1 loaded)
     Play --> Search: the level's end
+    Loaded --> Play: after a level's end
 ```
 
-*The screens as states. How to read it: each box is a screen of the sheet above, each arrow the event that leaves it.
-The point: a lost game and a won level both pass through the tape loader when the level in memory is not the one
+*The screens as states. How to read it: each box is a screen of the sheet above, each arrow the event that leaves it;
+Credit is not a screen but LoseLifeNow's test of CreditDigit `$72CB` at `$928E` (no credit left: back to `'5'`, and
+LoadLevel of level 1 at `$92B8` first when another level is in memory). The point: a lost game and a won level both pass through the tape loader when the level in memory is not the one
 needed. Witnesses: `c1`, `continue`, `gameover`, `hiscore`, `l1`-`l8`, `ending`.*
 
 ## 1.4 The eight levels

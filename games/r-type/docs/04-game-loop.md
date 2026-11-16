@@ -218,7 +218,7 @@ flowchart TD
 
 *The handler (`src/game/interrupt.asm`). How to read it: one pass of the loop per table entry. The point: one table
 drives all the background work, and a task is switched on or off by writing one byte. Witness: the handler ran
-134 792 times over the recordings (the summed `L1` of `c1`, `continue`, `ctl-*`, `ending`, `gameover`, `hiscore`,
+134 792 times over the recordings (the summed `L1` of the 16 recordings after the entry: `continue`, `ctl-*`, `ending`, `gameover`, `hiscore`,
 `hiscore-typed`, `l1`-`l8`).*
 
 The task table as loaded (`src/res/tables/task-table.csv`):
@@ -229,7 +229,7 @@ The task table as loaded (`src/res/tables/task-table.csv`):
 | 1 | SoundTask1 `$F8E8` | `$01` | 1 | 3 | sound channel 1, the high timbre |
 | 2 | SoundTask2 `$F8F8` | `$01` | 2 | 3 | sound channel 2, the middle timbre |
 | 3 | SoundTask3 `$F908` | `$01` | 3 | 3 | sound channel 3, the low timbre |
-| 4 | CycleTitleColour `$76CB` | `$00` | 1 | 8 | the title's colour cycle; CheckHiScore writes 0 to its switch (`$92F5`) |
+| 4 | CycleTitleColour `$76CB` | `$00` | 1 | 8 | the title's colour cycle; ShowHiScores `$7698` sets its switch to 1, so the interrupt runs it while the hiscore table is shown; ClearPlayState `$86FB` and CheckHiScore `$92F6` set it back to 0 |
 
 ### Worked example: six interrupts
 
@@ -270,7 +270,7 @@ docs/img/loop/pass-frames.png "a typical pass, 5 frames (l2 8961-8966)=work/docs
 
 ## 4.3 The main loop and the order of a pass
 
-StartLife `$863D` sets up a life, and the code falls into MainLoop `$8649`. One pass of the loop is 21 calls in a
+StartLife `$863D` sets up a life, and the code falls into MainLoop `$8649`. One pass of the loop is 20 calls in a
 fixed order, then a wait:
 
 ```text
@@ -344,9 +344,9 @@ flowchart TD
     G -->|"a level ends: POP DE"| X
 ```
 
-*The pass (`src/game/main.asm`). How to read it: the boxes group the 21 calls in their order; the two exits on the
+*The pass (`src/game/main.asm`). How to read it: the boxes group the 20 calls in their order; the two exits on the
 side are the jumps that drop the pass. The point: the scroll and the enemies move before the controls are read, so a
-key pressed in this pass moves the ship over a playfield that has already moved. Witness: the 21 calls ran in this
+key pressed in this pass moves the ship over a playfield that has already moved. Witness: the 20 calls ran in this
 order in the traced pass, `l2` frames 8961-8966.*
 
 Three details of the order:
@@ -584,7 +584,9 @@ at the moment the digit steps to `'2'`, and runs on into level 2's first pass:
 | 2742-2760 | 0.4 | STOP TAPE, the key; StartLife draws the first screen (FirstScreenMarks 7395 and FillRest 10 314 instructions) |
 | 2760 | | the first pass of level 2 |
 
-The whole level start is 55 s, and all but 2 s of it is the tape.
+From LoadLevel on, the level start is 55 s, and all but 2 s of it is the tape. Before LoadLevel, LevelEnd's Wait256
+(256 frames, 5.1 s, in the chart below and not in `l2`) adds its own wait: about 60 s from the level's end to the next
+level's first pass.
 
 ```mermaid
 flowchart LR
@@ -765,8 +767,9 @@ life of `c1`, animated in [doc 1](01-game-design.md)).
 
 - **MainLoopPatch `$8656`**: three `NOP`s with a label of their own; no recording writes there.
 - **LevelEnd with the digit `'9'` from a level other than 8**: unreachable, because only level 8's end writes `'9'`.
-- **CycleTitleColour's switch**: CheckHiScore writes 0 to it (`$92F5`); the title calls the routine directly
-  (`$77A1`, `$FE0E`), not through the task table.
+- **CycleTitleColour's switch**: ShowHiScores `$7698` sets it to 1, so the interrupt runs the routine while the
+  hiscore table is shown; ClearPlayState `$86FB` and CheckHiScore `$92F6` set it back to 0. The title screen calls the
+  routine directly (`$77A1`, `$FE0E`).
 - **StarTask's counters after a pause**: the counters do not move while the interrupts are off, and nothing resets
   them.
 - **The vector byte**: the 257 bytes of `$83` make any byte on the bus give `$8383`; every recording ran on a machine

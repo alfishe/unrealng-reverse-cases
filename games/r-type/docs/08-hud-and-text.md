@@ -154,7 +154,7 @@ The point: one printer, two heights, no colour, no control codes: a string is ju
 something else than their character. The same glyphs are `src/res/graphics/font.png`. Command: `python3
 tools/fig_hud.py font docs/img/hud/font.png`.*
 
-The font is upper case only: digits, letters, a few signs. Fifteen glyphs are not what their codes say:
+The font is upper case only: digits, letters, a few signs. Nineteen glyphs are not what their codes say:
 
 | Code | Character | Drawn as | Used in |
 | --- | --- | --- | --- |
@@ -433,8 +433,9 @@ l_9A7D: LD A,(HL)
         CALL PrintTextNormal
 ```
 
-So each column is drawn twice: half (`>`) when the meter reaches it, full (`@`) the pass after. Twenty passes fill
-ten cells. When the beam is fired the meter is reset by printing BeamMeterEmpty, ten `<`, at column 11 (`$9AE2`).
+So column 11 is drawn full (`@`) at once, at charge 2 (BeamMeter 0, `AND 3` not zero), and each of columns 12-20
+twice: half (`>`) when the meter reaches it, full (`@`) the pass after. Nineteen passes (charge 2 to 38) fill ten
+cells. When the beam is fired the meter is reset by printing BeamMeterEmpty, ten `<`, at column 11 (`$9AE2`).
 
 DrawLives `$9234` prints one `%` per life from column 30 leftwards (PrintText moves one column right, DrawLives two
 back), then one blank. The blank erases the ship of a life just lost, so the row needs no clearing. Six lives reach
@@ -576,13 +577,13 @@ Why it never shows (stage 2, `work/stage2/NOTES.md` item 1):
 - level 8's wave script has command 5, the level's end, at map column 56 and again at 66;
 - the wave kinds `$1C`-`$28` that would draw the text come at columns 67-73, with a last command 5 at 82;
 - LevelEnd `$C25E` at digit '8' makes it '9', clears WavesHalted and makes the ship immortal (a `RET` at
-  ShipDies + 3); at '9' it makes '0', runs ScrollRows, the tune `$15`, LoadLevel, RestartPoint and `JP StartLife`: level 1 again,
+  ShipDies + 3) and unarmed (ShieldControls stays `RET` until ClearPlayState); at '9' it makes '0', runs ScrollRows, the tune `$15`, LoadLevel, RestartPoint and `JP StartLife`: level 1 again,
   the score and lives kept (the wrap). Command 5 also halts the waves (WavesHalted), so the command 5 at 66.3.7
   ends level 8 one step before the text's kinds at 67.0.0.
 
 ```mermaid
 flowchart LR
-    C56["column 56: command 5"] --> E8["LevelEnd: digit 8 to 9, waves on, ship immortal"]
+    C56["column 56: command 5"] --> E8["LevelEnd: digit 8 to 9, waves on, ship immortal and unarmed"]
     E8 --> C66["column 66: command 5"]
     C66 --> E9["LevelEnd: digit 9 to 0, LoadLevel"]
     E9 --> W["level 1 loaded, play goes on: the wrap"]

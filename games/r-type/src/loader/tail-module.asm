@@ -23,8 +23,9 @@ Tail:
   OUT (C),A
   JP GameEntry
 
-; Bytes after the tail (the start of the second stage's code: XOR A / LD
-; ($82FF),A / LD IX,$4000 ...), never run
+; Bytes after the tail: a copy of the first 14 bytes of this tape's Stage2Start
+; $FEE8 (XOR A / LD ($82FF),A / LD IX,$4000 / LD DE,$17FF / LD
+; HL,SL7StoreHook), never run
 TailLeftover:
   DEFB $AF,$32,$FF,$82,$DD,$21,$00,$40
   DEFB $11,$FF,$17,$21,$B3,$FD

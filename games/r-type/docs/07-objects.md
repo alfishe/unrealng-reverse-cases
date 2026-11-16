@@ -61,10 +61,10 @@ entry. This table groups them by owner.
 | `$7A90` | WavePtr | 2 | the next wave entry | RunWaves, RestartPoint | 7.3 |
 | `$7A95` | HitCount, HitResult | 2 | the tags the last draw gathered; ProcessHits' result | CollectHit, ProcessHits | 7.9 |
 | `$7A97` | BeamMeter | 1 | the BEAM meter's column | FireBeam | 10 |
-| `$7A98` | ShieldTimer | 1 | the shield's frames left | TakePickup, ShipShield | 10 |
+| `$7A98` | ShieldTimer | 1 | the shield's passes left | TakePickup, StartPlay, ShipShield, ClearPlayState | 10 |
 | `$7A99` | ScoreChanged | 1 | the score needs reprinting | AddScore | 8 |
 | `$7A9A` | WaveOverride | 1 | wave command 3: the slot of the next wave | CommandWave | 7.3 |
-| `$7A9B` | LevelEndTimer | 1 | counts down after the level's end | command 5, BossBlast | 10 |
+| `$7A9B` | LevelEndTimer | 1 | the level's end: `$41` (command 5) acts at once, `$3F` (a boss blast) after 31 passes | command 5, BossBlast | 10 |
 | `$7A9C` | DrawTag | 1 | the tag the next draw writes into SolidMap | every drawer | 7.9 |
 | `$7A9D` | StarFrame | 1 | the star task's counter | StarTask `$BE79` (TaskTable entry 1) | 4 |
 | `$7A9E` | ShooterLimit, Shooters | 2 | how many enemies may have a shot out; how many have | command 4, EnemyFire | 7.9 |
@@ -526,7 +526,7 @@ Level 1 reads like the arcade's first stage:
 - lines of kind 1 (the small fliers) from the right edge, from block column 16 to 82;
 - kind 14 walkers on the floor at block columns 42-48;
 - kind 19 and 22 pods on the ceiling from 50 to 95;
-- the big ship at 60-63: command 3 puts kinds 10, 11 and 44 into fixed slots 8-25;
+- the big ship at 60-63: command 3 puts kinds 10, 11 and 44 into fixed slots 8-26;
 - the boss from 100: kinds 6 and 46 (32 hits each), 23 (the tail), 42 (the core) and 43, then kinds 9 and 21 on the
   halted screen.
 
@@ -580,7 +580,7 @@ What the axis shows:
 - level 7 plays sound `$0A` four times just after its halt at 72;
 - level 2's boss part (64-98) is a stream of sound commands (sounds `$10`-`$13`, its heartbeat) and waves on the
   halted screen;
-- level 3 has few waves (50) and many commands (45): its big ship is placed by 42 commands 3, into fixed slots;
+- level 3 has few waves (50) and many commands (45): its big ship is placed by 42 commands 3, into fixed slots (27 at column 10, 13 at 37, one each at 54 and 72, all before the halt at 64);
 - level 8 has three "end" commands; the first turns the level digit from 8 to 9 and play goes on, the second wraps
   to level 1, the third is never reached ([doc 10](10-gameplay-logic.md#1014-the-level-end-and-the-wrap)).
 
@@ -1075,7 +1075,7 @@ Level 1's movers:
 | A1 | `$F3AB` | killed: no draw; else store on odd passes and draw at the old place on even ones: half speed | 7, 8, 15-18, 20, 31, 45 |
 | A2 | `$F3B9` | the same as A1, written with the other jump | 24-30 |
 | A3 | `$F3BE` | drifts left (L1DriftLeft); killed: LevelVars+1 counts it; at 4, MapColumn = 115 and WavePtr = `$EC97` | 6, 46 |
-| A4 | `$F3E3` | when the slot 10 part is left of it: L1BossHit (1500 points, LevelVars = 26) | 11 |
+| A4 | `$F3E3` | when killed and the slot 10 part is left of it: L1BossHit (1500 points, LevelVars = 26); killed otherwise: its flags back to `$02` | 11 |
 | A5 | `$F408` | the big ship's explosions, counted by LevelVars | 10, 44 |
 | A6 | `$F468` | a ceiling pod: moves every 8th pass, draws with tag `$DC` + slot and soft cells, faces the ship | 19, 22 |
 | A7 | `$F4D8` | plays sound `$09` once, at script 1 | 9, 21 |
@@ -1268,7 +1268,7 @@ was there first. The tag is DrawTag:
 | --- | --- | --- |
 | 0 | empty | the clear routines |
 | 1-5 | the ship's cells | GameObject (DrawTag = the object, below 6) |
-| 6-`$25` | the ship's shots, the Force, the bits, the beam | GameObject |
+| 6-`$6F` | the game objects: the ship's shots, the Force, the bits, the beam (6-`$25`), the title logo `$26-$2C`, the shield `$62`, the beam's glow `$63-$6A` | GameObject |
 | `$80` | an enemy shot, or an object drawn without a slot | MoveEnemyShots, level code |
 | `$80` + n | enemy slot n | MoveEnemies |
 | `$DC` + n | an enemy slot drawn over soft cells (mover A6) | level code |
@@ -1387,6 +1387,7 @@ into with GetCell `$C0E4`:
 | 0 | moves on and is drawn |
 | 1-5, the ship | `JP ShipDies` at `$C3CE` |
 | 6-`$25`, the ship's shots, the Force, the bits | ends: the Force and the bits are shields |
+| `$26-$7F`, the other game objects (the shield `$62`, the glow), and `$DC`-`$F9` | taken as a slot number: SlotFlags `$8FCB` reads a stray byte of page `$85`, so the shot passes, or ends when that byte AND `$3F` is `$3F` |
 | an enemy | moves on over it, unless the enemy is indestructible: then it ends |
 | `$FA` and above, scenery | ends |
 | off the field (row 20 or more, column 31 or more) | ends |
@@ -1415,6 +1416,9 @@ flowchart TD
     G -- "1-5" --> SD["ShipDies"]
     G -- "6-$25, scenery, an indestructible enemy" --> E2["the shot ends"]
     G -- "empty or an enemy" --> DR["drawn"]
+    G -- "$26-$7F, $DC-$F9" --> SF{"SlotFlags: a stray byte of page $85"}
+    SF -- "AND $3F = $3F" --> E2
+    SF -- "other" --> DR
 ```
 
 The level 1 boss blast shows the end of this chain on the screen: explosions where the parts were, and their points.
@@ -1606,7 +1610,7 @@ The table is `python3 tools/wavescript.py summary`. More differences, from the k
 | ---: | ---: | ---: | ---: | --- | --- | --- |
 | 1 | 9 | 15 | 2 | 13, 34-41 (started by movers A10, A13, A14) | 0, 4 | parts blown at MapColumn 115; a tail of 14 segments |
 | 2 | 24 | 1 | 15 | none | 0 | 16 hits (LevelVars to 16), then BossDestroyed; heartbeat sounds `$10`-`$13` |
-| 3 | 7 | 9 | 23 | 34-42 | 28 | a big ship placed by 42 commands 3; BossDestroyed |
+| 3 | 7 | 9 | 23 | 34-42 | 28 | a big ship whose parts 42 commands 3 place before the halt at 64 (27 at column 10, 13 at 37, one each at 54 and 72); BossDestroyed |
 | 4 | 7 | 10 | 10 | 3, 6-9, 11, 20, 30, 46, 47, 54 | 2, 4 | movers set MapColumn |
 | 5 | 1 | 9 | 11 | 21 kinds | 4 | movers set MapColumn |
 | 6 | 1 | 24 | 0 | 24, 46 | 8 | 27 kinds of 12 hits |

@@ -53,7 +53,7 @@ def memory(out):
                           (0xFDA5, 0xFF93, 'code', 'tail: LoadLevel $FE03'),
                           (0xFF94, 0xFFFF, 'stack', 'the stack')]
     tail = [(0xF87C, 0xFDA4, 'sound', 'the sound $F87C'), (0xFDA5, 0xFF93, 'code', 'tail: LoadLevel $FE03'),
-            (0xFF94, 0xFFFF, 'stack', 'the stack, low mark $FFC8')]
+            (0xFF94, 0xFFFF, 'stack', 'stack, low $FFCE (hiscore $FFC8)')]
     play1 = common + [(0xC4AE, l1 - 1, 'level', 'level 1, 13 228 bytes'), (0xF3A5, l1 - 1, 'levelcode', ''),
                       (l1, 0xF87B, 'free', '')] + tail
     play5 = common + [(0xC4AE, l5 - 1, 'level', 'level 5, 8904 bytes'), (0xE1E8, l5 - 1, 'levelcode', ''),

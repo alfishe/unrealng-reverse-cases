@@ -19,7 +19,7 @@ The recordings it rests on ([WALKTHROUGH 6.0](../WALKTHROUGH.md#60-the-recording
 | --- | --- | --- |
 | `c1` | a 48K from power-on, the original tape at signal speed | the image at the entry (frame 11 700 T 1379), the image in play on level 1 |
 | `l1`-`l8` | each level loaded by the game and played to its end (immortality POKE `$91F2`, RAM only) | the levels in memory, each level's own code, the budget (`l2`) |
-| the 16 recordings after the entry | `c1`, `l1`-`l8`, `continue`, `gameover`, `hiscore`, `hiscore-typed`, `ending`, `ctl-*` | the heatmap and the stack (their summed `L1`, `work/stage1/heat/all-l1.json`) |
+| the 16 recordings after the entry | `l1`-`l8`, `continue`, `gameover`, `hiscore`, `hiscore-typed`, `ending`, `ctl-*` | the heatmap and the stack (their summed `L1`, `work/stage1/heat/all-l1.json`) |
 | `m128` | the same tape on a 128K | 2.9 |
 
 Addresses are those of the 48K's 64 K view. A picture of frame N is the memory at the start of frame N.
@@ -74,7 +74,7 @@ level 1 (`play-L1.cpu.bin`), the executed ranges of the 16 recordings (`work/sta
 | --- | --- | --- |
 | `$0000-$3FFF` | the ROM; its bytes are also the random numbers (NextRandom `$C05D` reads them through RandomPtr `$7ACD`) | |
 | `$4000-$5AFF` | the screen: 20 character rows of play field, the HUD below (BEAM, score, lives, HI SCORE) | |
-| `$5B00-$5B63` | zeroes: CopyChain's fill of `$5800-$5BFF` ([doc 3, 3.2](03-build-and-load.md#32-the-basic-line-and-its-hidden-number)) left them so, and no recording writes them | |
+| `$5B00-$5B63` | zeroes: SL7Start's clear of `$4000-$5BFF` at `$FBB0` ([doc 3, 3.4](03-build-and-load.md#34-sl7start-the-rom-check-and-the-wipe)) left them so (CopyChain's fill of `$5800-$5BFF` before it did the same, [3.2](03-build-and-load.md#32-the-basic-line-and-its-hidden-number)), and no recording writes them | |
 | `$5B64-$5D01` | EntryCopy: 414 bytes copied from `$7EE2` at the entry; its last two bytes land on BitReverse (below) | |
 | `$5D00-$5DFF` | BitReverse: each byte with its bits reversed, built at the entry (the mirrored metatiles and sprites) | |
 | `$5E00-$5EB3` | ColumnBuffer: the column the scroll brings in, 20 cells of 9 bytes | |
@@ -234,7 +234,7 @@ The stack starts at `$FFFE`, set at the entry (`LD HL,$FFFE`, `LD SP,HL`). Its l
 | --- | --- |
 | `hiscore`, `hiscore-typed` | `$FFC8` |
 | `l4` | `$FFCA` |
-| `c1`, `continue`, `gameover`, `l1`-`l3`, `l5`-`l8` | `$FFCE` |
+| `continue`, `gameover`, `l1`-`l3`, `l5`-`l8` | `$FFCE` |
 | `ctl-if2`, `ctl-kempston`, `ctl-sinclair` | `$FFD0` |
 | `ending` | `$FFD2` |
 
@@ -362,7 +362,9 @@ flowchart LR
     ME --> DS["DrawSprite $8CFD and variants (sprites)"]
     ML --> RW["RunWaves $8FDD (waves)"]
     ML --> RC["ReadControls $8B06 (scroll): through ControlVector $74FC"]
-    ML --> MS["MoveShip $94F1, ShipFlyIn, MoveForce (ship)"]
+    ML --> FI["ShipFlyIn $8C8B (scroll)"]
+    ML --> MS["MoveShip $94F1, MoveForce (ship)"]
+    ML --> DX["DrawExplosions $C40E (util)"]
     MS --> DS
     ML --> WP["MoveBeam, the missiles, the shots (ship)"]
     ML --> ES["MoveEnemyShots $C348 (util)"]

@@ -127,7 +127,7 @@ second stage's end, The loader's tail: the move to the game and the jump to the 
 | `$7A98` | `ShieldTimer` (`GameVars`+24) | 1 | the passes the ship carries the shield (`$38` at the first start, `$20` at a later life, `$30` from the pick-up) | `ShipShield`, `FillBlock` (`stage1/rec/l3`), `MoveShip` (`stage1/rec/l2`) | `ClearPlayState`, `ShipShield`, `StartPlay`, `CarrierDraw` (`stage1/rec/l2`), `FillBlock` (`stage1/rec/l1`) +3 |
 | `$7A99` | `ScoreChanged` (`GameVars`+25) | 1 | non-zero when AddScore changed the score: CheckExtraLife prints it | `CheckExtraLife` (`stage1/rec/l1`), `FillBlock` (`stage1/rec/l3`) | `AddScore`, `CheckExtraLife` (`stage1/rec/l1`), `FillBlock` (`stage1/rec/l1`), `PrintScore` (`stage1/rec/l2`) |
 | `$7A9A` | `WaveOverride` (`GameVars`+26) | 1 | a wave command 3 value: the next wave's slot | `RunWaves`, `FillBlock` (`stage1/rec/l3`), `StartWave` (`stage1/rec/l1`) | `CommandWave` (`stage1/rec/l1`), `FillBlock` (`stage1/rec/l1`), `RunWaves` (`stage1/rec/l2`), `StartWave` (`stage1/rec/l1`) |
-| `$7A9B` | `LevelEndTimer` (`GameVars`+27) | 1 | counts down after the level's end command | `LevelEnd`, `FillBlock` (`stage1/rec/l3`) | `BossBlastOnce` (`docs/integrate/rec/boss`), `CommandWave` (`stage1/rec/l1`), `FillBlock` (`stage1/rec/l1`), `LevelEnd` (`stage1/rec/l1`), `RunWaves` (`stage1/rec/l2`) |
+| `$7A9B` | `LevelEndTimer` (`GameVars`+27) | 1 | the level's end: `$41` (command 5) acts at once, `$3F` (a boss blast) after 31 passes | `LevelEnd`, `FillBlock` (`stage1/rec/l3`) | `BossBlastOnce` (`docs/integrate/rec/boss`), `CommandWave` (`stage1/rec/l1`), `FillBlock` (`stage1/rec/l1`), `LevelEnd` (`stage1/rec/l1`), `RunWaves` (`stage1/rec/l2`) |
 | `$7A9C` | `DrawTag` (`GameVars`+28) | 1 | the tag DrawSprite writes into SolidMap for each cell | `CellMark`, `MoveEnemiesSlot`, `EnemyFire` (`stage1/rec/l1`), `FillBlock` (`stage1/rec/l3`), `l_912D` (code) | `GameObject`, `MoveEnemiesSlot`, `DrawFirstScreen` (`stage1/rec/l2`), `ExplodeSoftCell` (`stage1/rec/l4`), `FillBlock` (`stage1/rec/l1`) +2 |
 | `$7A9D` | `StarFrame` (`GameVars`+29) | 1 | the star task's counter | `StarStep`, `StarTask`, `FillBlock` (`stage1/rec/l3`) | `StarTask`, `FillBlock` (`stage1/rec/l1`) |
 | `$7A9E` | `ShooterLimit` (`GameVars`+30) | 1 | wave command 4: how many enemies may fire at once | `EnemyFire`, `FillBlock` (`stage1/rec/l3`) | `RunWaves`, `CommandWave` (`stage1/rec/l1`), `FillBlock` (`stage1/rec/l1`) |
@@ -347,7 +347,7 @@ src/loader/decipher.json`; the readers and writers from `work/stage1/c1`.
 
 | Address | Name | Bytes | What | Read by | Written by |
 | --- | --- | --- | --- | --- | --- |
-| `$FE53` | `DecipherLeftover` | 96 | The rest of the block: an older copy of the second stage's code (the store hook setup, the stack and IM settings), never run | - | - |
+| `$FE53` | `DecipherLeftover` | 96 | The rest of the block: a copy of this tape's Stage2End (`$FE53-$FE83`, 49 bytes), the whole Tail (`$FE84-$FEA4`, 33 bytes) and the first 14 bytes of Stage2Start (`$FEA5-$FEB2`), never run | - | - |
 
 
 ## The second stage's end (`src/loader/stage2end.json`)
@@ -367,7 +367,7 @@ the readers and writers from `work/stage1/c1`.
 
 | Address | Name | Bytes | What | Read by | Written by |
 | --- | --- | --- | --- | --- | --- |
-| `$61C9` | `TailLeftover` | 14 | Bytes after the tail (the start of the second stage's code: XOR A / LD (`$82FF`),A / LD IX,`$4000` ...), never run | - | - |
+| `$61C9` | `TailLeftover` | 14 | Bytes after the tail: a copy of the first 14 bytes of this tape's Stage2Start `$FEE8` (XOR A / LD (`$82FF`),A / LD IX,`$4000` / LD DE,`$17FF` / LD HL,SL7StoreHook), never run | - | - |
 
 
 ## Level 1 (side 2) (`src/level1/level1.json`)

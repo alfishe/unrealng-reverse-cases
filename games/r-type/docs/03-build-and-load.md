@@ -79,7 +79,7 @@ at the same place, `$C4AE`.
 | 38-40 | text "Level 1", two turbo blocks | 20 + 13 230 | the header to `$6000`, the body to `$C4AE` | 2.08 s + 1.9 s, 50.24 s + 5.8 s | 13 858-16 528 |
 | 41-68 | stop, text and two turbo blocks for each of levels 2-8 | | the same | 33-49 s a body | `l2`-`l8` |
 
-Total 659.3 s with the pauses: 32 967 frames.
+Total 659.3 s with the pauses: 32 967 frames at 50 Hz, about 33 020 at the machine's 50.08 frames a second.
 
 *From `tools/tzxblocks.py list`, the two block tables (3.5) and c1. The point: 13 SpeedLock blocks, Stage2Start (block 7)
 alone, then 12 data blocks read in one stream with a 3-byte mark between each two; the levels are a second format, the game's own (3.9).*
@@ -231,7 +231,7 @@ LayerKeyed01:         ; $EC18
   POP IX              ; IX = $EC18
   LD DE,$001C
   ADD IX,DE           ; IX = $EC34
-LoopEC1F:
+l_EC1F:
   LD A,R
   XOR IXH             ; R XOR $EC
   SUB (HL)
@@ -241,7 +241,7 @@ LoopEC1F:
   LD A,C
   INC HL
   OR B
-  JP NZ,$EC31         ; $EC31: JP LoopEC1F
+  JP NZ,$EC31         ; $EC31: JP l_EC1F
   JP $EC34            ; into the bytes just made
 ```
 
@@ -332,12 +332,12 @@ SL7Start:              ; $FB7E
   CCF
   LD A,($0000)
   CP $F3
-CheckRom:              ; $FB85
+l_FB85:                ; $FB85
   JP NZ,$0000          ; not the ROM: reset
   IN A,($9F)
   LD A,($0000)
   CP $F3
-  JR NZ,CheckRom
+  JR NZ,l_FB85
   XOR A                ; L = H = 0, A = 0
   ...
   OUT ($1F),A          ; 0
@@ -408,7 +408,7 @@ flowchart TD
     E -->|"H not 0"| T["SL7WipeTrap"]
 ```
 
-*The reader's states. The point: one call of SL7LoadBlock reads the whole of group 2, eleven blocks and their marks,
+*The reader's states. The point: one call of SL7LoadBlock reads the whole of group 2, twelve blocks and their eleven marks,
 without returning.*
 
 ### The bit timing
@@ -417,9 +417,9 @@ Each bit is two edges. The loop waits for an edge after a fixed delay (SL7EdgeDe
 waits for the second edge. B counts the polls in between; the count decides the bit.
 
 ```asm
-NextBit:               ; $FD93
+l_FD93:                ; $FD93
   LD A,$09
-ReadBit:               ; $FD95
+l_FD95:                ; $FD95
   CALL SL7EdgeDelay    ; A x 16 T, then poll until an edge
   RET NC               ; B wrapped: a timeout
   CALL SL7Reveal       ; the per-bit task, its address patched at $FD9A (3.7)
@@ -429,11 +429,12 @@ ReadBit:               ; $FD95
   CP B
   RL L                 ; the bit into L
   LD B,$B2             ; the count's start for the next bit
-  JP NC,NextBit        ; until the marker bit leaves L
+  JP NC,l_FD93         ; until the marker bit leaves L
 SL7EdgeDelay:          ; $FCDB
   DEC A
   JR NZ,SL7EdgeDelay
-EdgePoll:              ; $FCDF
+  AND A                ; $FCDE: carry clear (SL7Reveal enters here)
+l_FCDF:                ; $FCDF
   INC B                ; 4 T
   RET Z                ; 5 T
   LD A,$7F             ; 7 T
@@ -441,7 +442,7 @@ EdgePoll:              ; $FCDF
   RRA                  ; 4 T
   XOR C                ; 4 T: C holds the last level
   AND $20              ; 7 T
-  JR Z,EdgePoll        ; 12 T: 54 T a poll
+  JR Z,l_FCDF          ; 12 T: 54 T a poll
 ```
 
 ### Worked example: a zero and a one
@@ -463,7 +464,7 @@ threshold `$DB`, for pulses of 875 and 1750 T.
 The store at `$FD7F` does not store the byte it read. It stores (L XOR k) + a:
 
 ```asm
-StoreByte:             ; $FD7F
+l_FD7F:                ; $FD7F
   LD A,$C1             ; k: the operand at $FD80
   XOR L                ; L: the byte from the tape
   ADD A,$11            ; a
@@ -580,7 +581,7 @@ else:                      flag = 1
 ```
 
 The samples cover about 1.34 s of the 1.7 s pause after block 7. On the original the line is quiet there. A copy that
-shortened the pause would put block 13's pilot under the second window: about 8.5 edges a sample (a pilot pulse is 2168 T), S2 near 425 against
+shortened the pause would put block 13's pilot under the second window: about 8.5 edges a sample (the pilot pulse of block 10's tone is 2165 T), S2 near 425 against
 S1 near 50, and the flag set. The flag is SL7Pattern `$FEB3`. Nothing happens at once: the reader goes on, and
 Stage2End wipes memory at the very end (3.8), two and a half minutes later.
 
@@ -667,7 +668,7 @@ flowchart TD
 | 11 000 | `80 88 98 90` | 0, 1, 3, 2 | 13.2 s |
 | 11 680 | `80 80 80 80` | 0, 0, 0, 0 | 0.0 s: Decipher starts |
 
-From frame 4400 to 11 680 is 7280 frames, 145.6 s, for 150.0 s on the display. The countdown counts bits, not
+From frame 4400 to 11 680 is 7280 frames, 145.4 s, for 150.0 s on the display. The countdown counts bits, not
 time: it runs 3 % fast, and reaches 0 with the last block. (Read with `python3 work/docs/rtA/mem.py work/docs/rtA/c1
 FRAME FCD1 4`.)
 
@@ -690,8 +691,10 @@ under it.
 
 Stage2Start's own code after its `CALL` (IM 2, `SP` = `$752F`, `JP $7530`) never runs. Block 31 loads Stage2End over
 `$FEFC`, so when SL7LoadBlock returns after block 35, it returns into Stage2End. `$7530` is in the game's texts at
-that moment: the jump belongs to another layout of the same second stage, and copies of that older code are in
-DecipherLeftover `$FE53` and TailLeftover `$61C9`.
+that moment, and nothing on this tape explains the jump. The two leftovers do not either: DecipherLeftover
+`$FE53-$FEB2` holds a copy of this tape's Stage2End (49 bytes), the whole Tail (33 bytes) and the first 14 bytes of
+Stage2Start; TailLeftover `$61C9-$61D6` holds the same first 14 bytes of Stage2Start. Both are leftovers of this
+loader's own blocks, never run, and neither holds `$752F`, `$7530` or an `IM 2`.
 
 ```asm
 Stage2End:             ; $FEFC
@@ -1040,10 +1043,13 @@ The collection's copies of the standard tape, compared block by block with the o
 | Copy | What it is | How it differs |
 | --- | --- | --- |
 | Electric Dreams, 1988, this TZX | the original, SpeedLock 7, eight levels | |
-| two other TZX transcriptions (TOSEC) | the original | every data block byte for byte |
+| two other TZX transcriptions (TOSEC, the third, "[a3]", is this very file) | the original | every data block byte for byte |
+| TOSEC "[a].tzx" | a re-save | levels 1-7 byte for byte, level 8 differs |
 | The Hit Squad, 1990 | the re-release, side 1 only | the same 14 loader and game blocks byte for byte; no level blocks |
 | MCM Software, Spain, 1989 | a ROM-speed re-save in two sides | the game byte for byte but `$8F1F-$8FBA` (LoadBytes' timings); the eight levels as standard blocks, their bodies byte for byte |
-| TAP re-saves and hacks | other loaders | all eight level bodies byte for byte; three hacks change level 8 |
+| six TAP re-saves and hacks | other loaders | all eight level bodies byte for byte |
+| three TAP hacks (Bill Gilbert, Mihal Soft, Paco) | other loaders | levels 1-7 byte for byte, level 8 differs |
+| eight single-load TAP re-saves and hacks, and the demo | other loaders | no level body whole |
 | Torasoft's 128K crack | the levels in memory | no level body whole |
 
 ZXDB notes that the first tapes had level 7 twice and no level 8. This TZX has its own level 8 (digit `'8'`, 11 980
@@ -1121,6 +1127,7 @@ during the boss blast: the same immortality the POKE gives
 - The reset in SL7Start and SL7WipeTrap `$FBCB`; every failure of 3.10 but LoadBytes'.
 - SL7CheckSamples' failing branch; the ROM with `$28` at `$006D` that skips the check.
 - Stage2Start after its `CALL` (IM 2, `JP $7530`): overwritten by Stage2End before it can run.
-- DecipherLeftover `$FE53-$FEB2` and TailLeftover `$61C9-$61D6`: copies of an older second stage's code, never run.
+- DecipherLeftover `$FE53-$FEB2` and TailLeftover `$61C9-$61D6`: copies of this loader's own Stage2End, Tail and
+  the start of Stage2Start, never run.
 - Rows 0-4 of BlockTable2 and rows 5-7 of the first table: never read.
 - The level header's bytes 0-12 and 14-15: nothing reads them.

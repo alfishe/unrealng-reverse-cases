@@ -63,7 +63,8 @@ ScoreChanged:
 WaveOverride:
   DEFB $00                ; a wave command 3 value: the next wave's slot
 LevelEndTimer:
-  DEFB $00                ; counts down after the level's end command
+  DEFB $00                ; the level's end: $41 (command 5) acts at once, $3F
+                          ; (a boss blast) after 31 passes
 DrawTag:
   DEFB $00                ; the tag DrawSprite writes into SolidMap for each
                           ; cell

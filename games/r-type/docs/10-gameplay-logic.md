@@ -270,8 +270,8 @@ shot leaves when fire is let go:
 | `$24` and up | the beam, kind `$18` | `$18` | 30 |
 
 The charge stops at `$3E`: the store is skipped when the next value would be `$40`. At `$0C` the charging sound `$02`
-starts. Below `$28` the meter grows one character every 4. With the Force at the nose the beam starts 3 columns
-further on. Any release also fires the free Force and the bits ([10.5](#105-the-force-levels-attach-detach-and-its-shots)).
+starts. Below `$28` the meter grows one character every 4. With the Force attached (nose or tail) the beam
+starts 3 columns further on. Any release also fires the free Force and the bits ([10.5](#105-the-force-levels-attach-detach-and-its-shots)).
 
 ```text
 FireBeam:
@@ -654,53 +654,177 @@ Witness: `l1`, BitUpperOn 1 from the sample at 8450; the lower bit never came in
 With MissilesOn, FireMissiles `$9C99` launches a pair of missiles whenever MissileTimer is 0 and both launch
 records (MissileLaunch `$7AE7`, `$7AED`) are free. It has no caller of its own: it runs at the end of FireBeam's chain
 (`JP FireMissiles` at `$9B5B`, `$9B63`, `$9B73`, `$9B86`, `$9B9F`, `$9BC3`), and FireBeam runs only from
-ShieldControls (at `$95B3`) while fire is held or on the release pass. It sets MissileTimer to `$20` and plays `$06`. One
-missile starts at the ship's row - 1, the other at the row; MoveMissiles `$93D0` moves the two along their frame
-lists, turning each toward a target (MoveMissile `$93F0`: they home), and counts MissileTimer down. (MoveMissileSet
-`$A01F` moves other records, MissileA-C `$5F00`, `$5F34`, `$5F68`, that StartMissile `$9C2C` fills for the docked
-bouncing laser at `$9BDC`.)
+ShieldControls (at `$95B3`) while fire is held or on the release pass. It sets MissileTimer to `$20` and plays `$06`.
+MoveMissiles `$93D0` moves the two each pass (MoveMissile `$93F0`, missile A with IY on missile B and the other way
+round) and counts MissileTimer down. (MoveMissileSet `$A01F` moves other records, MissileA-C `$5F00`, `$5F34`, `$5F68`,
+that StartMissile `$9C2C` fills for the docked bouncing laser at `$9BDC`.)
+
+A launch record is 6 bytes:
+
+| Byte | Meaning |
+| ---: | --- |
+| +0, +1 | the frame list's address (high, low); +0 = 0: the missile is free |
+| +2 | column |
+| +3 | row |
+| +4 | the target: the slot scan's count, 29 - slot (0 at launch) |
+| +5 | the state: 1 seeking, 2 and 3 climbing, 4 and 5 diving |
+
+A frame list is (sprite, step) pairs ended by `$FF`. The step's bits 2-5 are MoveByBits' directions (bit 0 up, 1 down,
+2 left, 3 right), its bits 0-1 the drawer (plain, mirrored, flipped, both). The sprite is drawn as sprite +
+(FrameCounter AND 1), a two-picture flicker.
+
+| List | Address | Steps |
+| --- | --- | --- |
+| launch A | `$7D82` | up 1, three passes still, right 1 |
+| launch B | `$7D8D` | four passes still, right 1 |
+| seek | `$7D98` (MissileTurns) | right 1 |
+| turn up | `$7D9B` (+3) | up-right 1 (sprite `$49`), up 4 (`$47`) |
+| climb | `$7D9F` (+7) | up 3 |
+| turn down | `$7DA6` (+`$0E`) | down-right 1 (sprite `$49`), down 4 (`$47`) |
+| dive | `$7DAA` (+`$12`) | down 3 |
+
+The homing is MissileTurn `$946B`, at the end of a list. In state 1 it scans the 28 enemy slots from slot 1 for the
+first live one (flags not 0) whose column is the missile's column + 1 or + 2. It skips a slot the other missile
+targets, and takes none at all while the other missile's target count is `$14` or more (its target one of slots 1-9).
+The first match is stored in +4, and its row decides:
+
+- the same row: the seek list again, state still 1 (the missile flies on at it);
+- above: turn up (state 2), then climb (state 3) for good;
+- below: turn down (state 4), then dive (state 5) for good;
+- no match: the seek list, one cell right, and the scan again at the next pass.
+
+So a missile flies right a cell a pass until an enemy comes one or two columns ahead, steps diagonally once toward
+it, and then goes straight up or down that column. It never turns again. It ends on scenery (SolidAny, no carry, on the
+cell at the new column and row + 1, `$9424`), on a hit (ProcessHits returns Z), at column 31 or more, or at row 21 or more (a climb past
+row 0 wraps the row to `$FF`).
 
 ```text
 FireMissiles (FireBeam's chain: fire held, or the release pass):
     if MissilesOn and MissileTimer == 0 and both launch records free:
         MissileTimer = $20
-        launch one at (ShipColumn, ShipRow - 1), one at (ShipColumn, ShipRow)
+        A: list $7D82 at (ShipColumn, ShipRow - 1); B: list $7D8D at (ShipColumn, ShipRow); both state 1, target 0
         PlaySound($06, $81)
-MoveMissiles:
+MoveMissiles (every pass):
+    MoveMissile(A, other = B); MoveMissile(B, other = A)
     if MissileTimer: MissileTimer -= 1
-    for each of the two missiles: MoveMissile (along its frame list, turning toward a target)
+MoveMissile(m):
+    if m.list == 0: return
+    if *m.list == $FF: MissileTurn(m)            # a new list, then on
+    if m.column >= 31 or m.row >= 21 (row 0 is fine): m.list = 0; return
+    (sprite, step) = next pair; move by step's directions
+    if the cell at (new column, new row + 1) is solid: m.list = 0; return
+    draw sprite + (FrameCounter AND 1) by step's drawer; ProcessHits; if a hit: m.list = 0
+MissileTurn(m):
+    state 2 -> 3, 3: climb list; state 4 -> 5, 5: dive list; other than 1-5: seek list
+    state 1:
+        for slot in 1..28 (count = 29 - slot):
+            if slot free or slot.column not in (m.column + 1, m.column + 2): continue
+            if other.target >= $14 or other.target == count: continue
+            m.target = count
+            if slot.row == m.row: seek list (state stays 1)
+            elif slot.row < m.row: turn-up list, state 2
+            else: turn-down list, state 4
+            return
+        seek list
 ```
 
 ```asm
-FireMissiles:
-9C99  LD A,(MissilesOn)
-9C9C  AND A
-9C9D  JR Z,FireBits
-9C9F  LD A,(MissileTimer)
-9CA2  AND A
-9CA3  JR NZ,FireBits
-9CA5  LD A,(MissileLaunch)
-9CA8  AND A
-9CA9  JR NZ,FireBits
-9CAB  LD A,(MissileLaunch+$0006)
-9CAE  AND A
-9CAF  JR NZ,FireBits
-9CB1  LD A,$20
-9CB3  LD (MissileTimer),A
+MissileTurn:                   ; $946B, the list ended
+946B  LD A,(IX+$05)            ; the state
+946E  CP $01
+9470  JR Z,l_949B              ; 1: look for a target
+...                            ; 2, 3: climb; 4, 5: dive; other: seek
+l_949B:
+949B  LD DE,EnemySlots         ; slot 1's flags
+949E  LD L,$1C                 ; 28 slots, counted down
+l_94A0:
+94A0  LD A,(DE)                ; flags
+94A1  INC E
+94A2  INC E
+94A3  INC E                    ; +3, the column
+94A4  AND A
+94A5  JR Z,l_94B6              ; free
+94A7  LD A,(DE)
+94A8  DEC A
+94A9  JR Z,l_94B6
+94AB  CP $20
+94AD  JR NC,l_94B6
+94AF  CP C                     ; column - 1 = the missile's?
+94B0  JR Z,l_94C2
+94B2  DEC A
+94B3  CP C                     ; column - 2?
+94B4  JR Z,l_94C2
+l_94B6:
+94B6  LD A,E                   ; the next slot
+94B7  ADD A,$06
+94B9  LD E,A
+94BA  DEC L
+94BB  JR NZ,l_94A0
+l_94BD:
+94BD  LD HL,MissileTurns       ; no target: one cell right
+94C0  JR l_94E8
+l_94C2:
+94C2  LD A,(IY+$04)            ; the other missile's target
+94C5  CP $14
+94C7  JR NC,l_94B6
+94C9  CP L
+94CA  JR Z,l_94B6
+94CC  LD (IX+$04),L            ; this one's target
+94CF  INC E
+94D0  LD A,(DE)                ; the slot's row
+94D1  DEC E
+94D2  CP B
+94D3  JR Z,l_94BD              ; the same row: straight on
+94D5  JR NC,l_94DE             ; below
+94D7  LD A,$02                 ; above: turn up
+94D9  LD HL,MissileTurns+$0003
+94DC  JR l_94E3
+l_94DE:
+94DE  LD HL,MissileTurns+$000E ; turn down
+94E1  LD A,$04
+l_94E3:
+94E3  LD (IX+$05),A
 ...
-9CEC  LD HL,$0681
-9CEF  CALL PlaySound
+94E8  LD (IX+$00),H            ; the new list
+94EB  LD (IX+$01),L
+94EE  JP MoveMissile
 ```
 
 ```mermaid
 flowchart TD
-    F["FireMissiles"] --> O{"MissilesOn, timer 0, both free?"}
-    O -- "no" --> B["FireBits"]
-    O -- "yes" --> L["timer $20; two missiles; sound $06"]
-    L --> B
-    FB["FireBeam: fire held or released"] --> F
-    M["MoveMissiles $93D0"] --> S["MoveMissile x 2: homing"]
-    M --> T["MissileTimer - 1"]
+    F["FireMissiles: timer 0, both free"] --> L["launch lists A, B; state 1"]
+    L --> E{"list ended?"}
+    E -- "no" --> M["step, solid test, draw, ProcessHits"]
+    E -- "yes" --> S{"state"}
+    S -- "1" --> K["scan slots 1-28: live, column + 1 or + 2, not the other's target"]
+    K -- "none" --> R["seek: right 1"]
+    K -- "same row" --> R
+    K -- "above" --> U["turn up, state 2"]
+    K -- "below" --> D["turn down, state 4"]
+    S -- "2, 3" --> C["climb: up 3, state 3"]
+    S -- "4, 5" --> V["dive: down 3, state 5"]
+    R --> M
+    U --> M
+    D --> M
+    C --> M
+    V --> M
+    M -- "scenery, a hit, column 31+, row 21+" --> X["free"]
+    M -- "on" --> E
+```
+
+![MissileTurn at work: missile A finds slot 3 and turns up](img/routines/MissileTurn.gif)
+
+*l1 frame 11550, T 36900-38400, MoveMissile and MissileTurn for missile A, 40 pictures. Left, the
+memory `$7A80-$85FF` (the slots' flags and columns read one by one) and the two launch records `$7AE7`/`$7AED` as
+numbers; right, the code. Missile A's list ends (`$7D8C` is `$FF`); the scan reads slots 1, 2 and 3 and stops at slot
+3; +4 becomes `$1A`, +5 becomes 2, the list `$7D9B`, and the first step moves it to column 8, row 14. The command
+follows, W an instance opened on `l1` as at the top of this document.*
+
+```text
+python3 ../../kit/routine_anim.py --work W --listing build/game.lst --listing build/level1.lst \
+  --window 11550:36900-11550:38400 --out docs/img/routines/MissileTurn.gif --view buffer:7AE7:6x2:hex \
+  --range 7A80-85FF --pc 93D0-94F0 --pictures 40 \
+  --title 'MoveMissile $93F0 / MissileTurn $946B: l1 frame 11550, missile A (column 7, row 15) ends its launch list, finds slot 3 at column 9, row 8, and turns up'
 ```
 
 ![l1 frames 9320-9380: the missile pick-up taken, the first pairs fly](img/play/l1-missiles.gif)
@@ -708,18 +832,30 @@ flowchart TD
 Recording `l1`, frames 9320 to 9380, every second frame: `python3 ../../kit/screen_anim.py --work work/docs/rtC/l1
 --from 9320 --to 9380 --step 2 --width 1050 docs/img/play/l1-missiles.gif`.
 
-Worked example: MissileTimer counts down from `$20`. A new pair can leave only when it is 0 and both earlier missiles
-are gone, and only in FireBeam's chain: holding fire launches a pair whenever both are free. (With a free
-level 1 Force and fire held, `$9AF9` jumps over FireMissiles to FireBits.)
+Worked example, `l1` frame 11550 (the memory at the frames' starts): at 11550 missile A is at column 7, row 15, at the
+end of its launch list, state 1. Slot 3 (flags 1, one hit) is at column 9, row 8: 9 - 2 = 7, a match; the other
+missile is free with target 0. So +4 = 29 - 3 = 26 (`$1A`), and row 8 is above 15: state 2, the turn-up list. At 11551
+the record reads column 8, row 14; at 11557 row 13; the sample at 11590 has it at column 8, row 8, but slot 3 has
+moved on to column 6, row 10 by then: the missile climbs on, reaches row `$FF` at 11650 and is freed at its next step. The aim is
+taken once; an enemy that moves sideways is missed.
 
-Witness: `l1`, MissilesOn 1 from the sample at 9340; FireMissiles started `$06` 482 times over the recordings.
+Worked example, the fire key: a new pair can leave only when MissileTimer is 0 and both earlier missiles are gone,
+and only in FireBeam's chain. Holding fire launches pairs with no Force, a docked level 1 Force, or a level 3 Force
+(`$9B57-$9B63` jump to FireMissiles). With a free level 1 Force or any level 2 Force and fire held, `$9AF9` /
+`$9B12` jump over FireMissiles to FireBits: the pair leaves only on the release pass.
 
-**The point**: the missiles ride on the fire key: holding it keeps launching homing pairs, with no aiming.
+Witness: `l1`, MissilesOn 1 from the sample at 9340; FireMissiles started `$06` 482 times over the recordings. The
+turn: `l1` 11550:37609 runs `$94D7` (state 2) after `$94CC` stored slot 3's count; the samples of `l1-vars.jsonl`
+show states 2-5 from 9380 on (state 4 at 10070 and 10360, target slot 2).
+
+**The point**: the missiles ride on the fire key, and they home only once and only vertically: each picks the first
+live enemy one or two columns ahead, turns toward its row and flies straight up or down from there.
 
 ## 10.9 The shield
 
 ShipShield `$9577` runs every pass after MoveShip. While ShieldTimer is above 0 it counts it down and draws object
-`$62` around the ship, flipped on alternate frames. A new life starts with ShieldTimer `$20` (StartPlay `$8BAE`, its `$20` branch at `$8BD3`; `$38` on the first
+`$62` around the ship, flipped on even frames, its colour `$45`/`$46` alternating (the same byte patched into
+CellMark+`$0F`). A new life starts with ShieldTimer `$20` (StartPlay `$8BAE`, its `$20` branch at `$8BD3`; `$38` on the first
 play); the shield item sets it to `$30`.
 
 No test reads ShieldTimer but ShipShield. The nose test and the hit test run before it in MoveShip, and the enemy
@@ -729,7 +865,8 @@ shots test the ship's tags without it. So the shield is drawn, and the ship can 
 ShipShield:
     if ShieldTimer:
         ShieldTimer -= 1
-        draw object $62 at (ShipColumn - 2, ShipRow), flipped on odd frames
+        colour = $45 + (FrameCounter AND 1); CellMark[$0F] = colour
+        draw object $62 at (ShipColumn - 2, ShipRow), flipped when colour == $45 (even frames)
     ShieldControls()
 ```
 
@@ -788,7 +925,7 @@ they mean for play:
 | ---: | ---: | ---: | ---: | ---: | --- | --- |
 | 1 | 46 | 227 | 9 | 15 | 0, 4 | parts blown at MapColumn 115; a tail of 14 segments |
 | 2 | 46 | 248 | 24 | 1 | 0 | 16 hits, then BossDestroyed; heartbeat sounds `$10`-`$13` |
-| 3 | 42 | 50 | 7 | 9 | 28 | a big ship placed by 42 commands 3; BossDestroyed |
+| 3 | 42 | 50 | 7 | 9 | 28 | a big ship whose parts 42 commands 3 place long before the halt at 64 (27 at column 10, 13 at 37, one each at 54 and 72); BossDestroyed |
 | 4 | 54 | 203 | 7 | 10 | 2, 4 | movers set MapColumn |
 | 5 | 60 | 207 | 1 | 9 | 4 | movers set MapColumn |
 | 6 | 57 | 112 | 1 | 24 | 8 | 27 kinds of 12 hits |
@@ -809,7 +946,7 @@ BossDestroyed:
     WavesHalted = BossBlast = ScrollHalted = 1; BossBlastCount = $80
     ShipDies[3] = RET; ShieldControls = RET; RandomPtr = 0
     every nonzero SolidMap cell = $FF
-BossBlast (each pass, from the interrupt chain):
+BossBlastStep (MainLoop `$8680`, BossBlastOnce twice a pass):
     explode at the next NextRandom cell of $80 or more
     when the sweep reaches row 18: BossBlast = 0; LevelEndTimer = $3F
 ```
@@ -832,7 +969,7 @@ l_C18C:
 C18C  XOR A
 C18D  LD (BossBlast),A
 C190  LD A,$3F
-C192  LD (LevelEndTimer),A    ; the level ends 32 passes later
+C192  LD (LevelEndTimer),A    ; the level ends 31 passes later
 ```
 
 ```mermaid
@@ -1184,7 +1321,8 @@ acts when (timer - 1) AND `$1F` is 0: at once for `$41`, after 31 passes for `$3
 What it does depends on LevelDigit:
 
 - '8' (the first end of level 8): the digit becomes '9', the waves run again, and ShipDies is patched to `RET`. Play
-  goes on, the ship immortal;
+  goes on with the ship immortal and unarmed: ShieldControls stays `RET` (LevelEnd wrote it before the digit test)
+  until ClearPlayState, so the ship cannot fire, charge or detach either;
 - '9' (the next end): the digit becomes '0', then the normal end, so the loader loads level 1 (it adds 1 to the
   digit): the wrap;
 - any other: the normal end: ScrollRows, the stars off, the end tune `$15`, Wait256, LoadLevel (the next level from
@@ -1249,7 +1387,7 @@ flowchart TD
     L --> Q{"(timer - 1) AND $1F = 0?"}
     Q -- "no" --> L
     Q -- "yes" --> D{"LevelDigit"}
-    D -- "'8'" --> N["'9', waves on, ship immortal: play on"]
+    D -- "'8'" --> N["'9', waves on, ship immortal and unarmed: play on"]
     D -- "'9'" --> Z["'0'"]
     D -- "other" --> R["end tune $15, Wait256, LoadLevel"]
     Z --> R
@@ -1271,7 +1409,7 @@ Witness: `l1` from frame 14 600; level 8's three ends (MapColumns 56, 66 and 82,
 and `ending` frame 1808, SEARCHING FOR R TYPE LEVEL 1 after level 8
 ([ending-001808-searching-level1.png](img/play/ending-001808-searching-level1.png)).
 
-**The point**: there is no ending. Level 8's first end makes the ship immortal for the rest of the level, and its
+**The point**: there is no ending. Level 8's first end makes the ship immortal and unarmed for the rest of the level, and its
 second end loads level 1 with the score and the lives kept: the game wraps.
 
 ## 10.15 The notable features
@@ -1318,8 +1456,8 @@ flowchart LR
     E --> C
 ```
 
-Worked example: after level 8's first end the ship is immortal until the next ClearPlayState, which comes with the
-next level's start (level 1 after the wrap).
+Worked example: after level 8's first end the ship is immortal and unarmed (ShipDies+3 and ShieldControls both `RET`)
+until the next ClearPlayState, which comes with the next level's start (level 1 after the wrap).
 
 Witness: the `lN` recordings use the same trick from outside: their POKE `$91F2` = `$C9` makes ShipDies return at
 its first byte.
