@@ -1,0 +1,56 @@
+# menu: from c1's menu.szx (state frame 14657). ONE PLAYER -> TWO PLAYERS (SPACE on the line), CHOOSE CONTROL:
+# PLAYER ONE, KEYBOARD, the key table (a redefinition: each key pressed is the next control's key; Q, A, O, P and M
+# are given, then SPACE on EXIT), PLAYER TWO, KEYBOARD (its own table: H, J, K, M, B pressed, its defaults), saved as
+# menu-two-kb.szx; then CHOOSE CONTROL again: player 1 KEMPSTON, player 2 SINCLAIR; the menu left idle 2500 frames
+# Start: work/stage1/rec/c1/menu.szx
+0 ENTER
+4 -
+29 SPACE
+33 -
+63 ENTER
+67 -
+92 SPACE
+96 -
+126 SPACE
+130 -
+160 Q
+164 -
+189 A
+193 -
+218 O
+222 -
+247 P
+251 -
+276 M
+280 -
+305 SPACE
+309 -
+339 SPACE
+343 -
+373 H
+377 -
+402 J
+406 -
+431 K
+435 -
+460 M
+464 -
+489 B
+493 -
+518 SPACE
+522 -
+582 ENTER
+586 -
+611 ENTER
+615 -
+640 SPACE
+644 -
+674 ENTER
+678 -
+708 SPACE
+712 -
+742 ENTER
+746 -
+776 SPACE
+780 -
+3340 END

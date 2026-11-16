@@ -1,0 +1,51 @@
+# trails: from c1's menu.szx, the autoride bot's plan (work/stage1/ride/plan6b.json, no POKE): START with one
+# player on Kempston, each trail ridden with the jumps and wheelies the bot found, as far as the plan goes; then the
+# screens after it
+# Start: work/stage1/rec/c1/menu.szx
+0 SPACE
+4 -
+14 KR
+350 KR KF
+356 -
+391 KR KF
+397 -
+432 KR KF
+438 -
+473 KR KF
+485 -
+513 KR
+1101 KR KF
+1108 KR
+1360 KR KU
+1388 KR
+4937 KR KF
+4944 KR
+4951 KR KF
+4958 KR
+5259 KR KF
+5265 -
+5300 KR KF
+5306 -
+5341 KR KF
+5347 -
+5382 KR KF
+5394 -
+5422 KR
+5604 KR KF
+5611 KR
+5618 KR KF
+5625 KR
+5667 KR KF
+5674 KR
+5807 KR KF
+5814 KR
+5940 KR KU KF
+5947 KR
+5954 KR KF
+5961 KR
+5968 KR KF
+5975 KR
+6017 KL
+6038 KR
+6241 -
+7441 END

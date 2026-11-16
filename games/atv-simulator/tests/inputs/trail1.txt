@@ -1,0 +1,42 @@
+# trail1: from c1's menu.szx, START (one player, Kempston), trail 1 with ride_smart until the trail changes,
+# then trail 2 the same way, at most 9000 frames; then the screens after
+# Start: work/stage1/rec/c1/menu.szx
+0 SPACE
+4 -
+164 KR
+458 KR KF
+464 -
+499 KR KF
+505 -
+540 KR KF
+546 -
+581 KR KF
+593 -
+621 KR
+661 KR KU
+671 KR KD
+681 KR KF
+687 KR
+727 KR KU
+737 KR KD
+747 KR KF
+753 KR
+793 KR KU
+803 KR KD
+813 KR KF
+819 KR
+859 KR KU
+869 KR KD
+879 KR KF
+885 KR
+925 KR KU
+935 KR KD
+945 KR KF
+951 KR
+991 KR KU
+1001 KR KD
+1011 KR KF
+1017 KR
+1057 KL
+9170 -
+9970 END

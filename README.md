@@ -51,6 +51,7 @@ Each case is a full reverse of one game:
 | [MASK III: VENOM Strikes Back](games/mask-iii/README.md) | Gremlin Graphics, 1988 | 48K / 128K, tape | complete 2026-11-15 | a flick-screen platform shooter: Matt Trakker through 16 rooms of six screens each, four zones, masks switched by keys 1-4, AY music in RAM 4 |
 | [R-Type](games/r-type/README.md) | Electric Dreams Software (Bob Pape), 1988 | 48K / 128K, tape | complete 2026-11-15 | Bob Pape's conversion of Irem's horizontally scrolling shooter: the R-9 with the charged beam and the Force through eight levels, each loaded from tape by the game's own turbo loader behind SpeedLock 7 |
 | [Enduro Racer](games/enduro-racer/README.md) | Activision (Giga Games, Focus), 1987 | 48K / 128K, tape | complete 2026-11-16 | Sega's motorbike racer: five stages of a pseudo-3D road against the clock, riders, trucks and roadside obstacles, SpeedLock 2 on the tape |
+| [ATV Simulator](games/atv-simulator/README.md) | Code Masters (Tim Miller, music David Whittaker), 1987 | 48K, tape | in progress | a side-view race on a quad bike over six trails against the clock, one or two players on a split screen; standard ROM blocks |
 
 ### Software
 

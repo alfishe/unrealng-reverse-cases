@@ -1,0 +1,28 @@
+{
+  "image_cmd": [
+    "sh",
+    "-c",
+    "mkdir -p work/mkgame && python3 tools/image.py work/mkgame/original.bin"
+  ],
+  "image": "work/mkgame/original.bin",
+  "lo": "6338",
+  "hi": "FF78",
+  "device": "ZXSPECTRUM48",
+  "bases": {
+    "5": "4000",
+    "2": "8000",
+    "0": "C000"
+  },
+  "read_builds": [
+    "game"
+  ],
+  "ref_builds": [
+    [
+      "game",
+      "the first recording's game window"
+    ]
+  ],
+  "header": [
+    "; ATV Simulator, Code Masters 1987: the game image as the loader leaves it (tape block 7 at $6338)."
+  ]
+}
