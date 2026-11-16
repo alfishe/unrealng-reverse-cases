@@ -1,0 +1,20 @@
+# The annotations of tape block 2, the BASIC program "enduro" at PROG $5CCB-$5D97 (205 bytes): the source of
+# src/tape/basic1.asm (../../kit/mkgame.py --part src/tape/basic1.json). Format: ../../../../docs/ann-format.md.
+# Witness: c1 (work/stage1/rec/c1): the ROM loaded it by frame 646; PRINT USR entered $5D15 at frame 647.
+
+@module basic1 ; The first BASIC: colours, USR into Stage0, LOAD ""
+@about Line 0: PAPER 0: INK 0: BORDER 0: CLS: PRINT USR 6746931: LOAD "". The digits say 6746931; the hidden number is 23829 ($5D15, Stage0). Stage0 copies the bytes behind it to $FF98 and sets ERR_SP to $FFFA, so the error the second BASIC ends with is caught there. The second line, number 65152 with a length of 65535, is no line: the bytes after the end of the first, Stage0's code and its data, which LIST shows as junk.
+
+$5CCB b BasicLine0 ; Line 0: PAPER 0: INK 0: BORDER 0: CLS: PRINT USR "6746931" (23829): LOAD ""
+> The line number high byte first, the length (53) low byte first, the tokens, $0D. Read by the ROM's interpreter in c1; no machine code reads it.
+$5D00 BasicLine1 ; the bytes after line 0: number 65152, length 65535 (LIST stops at the end of the program)
+$5D0D StubBytes ; DI / PUSH HL / PUSH AF / EXX / CALL $5B14 / RET: bytes LIST shows, unused by Stage0
+$5D15 c Stage0 ; CALL Stage0Copy: its return address is the source of the copy
+> Entered by PRINT USR 23829. The CALL pushes $5D18, which Stage0Copy POPs as the copy's source.
+> Witness: L1 1 (c1).
+$5D1A c Stage0Copy ; Copy $5D18-$5D80 to $FF98-$FFFF, set ERR_SP to $FFFA and I, return to BASIC
+> Obfuscated with IXl/IXh moves and both register sets (known from the code; the result is in the c1 dump at frame 1574). Interrupts off; POP BC' takes $5D18; SP = $FFF8; RES 4,(IY+1) (FLAGS bit 4, the 128K ROM's mode flag); R = $A6, I = $3F; ERR_SP ($5C3D) = $FFFA; the 105 bytes $5D18-$5D80 go to $FF98-$FFFF. The copy leaves $1B76 (the ROM's STMT-RET) at $FFF8, which the RET takes back to the interpreter, and $1303 (MAIN-4, the error return) at $FFFA until the second BASIC pokes VARS there. The interpreter then runs LOAD "" for the second BASIC.
+> Witness: L1 1 (c1).
+$5D66 ; the copy loop, 105 bytes
+$5D74 b Stage0Data ; The copy's tail: at $FFF8 the return $1B76, at $FFFA the error return $1303
+$5D81 BasicTail ; past the copy: the rest of the 205 bytes, never read

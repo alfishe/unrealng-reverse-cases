@@ -1,0 +1,63 @@
+# The annotations of the loader $FCA3-$FFBF in its plain view (each byte as it runs): the source of
+# src/loader/loader.asm (../../kit/mkgame.py --part src/loader/loader.json). Format: ../../../../docs/ann-format.md.
+# Witness: c1 (work/stage1/rec/c1, a 48K from power-on, the TOSEC [SpeedLock 2] copy at signal speed): Chain1 wrote
+# $FCA3-$FFBF at frames 1575-1576, Chain2 and Chain3 ran at 1576-1577, the loader read the tape at 1621-11632.
+
+@module loader ; The SpeedLock 2 loader: two more decoders, the edge loader, its block table
+@about tools/speedlock2.py enciphers this view into the second BASIC's $5EFD-$6219 (src/tape/basic2.asm, LoaderTape). Chain1 there XORs those 797 bytes with R and copies them to $FCA3; Chain2 below XORs $FCD1-$FFBF with R once more, Chain3 runs 137 rounds of a running XOR over $FD2C-$FFBF keyed by the decoders' own bytes, checks the sum of $FF37-$FFBF and enters LoaderStart.
+@about LoaderStart probes the tape, loads the screen and then every block of BlockTable in one chain: each block ends with a 21-bit mark whose middle byte must be $7F, then the next row gives the address and the length. Each byte is stored as ((t XOR k) + a) AND 255, k and a the operands of Store ($FE04) or, for a block's last byte, StoreLast ($FE3C); blocks 9 and 10 load new k and a over them (tools/mktape.py). A failed check sets LoadFailed and the end wipes the RAM (Crash).
+
+$FCA3 c Chain2 ; Find its own address, then XOR $FCD1-$FFBF (751 bytes) with R in place and run into Chain3
+> Entered by Chain1's RET. The first nine bytes are filler the decoder keys on (Chain3 reads $FCA3-$FD2B as its keys). EX (SP),IY with $FCD1 pushed leaves the return address +$2E in DE and HL: $FCD1. BC = 751; A = I sets the parity flag from IFF2 (interrupts off: PO), so the CALL PO,$3008 into the ROM (EXX / INC E / JR NZ / INC D / EXX / RET) only burns M1 cycles that set R. Chain2Loop is Chain1's loop: LD A,R / XOR (HL) / LD (HL),A / LDI, leaving by RET PO when BC reaches 0 into the next code (the DEC SP pair puts the return address back).
+> R at the first byte is $8D: Chain1's last R plus 40 M1 cycles (tools/speedlock2.py r2_start, checked against the c1 dump at frame 1577 T 5842).
+> Witness: L1 1 (c1).
+$FCC7 Chain2Loop ; A = R XOR byte, stored; LDI on; RET PO at the end, RET PE back to the loop otherwise
+$FCD1 c Chain3 ; 137 rounds of a running XOR over $FD2C-$FFBF, check the sum of $FF37-$FFBF and wipe itself
+> C = the byte at $FFBF, B = 137 rounds, DE = $FCA3 (the keys: the decoders' own bytes). Each round: A = key - C, then for each of the 660 bytes $FD2C-$FFBF A = A XOR byte, byte = A; C = the last A. Then HL = the sum of the 137 bytes from $FF37; it must be $36FE. The 61 bytes $FCD1-$FD0D become $C9 (RET) and JP Z enters LoaderStart; a wrong sum falls into Crash.
+> Witness: L1 1 (c1).
+$FCF7 ; the sum of $FF37-$FFBF (137 bytes)
+$FD12 ; 61 RETs over Chain3's own code
+$FD20 c Crash ; Wipe the RAM from $0075 upward with zeros until the machine resets
+> IY from 0, LD (IY+$75),0 forever: the RAM is cleared, then the stack and this code, and the machine resets. Called by Chain3 on a bad sum, by LoaderStart when LoadFailed is set and by the end when the check byte leaves H nonzero.
+$FD2C c Edge ; Wait A*16 T-states, then count in B until the EAR bit changes; border stripes
+> In: A the delay, B the start count, C the last EAR level in bit 5. Out: carry set and B the count at the edge, the border flipped; carry clear (B wrapped to 0) on a timeout or BREAK (bit 0 of port $7FFE is SPACE: RRA puts it in carry... the ROM's LD-EDGE shape). The AND at $FD3F picks the border colours; LoadBlock and LeaderDone patch it ($FD40).
+> Witness: L1 9845859 (c1).
+$FD47 c LoadBlock ; Read a leader, the sync counts and the 6-bit mark $3A, then the bytes of the first block
+> In: IX the address, DE the length - 1. Reads leader edges until about 1045 * 256 T-states of tone, then the sync: four groups of short pulses (SyncCounts), each followed by a long one; then a 6-bit mark that must be %111010 ($3A) or Crash. IY = BlockTable, H = 0 (the running XOR of the tape bytes) and the bit loop at ByteLoop.
+> Witness: L1 2 (c1).
+$FD90 ; IY = SyncCounts: four groups of pulses, each count from -n to 0
+$FDC7 LeaderDone ; border AND $01, read the 6 mark bits into L
+$FDFC ; IY = BlockTable: the rows after the screen
+$FE04 c Store ; Store a byte ((L XOR $98) + $0B) and read the next one
+> The store of every byte but a block's last. Its operands k = $98 and a = $0B are the keys: block 9 loads $3E,$07 over $FE04-$FE05, making k = $07 for the blocks after it.
+> Witness: L1 47560 (c1).
+$FE18 ByteLoop ; read 8 bits into L (marker bit in L), H ^= L, loop while DE > 0
+$FE39 StoreLastJump ; JP to the last byte's store: StoreLast; the end handler $FF7A for the last block
+$FE3C c StoreLast ; Store a block's last byte, read the 21-bit end mark, take the next row of BlockTable
+> The last byte's store has its own keys ($98, $0B; block 10 loads $3E,$07,$AD,$C6). Then three 7-bit groups via ReadMarkBits; the middle one must be $7F or LoadFailed = $7F. The row: page (IY+4) out to $7FFD when nonzero (always $10 here: ROM 1, bank 0 on a 128K), IX = (IY+0), DE = (IY+2), IY += 5, back to ByteLoop. A row with page 0 (row 11) keeps IX, sets StoreLastJump to $FF7A and DE = $0E00: the last block, 3585 bytes, whose last byte is the check.
+> Witness: L1 11 (c1).
+$FEAD ; page 0: no OUT
+$FEB1 ReadMarkBit0 ; a long half pulse: a 0 bit
+$FEB3 c ReadMarkBits ; Read one mark bit into L by two edges (threshold $DB)
+> In: L with its marker, B the count. Loops by JP NC to $FEB1 for 0 bits; returns when the marker leaves L. Used by StoreLast for the 21-bit end mark.
+> Witness: L1 231 (c1).
+$FEC9 c ProbeTape ; Load block 5 to $A000, sample the EAR 255 times to $9000 and check the samples
+> Called by LoaderStart with IX = $A000, DE = $11: block 5 (the ROM bytes of $0032-$0042, a decoy later overwritten). Then 255 samples by SampleEar to $9000-$90FE and CheckSamples; a bad tape sets LoadFailed. A copy without the tone after block 5 fails here.
+> Witness: L1 1 (c1).
+$FEDE c SampleEar ; Count the EAR changes in 255 reads into E
+> Witness: L1 255 (c1).
+$FEFA c CheckSamples ; Sum the samples $9032-$9063 and $90CD-$90FE; LoadFailed = 1 unless both are in range
+> Sum 1 of the 50 bytes from $9032, sum 2 of the 50 bytes from $90CD. LoadFailed ($FF36) = 1 when sum 2 >= $0D00, or when sum 2 - sum 1 and sum 2 - sum 1 - 50 are both not negative; otherwise it stays 0.
+> Witness: L1 1 (c1).
+$FF36 b LoadFailed ; Nonzero after a bad end mark ($7F) or a bad probe (1); LoaderStart crashes on it
+$FF37 c LoaderStart ; Clear the attributes, probe the tape, load the screen and every block, then start the game
+> Interrupts off, SP = $FFFF, $5800-$5AFF zero (the screen black). ProbeTape loads block 5; then IX = $4000, DE = $1AFF and StoreLastJump = StoreLast: LoadBlock loads the screen and the rows of BlockTable after it. The tail $FF63-$FF79 is block 12's: it checks LoadFailed, sets IY = $5C3A, IM 1, HL' = $2758, R = 0 and jumps on (src/loader/tail.asm). This view holds the original tail with JP $6000.
+> Witness: L1 1 (c1).
+$FF63 ; from here on block 12 rewrites the tail (JP $A000 in its version)
+$FF7A c LoadEnd ; The end: drop $FF7B, border black; H (the XOR of the stream) 0: return to LoaderStart's tail, else Crash
+> LoadBlock pushes $FF7B first, so a timeout anywhere (RET NC) lands at $FF7B; the last block's StoreLastJump lands at $FF7A, whose POP DE drops that $FF7B. Either way H < 1 returns to the tail at $FF63, anything else is Crash. This is the plain view's version, known only from the code: block 14 rewrites $FF7A-$FF86 before the end (src/loader/tail.asm, TailEnd), and the 2 runs the witness counts are TailEnd's bytes (c1 frame 11632).
+> Witness: L1 2 (c1).
+$FF85 b SyncCounts ; The four sync groups: each the negated count of short pulses before a long one
+$FF89 b BlockTable 5 ; The blocks after the screen: address, length - 1, page; 10 rows and an end row
+> Row n is TZX block n + 6 (doc 03): $70C8 $11FF, $A0C8 $0FFF, $FE04 1 (the new Store key), $FE3C 3 (the new StoreLast key), $5BC8 $14FF, $FF63 $16 (the new tail), $B0C8 $4957, $FF7A $0C (the new end), $5B00 $3F (Mover), $82C8 $0FFF, then the end row (page 0): the last block follows at $92C8. The page is $10 in every real row.
+$FFBE b LoaderPad ; The two bytes after the table, inside the enciphered range ($FFBF is Chain3's first C)

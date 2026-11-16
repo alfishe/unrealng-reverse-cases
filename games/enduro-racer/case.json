@@ -14,15 +14,74 @@
     "0": "C000"
   },
   "read_builds": [
-    "game"
+    "stage1/rec/c1",
+    "stage1/rec/m128",
+    "stage1/rec/stages",
+    "stage1/rec/ctl",
+    "stage1/rec/crash",
+    "stage1/rec/twoplayer"
   ],
   "ref_builds": [
     [
-      "game",
-      "c1's play from the entry"
+      "stage1/rec/c1",
+      "c1: a 48K from power-on, the TOSEC [SpeedLock 2] copy at signal speed, the menu tour, stage 1 to the time out"
     ]
   ],
   "header": [
     "; Enduro Racer, Activision 1987: the game image at its entry $8000 (c1, frame 11646 T 14544), after SpeedLock 2 and its mover."
+  ],
+  "ref_load_end": {
+    "stage1/rec/c1": 11646,
+    "stage1/rec/m128": 11458
+  },
+  "no_roots": [
+    "stage1/rec/stages",
+    "stage1/rec/ctl",
+    "stage1/rec/crash",
+    "stage1/rec/twoplayer"
+  ],
+  "overwritten": [
+    [
+      "5B40",
+      "643C",
+      [
+        "stage1/rec/c1",
+        "stage1/rec/m128"
+      ]
+    ],
+    [
+      "FCA3",
+      "10000",
+      [
+        "stage1/rec/c1",
+        "stage1/rec/m128"
+      ]
+    ]
+  ],
+  "ref_parts": [
+    [
+      "src/tape/basic1.json",
+      "The first BASIC \"enduro\" and Stage0"
+    ],
+    [
+      "src/tape/basic2.json",
+      "The second BASIC \"end2\" and Chain1"
+    ],
+    [
+      "src/loader/loader.json",
+      "The loader: Chain2, Chain3 and the SpeedLock 2 loader"
+    ],
+    [
+      "src/loader/tail.json",
+      "The loader's end as blocks 12 and 14 rewrite it"
+    ]
+  ],
+  "no_entries": [
+    "stage1/rec/c1",
+    "stage1/rec/m128",
+    "stage1/rec/stages",
+    "stage1/rec/ctl",
+    "stage1/rec/crash",
+    "stage1/rec/twoplayer"
   ]
 }

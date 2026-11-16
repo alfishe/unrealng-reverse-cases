@@ -1,0 +1,189 @@
+# The original tape (orig/EnduroRacer.tzx.zip, "Enduro Racer.tzx"), block by block: tools/mktape.py writes it from
+# this list and the files tools/build.sh makes; the build compares the result with the original byte for byte. The
+# format is in tools/mktape.py; docs/03-build-and-load.md 3.1 has the blocks.
+#
+# The two BASIC programs load by the ROM. The second one's variables area holds the first decoder (Chain1 $621A,
+# src/tape/basic2.asm) and the loader as tools/speedlock2.py tape enciphers it (loader-tape.bin, from the plain view
+# src/loader/loader.asm). The SpeedLock 2 loader (LoadBlock $FD47) then reads the `sl` blocks: block 5 after its own
+# leader of 2100 T tones broken by 1140 / 740 T pulse pairs and a 6-bit sync 111010; the loading screen after the
+# same leader with 1163 / 711 T pairs; then each block after a mark of 21 bits at zero 875 T / one 1750 T
+# (00000, eleven 1s, 00000), read at zero 565 T / one 1130 T with no leader. Where each block after the screen goes
+# is the loader's table at $FF89 (BlockTable, 5 bytes a row: the address, the length less one, the $7FFD value);
+# the last block follows on from the one before it.
+version 1 1
+header 846 program enduro basic1.bin 0 186
+# the first BASIC "enduro" (src/tape/basic1.asm): one line, its USR enters Stage0 at $5D15
+rom 1763 basic1.bin
+header 871 program end2 basic2.bin 0 1359
+# the second BASIC "end2" (src/tape/basic2.asm): five lines and, in its variables, Chain1 and the enciphered loader
+rom 3710 basic2.bin
+group SpeedLock 2 Block 1
+tone 2100 234
+pulses 1140,740
+tone 2100 226
+pulses 1140,740
+tone 2100 230
+pulses 1140,740
+tone 2100 232
+pulses 1140,740
+tone 2100 234
+pulses 1140,740
+tone 2100 226
+pulses 1140,740
+tone 2100 230
+pulses 1140,740
+tone 2100 232
+pulses 1140,740
+tone 2100 234
+pulses 1140,740
+tone 2100 226
+pulses 1140,740
+tone 2100 230
+pulses 1140,740
+tone 2100 232
+pulses 1140,740
+tone 2100 234
+pulses 1140,740
+tone 2100 226
+pulses 1140,740
+tone 2100 230
+pulses 1140,740
+tone 2100 232
+pulses 1140,740
+tone 2100 234
+pulses 1140,740
+tone 2100 226
+pulses 1140,740
+tone 2100 230
+pulses 1140,740
+tone 2100 232
+pulses 1140,740
+tone 2100 234
+pulses 1140,740
+tone 2100 226
+pulses 1140,740
+tone 2100 230
+pulses 1140,740
+tone 2100 232
+pulses 1140,740
+tone 2100 234
+pulses 1140,740
+tone 2100 226
+pulses 1140,740
+tone 2100 230
+pulses 1140,740
+tone 2100 232
+pulses 1140,740
+tone 2100 234
+pulses 1140,740
+tone 2100 226
+pulses 1140,740
+tone 2100 230
+pulses 1140,740
+tone 2100 232
+pulses 3150,3150,1130,1130,1130,1130,1130,1130,565,565,1130,1130,565,565
+# block 5, a decoy: 17 bytes of the ROM ($0032-$0042) to $A000 and a check byte; ProbeTape $FEC9 then samples the
+# 1537 ms pause after it
+sl 565 1130 8 1537 $A000 hex:615CE5C39E16F5E52A785C2322785C7CB5 check fresh
+group-end
+group SpeedLock 2 Block 2
+tone 2100 230
+pulses 1163,711
+tone 2100 226
+pulses 1163,711
+tone 2100 230
+pulses 1163,711
+tone 2100 232
+pulses 1163,711
+tone 2100 234
+pulses 1163,711
+tone 2100 226
+pulses 1163,711
+tone 2100 230
+pulses 1163,711
+tone 2100 232
+pulses 1163,711
+tone 2100 234
+pulses 1163,711
+tone 2100 226
+pulses 1163,711
+tone 2100 230
+pulses 1163,711
+tone 2100 232
+pulses 1163,711
+tone 2100 234
+pulses 1163,711
+tone 2100 226
+pulses 1163,711
+tone 2100 230
+pulses 1163,711
+tone 2100 232
+pulses 1163,711
+tone 2100 234
+pulses 1163,711
+tone 2100 226
+pulses 1163,711
+tone 2100 230
+pulses 1163,711
+tone 2100 232
+pulses 1163,711
+tone 2100 234
+pulses 1163,711
+tone 2100 226
+pulses 1163,711
+tone 2100 230
+pulses 1163,711
+tone 2100 232
+pulses 1163,711
+tone 2100 234
+pulses 1163,711
+tone 2100 226
+pulses 1163,711
+tone 2100 230
+pulses 1163,711
+tone 2100 232
+pulses 1163,711
+tone 2100 234
+pulses 1163,711
+tone 2100 226
+pulses 1163,711
+tone 2100 230
+pulses 1163,711
+tone 2100 232
+pulses 3150,3150,1130,1130,1130,1130,1130,1130,565,565,1130,1130,565,565
+# the loading screen to $4000-$5AFF
+sl 565 1130 8 0 $4000 res/screens/loading.scr last fresh
+pulses 875,875,875,875,875,875,875,875,875,875,1750,1750,1750,1750,1750,1750,1750,1750,1750,1750,1750,1750,1750,1750,1750,1750,1750,1750,1750,1750,1750,1750,875,875,875,875,875,875,875,875,875,875
+# the game $76A8-$88A7, loaded at $70C8 (Mover $5B00 moves $5BC4-$FA1F up by $5E0)
+sl 565 1130 8 0 $70C8 game.bin@5B00:76A8:88A8 last
+pulses 875,875,875,875,875,875,875,875,875,875,1750,1750,1750,1750,1750,1750,1750,1750,1750,1750,1750,1750,1750,1750,1750,1750,1750,1750,1750,1750,1750,1750,875,875,875,875,875,875,875,875,875,875
+# the game $A6A8-$B6A7, loaded at $A0C8
+sl 565 1130 8 0 $A0C8 game.bin@5B00:A6A8:B6A8 last
+pulses 875,875,875,875,875,875,875,875,875,875,1750,1750,1750,1750,1750,1750,1750,1750,1750,1750,1750,1750,1750,1750,1750,1750,1750,1750,1750,1750,1750,1750,875,875,875,875,875,875,875,875,875,875
+# the key of Store: LD A,$07 at $FE04 (was LD A,$98)
+sl 565 1130 8 0 $FE04 hex:3E07 last
+pulses 875,875,875,875,875,875,875,875,875,875,1750,1750,1750,1750,1750,1750,1750,1750,1750,1750,1750,1750,1750,1750,1750,1750,1750,1750,1750,1750,1750,1750,875,875,875,875,875,875,875,875,875,875
+# the key of StoreLast: LD A,$07 / XOR L / ADD A, at $FE3C (was LD A,$98)
+sl 565 1130 8 0 $FE3C hex:3E07ADC6 last
+pulses 875,875,875,875,875,875,875,875,875,875,1750,1750,1750,1750,1750,1750,1750,1750,1750,1750,1750,1750,1750,1750,1750,1750,1750,1750,1750,1750,1750,1750,875,875,875,875,875,875,875,875,875,875
+# the game $61A8-$76A7, loaded at $5BC8
+sl 565 1130 8 0 $5BC8 game.bin@5B00:61A8:76A8 last
+pulses 875,875,875,875,875,875,875,875,875,875,1750,1750,1750,1750,1750,1750,1750,1750,1750,1750,1750,1750,1750,1750,1750,1750,1750,1750,1750,1750,1750,1750,875,875,875,875,875,875,875,875,875,875
+# the loader's end at $FF63-$FF79 (src/loader/tail.asm): JP $A000 becomes the game's start
+sl 565 1130 8 0 $FF63 tail.bin@FF63:FF63:FF7A last
+pulses 875,875,875,875,875,875,875,875,875,875,1750,1750,1750,1750,1750,1750,1750,1750,1750,1750,1750,1750,1750,1750,1750,1750,1750,1750,1750,1750,1750,1750,875,875,875,875,875,875,875,875,875,875
+# the game $B6A8-$FFFF, loaded at $B0C8
+sl 565 1130 8 0 $B0C8 game.bin@5B00:B6A8:10000 last
+pulses 875,875,875,875,875,875,875,875,875,875,1750,1750,1750,1750,1750,1750,1750,1750,1750,1750,1750,1750,1750,1750,1750,1750,1750,1750,1750,1750,1750,1750,875,875,875,875,875,875,875,875,875,875
+# the end of every block at $FF7A-$FF86 (src/loader/tail.asm): H = 0 enters Mover $5B00, else JP $0000
+sl 565 1130 8 0 $FF7A tail.bin@FF63:FF7A:FF87 last
+pulses 875,875,875,875,875,875,875,875,875,875,1750,1750,1750,1750,1750,1750,1750,1750,1750,1750,1750,1750,1750,1750,1750,1750,1750,1750,1750,1750,1750,1750,875,875,875,875,875,875,875,875,875,875
+# Mover $5B00 and the glyphs after it, $5B00-$5B3F
+sl 565 1130 8 0 $5B00 game.bin@5B00:5B00:5B40 last
+pulses 875,875,875,875,875,875,875,875,875,875,1750,1750,1750,1750,1750,1750,1750,1750,1750,1750,1750,1750,1750,1750,1750,1750,1750,1750,1750,1750,1750,1750,875,875,875,875,875,875,875,875,875,875
+# the game $88A8-$98A7, loaded at $82C8
+sl 565 1130 8 0 $82C8 game.bin@5B00:88A8:98A8 last
+pulses 875,875,875,875,875,875,875,875,875,875,1750,1750,1750,1750,1750,1750,1750,1750,1750,1750,1750,1750,1750,1750,1750,1750,1750,1750,1750,1750,1750,1750,875,875,875,875,875,875,875,875,875,875
+# the game $98A8-$A6A7, loaded at $92C8 (after the table's end row: the address goes on), and the check byte
+sl 565 1130 8 0 $92C8 game.bin@5B00:98A8:A6A8 check
+group-end

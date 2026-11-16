@@ -1,0 +1,42 @@
+{
+  "about": "The loader $FCA3-$FFBF as it runs: the decoders Chain2 and Chain3 and the SpeedLock 2 loader",
+  "image_cmd": [
+    "sh",
+    "-c",
+    "test -f work/parts/game-5b00.bin || python3 tools/parts.py"
+  ],
+  "image": "work/parts/loader-fca3.bin",
+  "org": "FCA3",
+  "ann": "src/loader/loader.ann",
+  "top": "loader",
+  "bin": "loader.bin",
+  "dest": "src/loader",
+  "device": "ZXSPECTRUM48",
+  "mode": "blocks",
+  "pages": [
+    5,
+    2,
+    0
+  ],
+  "header": [
+    "; Enduro Racer, Activision 1987: the loader $FCA3-$FFBF as each byte runs (the plain view; tools/speedlock2.py tape",
+    "; enciphers it into the second BASIC's $5EFD-$6219)."
+  ],
+  "l1": [
+    {
+      "path": "work/stage1/rec/c1/l1.json",
+      "lo": "FCA3",
+      "hi": "FFC0",
+      "reads": false
+    }
+  ],
+  "data_entries": "stop",
+  "work": "work/stage2/mkloader",
+  "ref_builds": [
+    [
+      "stage1/rec/c1",
+      "c1: a 48K from power-on, the TOSEC [SpeedLock 2] copy at signal speed, the menu, stage 1 to the time out"
+    ]
+  ],
+  "other_builds": []
+}

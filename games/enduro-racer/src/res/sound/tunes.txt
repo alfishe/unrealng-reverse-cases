@@ -1,0 +1,175 @@
+# The AY tune streams ($66CA-$67FA, PlayChannel). One command a line:
+#   LEN NOTE      a note: LEN (0-199) interrupts, NOTE in hex: low nibble 1-11 the semitone (NoteTable word n),
+#                 0 a rest; high nibble the octave (how many times the period is halved, plus the channel's transpose)
+#   repeat N      ($FE N) the commands up to `end` N times;   end   ($FD)
+#   call $ADDR    ($FC ADDR) the phrase at ADDR, back at `return` ($FB)
+#   restart       ($C9) from the channel's start again, and clear TuneMark;   mark   ($CA) set TuneMark
+#   byte XX       any other byte
+# `stream $ADDR NAME` lines mark where a stream or a phrase starts (checked by the build).
+stream $66CA Tune2A
+  repeat 3
+  call $66E9
+  call $66F1
+  call $66F9
+  end
+  call $66E9
+  call $66F1
+  repeat 6
+  8 04
+  4 04
+  end
+  199 00
+  mark
+  199 00
+  restart
+stream $66E9 Phrase66E9
+  repeat 4
+  8 04
+  4 04
+  end
+  return
+stream $66F1 Phrase66F1
+  repeat 4
+  8 02
+  4 02
+  end
+  return
+stream $66F9 Phrase66F9
+  repeat 8
+  8 04
+  4 04
+  end
+  return
+stream $6701 Tune1A
+  repeat 4
+  call $66E9
+  call $66F1
+  call $66F9
+  end
+  repeat 10
+  8 04
+  4 04
+  8 14
+  4 14
+  end
+  repeat 6
+  4 02
+  end
+  4 04
+  199 00
+  mark
+  199 00
+  restart
+stream $6725 Tune2B
+  call $6760
+  call $6779
+  call $6760
+  4 09
+  8 07
+  4 00
+  8 04
+  24 00
+  4 04
+  8 07
+  4 09
+  call $6760
+  call $6779
+  8 0B
+  13 00
+  8 09
+  8 00
+  8 07
+  8 12
+  27 00
+  4 0B
+  8 16
+  8 14
+  68 00
+  199 00
+  mark
+  199 00
+  restart
+stream $6760 Phrase6760
+  8 0B
+  13 00
+  8 09
+  8 00
+  8 07
+  8 06
+  27 00
+  4 02
+  8 04
+  4 06
+  8 06
+  26 00
+  return
+stream $6779 Phrase6779
+  8 07
+  4 00
+  4 09
+  8 07
+  4 00
+  8 06
+  8 04
+  4 00
+  4 04
+  8 07
+  4 09
+  return
+stream $6790 Tune1B
+  repeat 2
+  16 0B
+  32 00
+  16 09
+  16 00
+  10 07
+  12 09
+  8 0B
+  34 00
+  8 0B
+  4 0B
+  8 09
+  4 09
+  8 07
+  4 07
+  8 06
+  4 06
+  8 0B
+  40 00
+  8 09
+  24 00
+  11 12
+  11 12
+  8 14
+  31 00
+  11 02
+  11 04
+  29 00
+  end
+  repeat 2
+  8 0B
+  4 0B
+  8 09
+  4 09
+  8 07
+  4 07
+  8 06
+  4 02
+  end
+  8 0B
+  4 0B
+  8 09
+  4 09
+  8 07
+  4 02
+  8 12
+  12 14
+  88 00
+  repeat 6
+  4 12
+  end
+  8 14
+  195 00
+  mark
+  199 00
+  restart

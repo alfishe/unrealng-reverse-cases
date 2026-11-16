@@ -1,0 +1,95 @@
+address,width,rows,x,y,users
+$B306,3,96,0,0,object type 5 size 0
+$B426,2,77,26,0,object type 5 size 1
+$B4C0,8,29,44,0,object type 4 size 0
+$B5A8,6,22,110,0,object type 4 size 1
+$B62C,5,19,160,0,object type 4 size 2
+$B68B,4,14,202,0,object type 4 size 3
+$B6C3,3,11,0,98,object type 4 size 4
+$B6E4,3,10,26,98,object type 4 size 5
+$B702,6,101,52,98,object type 3 size 0
+$B960,5,81,102,98,object type 3 size 1
+$BAF5,4,65,144,98,object type 3 size 2
+$BBF9,3,50,178,98,object type 3 size 3
+$BC8F,3,41,204,98,object type 3 size 4
+$BD0A,2,33,230,98,object type 3 size 5
+$BD4C,2,26,0,201,object type 3 size 6
+$BD80,2,20,18,201,object type 3 size 7
+$BDA8,6,65,36,201,object type 6 size 0
+$BF2E,5,52,86,201,object type 6 size 1
+$C032,4,42,128,201,object type 6 size 2
+$C0DA,3,33,162,201,object type 6 size 3
+$C13D,2,26,188,201,object type 6 size 4
+$C171,2,22,206,201,object type 6 size 5
+$C19D,2,17,224,201,object type 6 size 6
+$C1BF,3,24,0,268,object type 1 size 0
+$C207,2,19,26,268,object type 1 size 1
+$C22D,2,15,44,268,object type 1 size 2
+$C24B,2,12,62,268,object type 1 size 3
+$C263,1,9,80,268,object type 1 size 4
+$C26C,1,8,90,268,object type 1 size 5
+$C274,1,7,100,268,object type 1 size 6
+$C27B,5,107,110,268,object type 2 size 0
+$C492,4,85,152,268,object type 2 size 1
+$C5E6,3,68,186,268,object type 2 size 2
+$C6B2,3,54,212,268,object type 2 size 3
+$C754,2,43,238,268,object type 2 size 4
+$C7AA,2,34,0,377,object type 2 size 5
+$C7EE,2,29,18,377,object type 2 size 6
+$C828,1,22,36,377,object type 2 size 7
+$C83E,1,17,46,377,object type 2 size 8
+$C84F,25,26,56,377,object type 0 size 0
+$CAD9,20,21,0,413,object type 0 size 1
+$CC7D,16,16,0,436,object type 0 size 2
+$CD7D,12,12,130,436,object type 0 size 3
+$CE0D,10,10,0,454,object type 0 size 4
+$CE71,8,8,82,454,object type 0 size 5
+$CEB1,6,6,148,454,object type 0 size 6
+$CED5,5,5,198,454,object type 0 size 7
+$CEEE,6,56,0,466,rider band 0 pose 4
+$D03E,5,45,50,466,rider band 1 pose 4
+$D11F,4,36,92,466,rider band 2 pose 4
+$D1AF,3,29,126,466,rider band 3 pose 4
+$D206,3,23,152,466,rider band 4 pose 4
+$D24B,2,18,178,466,rider band 5 pose 4
+$D26F,2,14,196,466,rider band 6 pose 4
+$D28B,3,48,214,466,rider band 0 pose 3; bike pose 6
+$D31B,3,43,0,524,rider band 1 pose 3
+$D39C,3,36,26,524,rider band 2 pose 3; rider band 3 pose 0
+$D408,2,28,52,524,rider band 3 pose 3; rider band 4 pose 0
+$D440,2,21,70,524,rider band 4 pose 3; rider band 5 pose 0
+$D46A,2,17,88,524,rider band 5 pose 3; rider band 6 pose 0
+$D48C,1,14,106,524,rider band 6 pose 3
+$D49A,4,47,116,524,rider band 0 pose 2; bike pose 5
+$D556,3,42,150,524,rider band 1 pose 2
+$D5D4,3,34,176,524,rider band 2 pose 2
+$D63A,2,28,202,524,rider band 3 pose 2
+$D672,2,22,220,524,rider band 4 pose 2
+$D69E,2,18,238,524,rider band 5 pose 2
+$D6C2,2,14,0,573,rider band 6 pose 2
+$D6DE,5,46,18,573,rider band 0 pose 1; bike pose 4
+$D7C4,5,41,60,573,rider band 1 pose 1
+$D891,4,34,102,573,rider band 2 pose 1
+$D919,3,27,136,573,rider band 3 pose 1
+$D96A,3,22,162,573,rider band 4 pose 1
+$D9AC,2,18,188,573,rider band 5 pose 1
+$D9D0,2,14,206,573,rider band 6 pose 1
+$D9EC,6,44,0,621,bike pose 3
+$DAF4,3,83,50,621,bike pose 2
+$DBED,3,58,76,621,bike pose 0
+$DC9B,3,60,102,621,rider band 0 pose 0; bike pose 1
+$DD4F,3,54,128,621,rider band 1 pose 0
+$DDF1,3,44,154,621,rider band 2 pose 0
+$DE75,1,13,180,621,bike pose 6 wheels
+$DE82,2,12,190,621,bike pose 5 wheels
+$DE9B,2,13,208,621,bike pose 4 wheels
+$DEB5,2,10,226,621,bike pose 3 wheels
+$DEC9,1,10,244,621,bike pose 0 wheels
+$DED3,5,20,0,706,splash 1
+$DF37,3,15,42,706,splash 2
+$DF64,4,12,68,706,dust 1
+$DF94,4,14,102,706,dust 2
+$DFCC,7,55,136,706,bike pose 7
+$E14D,6,41,194,706,bike pose 8
+$E243,5,25,0,763,bike pose 9
+bytes,$DE9A,$00,,,held by no descriptor

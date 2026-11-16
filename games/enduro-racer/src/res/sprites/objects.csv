@@ -1,0 +1,16 @@
+address,width,rows,x,y,users
+$6BE8,2,61,0,0,object type 5 size 2
+$6C62,2,49,18,0,object type 5 size 3
+$6CC4,1,35,36,0,object type 5 size 4
+$6CE7,1,27,46,0,object type 5 size 5
+$6D02,1,22,56,0,object type 5 size 6
+$6D18,1,15,66,0,object type 5 size 7
+$6D27,1,13,76,0,object type 5 size 8
+$6D34,8,91,86,0,object type 7 size 0
+$700C,7,73,152,0,object type 7 size 1
+$720B,6,58,0,93,object type 7 size 2
+$7367,5,48,50,93,object type 7 size 3
+$7457,4,37,92,93,object type 7 size 4
+$74EB,3,29,126,93,object type 7 size 5
+$7542,3,24,152,93,object type 7 size 6
+$758A,2,19,178,93,object type 7 size 7

@@ -1,0 +1,40 @@
+# Stage 2: 23 segments, 2944 units; the track from 4096 to 7040
+# segments: one token a segment of 128 units, HILL.CURVE.DIR (hill 0 flat, 1-3 HillProfiles; curve 0
+#   straight, 1-3 the bend; DIR CurveDir 0 or 1); a suffix /XX keeps bits 6-7 other than $80 (none); the build
+#   sets bit 5 on the stage's last segment. track: the commands (patterns.txt has the format), the number after
+#   # the distance from the race's start.
+segments
+  0.3.0 2.3.0 2.0.0 0.1.0 1.1.1 1.0.1 1.3.1 1.3.1
+  0.0.1 2.0.1 2.0.1 2.0.1 0.3.1 0.3.1 3.0.0 3.3.0
+  0.3.0 1.0.0 1.1.0 1.1.0 1.0.0 0.0.0 0.0.0
+track
+  var 6  # 4242
+  call $5FFE 274  # 4242
+  call $5F79 160  # 4516
+  call $5FEE 192  # 4676
+  obj 6 4 8  # 4868
+  obj 6 8 -14  # 4876
+  call $5FFE 64  # 4892
+  call $605D forever  # 4956
+  call $5FFE 96  # 5070
+  call $5FF6 184  # 5166
+  call $5F10 forever  # 5350
+  call $5FFE 256  # 5462
+  obj 5 4 70  # 5718
+  call $5F79 192  # 5726
+  call $6014 forever  # 5918
+  call $5FFE 204  # 6048
+  obj 6 4 -24  # 6252
+  obj 6 2 10  # 6260
+  obj 1 4 -18  # 6264
+  obj 6 8 4  # 6272
+  obj 5 6 2  # 6288
+  call $5F79 64  # 6300
+  obj 5 4 -72  # 6364
+  call $5F69 64  # 6372
+  call $605D forever  # 6436
+  call $5FEE 154  # 6550
+  obj 0 0 2  # 6704
+  call $5FEE 150  # 6704
+  call $6014 forever  # 6854
+  call $5F79 282  # 6984

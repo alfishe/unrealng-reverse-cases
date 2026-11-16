@@ -1,0 +1,6 @@
+throttle_row,wheelie_row,left_row,right_row,brakes_row,throttle_mask,wheelie_mask,left_mask,right_mask,brakes_mask
+$FB,$FD,$DF,$DF,$7F,$01,$01,$02,$01,$01
+$00,$00,$00,$00,$00,$08,$04,$02,$01,$10
+$EF,$EF,$EF,$EF,$EF,$02,$04,$10,$08,$01
+$F7,$F7,$F7,$F7,$F7,$08,$04,$01,$02,$10
+$EF,$EF,$F7,$EF,$EF,$08,$10,$10,$04,$01

@@ -1,0 +1,27 @@
+# The annotations of tape block 4, the BASIC program "end2" at PROG $5CCB-$63B4 (1770 bytes, VARS $621A): the source
+# of src/tape/basic2.asm (../../kit/mkgame.py --part src/tape/basic2.json). Format: ../../../../docs/ann-format.md.
+# Witness: c1 (work/stage1/rec/c1): the ROM loaded it by frame 1555; the ROM's POKE wrote $FFFA-$FFFB at frames
+# 1557-1562; the error entered $621A and Chain1 ran in frames 1575-1576 (work/stage2/loader dumps c1-1574, c1-1576).
+
+@module basic2 ; The second BASIC: lines that aim the error return at VARS, and Chain1 in the variables area
+@about Five lines numbered 0 and a sixth that is no line. The digits LIST shows differ from the hidden numbers where it matters: line 4 shows PEEK 23633 and 23647 but uses 23613 (ERR_SP) and 23627 (VARS), so it pokes VARS ($621A) into the word ERR_SP points at ($FFFA, set by the first BASIC's Stage0). The interpreter then reaches the sixth line, number 40079 with a length of 42626, whose bytes are LoaderTape: the error it raises returns through $FFFA into Chain1 at VARS.
+@about Chain1 is obfuscated (filler instructions between the real ones): it wipes $63E0-$FF42 with LDIR, sets IM 2 with I from the first stage, and runs the R loop Chain1Loop over the 797 bytes of LoaderTape, XORing each with R and copying it to $FCA3; the last RET PO enters Chain2 at $FCA3 (src/loader/loader.asm). LoaderTape is assembled from loader-tape.bin, which tools/build.sh makes from the loader's plain view with tools/speedlock2.py tape.
+
+$5CCB b BasicLine0a ; Line 0: REM "Protected by SPEEDLOCK" in colour codes (length 128)
+> Read by the ROM's interpreter in c1; no machine code reads any line.
+$5D4F b BasicLine0b ; Line 0: BORDER 0: PAPER 0: INK 0: BRIGHT 1: CLS: POKE 23624,0 (BORDCR)
+$5D92 b BasicLine0c ; Line 0: POKE (PEEK 23641+256*PEEK 23642),PEEK 23649 and +1,PEEK 23650: E_LINE's word = WORKSP
+$5E16 b BasicLine0d ; Line 0: the same POKEs shown as 23633/23634/23647/23648, hidden 23613/23614/23627/23628: (ERR_SP) = VARS
+> The shown digits are decoys; the five-byte numbers the interpreter uses are ERR_SP (23613) and VARS (23627). ERR_SP is $FFFA (Stage0), VARS is $621A: the ROM's POKE writes $1A,$62 to $FFFA-$FFFB (c1 frames 1557-1562).
+$5E9A b BasicLine0e ; Line 0: POKE 23662,PEEK 23618: POKE 23663,PEEK 23619: POKE 23664,PEEK 23621 (OLDPPC, OSPPC = NEWPPC, NSPPC)
+$5EFC b BasicLine6 ; The sixth line's number high byte ($9C): 40079 with LoaderTape's first byte
+$5EFD b LoaderTape ; The loader as the tape holds it (797 bytes): Chain1 XORs it with R into $FCA3-$FFBF
+> src/loader/loader.asm is its plain view; tools/speedlock2.py tape turns that view back into these bytes, and tools/build.sh checks the whole tape against the original. Read by Chain1Loop in c1 (frames 1575-1576); the interpreter also reads its first bytes as the sixth line's header and raises the error.
+@res tape/loader-tape.bin
+$621A c Chain1 ; Wipe $63E0-$FF42, IM 2, then XOR LoaderTape with R into $FCA3 and enter it
+> Entered from the ROM's error handling through ERR_SP: the word at $FFFA is VARS. Real steps between filler: A = I (from Stage0, $3F); LDIR clears $63E0-$FF42 (the RAM the game will use, and any stale loader); IM 2; HL = $5EFD, DE = $FCA3, BC = 797, $FCA3 pushed under the loop's own return; R set so that the first LD A,R reads $CD (the value the data needs; the count of M1 cycles before it is known only from the code, because the LDIR's length depends on registers the ROM left).
+> Witness: L1 1 (c1).
+$6272 ; the LDIR that wipes $63E0-$FF42
+$62B4 Chain1Loop ; A = R XOR byte, stored in place; LDI to $FCA3+; RET PO at the end, RET PE back to the loop
+$62BE b Chain1Tail ; The bytes after the loop: a few junk bytes and the SPEEDLOCK credit, never run or read
+> "SPEEDLOCK Protection System (c) DJL Software & D. Aubrey Jones 1984 - Tel:0793 724317 * Government Health Warning - Attempting to crack SPEEDLOCK can damage your sanity! *" then repeated fragments of the same bytes up to the block's end. A leftover the loader never reads (c1: no read after the ROM's load).

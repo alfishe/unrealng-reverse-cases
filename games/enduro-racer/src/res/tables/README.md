@@ -1,0 +1,21 @@
+# tables
+
+CSV files have a header line; `$XX` hex, plain numbers decimal. `tail` lines hold bytes past the last whole record.
+
+| File | Entry | Records |
+| --- | --- | --- |
+| `controls.csv` | `ControlTable` `$8323-$8354` | 5 control methods: half-row byte and mask of THROTTLE, WHEELIE, LEFT, RIGHT, BRAKES (the last record's 3 masks are also KeyNamesBase's bytes) |
+| `hiscores.csv` | `HiScores` `$8DE2-$8E4F` | 5 rows: score (7 digits), name (8), total time |
+| `records.csv` | `InitialRecords` `$8003-$800F` | 5 stage records (BCD seconds, hundredths), then the total as a tail |
+| `perspective.csv` | `Perspective` `$7800` | each of 128 road rows' depth |
+| `edges.csv`, `edges2.csv` | `EdgePatterns` `$7880`, `EdgePatterns2` `$7A80` | 128 three-byte road edge patterns each |
+| `curve.csv` | `CurveTable` `$7A00` | each row's bend |
+| `hills.csv` | `HillProfiles` `$7D80` | three hill profiles of 128 rows, as columns |
+| `rowscale.csv` | `RowScale` `$7F00` | per row: scale (`$7F00`), half width (`$7F80`), as columns |
+| `countglyphs.png` | `CountGlyphs` `$7C00` | G, O (8 lines), 1, 2, 3 (10 lines), side by side |
+| `objects.csv` | `ObjectList4` `$976B-$98EE` | 8 lists (type order 4 5 1 6 2 0 3 7): a `head` (farthest row, aligned row), then `entry` lines (row threshold, y offset, rows, width, address) |
+| `riders.csv` | `RiderSprites` `$917E-$9210` | 7 distance bands: threshold, 5 poses (rows +128 mirror, width +128 aligned, address) |
+| `riderstarts.csv` | `RiderStarts` `$9111-$9126` | x, acceleration, top speed, hill pose; the sixth rider's last 2 bytes are BikePoses' `$9127-$9128`, so a tail |
+| `stages.csv` | `StageTable` `$9E67` | 5 stages: horizon address, lines, the line under it |
+| `stageparams.csv` | `StageParams` `$A187` | 5 stages: road routine, row builder, off-road routine, ground attribute, copy mode (0 for all), 2 unused bytes |
+| `collisions.csv` | `CollisionSizes` `$A1B9` | 8 object types: half width, height |
