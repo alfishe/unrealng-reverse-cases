@@ -32,7 +32,7 @@ import kitlib as K  # noqa: E402  (lab put the kit on the path)
 TAPE = os.path.join(CASE, 'work', 'media', 'ATV Simulator.tzx')
 
 CLOCK = 0xD6C9         # the clock, three ASCII digits (seconds tens, units, tenths); $EB53 adds 1 to the tenths
-FUEL = 0xD77D          # the current player's fuel (31 at the start, less with distance); $D719 player 1's copy
+FUEL = 0xD77D          # the current player's fuel's high byte (31 at the start, less with distance); $D719 player 1's copy
 POS = 0xD78E           # the current player's distance along the course, a word (8.8); $D72A player 1's copy
 # The POKEs of ZXDB's .pok (address, the POKE's byte, the image's byte); the names are the .pok's
 POKES = {
@@ -421,7 +421,7 @@ def plan_trail1(r):
 
 def plan_fuel(r):
     """fuel: from c1's menu.szx, START (one player, Kempston), the clock stopped by the ZXDB POKE 60250,0 (`$EB5A`,
-    the clock tick's increment; the .pok calls it infinite lives); ride_smart for 9000 frames with the fuel `$D77D`
+    the clock tick's increment; the .pok calls it infinite lives); ride_smart for 9000 frames with the fuel's high byte `$D77D`
     logged in the screen names, to see what an empty tank does"""
     to_menu(r)
     start_game(r)
@@ -440,7 +440,7 @@ def plan_fuel(r):
 
 def plan_pokes(r):
     """pokes: from c1's menu.szx, START, all four ZXDB POKEs on (60250,0; 49433,81; 57318,201; 57276,201): what each
-    changes is read from the screens and the fuel `$D77D` over 4000 frames of ride_smart"""
+    changes is read from the screens and the fuel's high byte `$D77D` over 4000 frames of ride_smart"""
     to_menu(r)
     start_game(r)
     for name in ('lives', 'fuel1', 'time', 'fuel2'):

@@ -49,8 +49,9 @@ Recording c1 (`python3 tools/record.py c1 --work work/stage1/rec/c1`): a 48K fro
 `LOAD ""` typed, PLAY once at signal speed (fast and turbo tape off). The ROM loads the BASIC and the loader
 (frame 1 017: the loader at `$FFDC` runs, `kit/rs.py stages`), the loader reads the screen and the game by LD-BYTES;
 the game's entry `$D6B0` runs at frame 14 100 T 17 980. The title and credits, the menu (frame 14 657), START with
-the power-on controls (one player, Kempston), trail 1 from frame 14 821 with a jump every 66 frames: the rider
-crashed at distance 876 and stood there until TIME OUT (clock 60, near frame 20 897), then the menu. 22 397 frames;
+the power-on controls (one player, Kempston), trail 1 from frame 14 821 with a jump every 66 frames: the ATV
+crashed and tumbled at distance 381 (frame 15 580) and stood at 373 (`$0175`, speed 0, frames 15 600-19 300) until
+TIME OUT (clock 60, near frame 20 897), then the menu. 22 397 frames;
 the L1 replay checked 896 frames, diverged 0.
 
 `kit/rs.py stages` on c1 (code arrivals): `$FFDC` (the loader, frame 1 017), `$8080` (the IM 2 vector `JP $D9D2`,
@@ -81,8 +82,8 @@ the L1 replay checked 896 frames, diverged 0.
 - **The heaviest pass.** The wait spins 32 T a turn (13 + 7 + 12); the L1's loop record for `$D86B` gives 1 168 turns
   at the least and 10 351 at the most over the 600 passes. A pass is 7 × 69 888 = 489 216 T, so the work (handler
   entries included) took from about 158 000 T (2.3 frames) to about 452 000 T (6.5 frames) a pass: the game uses up
-  to 92 % of its 7-frame budget. The heaviest pass's frame is not named yet (stage 2: a trace of the pass with the
-  fewest turns).
+  to 92 % of its 7-frame budget. Integration named it from `c1`'s traces (`tools/pass_trace.py`): the pass at frame
+  15 412, 446 565 T, 91.3 % ([doc 4, 4.7](docs/04-game-loop.md#47-the-heaviest-pass)).
 - **The clock.** `$EB53` adds 1 to the tenths digit at `$D6CB` once a pass (ASCII digits `$D6C9-$D6CB`): one clock
   tenth is 7 frames, one clock unit 70 frames (1.4 s). A trail's 60 is 4 200 frames.
 
@@ -110,17 +111,28 @@ state. 48K; the original TZX; the L1 of each built (`kit/rs.py` through record.p
 
 | Name | Start | Frames | How | What it reached |
 | --- | --- | ---: | --- | --- |
-| c1 | power-on | 22 397 | `LOAD ""`, the tape at signal speed; START; right with a jump every 66 frames | the BASIC (582), the loading screen, the entry (14 100), the title tune and credits, the menu (14 657), trail 1 (14 821), mounting (14 897), a crash at distance 876, TIME OUT, the menu |
+| c1 | power-on | 22 397 | `LOAD ""`, the tape at signal speed; START; right with a jump every 66 frames | the BASIC (582), the loading screen, the entry (14 100), the title tune and credits, the menu (14 657), trail 1 (14 821), mounting (14 897), a crash at distance 381 (frame 15 580), standing at 373 to TIME OUT, the menu |
 | menu | c1 `menu.szx` (14 657) | 3 340 | ENTER moves, SPACE picks: TWO PLAYERS; CHOOSE CONTROL, PLAYER ONE, KEYBOARD, the key table redefined Q A O P M, EXIT; PLAYER TWO, KEYBOARD, H J K M B, EXIT (state `menu-two-kb.szx`); then player 1 KEMPSTON, player 2 SINCLAIR; 2 500 frames idle | every menu screen and control method; the key tables of both players; the idle menu stays (no attract mode) |
 | kb | menu `menu-two-kb.szx` | 9 160 | two players on the keyboard; both right, jump on, the wheel keys and jumps | the split screen of two players, both through trail 1 into trail 2; TIME OUT; player 2's high-score name entry (3 260) |
 | trail1 | c1 `menu.szx` | 9 970 | `ride_smart` (record.py): the pattern right / wheelie / wheel down / jump; on foot back to the ATV | a crash, the rider thrown and walking back; stuck behind a dune (on foot, the walk-back rule fails, 6.2); TIME OUT; the title |
 | trails | c1 `menu.szx` | 7 441 | `tools/autoride.py` (a search bot on clones: per crash it tries jumps, wheelies, braking at distances before it) found a plan; replayed segment for segment | trail 1 ridden to its finish with no POKE (two jumps: at distance 766 and a wheelie at 1 148) and trail 2's start, then the bot's last crash on trail 2 (distance 898) |
 | warp | c1 `menu.szx` | 17 756 | on each trail, mounted, 150 frames ridden, then POKE: the distance (`$D78A`, `$D726`) set to the finish less 40 (14 POKEs, in `record.json`) | all six trails (SAND DUNING, GRASSTRAKIN, ICEBERGS, PYRAMIDS, TROPICANA, SWAMP), each finish (EXTENDED PLAY, LAP TIME) and the trail-end tune; the loop back to trail 1 with max 30; TIME OUT; the high-score name entry (33 350, "BC") and the new table |
-| fuel | c1 `menu.szx` | 9 175 | POKE 60250,0 (the clock stopped); ride_smart, the fuel `$D77D` watched | fuel from 32 down to 13 while riding; it stays when the rider is on foot |
+| fuel | c1 `menu.szx` | 9 175 | POKE 60250,0 (the clock stopped); ride_smart, the fuel's high byte `$D77D` watched | fuel from 32 down to 13 while riding; it stays when the rider is on foot |
 | pokes | c1 `menu.szx` | 4 275 | the four ZXDB POKEs at START | the clock frozen at 00.0 (60250,0); the FUEL bar not redrawn (57276,201 and 57318,201, `RET` at `$DFBC` and `$DFE6`) while `$D77D` falls as in fuel; 49433,81: no change seen |
 
-Not reached yet: fuel running out (the riders got stuck before; what an empty tank does is known only from the code,
-stage 3); trail 2 onwards ridden without a POKE beyond distance 898 (the bot's actions all failed there).
+| turn | c1 `menu.szx` | 1 650 | `python3 tools/rec_controls.py turn --work work/stage1/rec/turn --start work/stage1/rec/c1/menu.szx --port-base 37782` (doc 5's writer; moved here from `work/docs/atB/rec/turn`): CHOOSE CONTROL, SINCLAIR, START, walk, jump on, throttle 252 frames, wheel up, jump, left 315, right 245; `log.json` the record every 7 frames | the ATV braked, turned round and ridden facing left (DrawAtv's mirrored path, AtvMirrorReturn 45 runs); the SINCLAIR line changes nothing |
+| empty | c1 `menu.szx` | 2 269 | `python3 tools/record.py empty --work work/stage1/rec/empty --start work/stage1/rec/c1/menu.szx --port-base 37785` (stage 2; moved here from `work/stage2/rec/empty`): POKE 60250,0 at frame 14 (the clock stopped), the fuel's high byte `$D77D` POKEd to 5 at 567; ride_smart | the tank empty in the pass of frame 732 (OutOfFuel first there), OUT OF FUEL blinking from 736, the ATV crawling with the throttle held; OutOfFuel 83 runs |
+| throwoff | c1 `menu.szx` | 850 | `python3 tools/rec_crashes.py throwoff --work work/stage1/rec/throwoff --start work/stage1/rec/c1/menu.szx --port-base 37780` (integration; no POKE): mount, right 42 frames, then right + wheel up held 140 frames | AtvFrame `$44` at frame 612, ThrowOff `$E2E2` once, Mounted 0 at 619; FallRider `$E991` 35 runs (FallPhase 1-5) |
+| speedcrash | c1 `menu.szx` | 1 432 | `python3 tools/rec_crashes.py speedcrash --work work/stage1/rec/speedcrash --start work/stage1/rec/c1/menu.szx --port-base 37780` (integration; no POKE): mount, right 140 frames, then nothing held | trail 1's step at TrackPos 614 at speed 15: the step test's Crash (`$E6EB`), 13 after the -2: Stop and Throw (`$E96E`), frames 1 025-1 032 |
+| wallcrash | c1 `menu.szx` | 2 083 | `python3 tools/rec_crashes.py wallcrash --work work/stage1/rec/wallcrash --start work/stage1/rec/c1/menu.szx --port-base 37780` (integration): the distance POKEd to 1 568 at frame 521 (`$D78A`, `$D726`: trail 1's finish less 40), trail 2 mounted at about 1 396, right 140 frames, then nothing held | the nose test's Crash (`$E771`) at TrackPos 296, speed 21: the tumble (`$E974`) and Throw, frames 1 676-1 683; the nose's ground 7 below the wheels' (unsigned `$F9`) |
+
+Each folder holds `session.ttd`, `l1.json`, `record.json`, `screens/` (and `log.json` for turn, throwoff, speedcrash,
+wallcrash); all five are in case.json's `read_builds`. Integration's traces of `c1` (the heaviest pass, doc 4 4.7)
+are in `work/docs/integrate/c1/traces/`, opened with `python3 ../../kit/rs.py open --work work/docs/integrate/c1
+--ttd work/stage1/rec/c1/session.ttd --port-base 37780`.
+
+Not reached: trail 2 onwards ridden without a POKE beyond distance 898 (the bot's actions all failed there); a fuel
+tank emptied without the POKE; ThrowOff from an overhang; a nose crash on a real wall; CrashIfAir.
 
 ### 6.1 The screens
 
@@ -166,6 +178,23 @@ From the recordings above, named `<recording>-<frame>-<moment>.png` in `docs/img
 | --- | --- |
 | ![no gauge POKE: the bar shows 13 (fuel)](docs/img/play/fuel-002310-fuel-13.png) | ![the gauge POKEs: the bar stays full (pokes)](docs/img/play/pokes-002310-fuel-13.png) |
 
+**More screens, taken for the documents** (the recording, the moment and the frame in each name).
+
+| | |
+| --- | --- |
+| ![c1 credits, 14300](docs/img/play/c1-014300-credits.png) | ![c1 title logo, 14500](docs/img/play/c1-014500-title-logo.png) |
+| ![c1 menu hiscores, 14640](docs/img/play/c1-014640-menu-hiscores.png) | ![c1 trail intro, 14900](docs/img/play/c1-014900-trail-intro.png) |
+| ![c1 trail name, 15000](docs/img/play/c1-015000-trail-name.png) | ![c1 first pass, 15060](docs/img/play/c1-015060-first-pass.png) |
+| ![c1 jump, 15540](docs/img/play/c1-015540-jump.png) | ![c1 tumble, 15580](docs/img/play/c1-015580-tumble.png) |
+| ![c1 thrown, 15660](docs/img/play/c1-015660-thrown.png) | ![c1 on foot, 15800](docs/img/play/c1-015800-on-foot.png) |
+| ![c1 time out, 19260](docs/img/play/c1-019260-time-out.png) | ![empty out of fuel, 939](docs/img/play/empty-000939-out-of-fuel.png) |
+| ![kb split screen, 834](docs/img/play/kb-000834-split-screen.png) | ![kb both finished, 2418](docs/img/play/kb-002418-both-finished.png) |
+| ![menu two players, 552](docs/img/play/menu-000552-two-players.png) | ![menu p2 control, 776](docs/img/play/menu-000776-p2-control.png) |
+| ![trails finish line, 1640](docs/img/play/trails-001640-finish-line.png) | ![trails extended play, 1700](docs/img/play/trails-001700-extended-play.png) |
+| ![trails time out finished, 4510](docs/img/play/trails-004510-time-out-finished.png) | ![trails bonus count, 4780](docs/img/play/trails-004780-bonus-count.png) |
+| ![warp bonus band, 1163](docs/img/play/warp-001163-bonus-band.png) | ![warp name entry, 16479](docs/img/play/warp-016479-name-entry.png) |
+| ![empty out of fuel, 939](docs/img/hud/empty-000939-out-of-fuel.png) |  |
+
 ### 6.2 Found while recording
 
 - A crash throws the rider off; he gets up and walks; fire next to the ATV jumps him on (`work/stage1/mount.py`:
@@ -174,9 +203,64 @@ From the recordings above, named `<recording>-<frame>-<moment>.png` in `docs/img
 - Two players ride at once, not in turn: the screen is split (kb). How a pass serves both records is stage 3.
 - ZXDB's POKE names do not match what the bytes do: 60250,0 ("Infinite Lives") stops the clock: it is the `$01`
   of `ADD A,$01` at `$EB59` in the tick `$EB53`; 57276,201 ("Infinite fuel") puts a `RET` at `$DFBC`, just after
-  `LD A,($D77D)` (the fuel) at `$DFB9`, and 57318,201 ("Infinite Time") a `RET` at `$DFE6`, the first instruction of
-  the routine after it; with both, the FUEL bar is no longer redrawn and stays full while `$D77D` still falls
+  `LD A,($D77D)` (the fuel's high byte) at `$DFB9`, and 57318,201 ("Infinite Time") a `RET` at `$DFE6`, the first instruction of
+  the routine after it; with both, the FUEL bar is no longer redrawn and stays full while the fuel's high byte `$D77D` still falls
   (recording pokes against fuel at frame 2 310). 49433,81 writes `$C119`, inside a buffer the game writes in play
   (`$BDEF-$C190`, 2.1): no effect was seen.
+
+### 6.3 The animations
+
+Every animation the documents show, with its recording and frames; the caption under each gives its command.
+
+| File | Document | Recording | Frames |
+| --- | --- | --- | --- |
+| `docs/img/load/load-c1.gif` | [3](docs/03-build-and-load.md) | c1 | 0-14110 |
+| `docs/img/play/atv-keys.gif` | [5](docs/05-controls.md) | turn | 1093-1534 |
+| `docs/img/play/atv-throttle.gif` | [5](docs/05-controls.md) | turn | 684-1076 |
+| `docs/img/play/c1-crash.gif` | [1](docs/01-game-design.md) | c1 | 15480-15830 |
+| `docs/img/play/c1-heaviest-pass.gif` | [4](docs/04-game-loop.md) | c1 | 15412-15418 |
+| `docs/img/play/empty-out-of-fuel.gif` | [10](docs/10-gameplay-logic.md) | empty | 700-980 |
+| `docs/img/play/finish.gif` | [8](docs/08-hud-and-text.md) | warp | 818-1300 |
+| `docs/img/play/fuel-bar.gif` | [8](docs/08-hud-and-text.md) | fuel | 600-2384 |
+| `docs/img/play/menu-tour.gif` | [5](docs/05-controls.md) | menu | 0-850 |
+| `docs/img/play/name-entry.gif` | [8](docs/08-hud-and-text.md) | warp | 16470-16766 |
+| `docs/img/play/out-of-fuel.gif` | [8](docs/08-hud-and-text.md) | empty | 740-950 |
+| `docs/img/play/start-sign.gif` | [6](docs/06-rendering.md) | c1 | 15230-15475 |
+| `docs/img/play/trail-intro.gif` | [8](docs/08-hud-and-text.md) | warp | 1295-1703 |
+| `docs/img/play/trail-scroll.gif` | [6](docs/06-rendering.md) | c1 | 15475-15790 |
+| `docs/img/play/trails-crash-tumble.gif` | [10](docs/10-gameplay-logic.md) | trails | 5826-6040 |
+| `docs/img/play/trails-finish.gif` | [10](docs/10-gameplay-logic.md) | trails | 1590-1722 |
+| `docs/img/play/trails-jump-dune.gif` | [10](docs/10-gameplay-logic.md) | trails | 1280-1446 |
+| `docs/img/play/two-players.gif` | [5](docs/05-controls.md) | kb | 300-720 |
+| `docs/img/play/walk-back.gif` | [10](docs/10-gameplay-logic.md), [5](docs/05-controls.md) | trail1 | 880-1200 |
+| `docs/img/routines/AtvPhysics.gif` | [10](docs/10-gameplay-logic.md) | trails | 815-822 |
+| `docs/img/routines/ClockTick.gif` | [8](docs/08-hud-and-text.md) | c1 | 15356 |
+| `docs/img/routines/ControlRight.gif` | [5](docs/05-controls.md) | turn | 744 |
+| `docs/img/routines/CopyLines.gif` | [6](docs/06-rendering.md) | c1 | 15361 |
+| `docs/img/routines/CountBonus.gif` | [9](docs/09-sound.md) | trails | 4712-4714 |
+| `docs/img/routines/Crash.gif` | [10](docs/10-gameplay-logic.md) | trails | 5850-5854 |
+| `docs/img/routines/DrawAtv.gif` | [6](docs/06-rendering.md) | turn | 1304-1305 |
+| `docs/img/routines/FinishCheck.gif` | [10](docs/10-gameplay-logic.md), [8](docs/08-hud-and-text.md) | warp | 830-832 |
+| `docs/img/routines/GameEntry.gif` | [3](docs/03-build-and-load.md) | c1 | 14100-14101 |
+| `docs/img/routines/JumpControl.gif` | [10](docs/10-gameplay-logic.md) | trails | 1103-1104 |
+| `docs/img/routines/Landing.gif` | [9](docs/09-sound.md) | trails | 815-822 |
+| `docs/img/routines/MountCheck.gif` | [10](docs/10-gameplay-logic.md) | trails | 5416-5417 |
+| `docs/img/routines/NameSelect.gif` | [8](docs/08-hud-and-text.md) | warp | 16522-16526 |
+| `docs/img/routines/OutOfFuel.gif` | [10](docs/10-gameplay-logic.md) | empty | 732-733 |
+| `docs/img/routines/Pass.gif` | [4](docs/04-game-loop.md) | c1 | 15055-15061 |
+| `docs/img/routines/PrintShadow.gif` | [8](docs/08-hud-and-text.md) | empty | 765-767 |
+| `docs/img/routines/ReadP1Controls.gif` | [5](docs/05-controls.md) | turn | 743 |
+| `docs/img/routines/RedefineKey.gif` | [5](docs/05-controls.md) | menu | 159-160 |
+| `docs/img/routines/RiderOnFoot.gif` | [5](docs/05-controls.md) | trail1 | 1106 |
+| `docs/img/routines/RotateSpriteLeft.gif` | [6](docs/06-rendering.md) | c1 | 15357-15358 |
+| `docs/img/routines/ScanKeys.gif` | [5](docs/05-controls.md) | turn | 743 |
+| `docs/img/routines/ShowScore.gif` | [8](docs/08-hud-and-text.md) | c1 | 15361 |
+| `docs/img/routines/Thrown.gif` | [10](docs/10-gameplay-logic.md) | trails | 5970-5971 |
+| `docs/img/routines/Tumble.gif` | [10](docs/10-gameplay-logic.md) | trails | 5914-5915 |
+| `docs/img/routines/TunePlay.gif` | [9](docs/09-sound.md) | trails | 4492-4494 |
+| `docs/img/routines/Update.gif` | [6](docs/06-rendering.md) | c1 | 15356-15361 |
+| `docs/img/routines/UseFuel.gif` | [8](docs/08-hud-and-text.md) | fuel | 882 |
+| `docs/img/routines/WaitFrames.gif` | [10](docs/10-gameplay-logic.md) | trails | 4490-4491 |
+| `docs/img/routines/WalkList.gif` | [7](docs/07-objects.md) | trails | 1263-1271 |
 
 ## 7. Review

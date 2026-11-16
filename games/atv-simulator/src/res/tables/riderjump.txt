@@ -1,0 +1,4 @@
+# RiderJumpTable ($E312-$E318: the rider's jump steps) and FallSteps ($E319-$E31E: the ATV's fall per pass by VSpeed)
+# 13 bytes from $E312; a row is 7 bytes ($XX each), the comment its address
+$0A $0A $0A $07 $04 $02 $01  # $E312
+$00 $01 $02 $04 $06 $06  # $E319

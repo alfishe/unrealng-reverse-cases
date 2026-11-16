@@ -1,0 +1,12 @@
+# speedcrash: from c1's menu.szx, START; walk and jump onto the ATV; right 140 frames, then nothing held until
+# the crash at trail 1's step (TrackPos 613, speed 15: Stop and Throw) and 400 frames after. Samples in log.json
+# Start: work/stage1/rec/c1/menu.szx
+0 SPACE
+4 -
+402 KR
+465 KR KF
+472 KR
+493 KR KF
+500 KR
+661 -
+1432 END

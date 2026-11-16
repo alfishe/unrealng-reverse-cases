@@ -8,10 +8,12 @@
 
 **The record**: list A, list B, the length (FinishDistance = length less `$48`). **An item** (6 bytes): the distance
 along the trail (a word), y (0: the sprite's own height, else the height above the ground line), the advance (0 in
-the image; InitListWidths `$7873` fills it from the sprite), the sprite and the flags (bit 0 mirrored, bits 1-3 the
-draw mode of ListModes `$836D`); when the flags' bits 4-7 are set the last two bytes are instead the address of an
+the image; InitListWidths `$7873` fills it from the sprite), the sprite and the flags (bit 0: the sprite is a picture
+of the menu bank, drawn by MenuSprite with its attributes (DeferAttrs); bit 1: drawn
+before the ATV (DeferB, DeferredB); bit 2: drawn after it, in front (DeferA, DeferredA); bit 3: masked; PlaceItem
+`$8E5E` shifts bits 1-3 into ItemFlags bits 5-7); when the flags' bits 4-7 are set the last two bytes are instead the address of an
 animation record. `$FFFF` ends a list. List A (the ground pieces and the obstacles) scrolls at the speed x 128 a pass
-(Distance `$D789`, the word TrackPos `$D78A`), list B (the scenery) at the speed x 16 (Scenery `$D78E`).
+(Distance `$D789`, the word TrackPos `$D78A`), list B (the scenery) at the speed x 32, a quarter of list A's (Scenery `$D78E`, ForwardScenery `$E0E1`).
 **An animation record**: the sprite, the flags, an id (SeenIds: a record is drawn once a pass), then the motions:
 the x period and counter, the y period and counter, the x and y steps (high and low nibble), the frame period and
 counter; a counter's bit 7 is its direction; `$FF` ends the record.

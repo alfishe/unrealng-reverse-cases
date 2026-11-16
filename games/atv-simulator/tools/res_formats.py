@@ -9,11 +9,12 @@ calls install(files) with the bytes of each @res entry.
 | @res name | Editable file(s) | Format |
 | --- | --- | --- |
 | `texts/NAME.bin` | `texts/NAME.txt` | UTF-8, one string a line: a line ending in `|` is a string with the game's end mark, a quoted line ("...") bytes with no end mark (the fixed-width trail names); `\\xNN` for a byte that is no printable character |
-| `tables/panels.bin`, `tables/credits.bin` | `.csv` | the sprite lists (x, y, sprite) and attribute box lists (x1, y1, x2, y2, attr) of SpriteList / AttrBoxes, a row an item; a list ends where the next name starts (the `$FF` mark) |
+| `tables/panels.bin`, `tables/credits.bin` | `.csv` | the sprite lists (x, y, sprite) and attribute box lists (x1, y1, x2, y2, attr) of SpriteList / AttrBoxes, a row an item; a list ends where the next name starts (the `$FF` mark); `shows` names a sprite for the reader (not built) |
 | `tables/menus.bin` | `tables/menus.csv` | the menus (MenuDefs): a menu row (x, y, height) and its item rows (text address, action address) |
 | `sprites/game.bin`, `sprites/menu.bin` | `sprites/NAME.png`, `sprites/NAME.csv` | the sprite banks: every sprite's pixels at a place of its own in the PNG (index 0 paper, 1 ink, 2 no pixel), the CSV a row a piece in byte order (its numbers, place, size, header bytes; the menu bank's attribute blocks as hex) and `bytes` rows for the bytes no number reaches; the bank's header (count, length, offsets) is made from the rows |
 | `trails/NAME.bin` | `trails/NAME.txt` | the trail records, the object lists and the animation records as text (TRAIL_HELP) |
 | `sound/tunes.bin` | `sound/tunes.txt` | the note table, the tune table, the sequence lists and the channel and drum patterns as text (TUNE_HELP) |
+| `tables/NAME.bin` (BYTE_TABLES) | `tables/NAME.txt` | a byte table of the game's rules or pictures (the ATV's and rider's frames, offsets, the fall and jump steps, the trails' inks): one row of `$XX` bytes per line, `#` comments; the rows' lengths are only for reading |
 | `screens/loading.scr` | `screens/loading.scr`, `screens/loading.png` | the SCREEN$ is the source; the PNG a view check keeps up to date |
 | anything else | the `.bin` itself | bytes |
 
@@ -52,6 +53,18 @@ TRAILS = {'trails/trails14.bin': (0x7C9C, 4, 1), 'trails/trail5.bin': (0xEE84, 1
 TITLES = {1: 'Trails 1-4 (SAND DUNING, GRASSTRAKIN, ICEBERGS, PYRAMIDS): TrailRecords $7C9C-$807A',
           5: 'Trail 5 (TROPICANA): Trail5 $EE84-$F03B',
           6: 'Trail 6 (SWAMP): loaded at $F230 (Trail6Image), run from GameEntry\'s copy at $60AC'}
+# the byte tables: name -> (address, the row length shown, what the rows are)
+BYTE_TABLES = {
+    'tables/trailinks.bin': (0x79D4, 6, 'TrailInks: the play window\'s attribute for trails 1-6'),
+    'tables/tumbleoffsets.bin': (0xDC0D, 6, 'TumbleOffsets: the tumbling ATV\'s height offsets (AtvY)'),
+    'tables/ridepose.bin': (0xDEEC, 4, 'RidePoses: the mounted rider\'s sprite for each ATV frame (RiderPoseY)'),
+    'tables/riderjump.bin': (0xE312, 7, 'RiderJumpTable ($E312-$E318: the rider\'s jump steps) and FallSteps ($E319-$E31E:'
+                                        ' the ATV\'s fall per pass by VSpeed)'),
+    'tables/wheeloffsets.bin': (0xE61B, 2, 'WheelOffsets: the wheels\' x and y offsets for each ATV frame from $38 (pairs)'),
+    'tables/slopeframes.bin': (0xE797, 12, 'SlopeFrames: the frame offset for each line of slope (0-$14)'),
+    'tables/slopetable2.bin': (0xE7EF, 12, 'SlopeTable2: multiples of 3, read by no code'),
+    'tables/tumbleframes.bin': (0xE86C, 12, 'TumbleFrames: the tumble\'s 24 frames ($7D-$87), then TumbleHeights $E884'),
+}
 TUNES_BASE = 0xFB72
 INSTALLING = {}
 
@@ -62,8 +75,9 @@ TRAIL_HELP = """# {title}
 #                                            less $48, shown as the comment)
 #   list NAME                                a list: its items follow, the $FFFF end mark is written after them
 #   DIST Y ADV sprite=$SS flags=$FF          an item: the distance along the trail, y (0: the sprite's own height),
-#                                            the advance (0 in the image: InitListWidths fills it), the game sprite,
-#                                            the flags (bit 0 mirrored, bits 1-3 the draw mode)
+#                                            the advance (0 in the image: InitListWidths fills it), the sprite, the
+#                                            flags (bit 0 the menu bank's picture and its attributes, bit 1 drawn
+#                                            before the ATV (DeferredB), bit 2 after it (DeferredA), bit 3 masked)
 #   DIST Y ADV anim=NAME                     an item drawn from an animation record (AnimObject $8A49)
 #   anim NAME sprite=$SS flags=$FF id=$II [motion=HEX]   an animation record: sprite, flags, id, then the motions
 #                                            (+3/+4 the x period and counter, +5/+6 the y ones, +7 the x and y steps,
@@ -107,6 +121,8 @@ def kind(name):
         return 'lists'
     if name == 'tables/menus.bin':
         return 'menus'
+    if name in BYTE_TABLES:
+        return 'table'
     if name in ('sprites/game.bin', 'sprites/menu.bin'):
         return 'sprites'
     if name in TRAILS:
@@ -120,6 +136,25 @@ def kind(name):
 
 def stem(name):
     return os.path.splitext(name)[0]
+
+
+# byte tables ----------------------------------------------------------------------------------------------------------
+
+def table_export(name, data):
+    addr, per, what = BYTE_TABLES[name]
+    out = ['# %s' % what, '# %d bytes from $%04X; a row is %d bytes ($XX each), the comment its address' % (
+        len(data), addr, per)]
+    for o in range(0, len(data), per):
+        out.append('%s  # $%04X' % (' '.join('$%02X' % b for b in data[o:o + per]), addr + o))
+    return {stem(name) + '.txt': ('\n'.join(out) + '\n').encode()}
+
+
+def table_build(files, name):
+    out = bytearray()
+    for line in files[stem(name) + '.txt'].decode().split('\n'):
+        line = line.split('#')[0].split()
+        out += bytes(int(t.lstrip('$'), 16) for t in line)
+    return bytes(out)
 
 
 # texts ----------------------------------------------------------------------------------------------------------------
@@ -188,24 +223,32 @@ def h(v, n=2):
 
 # list tables ---------------------------------------------------------------------------------------------------------
 
+# What the game sprites (game.png) of the panels' and the HUD's lists show, for the reader: the `shows` column (the
+# build does not read it). The other lists draw menu pictures (LoadIntro, the credits) and are left blank.
+LIST_SPRITES = {137: 'panel edge', 138: 'panel edge', 139: 'panel edge', 140: 'panel edge', 151: 'SPEED', 152: 'FUEL',
+                163: 'clock', 164: 'max'}
+GAME_SPRITE_LISTS = ('PanelP1Sprites', 'PanelP2Sprites', 'HudSprites')
+
+
 def lists_export(name, data):
     rows, o = [], 0
     for lname, k in LISTS[name]:
         if k == 'bytes':
-            rows.append([lname, '', '', '', '', '', '', data[o:].hex().upper()])
+            rows.append([lname, '', '', '', '', '', '', data[o:].hex().upper(), ''])
             o = len(data)
             continue
         n = 3 if k == 'sprites' else 5
         while data[o] != 0xFF:
             it = data[o:o + n]
             if k == 'sprites':
-                rows.append([lname, it[0], it[1], '', '', it[2], '', ''])
+                rows.append([lname, it[0], it[1], '', '', it[2], '', '',
+                             LIST_SPRITES.get(it[2], '') if lname in GAME_SPRITE_LISTS else ''])
             else:
-                rows.append([lname, it[0], it[1], it[2], it[3], '', h(it[4]), ''])
+                rows.append([lname, it[0], it[1], it[2], it[3], '', h(it[4]), '', ''])
             o += n
         o += 1
     assert o == len(data), name
-    return {stem(name) + '.csv': csv_text(['list', 'x', 'y', 'x2', 'y2', 'sprite', 'attr', 'bytes'], rows)}
+    return {stem(name) + '.csv': csv_text(['list', 'x', 'y', 'x2', 'y2', 'sprite', 'attr', 'bytes', 'shows'], rows)}
 
 
 def lists_build(files, name):
@@ -613,11 +656,11 @@ def screen_png(scr):
 
 # the dispatch -------------------------------------------------------------------------------------------------------
 
-EXPORTERS = {'text': text_export, 'lists': lists_export, 'menus': menus_export, 'sprites': sprites_export,
+EXPORTERS = {'table': table_export, 'text': text_export, 'lists': lists_export, 'menus': menus_export, 'sprites': sprites_export,
              'trail': trail_export, 'tunes': tunes_export}
-BUILDERS = {'text': text_build, 'lists': lists_build, 'menus': menus_build, 'sprites': sprites_build,
+BUILDERS = {'table': table_build, 'text': text_build, 'lists': lists_build, 'menus': menus_build, 'sprites': sprites_build,
             'trail': trail_build, 'tunes': tunes_build}
-EDITABLE = {'text': ['.txt'], 'lists': ['.csv'], 'menus': ['.csv'], 'sprites': ['.png', '.csv'],
+EDITABLE = {'table': ['.txt'], 'text': ['.txt'], 'lists': ['.csv'], 'menus': ['.csv'], 'sprites': ['.png', '.csv'],
             'trail': ['.txt'], 'tunes': ['.txt']}
 
 

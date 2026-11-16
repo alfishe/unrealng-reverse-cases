@@ -1,0 +1,3 @@
+# TrailInks: the play window's attribute for trails 1-6
+# 6 bytes from $79D4; a row is 6 bytes ($XX each), the comment its address
+$30 $20 $78 $30 $20 $30  # $79D4

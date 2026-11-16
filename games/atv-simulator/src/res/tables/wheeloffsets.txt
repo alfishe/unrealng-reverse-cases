@@ -1,0 +1,13 @@
+# WheelOffsets: the wheels' x and y offsets for each ATV frame from $38 (pairs)
+# 22 bytes from $E61B; a row is 2 bytes ($XX each), the comment its address
+$23 $01  # $E61B
+$24 $05  # $E61D
+$23 $08  # $E61F
+$22 $0B  # $E621
+$21 $0D  # $E623
+$20 $10  # $E625
+$17 $17  # $E627
+$24 $FE  # $E629
+$22 $FB  # $E62B
+$22 $F8  # $E62D
+$20 $F5  # $E62F

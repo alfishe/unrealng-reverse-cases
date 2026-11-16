@@ -93,7 +93,7 @@ def main():
             work = (fb - fa) * FRAME_T + tb - ta
             st = lab.read(0xD6B6, 0xF0)
             rec = {'c1_frame': START_FRAME + fa - f0, 'T': work, 'percent': round(100 * work / BUDGET, 1),
-                   'frames_counted': lab.read(0xD6BC, 1)[0], 'speed': st[0xD77E - 0xD6B6],
+                   'frames_counted': lab.read(0xD6BC, 1)[0], 'speed': st[0xD77B - 0xD6B6], 'speed_bar': st[0xD77E - 0xD6B6],
                    'mounted': st[0xD774 - 0xD6B6], 'track': st[0xD78A - 0xD6B6] | st[0xD78B - 0xD6B6] << 8,
                    'deferred_a': lab.read(0x8148, 1)[0], 'deferred_b': lab.read(0x81EB, 1)[0],
                    'deferred_attrs': lab.read(0x828E, 1)[0]}

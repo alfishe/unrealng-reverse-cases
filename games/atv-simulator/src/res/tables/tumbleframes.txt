@@ -1,0 +1,6 @@
+# TumbleFrames: the tumble's 24 frames ($7D-$87), then TumbleHeights $E884
+# 48 bytes from $E86C; a row is 12 bytes ($XX each), the comment its address
+$7D $7F $81 $83 $85 $87 $7D $7F $81 $83 $85 $87  # $E86C
+$7D $7F $81 $83 $85 $87 $7D $7F $81 $83 $85 $87  # $E878
+$05 $05 $04 $03 $02 $01 $FE $FD $FC $FB $FA $FA  # $E884
+$FA $FA $FA $FA $FA $FA $FA $FA $FA $FA $FA $FA  # $E890

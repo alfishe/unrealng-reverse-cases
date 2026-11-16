@@ -6,12 +6,17 @@
 ; throttle in the facing direction (Accelerate, up to speed level 21) and the brake against it (SlowDown by 2); at a
 ; standstill the brake turns the ATV round (the riderless frame $5C while it turns). Up lifts the nose (WheelieUp, 10
 ; passes of WheelieTimer), Down drops it; Jump sets an upward speed from $FD less the slope. GroundUnder scans the
-; buffer's pixels under the wheels: the ground is whatever list A drew there. A drop of 7 or more lines on landing or
-; a step of $15 crashes (Crash): under speed 10 the ATV stops, 10-14 it stops and throws the rider, 15 and up it
-; tumbles (Tumble, 24 passes) and throws the rider. The thrown rider lands lying ($77); Jump stands him up; on foot
-; Left / Right walk him (3 pixels a pass) and Jump jumps; landing on the ATV from behind while facing its way remounts
-; (MountCheck). Fuel ($2000 at each trail) drops by speed x 2 a moving pass; the FUEL bar loses 4 pixels each $400;
-; under $400 the ATV is out of fuel (OutOfFuel: never reached in the recordings).
+; buffer's pixels under the wheels: the ground is whatever list A drew there. Three tests crash (Crash): a step up of
+; 7 or more lines beyond the last pass's rise (AtvPhysics $E6E6; recording speedcrash), the nose test when the nose is
+; in the ground ($E76D: the ground under the nose less GroundY, unsigned, $15 or more: a wall 21 or more above the
+; wheels, or by the wrap any nose ground lower than GroundY; recording wallcrash, 7 lower, $F9), and a sharp nose lift
+; in the air (CrashIfAir): Crash calls SlowDown first, so the thresholds apply to the speed less 2: under 10 the ATV
+; stops, 10-14 (12-16 before) it stops and throws the rider (recording speedcrash, 15 at the step), 15 and up (17 and
+; up before) it tumbles (Tumble, TumbleCount 1-24) and throws the rider (recording wallcrash, 21). The thrown rider
+; lands lying ($77); Jump stands him up; on foot Left / Right walk him (3 pixels a pass) and Jump jumps; landing on
+; the ATV from behind while facing its way remounts (MountCheck). Fuel ($2000 at each trail) drops by speed x 2 a
+; moving pass; the FUEL bar loses 4 pixels each $400; under $400 the ATV is out of fuel (OutOfFuel: reached in empty,
+; first at frame 732).
 ; --------------------------------------------------------------------------------------------------------------------
 
   ORG $D70E
@@ -104,14 +109,16 @@ WheelieTimer:
 TumbleCount:
   DEFB $00                ; passes of tumbling (0 none)
 FallPhase:
-  DEFB $00                ; the rider's fall when thrown at a step (FallRider:
-                          ; no recording)
+  DEFB $00                ; the rider's fall after ThrowOff (FallRider:
+                          ; recording throwoff)
 ThrowSpeed:
   DEFB $00                ; the thrown rider's flight: $F8 - speed / 8 up, then
                           ; down
 EngineNote:
-  DEFB $00                ; bit 7 the engine's tone on, bits 0-4 the passes to
-                          ; the next change (EngineTimer)
+  DEFB $00                ; bit 7 the wheel flicker's phase (DrawAtv picks the
+                          ; wheel sprite by it), bits 0-4 the passes to the
+                          ; next flip (EngineTimer: 1 at speed 3 or more, 2
+                          ; below)
 Bonus:
   DEFB $00,$00            ; the time bonus, counted into the score at the
                           ; trail's end
@@ -142,7 +149,8 @@ RecordTemplate:
 ; Step the engine note's timer: at speed, every 1 or 2 passes (speed under 3)
 ; flip the tone bit
 ;
-; Witness: L1 6162 (c1, empty, fuel, kb, trail1, trails, warp).
+; Witness: L1 6681 (c1, empty, fuel, kb, speedcrash, throwoff, trail1, trails,
+; turn, wallcrash, warp).
 EngineTimer:
   LD A,(Speed)
   CP $00
@@ -179,7 +187,8 @@ l_DA43:
 ; Update, ClearKeys, Advance, CopyBufferP1, FlushAttrs, SaveRecordP1 (c1: 5081
 ; passes).
 ;
-; Witness: L1 5349 (c1, empty, fuel, kb, trail1, trails, warp).
+; Witness: L1 5868 (c1, empty, fuel, kb, speedcrash, throwoff, trail1, trails,
+; turn, wallcrash, warp).
 PassP1:
   LD HL,Screen+33
   LD (ScreenBase),HL
@@ -235,13 +244,14 @@ PassP2:
 ;
 ; Clears the deferred lists; WalkList over list A at Distance; EngineSound;
 ; AtvPhysics; Controls; unless riderless: JumpControl, RiderUpdate, Tumble;
-; WalkList over list B at Scenery; FlushDeferredA, DrawAtvAndRider,
-; FlushDeferredB; then the finish test (FinishCheck).
+; WalkList over list B at Scenery; FlushDeferredB, DrawAtvAndRider,
+; FlushDeferredA; then the finish test (FinishCheck).
 ;
 ; Bonus = ((MaxTime - the clock) / 2 + 1) x (Trail + 1) + 1, the clock read as
 ; a number (DigitsValue). trail1: the finish at frame (see NOTES).
 ;
-; Witness: L1 6162 (c1, empty, fuel, kb, trail1, trails, warp).
+; Witness: L1 6681 (c1, empty, fuel, kb, speedcrash, throwoff, trail1, trails,
+; turn, wallcrash, warp).
 Update:
   XOR A
   LD (DeferredA+$0002),A
@@ -283,7 +293,10 @@ l_DB16:
 FinishCheck:
   LD DE,(FinishDistance)  ; past FinishDistance: the Finished bit; the first
                           ; time the lap time and the bonus; "LAP TIME" and
-                          ; "EXTENDED PLAY"
+                          ; "EXTENDED PLAY". INC L / LD E,L ($DB74) keep only
+                          ; the low byte of (MaxTime - clock) / 2 + 1: a lap of
+                          ; 09.0 or less on a "60" trail loses 256 (warp trail
+                          ; 1: 15, not 271)
   LD HL,(TrackPos)
   XOR A
   SBC HL,DE
@@ -342,7 +355,8 @@ l_DB82:
 ; The rider each pass: on foot (RiderOnFoot, RiderGround) or mounted
 ; (RiderMounted)
 ;
-; Witness: L1 6161 (c1, empty, fuel, kb, trail1, trails, warp).
+; Witness: L1 6676 (c1, empty, fuel, kb, speedcrash, throwoff, trail1, trails,
+; turn, wallcrash, warp).
 RiderUpdate:
   LD A,(Mounted)
   CP $00
@@ -379,7 +393,8 @@ RiderMounted:
 
 ; The mounted rider's pose from the ATV's frame (RidePoses)
 ;
-; Witness: L1 2030 (c1, empty, fuel, kb, trail1, trails, warp).
+; Witness: L1 2325 (c1, empty, fuel, kb, speedcrash, throwoff, trail1, trails,
+; turn, wallcrash, warp).
 RiderPose:
   LD A,(AtvFrame)
   SUB $38
@@ -446,16 +461,12 @@ l_DEDF:
 
 ; The mounted rider's sprite for each ATV frame
 RidePoses:
-  DEFB $00,$00,$00,$00,$50,$10,$0A,$00
-  DEFB $50,$0E,$0B,$00,$52,$0B,$0D,$00
-  DEFB $52,$09,$0D,$00,$54,$07,$0D,$00
-  DEFB $54,$00,$0E,$00,$50,$14,$08,$00
-  DEFB $50,$15,$06,$00,$57,$17,$03,$00
-  DEFB $57,$18,$00,$00
+  INCBIN "res/tables/ridepose.bin",$0000,44
 
 ; The rider's height on the ATV
 ;
-; Witness: L1 2030 (c1, empty, fuel, kb, trail1, trails, warp).
+; Witness: L1 2325 (c1, empty, fuel, kb, speedcrash, throwoff, trail1, trails,
+; turn, wallcrash, warp).
 RiderPoseY:
   ADD A,$09
   CP $50
@@ -480,7 +491,8 @@ l_DF30:
 ; The rider walks against a step: back to his last x; jumps or falls to the
 ; ground
 ;
-; Witness: L1 3910 (c1, empty, fuel, kb, trail1, trails, warp).
+; Witness: L1 4057 (c1, empty, fuel, kb, speedcrash, throwoff, trail1, trails,
+; turn, wallcrash, warp).
 RiderOnFoot:
   LD A,(RiderJump)
   CP $00
@@ -537,12 +549,15 @@ RiderLand:
 ; OutOfFuel
 ;
 ; fuel: the bar from $B0 down to $90 in 8 steps. Recording empty (the fuel's
-; high byte POKEd to 5 at frame 567) runs out at frame 767: OutOfFuel ran 83
-; times, "OUT OF FUEL" is printed, the two SlowDowns a moving pass leave the
-; ATV crawling forward while the throttle is held (screens 000939-after to
-; 002269-end); only the clock ends the run.
+; high byte POKEd to 5 at frame 567) runs out at frame 732 (OutOfFuel first,
+; the text from 736): OutOfFuel ran 83 times, "OUT OF FUEL" is printed, the two
+; SlowDowns a moving pass leave the ATV crawling forward while the throttle is
+; held (screens 000939-after to 002269-end); only the clock ends the run. The
+; first cell goes at the first moving pass ($2000 less anything has level $1C):
+; the usable tank is $1C00.
 ;
-; Witness: L1 1582 (c1, empty, fuel, kb, trail1, trails, warp).
+; Witness: L1 1875 (c1, empty, fuel, kb, speedcrash, throwoff, trail1, trails,
+; turn, wallcrash, warp).
 UseFuel:
   LD HL,(Fuel)
   LD A,(Speed)
@@ -576,7 +591,8 @@ FuelEmptyTest:
 
 ; clear the bar's last 4 pixels (6 lines)
 ;
-; Witness: L1 135 (c1, empty, fuel, kb, trail1, trails, warp).
+; Witness: L1 146 (c1, empty, fuel, kb, speedcrash, throwoff, trail1, trails,
+; turn, wallcrash, warp).
 FuelBarStep:
   LD A,(SpriteX)
   LD C,$0F
@@ -596,9 +612,11 @@ l_DFDD:
   RET
 ; This entry point is used by the routine at UseFuel.
 OutOfFuel:
-  LD A,$90                ; the bar at its start, SlowDown twice; once per
-                          ; player: "OUT OF FUEL" (ZXDB POKE 57318 puts a RET
-                          ; here: an empty tank no longer brakes)
+  LD A,$90                ; The bar at its start, SlowDown twice; once per
+                          ; player: "OUT OF FUEL", every pass while the tank is
+                          ; empty unless the player has finished (ZXDB POKE
+                          ; 57318 puts a RET here: an empty tank no longer
+                          ; brakes)
   LD (FuelBar),A
   LD (SpriteX),A
   CALL FuelBarStep
@@ -619,10 +637,11 @@ OutOfFuel:
 ; Move along the trail by the speed in the facing direction, use fuel
 ;
 ; Speed under 2: no move. Forwards: Distance + speed x 128, Scenery + speed x
-; 16 (ForwardList, ForwardScenery); backwards the same down. Each $1000 of
+; 32 (ForwardList, ForwardScenery); backwards the same down. Each $1000 of
 ; Distance crossed scores a point up forwards, down backwards (ScoreStep).
 ;
-; Witness: L1 6179 (c1, empty, fuel, kb, trail1, trails, warp).
+; Witness: L1 6700 (c1, empty, fuel, kb, speedcrash, throwoff, trail1, trails,
+; turn, wallcrash, warp).
 Advance:
   LD A,(Speed)
   CP $02
@@ -640,7 +659,8 @@ l_E027:
 
 ; Distance - speed x 128; at 0 the trail's start: stop
 ;
-; Witness: L1 14 (c1, fuel, kb, trail1, trails, warp).
+; Witness: L1 55 (c1, fuel, kb, speedcrash, trail1, trails, turn, wallcrash,
+; warp).
 BackList:
   LD A,(Speed)
   LD D,A
@@ -678,16 +698,17 @@ BackList:
 
 ; One point off the current player's score
 ;
-; Witness: L1 7 (fuel, kb, warp).
+; Witness: L1 26 (fuel, kb, speedcrash, turn, wallcrash, warp).
 ScoreDown:
   LD A,(PlayerIndex)
   CP $00
   JP Z,ScoreDownP1
   JP ScoreDownP2
 
-; Scenery - speed x 16
+; Scenery - speed x 32
 ;
-; Witness: L1 14 (c1, fuel, kb, trail1, trails, warp).
+; Witness: L1 55 (c1, fuel, kb, speedcrash, trail1, trails, turn, wallcrash,
+; warp).
 BackScenery:
   LD A,(Speed)
   LD D,A
@@ -711,7 +732,8 @@ BackScenery:
 
 ; Distance + speed x 128
 ;
-; Witness: L1 1568 (c1, empty, fuel, kb, trail1, trails, warp).
+; Witness: L1 1820 (c1, empty, fuel, kb, speedcrash, throwoff, trail1, trails,
+; turn, wallcrash, warp).
 ForwardList:
   LD A,(Speed)
   LD D,A
@@ -736,9 +758,11 @@ ForwardList:
   LD (TrackPos+$0001),A
   RET
 
-; One point onto the current player's score (not after the finish)
+; One point onto the current player's score (not after the finish): +1, shown
+; as +10
 ;
-; Witness: L1 701 (c1, empty, fuel, kb, trail1, trails, warp).
+; Witness: L1 811 (c1, empty, fuel, kb, speedcrash, throwoff, trail1, trails,
+; turn, wallcrash, warp).
 ScoreStep:
   LD A,(Finished)
   LD E,A
@@ -751,9 +775,11 @@ ScoreStep:
   JP Z,ScoreUpP1
   JP ScoreUpP2
 
-; Scenery + speed x 16
+; Scenery + speed x 32 (Speed x 256 shifted right three times): a quarter of
+; ForwardList's speed x 128
 ;
-; Witness: L1 1568 (c1, empty, fuel, kb, trail1, trails, warp).
+; Witness: L1 1820 (c1, empty, fuel, kb, speedcrash, throwoff, trail1, trails,
+; turn, wallcrash, warp).
 ForwardScenery:
   LD A,(Speed)
   LD D,A
@@ -777,7 +803,8 @@ ForwardScenery:
 ; The controls, unless the rider is falling or thrown: Left, Right, Up,
 ; MountCheck
 ;
-; Witness: L1 6161 (c1, empty, fuel, kb, trail1, trails, warp).
+; Witness: L1 6680 (c1, empty, fuel, kb, speedcrash, throwoff, trail1, trails,
+; turn, wallcrash, warp).
 Controls:
   LD A,(FallPhase)
   CP $00
@@ -795,7 +822,8 @@ l_E11F:
 ; Left: riding, throttle facing left or brake facing right (a standstill turns
 ; round); on foot, walk left
 ;
-; Witness: L1 5940 (c1, empty, fuel, kb, trail1, trails, warp).
+; Witness: L1 6387 (c1, empty, fuel, kb, speedcrash, throwoff, trail1, trails,
+; turn, wallcrash, warp).
 ControlLeft:
   LD A,(Mounted)
   CP $00
@@ -904,7 +932,8 @@ l_E1DA:
 
 ; Right: the same the other way
 ;
-; Witness: L1 5940 (c1, empty, fuel, kb, trail1, trails, warp).
+; Witness: L1 6387 (c1, empty, fuel, kb, speedcrash, throwoff, trail1, trails,
+; turn, wallcrash, warp).
 ControlRight:
   LD A,(Mounted)
   CP $00
@@ -1013,9 +1042,10 @@ l_E2A6:
   RET
 
 ; Up: WheelieTimer = 10 and the nose up; at full nose-up ($44) the rider is
-; thrown off backwards (ThrowOff: no recording)
+; thrown off backwards (ThrowOff: recording throwoff, frames 612-619)
 ;
-; Witness: L1 5940 (c1, empty, fuel, kb, trail1, trails, warp).
+; Witness: L1 6387 (c1, empty, fuel, kb, speedcrash, throwoff, trail1, trails,
+; turn, wallcrash, warp).
 ControlUp:
   LD A,(PassControls)
   BIT 2,A
@@ -1063,13 +1093,14 @@ WheelieCount:
 ; The rider's jump steps ($E314 on, rising $0A, $07, $04, $02, then falling
 ; $01...) and FallSteps ($E319: 0, 1, 2, 4, 6)
 RiderJumpTable:
-  DEFB $0A,$0A,$0A,$07,$04,$02,$01
+  INCBIN "res/tables/riderjump.bin",$0000,7
 FallSteps:
-  DEFB $00,$01,$02,$04,$06,$06 ; the ATV's fall per pass by VSpeed
+  INCBIN "res/tables/riderjump.bin",$0007,6
 
 ; Lying after a throw: Jump stands the rider up (on foot)
 ;
-; Witness: L1 221 (c1, fuel, kb, trail1, trails, warp).
+; Witness: L1 294 (c1, fuel, kb, speedcrash, throwoff, trail1, trails,
+; wallcrash, warp).
 GetUp:
   LD A,(FallPhase)
   CP $05
@@ -1095,7 +1126,8 @@ l_E32D:
 ; Jump: riding on the ground, a jump (VSpeed $FD less the climb); on foot the
 ; rider's jump
 ;
-; Witness: L1 6161 (c1, empty, fuel, kb, trail1, trails, warp).
+; Witness: L1 6676 (c1, empty, fuel, kb, speedcrash, throwoff, trail1, trails,
+; turn, wallcrash, warp).
 JumpControl:
   LD A,(FallPhase)
   CP $00
@@ -1168,6 +1200,8 @@ DismountUnused:
 ; RiderHeight = A, at most $4F
 ;
 ; Known only from the code: no recording runs it.
+;
+; Witness: L1 1 (throwoff).
 RiderHeightClamp:
   LD (RiderHeight),A
   CP $50
@@ -1178,7 +1212,8 @@ RiderHeightClamp:
 
 ; The rider's jump on foot
 ;
-; Witness: L1 211 (c1, empty, fuel, kb, trail1, trails, warp).
+; Witness: L1 216 (c1, empty, fuel, kb, speedcrash, throwoff, trail1, trails,
+; turn, wallcrash, warp).
 RiderJumpStart:
   LD A,$01
   LD (RiderJump),A
@@ -1263,7 +1298,8 @@ l_E45A:
 ; RiderFacing = Facing, RiderJump >= 5, AtvFrame $38-$4D: Mounted = 1,
 ; RiderFrame $59 (c1: 20 mounts).
 ;
-; Witness: L1 5940 (c1, empty, fuel, kb, trail1, trails, warp).
+; Witness: L1 6387 (c1, empty, fuel, kb, speedcrash, throwoff, trail1, trails,
+; turn, wallcrash, warp).
 MountCheck:
   LD A,(AtvX)
   SUB $0C
@@ -1318,7 +1354,8 @@ l_E482:
 
 ; Both players' records from RecordTemplate
 ;
-; Witness: L1 16 (c1, empty, fuel, kb, trail1, trails, warp).
+; Witness: L1 21 (c1, empty, fuel, kb, speedcrash, throwoff, trail1, trails,
+; turn, wallcrash, warp).
 InitRecords:
   LD HL,RecordTemplate
   LD DE,RecordP1
@@ -1332,7 +1369,8 @@ InitRecords:
 
 ; Record = RecordP1
 ;
-; Witness: L1 8976 (c1, empty, fuel, kb, trail1, trails, warp).
+; Witness: L1 9531 (c1, empty, fuel, kb, speedcrash, throwoff, trail1, trails,
+; turn, wallcrash, warp).
 LoadRecordP1:
   LD HL,RecordP1
   LD DE,Record
@@ -1342,7 +1380,8 @@ LoadRecordP1:
 
 ; RecordP1 = Record
 ;
-; Witness: L1 8965 (c1, empty, fuel, kb, trail1, trails, warp).
+; Witness: L1 9519 (c1, empty, fuel, kb, speedcrash, throwoff, trail1, trails,
+; turn, wallcrash, warp).
 SaveRecordP1:
   LD HL,Record
   LD DE,RecordP1
@@ -1372,7 +1411,7 @@ SaveRecordP2:
 
 ; Speed 0 and the SPEED bar cleared
 ;
-; Witness: L1 16 (c1, fuel, kb, trail1, trails, warp).
+; Witness: L1 18 (c1, fuel, kb, speedcrash, trail1, trails, wallcrash, warp).
 Stop:
   LD HL,Screen
   LD (ScreenBase),HL
@@ -1398,7 +1437,8 @@ l_E524:
 
 ; Speed - 2 (not under 0), the bar
 ;
-; Witness: L1 1520 (c1, empty, fuel, kb, trail1, trails, warp).
+; Witness: L1 1695 (c1, empty, fuel, kb, speedcrash, throwoff, trail1, trails,
+; turn, wallcrash, warp).
 SlowDown:
   LD A,(Speed)
   SUB $02
@@ -1410,7 +1450,8 @@ l_E546:
 
 ; Speed + 1, at most 21, the bar
 ;
-; Witness: L1 1819 (c1, empty, fuel, kb, trail1, trails, warp).
+; Witness: L1 2005 (c1, empty, fuel, kb, speedcrash, throwoff, trail1, trails,
+; turn, wallcrash, warp).
 Accelerate:
   LD A,(Speed)
   ADD A,$01
@@ -1423,7 +1464,8 @@ l_E557:
 
 ; Draw the SPEED bar to the speed
 ;
-; Witness: L1 3339 (c1, empty, fuel, kb, trail1, trails, warp).
+; Witness: L1 3700 (c1, empty, fuel, kb, speedcrash, throwoff, trail1, trails,
+; turn, wallcrash, warp).
 SpeedBar:
   LD HL,Screen
   LD (ScreenBase),HL
@@ -1463,7 +1505,8 @@ l_E59A:
 
 ; A bar's 4-pixel step (6 lines)
 ;
-; Witness: L1 2205 (c1, empty, fuel, kb, trail1, trails, warp).
+; Witness: L1 2409 (c1, empty, fuel, kb, speedcrash, throwoff, trail1, trails,
+; turn, wallcrash, warp).
 BarNibble:
   LD A,(SpriteX)
   LD C,$0F
@@ -1484,7 +1527,8 @@ l_E5B1:
 
 ; Rising: VSpeed + 1 towards 0, the height up by FallSteps
 ;
-; Witness: L1 6161 (c1, empty, fuel, kb, trail1, trails, warp).
+; Witness: L1 6676 (c1, empty, fuel, kb, speedcrash, throwoff, trail1, trails,
+; turn, wallcrash, warp).
 Rise:
   LD A,(VSpeed)
   BIT 7,A
@@ -1515,7 +1559,8 @@ l_E5D7:
 
 ; Falling: VSpeed + 1 up to 5, the height down by FallSteps
 ;
-; Witness: L1 439 (c1, empty, fuel, kb, trail1, trails, warp).
+; Witness: L1 510 (c1, empty, fuel, kb, speedcrash, throwoff, trail1, trails,
+; turn, wallcrash, warp).
 Fall:
   LD DE,l_E6F8
   PUSH DE
@@ -1546,13 +1591,12 @@ l_E601:
 
 ; The wheels' x and y offsets for each ATV frame from $38 (pairs)
 WheelOffsets:
-  DEFB $23,$01,$24,$05,$23,$08,$22,$0B
-  DEFB $21,$0D,$20,$10,$17,$17,$24,$FE
-  DEFB $22,$FB,$22,$F8,$20,$F5
+  INCBIN "res/tables/wheeloffsets.bin",$0000,22
 
 ; SpriteX = the rear wheel's x
 ;
-; Witness: L1 6161 (c1, empty, fuel, kb, trail1, trails, warp).
+; Witness: L1 6676 (c1, empty, fuel, kb, speedcrash, throwoff, trail1, trails,
+; turn, wallcrash, warp).
 RearX:
   LD A,(AtvX)
   ADD A,$07
@@ -1568,7 +1612,8 @@ RearX:
 
 ; SpriteX = the front wheel's x (B the frame's offset)
 ;
-; Witness: L1 6161 (c1, empty, fuel, kb, trail1, trails, warp).
+; Witness: L1 6676 (c1, empty, fuel, kb, speedcrash, throwoff, trail1, trails,
+; turn, wallcrash, warp).
 FrontX:
   LD A,(AtvX)
   ADD A,B
@@ -1581,14 +1626,18 @@ FrontX:
   SUB B
   ADD A,$16
 
-; The left-facing tail of FrontX ($32 $DB $80 $C9: LD (SpriteX),A; RET), read
-; as data by the recordings (see NOTES)
+; The left-facing tail of FrontX: LD (SpriteX),A; RET (run when the ATV faces
+; left: recording turn)
+;
+; Witness: L1 43 (turn).
 FrontXLeft:
-  DEFB $32,$DB,$80,$C9
+  LD (SpriteX),A
+  RET
 
 ; The thump of a landing: a tone and a noise, SlowDown
 ;
-; Witness: L1 153 (c1, empty, fuel, kb, trail1, trails, warp).
+; Witness: L1 169 (c1, empty, fuel, kb, speedcrash, throwoff, trail1, trails,
+; turn, wallcrash, warp).
 Landing:
   XOR A
   LD (VSpeed),A
@@ -1608,7 +1657,8 @@ Landing:
 ; nose against the wheels gives the frame by SlopeFrames; a step of $15 or
 ; more: Crash; WheelieDown when the timer ran out or Down is held.
 ;
-; Witness: L1 6161 (c1, empty, fuel, kb, trail1, trails, warp).
+; Witness: L1 6680 (c1, empty, fuel, kb, speedcrash, throwoff, trail1, trails,
+; turn, wallcrash, warp).
 AtvPhysics:
   LD A,(PrevHeight)
   LD (PrevHeight+$0001),A
@@ -1763,15 +1813,11 @@ l_E788:
 
 ; The frame offset for each line of slope (0-$14)
 SlopeFrames:
-  DEFB $00,$00,$00,$02,$02,$02,$04,$04
-  DEFB $04,$06,$06,$06,$08,$08,$08,$0A
-  DEFB $0A,$0A,$0C,$0C,$0C,$0E,$0E,$0E
-  DEFB $10,$10,$10,$12,$12,$12,$14,$14
-  DEFB $14,$16,$16,$16
+  INCBIN "res/tables/slopeframes.bin",$0000,36
 
 ; Carry when falling at 5 lines a pass
 ;
-; Witness: L1 51 (c1, fuel, kb, trail1, trails, warp).
+; Witness: L1 60 (c1, fuel, kb, trail1, trails, turn, wallcrash, warp).
 FastFall:
   LD A,(VSpeed)
   CP $80
@@ -1782,7 +1828,8 @@ FastFall:
 
 ; The nose in the air: lift the frame
 ;
-; Witness: L1 57 (c1, fuel, kb, trail1, trails, warp).
+; Witness: L1 72 (c1, fuel, kb, speedcrash, trail1, trails, turn, wallcrash,
+; warp).
 NoseHigh:
   LD A,(AtvHeight)
   SUB $03
@@ -1809,12 +1856,12 @@ l_E7D9:
 
 ; A table of multiples of 3 no code reads ($E7AC is read: SlopeFrames' tail)
 SlopeTable2:
-  DEFB $00,$03,$06,$09,$0C,$0F,$12,$15
-  DEFB $18,$1B,$1E,$21
+  INCBIN "res/tables/slopetable2.bin",$0000,12
 
 ; Carry when the ATV is within 4 lines of the ground
 ;
-; Witness: L1 1696 (c1, empty, fuel, kb, trail1, trails, warp).
+; Witness: L1 1928 (c1, empty, fuel, kb, speedcrash, throwoff, trail1, trails,
+; turn, wallcrash, warp).
 OnGround:
   LD A,(GroundY)
   LD D,A
@@ -1837,7 +1884,8 @@ CrashIfAir:
 ; B = the height of the first ground pixel under SpriteX (a column scan of the
 ; buffer from the ATV's height + 8 down)
 ;
-; Witness: L1 12322 (c1, empty, fuel, kb, trail1, trails, warp).
+; Witness: L1 13352 (c1, empty, fuel, kb, speedcrash, throwoff, trail1, trails,
+; turn, wallcrash, warp).
 GroundUnder:
   LD A,(AtvHeight)
   ADD A,$08
@@ -1850,7 +1898,8 @@ l_E81B:
 
 ; The column scan from HL down (C the pixel mask, B lines)
 ;
-; Witness: L1 24644 (c1, empty, fuel, kb, trail1, trails, warp).
+; Witness: L1 26704 (c1, empty, fuel, kb, speedcrash, throwoff, trail1, trails,
+; turn, wallcrash, warp).
 GroundScan:
   CALL JpPixelMask
   LD C,A
@@ -1872,7 +1921,8 @@ l_E830:
 
 ; The nose up two frames (to $44)
 ;
-; Witness: L1 378 (c1, empty, fuel, kb, trail1, trails, warp).
+; Witness: L1 394 (c1, empty, fuel, kb, speedcrash, throwoff, trail1, trails,
+; turn, wallcrash, warp).
 WheelieUp:
   LD A,(AtvFrame)
   CP $46
@@ -1892,7 +1942,8 @@ l_E84E:
 
 ; The nose down two frames
 ;
-; Witness: L1 597 (c1, empty, fuel, kb, trail1, trails, warp).
+; Witness: L1 680 (c1, empty, fuel, kb, speedcrash, throwoff, trail1, trails,
+; turn, wallcrash, warp).
 WheelieDown:
   LD A,(AtvFrame)
   CP $46
@@ -1912,18 +1963,15 @@ l_E868:
 
 ; The tumble's frames ($7D-$87) and heights ($E884)
 TumbleFrames:
-  DEFB $7D,$7F,$81,$83,$85,$87,$7D,$7F
-  DEFB $81,$83,$85,$87,$7D,$7F,$81,$83
-  DEFB $85,$87,$7D,$7F,$81,$83,$85,$87
+  INCBIN "res/tables/tumbleframes.bin",$0000,24
 TumbleHeights:
-  DEFB $05,$05,$04,$03,$02,$01,$FE,$FD
-  DEFB $FC,$FB,$FA,$FA,$FA,$FA,$FA,$FA
-  DEFB $FA,$FA,$FA,$FA,$FA,$FA,$FA,$FA
+  INCBIN "res/tables/tumbleframes.bin",$0018,24
 
 ; The tumble: 24 passes of TumbleFrames, slowing; then upright ($44) on the
 ; ground, stopped
 ;
-; Witness: L1 6161 (c1, empty, fuel, kb, trail1, trails, warp).
+; Witness: L1 6676 (c1, empty, fuel, kb, speedcrash, throwoff, trail1, trails,
+; turn, wallcrash, warp).
 Tumble:
   LD A,(TumbleCount)
   CP $00
@@ -1985,7 +2033,8 @@ l_E908:
 
 ; RiderGround under the mounted rider
 ;
-; Witness: L1 2030 (c1, empty, fuel, kb, trail1, trails, warp).
+; Witness: L1 2325 (c1, empty, fuel, kb, speedcrash, throwoff, trail1, trails,
+; turn, wallcrash, warp).
 RiderGroundMounted:
   LD A,(RiderHeight)
   ADD A,$20
@@ -1998,7 +2047,8 @@ l_E917:
 
 ; RiderGround under the rider on foot
 ;
-; Witness: L1 4131 (c1, empty, fuel, kb, trail1, trails, warp).
+; Witness: L1 4351 (c1, empty, fuel, kb, speedcrash, throwoff, trail1, trails,
+; turn, wallcrash, warp).
 RiderGround:
   LD A,(RiderHeight)
   ADD A,$07
@@ -2025,12 +2075,12 @@ l_E941:
   LD (GroundBelowRider),A
   RET
 
-; A crash: back one step, SlowDown; under 10 stop, 10-14 stop and throw, 15 and
-; up tumble and throw
+; A crash: back one step, SlowDown; then under 10 stop, 10-14 stop and throw,
+; 15 and up tumble and throw (the speed after the -2)
 ;
 ; c1: 19 crashes (trail1, fuel, trails: see NOTES).
 ;
-; Witness: L1 19 (c1, fuel, kb, trail1, trails, warp).
+; Witness: L1 21 (c1, fuel, kb, speedcrash, trail1, trails, wallcrash, warp).
 Crash:
   LD A,(Facing)
   XOR $01
@@ -2061,9 +2111,11 @@ l_E974:
   CALL Throw
   RET
 
-; The rider falling down a step (FallPhase): no path in the recordings
+; The rider falling after ThrowOff (FallPhase 1-5; recording throwoff: 35 runs)
 ;
 ; Known only from the code.
+;
+; Witness: L1 35 (throwoff).
 FallRider:
   CALL RiderGround
   XOR A
@@ -2109,7 +2161,8 @@ l_E9D6:
 
 ; RiderHeight - E, not below the ground
 ;
-; Witness: L1 124 (c1, fuel, kb, trail1, trails, warp).
+; Witness: L1 155 (c1, fuel, kb, speedcrash, throwoff, trail1, trails,
+; wallcrash, warp).
 RiderToGround:
   LD A,(GroundBelowRider)
   LD D,A
@@ -2127,7 +2180,7 @@ l_E9EE:
 
 ; Throw the rider off: ThrowSpeed $F8 - speed / 8, on foot
 ;
-; Witness: L1 12 (c1, fuel, kb, trail1, trails, warp).
+; Witness: L1 14 (c1, fuel, kb, speedcrash, trail1, trails, wallcrash, warp).
 Throw:
   LD A,(ThrowSpeed)
   CP $00
@@ -2152,7 +2205,7 @@ Throw:
 ; The thrown rider's flight: forwards 4 a pass, up then down, the tumbling
 ; frames $5E-$64; lying ($77) when he lands
 ;
-; Witness: L1 221 (c1, fuel, kb, trail1, trails, warp).
+; Witness: L1 259 (c1, fuel, kb, speedcrash, trail1, trails, wallcrash, warp).
 Thrown:
   CALL RiderGround
   LD A,(RiderHeight)
@@ -2228,7 +2281,7 @@ l_EAA4:
 
 ; E = FallSteps[min(A, 5) - 1]
 ;
-; Witness: L1 221 (c1, fuel, kb, trail1, trails, warp).
+; Witness: L1 259 (c1, fuel, kb, speedcrash, trail1, trails, wallcrash, warp).
 FlightStep:
   CP $06
   JR C,l_EAB4

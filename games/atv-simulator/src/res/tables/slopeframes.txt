@@ -1,0 +1,5 @@
+# SlopeFrames: the frame offset for each line of slope (0-$14)
+# 36 bytes from $E797; a row is 12 bytes ($XX each), the comment its address
+$00 $00 $00 $02 $02 $02 $04 $04 $04 $06 $06 $06  # $E797
+$08 $08 $08 $0A $0A $0A $0C $0C $0C $0E $0E $0E  # $E7A3
+$10 $10 $10 $12 $12 $12 $14 $14 $14 $16 $16 $16  # $E7AF

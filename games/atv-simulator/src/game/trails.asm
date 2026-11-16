@@ -5,10 +5,11 @@
 ; GameEntry): list A (the ground and the obstacles the ATV rides over and hits), list B (the scenery behind: drawn
 ; after the ATV's ground test, so it never stops it), and the length; FinishDistance = the length - $48. A list is
 ; items of six bytes in order of distance: +0 the distance word, +2 y (0: the sprite's height, filled by
-; InitListWidths), +3 the advance (filled by InitListWidths), +4 the sprite number and +5 the flags (bit 0 mirrored,
-; bits 1-3 the draw mode: 1 deferred to DeferredA, 2 to DeferredB); flags bits 4-7 set make +4/+5 the address of an
-; animation record instead. $FF at +1 ends a list. List A scrolls with the distance (Distance $D789-$D78B, a step of
-; speed x 128 a pass), list B at an eighth of it ($D78E-$D790, speed x 16).
+; InitListWidths), +3 the advance (filled by InitListWidths), +4 the sprite number and +5 the flags (bit 0 the sprite
+; from the menu bank (MenuSprite) with its attributes (DeferAttrs); bits 1-3 shifted into ItemFlags bits 5-7: bit 1
+; deferred to DeferredB (drawn before the ATV), bit 2 to DeferredA (after it), bit 3 masked); flags bits 4-7 set make
+; +4/+5 the address of an animation record instead. $FF at +1 ends a list. List A scrolls with the distance (Distance
+; $D789-$D78B, a step of speed x 128 a pass), list B at a quarter of it ($D78E-$D790, speed x 32).
 ; --------------------------------------------------------------------------------------------------------------------
 
   ORG $7C9C

@@ -5,8 +5,9 @@
 #                                            less $48, shown as the comment)
 #   list NAME                                a list: its items follow, the $FFFF end mark is written after them
 #   DIST Y ADV sprite=$SS flags=$FF          an item: the distance along the trail, y (0: the sprite's own height),
-#                                            the advance (0 in the image: InitListWidths fills it), the game sprite,
-#                                            the flags (bit 0 mirrored, bits 1-3 the draw mode)
+#                                            the advance (0 in the image: InitListWidths fills it), the sprite, the
+#                                            flags (bit 0 the menu bank's picture and its attributes, bit 1 drawn
+#                                            before the ATV (DeferredB), bit 2 after it (DeferredA), bit 3 masked)
 #   DIST Y ADV anim=NAME                     an item drawn from an animation record (AnimObject $8A49)
 #   anim NAME sprite=$SS flags=$FF id=$II [motion=HEX]   an animation record: sprite, flags, id, then the motions
 #                                            (+3/+4 the x period and counter, +5/+6 the y ones, +7 the x and y steps,

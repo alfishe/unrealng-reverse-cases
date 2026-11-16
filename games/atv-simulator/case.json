@@ -21,7 +21,11 @@
     "stage1/rec/trails",
     "stage1/rec/warp",
     "stage1/rec/fuel",
-    "stage2/rec/empty"
+    "stage1/rec/empty",
+    "stage1/rec/turn",
+    "stage1/rec/throwoff",
+    "stage1/rec/speedcrash",
+    "stage1/rec/wallcrash"
   ],
   "ref_builds": [
     [
@@ -43,7 +47,11 @@
     "stage1/rec/trails",
     "stage1/rec/warp",
     "stage1/rec/fuel",
-    "stage2/rec/empty"
+    "stage1/rec/empty",
+    "stage1/rec/turn",
+    "stage1/rec/throwoff",
+    "stage1/rec/speedcrash",
+    "stage1/rec/wallcrash"
   ],
   "no_roots": [
     "stage1/rec/menu",
@@ -52,6 +60,10 @@
     "stage1/rec/trails",
     "stage1/rec/warp",
     "stage1/rec/fuel",
-    "stage2/rec/empty"
+    "stage1/rec/empty",
+    "stage1/rec/turn",
+    "stage1/rec/throwoff",
+    "stage1/rec/speedcrash",
+    "stage1/rec/wallcrash"
   ]
 }

@@ -147,20 +147,22 @@ SeenCount:
   DEFB $00                ; the animated objects stepped this pass (AnimObject;
                           ; at most 30)
 SeenIds:
-  DEFB $00,$00,$00,$00,$00,$00,$00,$00 ; their ids: an object seen twice in a
-  DEFB $00,$00,$00,$00,$00,$00,$00,$00 ; pass (both players) moves once
-  DEFB $00,$00,$00,$00,$00,$00,$00,$00
-  DEFB $00,$00,$00,$00,$00,$00
+  DEFB $00,$00,$00,$00,$00,$00,$00,$00 ; their ids, reset each pass by Players:
+  DEFB $00,$00,$00,$00,$00,$00,$00,$00 ; player 1 adds every id it steps
+  DEFB $00,$00,$00,$00,$00,$00,$00,$00 ; without a check, player 2 skips an id
+  DEFB $00,$00,$00,$00,$00,$00         ; already there, so an object shown in
+                                       ; both halves moves once a pass; 30
+                                       ; entries at most (ListOverflow)
 SavedSp:
   DEFB $00,$00            ; SP while ClearBuffer pushes zeros
 BufferBase:
   DEFB $00,$00            ; the buffer being drawn ($F03C or $F71C)
 DeferredA:
-  DEFB $00,$00,$00,$00,$00,$00,$00,$00 ; deferred sprites drawn before the ATV:
-  DEFB $00,$00,$00,$00,$00,$00,$00,$00 ; the next free offset, $8148 the count,
-  DEFB $00,$00,$00,$00,$00,$00,$00,$00 ; $8149 items of 8 bytes (x, y, advance,
-  DEFB $00,$00,$00,$00,$00,$00,$00,$00 ; sprite, routine, clip code, flags)
-  DEFB $00,$00,$00,$00,$00,$00,$00,$00
+  DEFB $00,$00,$00,$00,$00,$00,$00,$00 ; deferred sprites drawn after the ATV
+  DEFB $00,$00,$00,$00,$00,$00,$00,$00 ; (in front of it): the next free
+  DEFB $00,$00,$00,$00,$00,$00,$00,$00 ; offset, $8148 the count, $8149 items
+  DEFB $00,$00,$00,$00,$00,$00,$00,$00 ; of 8 bytes (x, y, advance, sprite,
+  DEFB $00,$00,$00,$00,$00,$00,$00,$00 ; routine, clip code, flags)
   DEFB $00,$00,$00,$00,$00,$00,$00,$00
   DEFB $00,$00,$00,$00,$00,$00,$00,$00
   DEFB $00,$00,$00,$00,$00,$00,$00,$00
@@ -178,9 +180,9 @@ DeferredA:
   DEFB $00,$00,$00,$00,$00,$00,$00,$00
   DEFB $00,$00,$00
 DeferredB:
-  DEFB $00,$00,$00,$00,$00,$00,$00,$00 ; deferred sprites drawn after the ATV:
-  DEFB $00,$00,$00,$00,$00,$00,$00,$00 ; offset, count ($81EB), items from
-  DEFB $00,$00,$00,$00,$00,$00,$00,$00 ; $81EC
+  DEFB $00,$00,$00,$00,$00,$00,$00,$00 ; deferred sprites drawn before the ATV
+  DEFB $00,$00,$00,$00,$00,$00,$00,$00 ; (behind it): offset, count ($81EB),
+  DEFB $00,$00,$00,$00,$00,$00,$00,$00 ; items from $81EC
   DEFB $00,$00,$00,$00,$00,$00,$00,$00
   DEFB $00,$00,$00,$00,$00,$00,$00,$00
   DEFB $00,$00,$00,$00,$00,$00,$00,$00
@@ -227,19 +229,22 @@ SpriteCall:
 ; The entries at $8307, $830A, $834F, $835E, $8361 and $8367 are called by no
 ; one (known only from the code).
 ;
-; Witness: L1 3662 (c1, empty, fuel, kb, menu, trail1, trails, warp).
+; Witness: L1 4078 (c1, empty, fuel, kb, menu, speedcrash, throwoff, trail1,
+; trails, turn, wallcrash, warp).
 GfxTable:
   JP ScreenAddr
 
 ; JP NextLineHL
 ;
-; Witness: L1 26033 (c1, empty, fuel, kb, trail1, trails, warp).
+; Witness: L1 38397 (c1, empty, fuel, kb, speedcrash, throwoff, trail1, trails,
+; turn, wallcrash, warp).
 JpNextLineHL:
   JP NextLineHL
 
 ; JP NextLineDE
 ;
-; Witness: L1 63950 (c1, empty, fuel, kb, menu, trail1, trails, warp).
+; Witness: L1 72342 (c1, empty, fuel, kb, menu, speedcrash, throwoff, trail1,
+; trails, turn, wallcrash, warp).
 JpNextLineDE:
   JP NextLineDE
 
@@ -257,109 +262,127 @@ JpPrevLineDE:
 
 ; JP ClearKeys
 ;
-; Witness: L1 417838 (c1, empty, fuel, kb, menu, trail1, trails, warp).
+; Witness: L1 418942 (c1, empty, fuel, kb, menu, speedcrash, throwoff, trail1,
+; trails, turn, wallcrash, warp).
 JpClearKeys:
   JP ClearKeys
 
 ; JP ScanKeys
 ;
-; Witness: L1 137129 (c1, empty, fuel, kb, menu, trail1, trails, warp).
+; Witness: L1 143606 (c1, empty, fuel, kb, menu, speedcrash, throwoff, trail1,
+; trails, turn, wallcrash, warp).
 JpScanKeys:
   JP ScanKeys
 
 ; JP GameSpriteAt
 ;
-; Witness: L1 15850 (c1, empty, fuel, kb, trail1, trails, warp).
+; Witness: L1 16821 (c1, empty, fuel, kb, speedcrash, throwoff, trail1, trails,
+; turn, wallcrash, warp).
 JpGameSpriteAt:
   JP GameSpriteAt
 
 ; JP GameSprite
 ;
-; Witness: L1 60204 (c1, empty, fuel, kb, menu, trail1, trails, warp).
+; Witness: L1 63645 (c1, empty, fuel, kb, menu, speedcrash, throwoff, trail1,
+; trails, turn, wallcrash, warp).
 JpGameSprite:
   JP GameSprite
 
 ; JP MenuSpriteAt
 ;
-; Witness: L1 49 (c1, empty, fuel, kb, trail1, trails, warp).
+; Witness: L1 77 (c1, empty, fuel, kb, speedcrash, throwoff, trail1, trails,
+; turn, wallcrash, warp).
 JpMenuSpriteAt:
   JP MenuSpriteAt
 
 ; JP MenuSprite
 ;
-; Witness: L1 51 (c1, empty, fuel, kb, menu, trail1, trails, warp).
+; Witness: L1 61 (c1, empty, fuel, kb, menu, speedcrash, throwoff, trail1,
+; trails, turn, wallcrash, warp).
 JpMenuSprite:
   JP MenuSprite
 
 ; JP Multiply
 ;
-; Witness: L1 878 (c1, empty, fuel, kb, menu, trail1, trails, warp).
+; Witness: L1 1099 (c1, empty, fuel, kb, menu, speedcrash, throwoff, trail1,
+; trails, turn, wallcrash, warp).
 JpMultiply:
   JP Multiply
 
 ; JP P1Left
 ;
-; Witness: L1 24779 (c1, empty, fuel, kb, menu, trail1, trails, warp).
+; Witness: L1 27315 (c1, empty, fuel, kb, menu, speedcrash, throwoff, trail1,
+; trails, turn, wallcrash, warp).
 JpP1Left:
   JP P1Left
 
 ; JP P1Right
 ;
-; Witness: L1 24779 (c1, empty, fuel, kb, menu, trail1, trails, warp).
+; Witness: L1 27315 (c1, empty, fuel, kb, menu, speedcrash, throwoff, trail1,
+; trails, turn, wallcrash, warp).
 JpP1Right:
   JP P1Right
 
 ; JP P1Up
 ;
-; Witness: L1 24779 (c1, empty, fuel, kb, menu, trail1, trails, warp).
+; Witness: L1 27315 (c1, empty, fuel, kb, menu, speedcrash, throwoff, trail1,
+; trails, turn, wallcrash, warp).
 JpP1Up:
   JP P1Up
 
 ; JP P1Down
 ;
-; Witness: L1 24779 (c1, empty, fuel, kb, menu, trail1, trails, warp).
+; Witness: L1 27315 (c1, empty, fuel, kb, menu, speedcrash, throwoff, trail1,
+; trails, turn, wallcrash, warp).
 JpP1Down:
   JP P1Down
 
 ; JP P1Jump
 ;
-; Witness: L1 24779 (c1, empty, fuel, kb, menu, trail1, trails, warp).
+; Witness: L1 27315 (c1, empty, fuel, kb, menu, speedcrash, throwoff, trail1,
+; trails, turn, wallcrash, warp).
 JpP1Jump:
   JP P1Jump
 
 ; JP P2Left
 ;
-; Witness: L1 24779 (c1, empty, fuel, kb, menu, trail1, trails, warp).
+; Witness: L1 27315 (c1, empty, fuel, kb, menu, speedcrash, throwoff, trail1,
+; trails, turn, wallcrash, warp).
 JpP2Left:
   JP P2Left
 
 ; JP P2Right
 ;
-; Witness: L1 24779 (c1, empty, fuel, kb, menu, trail1, trails, warp).
+; Witness: L1 27315 (c1, empty, fuel, kb, menu, speedcrash, throwoff, trail1,
+; trails, turn, wallcrash, warp).
 JpP2Right:
   JP P2Right
 
 ; JP P2Up
 ;
-; Witness: L1 24779 (c1, empty, fuel, kb, menu, trail1, trails, warp).
+; Witness: L1 27315 (c1, empty, fuel, kb, menu, speedcrash, throwoff, trail1,
+; trails, turn, wallcrash, warp).
 JpP2Up:
   JP P2Up
 
 ; JP P2Down
 ;
-; Witness: L1 24779 (c1, empty, fuel, kb, menu, trail1, trails, warp).
+; Witness: L1 27315 (c1, empty, fuel, kb, menu, speedcrash, throwoff, trail1,
+; trails, turn, wallcrash, warp).
 JpP2Down:
   JP P2Down
 
 ; JP P2Jump
 ;
-; Witness: L1 24779 (c1, empty, fuel, kb, menu, trail1, trails, warp).
+; Witness: L1 27315 (c1, empty, fuel, kb, menu, speedcrash, throwoff, trail1,
+; trails, turn, wallcrash, warp).
 JpP2Jump:
   JP P2Jump
 
 ; JP CopyBufferP1
 ;
-; Witness: L1 5351 (c1, empty, fuel, kb, trail1, trails, warp).
+; Witness: L1 5870 (c1, empty, fuel, kb, speedcrash, throwoff, trail1, trails,
+; turn, wallcrash, warp).
 JpCopyBufferP1:
   JP CopyBufferP1
 
@@ -371,13 +394,15 @@ JpCopyBufferP2:
 
 ; JP CopyLines
 ;
-; Witness: L1 181 (c1, empty, fuel, kb, menu, trail1, trails, warp).
+; Witness: L1 188 (c1, empty, fuel, kb, menu, speedcrash, throwoff, trail1,
+; trails, turn, wallcrash, warp).
 JpCopyLines:
   JP CopyLines
 
 ; JP ClearBufferP1
 ;
-; Witness: L1 5437 (c1, empty, fuel, kb, menu, trail1, trails, warp).
+; Witness: L1 5968 (c1, empty, fuel, kb, menu, speedcrash, throwoff, trail1,
+; trails, turn, wallcrash, warp).
 JpClearBufferP1:
   JP ClearBufferP1
 
@@ -395,25 +420,29 @@ JpAttrAddrPlay:
 
 ; JP BufferAddr
 ;
-; Witness: L1 72650 (c1, empty, fuel, kb, menu, trail1, trails, warp).
+; Witness: L1 77151 (c1, empty, fuel, kb, menu, speedcrash, throwoff, trail1,
+; trails, turn, wallcrash, warp).
 JpBufferAddr:
   JP BufferAddr
 
 ; JP FlushAttrs
 ;
-; Witness: L1 6160 (c1, empty, fuel, kb, trail1, trails, warp).
+; Witness: L1 6679 (c1, empty, fuel, kb, speedcrash, throwoff, trail1, trails,
+; turn, wallcrash, warp).
 JpFlushAttrs:
   JP FlushAttrs
 
 ; JP FlushDeferredA
 ;
-; Witness: L1 6160 (c1, empty, fuel, kb, trail1, trails, warp).
+; Witness: L1 6679 (c1, empty, fuel, kb, speedcrash, throwoff, trail1, trails,
+; turn, wallcrash, warp).
 JpFlushDeferredA:
   JP FlushDeferredA
 
 ; JP FlushDeferredB
 ;
-; Witness: L1 6160 (c1, empty, fuel, kb, trail1, trails, warp).
+; Witness: L1 6679 (c1, empty, fuel, kb, speedcrash, throwoff, trail1, trails,
+; turn, wallcrash, warp).
 JpFlushDeferredB:
   JP FlushDeferredB
 
@@ -431,7 +460,8 @@ JpDeferB:
 
 ; JP WalkList
 ;
-; Witness: L1 12323 (c1, empty, fuel, kb, trail1, trails, warp).
+; Witness: L1 13361 (c1, empty, fuel, kb, speedcrash, throwoff, trail1, trails,
+; turn, wallcrash, warp).
 JpWalkList:
   JP WalkList
 
@@ -443,7 +473,8 @@ JpPlaceClipped:
 
 ; JP SpriteGo
 ;
-; Witness: L1 593 (c1, empty, fuel, kb, trail1, trails, warp).
+; Witness: L1 757 (c1, empty, fuel, kb, speedcrash, throwoff, trail1, trails,
+; turn, wallcrash, warp).
 JpSpriteGo:
   JP SpriteGo
 
@@ -494,7 +525,8 @@ l_8393:
 ; HL = the screen address of SpriteX / SpriteY (y up from the bottom, RowAddrs)
 ; + ScreenBase
 ;
-; Witness: L1 19561 (c1, empty, fuel, kb, menu, trail1, trails, warp).
+; Witness: L1 20976 (c1, empty, fuel, kb, menu, speedcrash, throwoff, trail1,
+; trails, turn, wallcrash, warp).
 ScreenAddr:
   LD A,(SpriteY)
   CP $C0
@@ -544,7 +576,8 @@ l_83D4:
 
 ; HL = A x E (8 x 8 bits)
 ;
-; Witness: L1 71671 (c1, empty, fuel, kb, menu, trail1, trails, warp).
+; Witness: L1 78259 (c1, empty, fuel, kb, menu, speedcrash, throwoff, trail1,
+; trails, turn, wallcrash, warp).
 Multiply:
   LD D,$00
   LD HL,$0000
@@ -616,7 +649,8 @@ l_8577:
 
 ; HL one screen line down
 ;
-; Witness: L1 26033 (c1, empty, fuel, kb, trail1, trails, warp).
+; Witness: L1 38397 (c1, empty, fuel, kb, speedcrash, throwoff, trail1, trails,
+; turn, wallcrash, warp).
 NextLineHL:
   INC H
   LD A,H
@@ -633,7 +667,8 @@ NextLineHL:
 
 ; DE one screen line down
 ;
-; Witness: L1 571630 (c1, empty, fuel, kb, menu, trail1, trails, warp).
+; Witness: L1 622102 (c1, empty, fuel, kb, menu, speedcrash, throwoff, trail1,
+; trails, turn, wallcrash, warp).
 NextLineDE:
   INC D
   LD A,D
@@ -686,7 +721,8 @@ PrevLineDE:
 
 ; DestAddr = the screen address; GameSprite
 ;
-; Witness: L1 15850 (c1, empty, fuel, kb, trail1, trails, warp).
+; Witness: L1 16821 (c1, empty, fuel, kb, speedcrash, throwoff, trail1, trails,
+; turn, wallcrash, warp).
 GameSpriteAt:
   CALL ScreenAddr
   LD (DestAddr),HL
@@ -696,7 +732,8 @@ GameSpriteAt:
 ; No sprite past the bank's count. HL = $8F5C + the word at $8F60 + 2 x
 ; SpriteNum: SpriteHeader.
 ;
-; Witness: L1 182385 (c1, empty, fuel, kb, menu, trail1, trails, warp).
+; Witness: L1 194316 (c1, empty, fuel, kb, menu, speedcrash, throwoff, trail1,
+; trails, turn, wallcrash, warp).
 GameSprite:
   LD HL,GameGfx
   LD A,(SpriteNum)
@@ -719,14 +756,16 @@ GameSprite:
 
 ; DestAddr = the screen address; MenuSprite
 ;
-; Witness: L1 49 (c1, empty, fuel, kb, trail1, trails, warp).
+; Witness: L1 77 (c1, empty, fuel, kb, speedcrash, throwoff, trail1, trails,
+; turn, wallcrash, warp).
 MenuSpriteAt:
   CALL ScreenAddr
   LD (DestAddr),HL
 
 ; Draw front-end picture SpriteNum (MenuGfx)
 ;
-; Witness: L1 4165 (c1, empty, fuel, kb, menu, trail1, trails, warp).
+; Witness: L1 4685 (c1, empty, fuel, kb, menu, speedcrash, throwoff, trail1,
+; trails, turn, wallcrash, warp).
 MenuSprite:
   LD HL,MenuGfx
   LD A,(SpriteNum)
@@ -757,7 +796,8 @@ MenuSprite:
 ; (up to 4 bits) and stores the new shift: the bank is shifted in place, on
 ; demand, and stays so. Then JP (the word at ModeVector).
 ;
-; Witness: L1 186550 (c1, empty, fuel, kb, menu, trail1, trails, warp).
+; Witness: L1 199001 (c1, empty, fuel, kb, menu, speedcrash, throwoff, trail1,
+; trails, turn, wallcrash, warp).
 SpriteHeader:
   LD A,(HL)
   LD (SpriteWidth),A
@@ -816,7 +856,8 @@ l_86BC:
 
 ; Move every line's bytes one byte right (the last byte dropped, a zero in)
 ;
-; Witness: L1 9604 (c1, empty, fuel, kb, menu, trail1, trails, warp).
+; Witness: L1 10429 (c1, empty, fuel, kb, menu, speedcrash, throwoff, trail1,
+; trails, turn, wallcrash, warp).
 ShiftBytesRight:
   LD A,(SpriteHeight)
   LD E,A
@@ -848,7 +889,8 @@ l_86DE:
 
 ; Move every line's bytes one byte left
 ;
-; Witness: L1 9353 (c1, empty, fuel, kb, menu, trail1, trails, warp).
+; Witness: L1 9965 (c1, empty, fuel, kb, menu, speedcrash, throwoff, trail1,
+; trails, turn, wallcrash, warp).
 ShiftBytesLeft:
   LD DE,(SpriteData)
   LD HL,(SpriteData)
@@ -872,7 +914,8 @@ l_8705:
 
 ; Shift the sprite's bytes one bit left (the whole width)
 ;
-; Witness: L1 61189 (c1, empty, fuel, kb, menu, trail1, trails, warp).
+; Witness: L1 66731 (c1, empty, fuel, kb, menu, speedcrash, throwoff, trail1,
+; trails, turn, wallcrash, warp).
 RotateSpriteLeft:
   LD A,(SpriteHeight)
   LD E,A
@@ -898,7 +941,8 @@ l_8738:
 
 ; Shift the sprite's bytes one bit right
 ;
-; Witness: L1 61101 (c1, empty, fuel, kb, menu, trail1, trails, warp).
+; Witness: L1 65659 (c1, empty, fuel, kb, menu, speedcrash, throwoff, trail1,
+; trails, turn, wallcrash, warp).
 RotateSpriteRight:
   LD HL,(SpriteData)
   LD A,(SpriteHeight)
@@ -918,7 +962,8 @@ l_874F:
 
 ; Shift A bits left, a byte along when the shift wraps
 ;
-; Witness: L1 30797 (c1, empty, fuel, kb, menu, trail1, trails, warp).
+; Witness: L1 33401 (c1, empty, fuel, kb, menu, speedcrash, throwoff, trail1,
+; trails, turn, wallcrash, warp).
 ShiftLeftBy:
   LD (ShiftCount),A
 l_875C:
@@ -939,7 +984,8 @@ l_876C:
 
 ; Shift A bits right
 ;
-; Witness: L1 29358 (c1, empty, fuel, kb, menu, trail1, trails, warp).
+; Witness: L1 31357 (c1, empty, fuel, kb, menu, speedcrash, throwoff, trail1,
+; trails, turn, wallcrash, warp).
 ShiftRightBy:
   LD (ShiftCount),A
 l_877A:
@@ -963,7 +1009,8 @@ l_8791:
 ; HL = the attribute address of SpriteX / SpriteY in the play area (80 lines,
 ; AttrBase)
 ;
-; Witness: L1 1902 (c1, empty, fuel, kb, trail1, trails, warp).
+; Witness: L1 2139 (c1, empty, fuel, kb, speedcrash, throwoff, trail1, trails,
+; turn, wallcrash, warp).
 AttrAddrPlay:
   LD A,(SpriteY)
   LD E,A
@@ -992,7 +1039,10 @@ l_87A4:
 
 ; HL = the buffer address of SpriteX / SpriteY (BufferRows, BufferBase)
 ;
-; Witness: L1 113665 (c1, empty, fuel, kb, menu, trail1, trails, warp).
+; LD E,$00 (the clamp for y above $4F) is dead: E is overwritten at $87D0.
+;
+; Witness: L1 120931 (c1, empty, fuel, kb, menu, speedcrash, throwoff, trail1,
+; trails, turn, wallcrash, warp).
 BufferAddr:
   LD A,(SpriteY)
   LD E,A
@@ -1023,7 +1073,8 @@ l_87D0:
 
 ; Masked draw: (buffer AND NOT mask) XOR sprite
 ;
-; Witness: L1 643 (c1, empty, fuel, kb, trail1, trails, warp).
+; Witness: L1 769 (c1, empty, fuel, kb, speedcrash, throwoff, trail1, trails,
+; turn, wallcrash, warp).
 MaskBufferAlt:
   LD IX,(MaskData)
   LD DE,(DestAddr)
@@ -1058,7 +1109,8 @@ l_8805:
 
 ; Masked draw of a clipped sprite (ClipWidth bytes a line)
 ;
-; Witness: L1 1336 (c1, empty, fuel, kb, trail1, trails, warp).
+; Witness: L1 1444 (c1, empty, fuel, kb, speedcrash, throwoff, trail1, trails,
+; turn, wallcrash, warp).
 MaskBufferClip:
   LD IX,(MaskData)
   LD HL,(SpriteData)
@@ -1101,7 +1153,8 @@ l_883A:
 
 ; Masked draw: (buffer OR mask) XOR sprite
 ;
-; Witness: L1 10697 (c1, empty, fuel, kb, trail1, trails, warp).
+; Witness: L1 11643 (c1, empty, fuel, kb, speedcrash, throwoff, trail1, trails,
+; turn, wallcrash, warp).
 MaskBuffer:
   LD IX,(MaskData)
   LD DE,(DestAddr)
@@ -1135,7 +1188,7 @@ l_8876:
 
 ; Masked draw mirrored: the bytes and their bits reversed
 ;
-; Witness: L1 1631 (c1, fuel, trail1, trails, warp).
+; Witness: L1 1719 (c1, fuel, trail1, trails, turn, warp).
 MaskMirror:
   LD IX,(MaskData)
   LD DE,(DestAddr)
@@ -1205,9 +1258,10 @@ l_88A6:
   JP NZ,l_88A0
   RET
 
-; Draw DeferredA's sprites (before the ATV)
+; Draw DeferredA's sprites (after the ATV, in front of it)
 ;
-; Witness: L1 6160 (c1, empty, fuel, kb, trail1, trails, warp).
+; Witness: L1 6679 (c1, empty, fuel, kb, speedcrash, throwoff, trail1, trails,
+; turn, wallcrash, warp).
 FlushDeferredA:
   LD A,(DeferredA+$0002)
   CP $00
@@ -1216,9 +1270,10 @@ FlushDeferredA:
   LD HL,DeferredA+$0003
   JP l_891D
 
-; Draw DeferredB's sprites (after the ATV)
+; Draw DeferredB's sprites (before the ATV, behind it)
 ;
-; Witness: L1 6160 (c1, empty, fuel, kb, trail1, trails, warp).
+; Witness: L1 6679 (c1, empty, fuel, kb, speedcrash, throwoff, trail1, trails,
+; turn, wallcrash, warp).
 FlushDeferredB:
   LD A,(DeferredB+$0002)
   CP $00
@@ -1252,7 +1307,8 @@ l_891D:
 
 ; An item with attributes: its picture's attributes into DeferredAttrs
 ;
-; Witness: L1 1902 (c1, empty, fuel, kb, trail1, trails, warp).
+; Witness: L1 2139 (c1, empty, fuel, kb, speedcrash, throwoff, trail1, trails,
+; turn, wallcrash, warp).
 DeferAttrs:
   LD HL,DrawModes+$000C
   LD (AttrModeVector),HL
@@ -1268,7 +1324,8 @@ DeferAttrs:
 
 ; Copy one deferred attribute block to the screen
 ;
-; Witness: L1 1902 (c1, empty, fuel, kb, trail1, trails, warp).
+; Witness: L1 2139 (c1, empty, fuel, kb, speedcrash, throwoff, trail1, trails,
+; turn, wallcrash, warp).
 CopyAttrs:
   LD HL,(AttrSrc)
   LD DE,(AttrDest)
@@ -1295,7 +1352,8 @@ l_8978:
 
 ; Copy every deferred attribute block
 ;
-; Witness: L1 6160 (c1, empty, fuel, kb, trail1, trails, warp).
+; Witness: L1 6679 (c1, empty, fuel, kb, speedcrash, throwoff, trail1, trails,
+; turn, wallcrash, warp).
 FlushAttrs:
   LD A,(DeferredAttrs+$0002)
   CP $00
@@ -1325,7 +1383,8 @@ l_899F:
 
 ; Append the attribute variables to DeferredAttrs
 ;
-; Witness: L1 1902 (c1, empty, fuel, kb, trail1, trails, warp).
+; Witness: L1 2139 (c1, empty, fuel, kb, speedcrash, throwoff, trail1, trails,
+; turn, wallcrash, warp).
 AddDeferredAttr:
   LD HL,DeferredAttrs+$0002
   INC (HL)
@@ -1352,7 +1411,8 @@ AddDeferredAttr:
 
 ; Append the sprite's variables to DeferredA
 ;
-; Witness: L1 5379 (c1, empty, fuel, kb, trail1, trails, warp).
+; Witness: L1 6084 (c1, empty, fuel, kb, speedcrash, throwoff, trail1, trails,
+; turn, wallcrash, warp).
 DeferA:
   LD HL,DeferredA+$0002
   INC (HL)
@@ -1407,7 +1467,8 @@ l_8A23:
 ; motion with period $FF ends the record, 0 skips it. Each id moves once a pass
 ; (SeenIds). Trails 1-4: c1 4449 runs.
 ;
-; Witness: L1 4985 (c1, empty, fuel, kb, trail1, trails, warp).
+; Witness: L1 5447 (c1, empty, fuel, kb, speedcrash, throwoff, trail1, trails,
+; turn, wallcrash, warp).
 AnimObject:
   LD B,(IY+$05)
   PUSH BC
@@ -1593,7 +1654,8 @@ l_8B9F:
 ; Draw an item by its clip code: whole (OrBuffer / MaskBuffer), cut at the
 ; right or at the left
 ;
-; Witness: L1 41015 (c1, empty, fuel, kb, trail1, trails, warp).
+; Witness: L1 43780 (c1, empty, fuel, kb, speedcrash, throwoff, trail1, trails,
+; turn, wallcrash, warp).
 PlaceClipped:
   LD A,(ClipCode)
   CP $00
@@ -1716,14 +1778,16 @@ l_8CA4:
 
 ; JP (SpriteCall)
 ;
-; Witness: L1 110989 (c1, empty, fuel, kb, trail1, trails, warp).
+; Witness: L1 119154 (c1, empty, fuel, kb, speedcrash, throwoff, trail1,
+; trails, turn, wallcrash, warp).
 SpriteGo:
   LD HL,(SpriteCall)
   JP (HL)
 
 ; MaskData = the sprite (SpriteNum + the flags' mask offset)'s bytes
 ;
-; Witness: L1 1979 (c1, empty, fuel, kb, trail1, trails, warp).
+; Witness: L1 2213 (c1, empty, fuel, kb, speedcrash, throwoff, trail1, trails,
+; turn, wallcrash, warp).
 LoadMask:
   LD A,(ItemFlags)
   AND $1E
@@ -1744,7 +1808,8 @@ LoadMask:
 
 ; Copy BufferP1 to the screen's top half ($4021)
 ;
-; Witness: L1 5351 (c1, empty, fuel, kb, trail1, trails, warp).
+; Witness: L1 5870 (c1, empty, fuel, kb, speedcrash, throwoff, trail1, trails,
+; turn, wallcrash, warp).
 CopyBufferP1:
   LD HL,BufferP1
   LD DE,Screen+33
@@ -1763,7 +1828,8 @@ CopyBufferP2:
 ; Copy BC bytes from HL to the screen at DE, 22 a line (22 LDIs), DE down a
 ; line each
 ;
-; Witness: L1 507680 (c1, empty, fuel, kb, menu, trail1, trails, warp).
+; Witness: L1 549760 (c1, empty, fuel, kb, menu, speedcrash, throwoff, trail1,
+; trails, turn, wallcrash, warp).
 CopyLines:
   PUSH DE
   LDI
@@ -1797,7 +1863,8 @@ CopyLines:
 
 ; Zero BufferP1 by PUSH (SP from $F71C down)
 ;
-; Witness: L1 5437 (c1, empty, fuel, kb, menu, trail1, trails, warp).
+; Witness: L1 5968 (c1, empty, fuel, kb, menu, speedcrash, throwoff, trail1,
+; trails, turn, wallcrash, warp).
 ClearBufferP1:
   LD (SavedSp),SP
   LD SP,BufferP1+$06E0    ; the first buffer's end
@@ -1832,7 +1899,8 @@ l_8D41:
 
 ; OR a sprite into the buffer
 ;
-; Witness: L1 41154 (c1, empty, fuel, kb, menu, trail1, trails, warp).
+; Witness: L1 43014 (c1, empty, fuel, kb, menu, speedcrash, throwoff, trail1,
+; trails, turn, wallcrash, warp).
 OrBuffer:
   LD DE,(SpriteData)
   LD HL,(DestAddr)
@@ -1860,7 +1928,8 @@ l_8D63:
 
 ; OR a clipped sprite into the buffer
 ;
-; Witness: L1 11497 (c1, empty, fuel, kb, trail1, trails, warp).
+; Witness: L1 12410 (c1, empty, fuel, kb, speedcrash, throwoff, trail1, trails,
+; turn, wallcrash, warp).
 OrBufferClip:
   LD HL,(SpriteData)
   LD DE,(DestAddr)
@@ -1902,7 +1971,8 @@ l_8D88:
 ; by ItemFlags. Twice a pass a player (DistanceIndex for list A, ScenIndex for
 ; list B).
 ;
-; Witness: L1 12323 (c1, empty, fuel, kb, trail1, trails, warp).
+; Witness: L1 13363 (c1, empty, fuel, kb, speedcrash, throwoff, trail1, trails,
+; turn, wallcrash, warp).
 WalkList:
   LD HL,(ListIndexPtr)
   LD C,(HL)
@@ -1978,7 +2048,8 @@ l_8E10:
 
 ; The index word + 6
 ;
-; Witness: L1 272 (c1, fuel, kb, trail1, trails, warp).
+; Witness: L1 306 (c1, fuel, kb, speedcrash, trail1, trails, turn, wallcrash,
+; warp).
 NextIndex:
   LD HL,(ListIndexPtr)
   LD E,(HL)
@@ -1998,9 +2069,13 @@ NextIndex:
 ; distance - ListScroll; the clip code
 ;
 ; A = 0 inside, 1 beyond the right (x > $AF), 2 behind the left, 3 / 4 cut at
-; an edge. A y below the sprite's height is a broken list: ItemTooLow.
+; an edge. A y below the sprite's height is a broken list: ItemTooLow. The
+; measuring call at $8EA4 runs before SpriteX is set: it shifts the sprite to
+; the previous item's x, and the real draw shifts it back; 15-29 % of a pass
+; (c1 15356).
 ;
-; Witness: L1 67402 (c1, empty, fuel, kb, trail1, trails, warp).
+; Witness: L1 72404 (c1, empty, fuel, kb, speedcrash, throwoff, trail1, trails,
+; turn, wallcrash, warp).
 PlaceItem:
   LD HL,GameSprite
   LD (SpriteCall),HL
@@ -2074,7 +2149,8 @@ PlaceItemDead:
 
 ; x and the clip code
 ;
-; Witness: L1 67402 (c1, empty, fuel, kb, trail1, trails, warp).
+; Witness: L1 72404 (c1, empty, fuel, kb, speedcrash, throwoff, trail1, trails,
+; turn, wallcrash, warp).
 PlaceItemX:
   POP HL
   LD DE,(ListScroll)
@@ -2162,7 +2238,8 @@ GameGfx:
 
 ; A = y; clip a sprite at the play area's top (y $50): drop the lines above it
 ;
-; Witness: L1 19368 (c1, empty, fuel, kb, trail1, trails, warp).
+; Witness: L1 20900 (c1, empty, fuel, kb, speedcrash, throwoff, trail1, trails,
+; turn, wallcrash, warp).
 ClipY:
   CP $50
   JR C,l_DBD8
@@ -2175,7 +2252,7 @@ l_DBD8:
 
 ; Cut the sprite's lines above the play area
 ;
-; Witness: L1 70 (c1, fuel, kb, trail1, trails, warp).
+; Witness: L1 85 (c1, fuel, kb, trail1, trails, wallcrash, warp).
 ClipTop:
   SUB $4F
   LD E,A
@@ -2204,12 +2281,13 @@ l_DBF2:
 
 ; The tumbling ATV's height offsets (6 bytes)
 TumbleOffsets:
-  DEFB $09,$09,$00,$0B,$0D,$00
+  INCBIN "res/tables/tumbleoffsets.bin",$0000,6
 
 ; The ATV sprite's y from its height and frame (the tumble's offsets, the
 ; nose-down frames' WheelOffsets)
 ;
-; Witness: L1 6160 (c1, empty, fuel, kb, trail1, trails, warp).
+; Witness: L1 6679 (c1, empty, fuel, kb, speedcrash, throwoff, trail1, trails,
+; turn, wallcrash, warp).
 AtvY:
   LD A,(AtvFrame)
   CP $7D
@@ -2261,7 +2339,8 @@ l_DC5B:
 
 ; The rider sprite's y from his height
 ;
-; Witness: L1 6160 (c1, empty, fuel, kb, trail1, trails, warp).
+; Witness: L1 6675 (c1, empty, fuel, kb, speedcrash, throwoff, trail1, trails,
+; turn, wallcrash, warp).
 RiderY:
   LD A,(SpriteHeight)
   LD E,A
@@ -2275,14 +2354,19 @@ RiderY:
 
 ; DrawAtv, then DrawRider
 ;
-; Witness: L1 6160 (c1, empty, fuel, kb, trail1, trails, warp).
+; Witness: L1 6679 (c1, empty, fuel, kb, speedcrash, throwoff, trail1, trails,
+; turn, wallcrash, warp).
 DrawAtvAndRider:
   CALL DrawAtv
   JP DrawRider
 
 ; The ATV: body and wheels, mirrored when it faces left
 ;
-; Witness: L1 6160 (c1, empty, fuel, kb, trail1, trails, warp).
+; Facing left, LD A,E drops the XOR 7 that DrawRider keeps (OR E at $DDF3): the
+; left-facing ATV is drawn at x AND $F8.
+;
+; Witness: L1 6679 (c1, empty, fuel, kb, speedcrash, throwoff, trail1, trails,
+; turn, wallcrash, warp).
 DrawAtv:
   LD A,(Facing)
   CP $01
@@ -2354,16 +2438,18 @@ l_DCEC:
   LD A,(SpriteHeight)
   SUB $01
   LD (SpriteHeight),A
-  LD DE,DrawAtvUnused
+  LD DE,AtvMirrorReturn
   PUSH DE
   LD HL,(ListModes+$0006)
   JP (HL)
 
-; Four instructions after DrawAtv's left-facing path that no jump reaches: x +
-; 8, sprite $79, JP Wheels
+; MaskMirror's return when DrawAtv faces left (DrawAtv pushes it before JP
+; (HL)): x + 8, sprite $79, JP Wheels
 ;
 ; Known only from the code.
-DrawAtvUnused:
+;
+; Witness: L1 45 (turn).
+AtvMirrorReturn:
   LD A,(SpriteX)
   ADD A,$08
   LD (SpriteX),A
@@ -2373,7 +2459,8 @@ DrawAtvUnused:
 
 ; The wheels under the body for the upright frames ($38-$4F)
 ;
-; Witness: L1 6160 (c1, empty, fuel, kb, trail1, trails, warp).
+; Witness: L1 6679 (c1, empty, fuel, kb, speedcrash, throwoff, trail1, trails,
+; turn, wallcrash, warp).
 Wheels:
   LD A,(AtvFrame)
   CP $38
@@ -2399,7 +2486,8 @@ Wheels:
 
 ; The wheels' y
 ;
-; Witness: L1 7048 (c1, empty, fuel, kb, trail1, trails, warp).
+; Witness: L1 7546 (c1, empty, fuel, kb, speedcrash, throwoff, trail1, trails,
+; turn, wallcrash, warp).
 WheelY:
   LD A,(SpriteHeight)
   ADD A,$02
@@ -2413,7 +2501,8 @@ WheelY:
 
 ; The rider: walking, riding, thrown or lying, mirrored by RiderFacing
 ;
-; Witness: L1 6160 (c1, empty, fuel, kb, trail1, trails, warp).
+; Witness: L1 6679 (c1, empty, fuel, kb, speedcrash, throwoff, trail1, trails,
+; turn, wallcrash, warp).
 DrawRider:
   LD A,(AtvFrame)
   CP $5C

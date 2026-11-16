@@ -1,0 +1,3 @@
+# TumbleOffsets: the tumbling ATV's height offsets (AtvY)
+# 6 bytes from $DC0D; a row is 6 bytes ($XX each), the comment its address
+$09 $09 $00 $0B $0D $00  # $DC0D

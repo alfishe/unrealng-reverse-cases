@@ -7,9 +7,10 @@ records) with the sprites of src/res/sprites/game.png, through tools/res_formats
 Each trail is a strip read left to right, one distance unit a pixel, wrapped every 1024 units: list A (the ground
 pieces and the obstacles, each at its distance with its sprite, y counted up from the band's base line, y = 0 the
 sprite's own height) above list B (the scenery, its own band); the red line is the finish (the length less $48,
-FinishCheck). Mirrored items (flags bit 0) are drawn mirrored; an item drawn from an animation record shows the
-record's sprite with a yellow mark under it. The drawing is a map of the data, not the screen: the game scrolls
-list B at an eighth of list A's speed.
+FinishCheck). An item with flags bit 0 takes its picture from the menu bank (src/res/sprites/menu.png, PlaceItem's
+MenuSprite), the others from the game bank; nothing is mirrored. An item drawn from an
+animation record shows the record's sprite with a yellow mark under it. The drawing is a map of the data, not the
+screen: the game scrolls list B at a quarter of list A's speed.
 """
 import os
 import sys
@@ -33,6 +34,23 @@ def sprites():
         w, h = data[o], data[o + 1]
         out[n] = (w, h, data[o + 4:o + 4 + w * h])
     return out
+
+
+def menu_sprites():
+    """menu picture number -> (width in bytes, height, pixel bytes) from the menu bank's bytes (MenuGfx: a pair of
+    offsets a picture from +4, the sprite's first)"""
+    data = rf.load('sprites/menu.bin')
+    out = {}
+    for n in range(data[0]):
+        o = rf.word(data, 4 + 4 * n)
+        w, h = data[o], data[o + 1]
+        out[n] = (w, h, data[o + 4:o + 4 + w * h])
+    return out
+
+
+def bank(sp, menu, s, fl):
+    """The picture an item draws: the menu bank's when its flags' bit 0 is set (PlaceItem `$8E61`)"""
+    return (menu if fl & 1 else sp).get(s)
 
 
 def trails():
@@ -76,7 +94,7 @@ def main():
         print(__doc__)
         return 2
     which = [int(a) for a in sys.argv[2:]] or list(range(1, 7))
-    sp, tr = sprites(), trails()
+    sp, menu, tr = sprites(), menu_sprites(), trails()
     try:
         font = ImageFont.truetype('/System/Library/Fonts/Menlo.ttc', 12)
     except OSError:
@@ -106,8 +124,9 @@ def main():
             for d, y, s, fl, a in lst:
                 if not r * WRAP - 64 <= d < (r + 1) * WRAP:
                     continue
-                if s in sp:
-                    blit(px, im.size, sp[s], x0 + d, base, y, fl & 1, colour)
+                pic = bank(sp, menu, s, fl)
+                if pic:
+                    blit(px, im.size, pic, x0 + d, base, y, False, colour)
                 if a is not None:
                     dr.rectangle([x0 + d, base + 2, x0 + d + 3, base + 5], fill=(230, 200, 60))
     im.save(sys.argv[1])

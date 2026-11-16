@@ -3,9 +3,10 @@
 ;
 ; The score is five ASCII digits a player (Scores $6948 / $694D): one point up for each $1000 of distance forwards
 ; ($D789 bit 12 changing, ScoreUpP1 / ScoreUpP2), one down backwards, and at the trail's end the time bonus counted in
-; by TrailEnd with the EXTENDED PLAY sound. The clock (Clock $D6C9-$D6CB, three ASCII digits) counts up once a second
-; of passes (ClockTick); a trail ends at the finish (both riding players past FinishDistance) or at TIME OUT when the
-; clock reaches the trail's maximum (MaxTimes: 60, 60, 60, 40, 50, 50). After the game CheckHiScore compares each
+; by TrailEnd with the EXTENDED PLAY sound. The clock (Clock $D6C9-$D6CB, three ASCII digits) counts a tenth per pass
+; (ClockTick); a trail ends when both records' speed is 0 and every riding player has finished (WaitFrames), or at
+; TIME OUT when the clock's first digit reaches the maximum's; a finished rider who holds the throttle stays at speed
+; 1 and the trail waits for TIME OUT (MaxTimes: 60, 60, 60, 40, 50, 50). After the game CheckHiScore compares each
 ; score with the table HiScores and runs the name entry for a place.
 ; --------------------------------------------------------------------------------------------------------------------
 
@@ -17,7 +18,8 @@
 ; Player 1 against the five rows (HiCompare); in a two-player game player 2
 ; too. A place: NameEntry with the player's reader (ReadP1 $7BBE or ReadP2
 ; $7BC2) patched into ReadControlJump. Called through JpCheckHiScore by
-; GameEntry's outer loop after each game (c1: 4 runs, 2 places).
+; GameEntry's outer loop after each game (c1: 4 runs, 2 places). Player 1, when
+; he reaches only the last row, is skipped unless he beat player 2.
 ;
 ; Witness: L1 4 (c1, kb, trail1, warp).
 CheckHiScore:
@@ -273,7 +275,8 @@ NameCursor:
 
 ; Show the buffer at the screen place H = x, L = y
 ;
-; Witness: L1 28 (c1, empty, fuel, kb, menu, trail1, trails, warp).
+; Witness: L1 33 (c1, empty, fuel, kb, menu, speedcrash, throwoff, trail1,
+; trails, turn, wallcrash, warp).
 ShowBufferPlace:
   CALL ScreenAddrHL
   EX DE,HL
@@ -282,7 +285,8 @@ ShowBufferPlace:
 
 ; SpriteX = H, SpriteY = L, HL = the screen address (ScreenAddr)
 ;
-; Witness: L1 112 (c1, empty, fuel, kb, menu, trail1, trails, warp).
+; Witness: L1 137 (c1, empty, fuel, kb, menu, speedcrash, throwoff, trail1,
+; trails, turn, wallcrash, warp).
 ScreenAddrHL:
   LD A,H
   LD (SpriteX),A
@@ -368,7 +372,7 @@ TrailsLeftover:
 
 ; HL = the number of the three ASCII digits at IX
 ;
-; Witness: L1 20 (kb, trails, warp).
+; Witness: L1 22 (kb, trails, wallcrash, warp).
 DigitsValue:
   LD A,(IX+$00)
   SUB $30
@@ -392,7 +396,8 @@ DigitsValue:
 
 ; Draw a clock digit (sprite A - $97)
 ;
-; Witness: L1 5365 (c1, empty, fuel, kb, trail1, trails, warp).
+; Witness: L1 5889 (c1, empty, fuel, kb, speedcrash, throwoff, trail1, trails,
+; turn, wallcrash, warp).
 ClockDigit:
   PUSH AF
   SUB $97
@@ -400,7 +405,8 @@ ClockDigit:
 
 ; Draw a HUD digit (sprite A - $A3)
 ;
-; Witness: L1 475 (c1, empty, fuel, kb, trail1, trails, warp).
+; Witness: L1 548 (c1, empty, fuel, kb, speedcrash, throwoff, trail1, trails,
+; turn, wallcrash, warp).
 BigDigit:
   PUSH AF
   SUB $A3
@@ -413,7 +419,8 @@ l_EAC7:
 
 ; MaxTime from MaxTimes (or "30" in the second round) and its digits
 ;
-; Witness: L1 16 (c1, empty, fuel, kb, trail1, trails, warp).
+; Witness: L1 21 (c1, empty, fuel, kb, speedcrash, throwoff, trail1, trails,
+; turn, wallcrash, warp).
 ShowMaxTime:
   LD A,(SecondRound)
   CP $00
@@ -449,7 +456,8 @@ l_EAF4:
 
 ; The clock's three digits
 ;
-; Witness: L1 16 (c1, empty, fuel, kb, trail1, trails, warp).
+; Witness: L1 21 (c1, empty, fuel, kb, speedcrash, throwoff, trail1, trails,
+; turn, wallcrash, warp).
 ShowClock:
   CALL ClockPlace
   LD A,(ClockUnits)
@@ -467,7 +475,8 @@ ShowClock:
 
 ; The clock's place (x $60, y $66) and its draw mode
 ;
-; Witness: L1 5381 (c1, empty, fuel, kb, trail1, trails, warp).
+; Witness: L1 5910 (c1, empty, fuel, kb, speedcrash, throwoff, trail1, trails,
+; turn, wallcrash, warp).
 ClockPlace:
   LD A,$60
   LD (SpriteX),A
@@ -481,7 +490,8 @@ ClockPlace:
 
 ; Clock + 1 (the last digit each pass, carried into the others) and its digits
 ;
-; Witness: L1 5349 (c1, empty, fuel, kb, trail1, trails, warp).
+; Witness: L1 5868 (c1, empty, fuel, kb, speedcrash, throwoff, trail1, trails,
+; turn, wallcrash, warp).
 ClockTick:
   CALL ClockPlace
   LD A,(ClockUnits)
@@ -518,9 +528,11 @@ ClockAdd:
   LD (Clock),A
   JP BigDigit
 
-; Fuel = $2000, the FUEL bar full, the bars' scale
+; Fuel = $2000, the FUEL bar drawn full (two 3-pixel cells a byte, 4 lines);
+; not scale ticks
 ;
-; Witness: L1 18 (c1, empty, fuel, kb, trail1, trails, warp).
+; Witness: L1 23 (c1, empty, fuel, kb, speedcrash, throwoff, trail1, trails,
+; turn, wallcrash, warp).
 ShowBars:
   LD HL,$2000
   LD (Fuel),HL
@@ -543,7 +555,8 @@ l_EBC2:
 
 ; A scale mark's left half
 ;
-; Witness: L1 72 (c1, empty, fuel, kb, trail1, trails, warp).
+; Witness: L1 92 (c1, empty, fuel, kb, speedcrash, throwoff, trail1, trails,
+; turn, wallcrash, warp).
 ScaleLeft:
   PUSH HL
   LD B,$04
@@ -552,7 +565,8 @@ ScaleLeft:
 
 ; A scale mark's right half
 ;
-; Witness: L1 72 (c1, empty, fuel, kb, trail1, trails, warp).
+; Witness: L1 92 (c1, empty, fuel, kb, speedcrash, throwoff, trail1, trails,
+; turn, wallcrash, warp).
 ScaleRight:
   PUSH HL
   LD B,$04
@@ -604,9 +618,11 @@ TimeOutText:
   LD IX,GameTexts
   JP PrintShadow
 
-; Print the text at IX twice: XOR then OR one pixel off (a shadow)
+; Print in ModeCopyBuffer (DrawModes + 8: each glyph's box replaces the buffer,
+; a cleared band, the letters cut), then Print in OR (ListModes + 0) at the
+; same x, y
 ;
-; Witness: L1 1162 (c1, empty, kb, trail1, trails, warp).
+; Witness: L1 1184 (c1, empty, kb, trail1, trails, wallcrash, warp).
 PrintShadow:
   PUSH IX
   LD A,(SpriteX)
@@ -640,15 +656,17 @@ LapText:
 
   ORG $EDBB
 
-; Player 1's score + 1 (ASCII, carried)
+; Player 1's score + 1 (ASCII, carried): +1 point, shown as +10 (the units
+; digit is never changed)
 ;
-; Witness: L1 4132 (c1, empty, fuel, kb, trail1, trails, warp).
+; Witness: L1 4269 (c1, empty, fuel, kb, speedcrash, throwoff, trail1, trails,
+; turn, wallcrash, warp).
 ScoreUpP1:
   LD IX,Scores+$0003
   LD A,$9B
   JR l_EDDB
 
-; Player 2's score + 1
+; Player 2's score + 1: +1 point, shown as +10
 ;
 ; Witness: L1 327 (kb).
 ScoreUpP2:
@@ -658,7 +676,7 @@ ScoreUpP2:
 
 ; Player 1's score - 1
 ;
-; Witness: L1 6 (fuel, kb, warp).
+; Witness: L1 25 (fuel, kb, speedcrash, turn, wallcrash, warp).
 ScoreDownP1:
   LD IX,Scores+$0003
   LD A,$9B
@@ -676,16 +694,16 @@ l_EDDB:
   CALL ShowScore
   LD B,$04
 l_EDE0:
-  CALL ShowScoreP1
+  CALL ScoreDigit
   LD A,(IX+$00)
   INC A
   LD (IX+$00),A
   CP $3A
-  JR C,ShowScoreP1
+  JR C,ScoreDigit
   LD A,$30
   LD (IX+$00),A
-  CALL ShowScoreP1
-  CALL ShowScoreP2
+  CALL ScoreDigit
+  CALL ScoreDigitLeft
   DJNZ l_EDE0
   RET
 ; This entry point is used by the routine at ScoreDownP1.
@@ -693,23 +711,24 @@ l_EDFC:
   CALL ShowScore
   LD B,$04
 l_EE01:
-  CALL ShowScoreP1
+  CALL ScoreDigit
   LD A,(IX+$00)
   SUB $01
   LD (IX+$00),A
   CP $30
-  JR NC,ShowScoreP1
+  JR NC,ScoreDigit
   LD A,$39
   LD (IX+$00),A
-  CALL ShowScoreP1
-  CALL ShowScoreP2
+  CALL ScoreDigit
+  CALL ScoreDigitLeft
   DJNZ l_EE01
   RET
 
-; Player 1's score on the HUD
+; Draw the score digit at IX (XOR); not per player
 ;
-; Witness: L1 9906 (c1, empty, fuel, kb, trail1, trails, warp).
-ShowScoreP1:
+; Witness: L1 10250 (c1, empty, fuel, kb, speedcrash, throwoff, trail1, trails,
+; turn, wallcrash, warp).
+ScoreDigit:
   LD A,(IX+$00)
   ADD A,$69
   LD (SpriteNum),A
@@ -718,10 +737,11 @@ ShowScoreP1:
   POP BC
   RET
 
-; Player 2's score
+; IX - 1, x - 7: the next digit to the left, then ScoreDigit; not per player
 ;
-; Witness: L1 487 (c1, fuel, kb, trail1, trails, warp).
-ShowScoreP2:
+; Witness: L1 503 (c1, fuel, kb, speedcrash, trail1, trails, turn, wallcrash,
+; warp).
+ScoreDigitLeft:
   DEC IX
   LD A,(SpriteX)
   SUB $07
@@ -730,7 +750,8 @@ ShowScoreP2:
 
 ; The five digits at IX
 ;
-; Witness: L1 4466 (c1, empty, fuel, kb, trail1, trails, warp).
+; Witness: L1 4622 (c1, empty, fuel, kb, speedcrash, throwoff, trail1, trails,
+; turn, wallcrash, warp).
 ShowScore:
   LD (SpriteY),A
   LD A,$E8

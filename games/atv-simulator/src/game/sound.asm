@@ -29,7 +29,7 @@ TunePlay0:
 ; TuneInterrupt; the first sequence of each channel; then TuneLoop. Title (c1:
 ; 4) and TrailEnd (trail1, trails: 9) call it.
 ;
-; Witness: L1 15 (c1, kb, menu, trail1, trails, warp).
+; Witness: L1 17 (c1, kb, menu, trail1, trails, turn, wallcrash, warp).
 TunePlay:
   LD (TuneEntry+$0001),A
   XOR A
@@ -80,7 +80,7 @@ l_F890:
 ; The two channels: count down each channel's period, toggle the speaker, read
 ; the next note or command at the end of its length
 ;
-; Witness: L1 15 (c1, kb, menu, trail1, trails, warp).
+; Witness: L1 17 (c1, kb, menu, trail1, trails, turn, wallcrash, warp).
 TuneLoop:
   LD C,$01
   EXX
@@ -207,7 +207,8 @@ ChannelBOff:
 ; The tune's IM 2 handler: count the channels' note timers, the drums every 12
 ; frames, the hook
 ;
-; Witness: L1 6910 (c1, empty, fuel, kb, menu, trail1, trails, warp).
+; Witness: L1 7111 (c1, empty, fuel, kb, menu, speedcrash, throwoff, trail1,
+; trails, turn, wallcrash, warp).
 TuneInterrupt:
   PUSH AF
   PUSH HL
@@ -232,7 +233,8 @@ TuneHook:
 
 ; Any key: stop the tune
 ;
-; Witness: L1 5388 (c1, empty, fuel, kb, menu, trail1, trails, warp).
+; Witness: L1 5420 (c1, empty, fuel, kb, menu, speedcrash, throwoff, trail1,
+; trails, turn, wallcrash, warp).
 TuneKeyCheck:
   XOR A
   IN A,($FE)
@@ -254,7 +256,7 @@ TuneStop:
 
 ; Channel B's command byte: dispatch by CommandJump
 ;
-; Witness: L1 818 (c1, kb, menu, trail1, trails, warp).
+; Witness: L1 846 (c1, kb, menu, trail1, trails, turn, wallcrash, warp).
 ChannelBCommand:
   INC HL
   PUSH HL
@@ -274,7 +276,7 @@ CommandPad:
 
 ; Channel A's command byte
 ;
-; Witness: L1 713 (c1, kb, menu, trail1, trails, warp).
+; Witness: L1 730 (c1, kb, menu, trail1, trails, turn, wallcrash, warp).
 ChannelACommand:
   INC HL
   PUSH HL
@@ -285,13 +287,15 @@ ChannelACommand:
   JP l_F9C8
   JP l_F9E9
 
-; Channel A's command 4: JP SetTransposeA (no tune uses it)
+; Channel A's command 4: JP SetTransposeA, the shared transposition (no tune
+; uses it)
 ;
 ; Known only from the code.
 UnusedCommandA4:
   JP SetTransposeA
 
-; POP HL; RET: the end of channel A's command table (unreached)
+; POP HL; RET: channel A's end of the tune ($85); no recording reaches it:
+; channel B's twin at $F9A4 ends the tunes in them (trails 1, warp 7, kb 1)
 ;
 ; Known only from the code.
 CommandEnd:
@@ -300,7 +304,7 @@ CommandEnd:
 
 ; Channel B's commands: decay, attack, length, next
 ;
-; Witness: L1 35 (c1, kb, menu, trail1, trails, warp).
+; Witness: L1 37 (c1, kb, menu, trail1, trails, turn, wallcrash, warp).
 CommandsB:
   POP HL
   LD A,(HL)
@@ -365,7 +369,8 @@ l_FA10:
   CALL NextSequenceA
   JP ChannelAPtr
 
-; Channel A's transposition from the stream (no tune uses it)
+; The shared transposition (the one byte both channels add) from channel A's
+; stream (no tune uses it)
 ;
 ; Known only from the code.
 SetTransposeA:
@@ -389,7 +394,7 @@ SetTransposeB:
 ; TuneInterrupt): the byte AND $7F picks 0 next sequence, 1 rest, 2
 ; DrumUnused2, 3 DrumSpeed, 4 DrumUnused, 5 nothing, 6 DrumNoise, 7 DrumHit
 ;
-; Witness: L1 1131 (c1, kb, menu, trail1, trails, warp).
+; Witness: L1 1157 (c1, kb, menu, trail1, trails, turn, wallcrash, warp).
 Drums:
   LD C,$0C
 ; This entry point is used by the routine at DrumNext.
@@ -416,7 +421,7 @@ DrumJump2:
 
 ; Drum command 3: JP DrumSpeed
 ;
-; Witness: L1 469 (c1, kb, menu, trail1, trails, warp).
+; Witness: L1 480 (c1, kb, menu, trail1, trails, turn, wallcrash, warp).
 DrumJump3:
   JP DrumSpeed
 
@@ -438,7 +443,7 @@ DrumPad2:
 
 ; Drum commands 6 and 7: JP DrumNoise, JP DrumHit
 ;
-; Witness: L1 460 (c1, kb, menu, trail1, trails, warp).
+; Witness: L1 470 (c1, kb, menu, trail1, trails, turn, wallcrash, warp).
 DrumJump6:
   JP DrumNoise
   JP DrumHit
@@ -459,7 +464,7 @@ l_FA52:
 
 ; A noise: the ROM's bytes from $005C sent to the speaker until a zero
 ;
-; Witness: L1 460 (c1, kb, menu, trail1, trails, warp).
+; Witness: L1 470 (c1, kb, menu, trail1, trails, turn, wallcrash, warp).
 DrumNoise:
   LD HL,$005C
 l_FA60:
@@ -491,14 +496,14 @@ l_FA75:
 
 ; The drums' next sequence
 ;
-; Witness: L1 63 (c1, kb, menu, trail1, trails, warp).
+; Witness: L1 64 (c1, kb, menu, trail1, trails, wallcrash, warp).
 DrumNext:
   CALL NextSequenceD
   JR DrumPtr
 
 ; A drum: 30 clicks of a falling pitch
 ;
-; Witness: L1 193 (c1, kb, menu, trail1, trails, warp).
+; Witness: L1 197 (c1, kb, menu, trail1, trails, turn, wallcrash, warp).
 DrumHit:
   LD HL,(DrumPtr+$0001)
   LD A,(HL)
@@ -530,7 +535,7 @@ l_FAA3:
 
 ; The drums' speed (3 x the byte)
 ;
-; Witness: L1 469 (c1, kb, menu, trail1, trails, warp).
+; Witness: L1 480 (c1, kb, menu, trail1, trails, turn, wallcrash, warp).
 DrumSpeed:
   LD HL,(DrumPtr+$0001)
   LD B,$03
@@ -545,7 +550,7 @@ l_FAAF:
 
 ; Jump to the (A AND $7F)th JP after the caller
 ;
-; Witness: L1 2725 (c1, kb, menu, trail1, trails, warp).
+; Witness: L1 2797 (c1, kb, menu, trail1, trails, turn, wallcrash, warp).
 CommandJump:
   LD L,A
   ADD A,A
@@ -560,7 +565,7 @@ l_FAC5:
 
 ; The channels' note shapes: the attack and decay counters
 ;
-; Witness: L1 3180 (c1, kb, menu, trail1, trails, warp).
+; Witness: L1 3257 (c1, kb, menu, trail1, trails, turn, wallcrash, warp).
 Envelope:
   LD A,$02
   INC A
@@ -597,7 +602,7 @@ l_FAF7:
 
 ; Channel A's next sequence (the list's end: the first again)
 ;
-; Witness: L1 70 (c1, kb, menu, trail1, trails, warp).
+; Witness: L1 72 (c1, kb, menu, trail1, trails, turn, wallcrash, warp).
 NextSequenceA:
   LD HL,SequencesA0+$0022
   LD E,(HL)
@@ -618,7 +623,7 @@ NextSequenceA:
 
 ; Channel B's next sequence
 ;
-; Witness: L1 54 (c1, kb, menu, trail1, trails, warp).
+; Witness: L1 56 (c1, kb, menu, trail1, trails, turn, wallcrash, warp).
 NextSequenceB:
   LD HL,SequencesA0+$004A
   LD E,(HL)
@@ -641,7 +646,7 @@ NextSequenceB:
 
 ; The drums' next sequence
 ;
-; Witness: L1 132 (c1, kb, menu, trail1, trails, warp).
+; Witness: L1 135 (c1, kb, menu, trail1, trails, turn, wallcrash, warp).
 NextSequenceD:
   LD HL,SequencesA0+$0052
   LD E,(HL)
@@ -666,7 +671,7 @@ NextSequenceD:
 
 ; HL = TuneTable + 6 x TuneNumber
 ;
-; Witness: L1 71 (c1, kb, menu, trail1, trails, warp).
+; Witness: L1 73 (c1, kb, menu, trail1, trails, turn, wallcrash, warp).
 TuneEntry:
   LD A,$00                ; LD A,n: the tune (the operand patched by TunePlay)
   ADD A,A
@@ -682,7 +687,7 @@ TuneEntry:
 
 ; A = NoteTable's period for the note A + TransposeB
 ;
-; Witness: L1 1945 (c1, kb, menu, trail1, trails, warp).
+; Witness: L1 2000 (c1, kb, menu, trail1, trails, turn, wallcrash, warp).
 NoteLookup:
   PUSH HL
   LD HL,NoteTable

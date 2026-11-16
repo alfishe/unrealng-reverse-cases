@@ -1,0 +1,33 @@
+# turn: from c1's menu.szx (one player, KEMPSTON detected): CHOOSE CONTROL, SINCLAIR (the one-player window's
+# third line, ChooseKeys1); START; the rider walks right and jumps (KR, KF) onto the ATV; right 252
+# frames, wheel up 21, a jump with wheel down in the air; left 315 frames (brake, turn round, throttle to the
+# left); right 245 frames (brake, turn back, throttle right). Samples of the record every 7 frames in log.json
+# Start: work/stage1/rec/c1/menu.szx
+0 ENTER
+4 -
+29 ENTER
+33 -
+58 SPACE
+62 -
+92 ENTER
+96 -
+121 ENTER
+125 -
+150 SPACE
+154 -
+184 SPACE
+188 -
+586 KR
+649 KR KF
+656 KR
+677 KR KF
+684 KR
+957 KR KU
+978 KR
+992 KR KF
+999 KR KD
+1020 KR
+1090 KL
+1405 KR
+1650 -
+1650 END

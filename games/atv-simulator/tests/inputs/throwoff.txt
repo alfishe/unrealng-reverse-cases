@@ -1,0 +1,13 @@
+# throwoff: from c1's menu.szx, START; walk and jump onto the ATV; right 42 frames, then right + wheel up 140
+# frames: the nose up to $44, ThrowOff and FallRider; 210 frames idle. Samples of the record in log.json
+# Start: work/stage1/rec/c1/menu.szx
+0 SPACE
+4 -
+402 KR
+465 KR KF
+472 KR
+493 KR KF
+500 KR
+563 KR KU
+640 -
+850 END

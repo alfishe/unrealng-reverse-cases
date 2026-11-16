@@ -1,0 +1,13 @@
+# RidePoses: the mounted rider's sprite for each ATV frame (RiderPoseY)
+# 44 bytes from $DEEC; a row is 4 bytes ($XX each), the comment its address
+$00 $00 $00 $00  # $DEEC
+$50 $10 $0A $00  # $DEF0
+$50 $0E $0B $00  # $DEF4
+$52 $0B $0D $00  # $DEF8
+$52 $09 $0D $00  # $DEFC
+$54 $07 $0D $00  # $DF00
+$54 $00 $0E $00  # $DF04
+$50 $14 $08 $00  # $DF08
+$50 $15 $06 $00  # $DF0C
+$57 $17 $03 $00  # $DF10
+$57 $18 $00 $00  # $DF14

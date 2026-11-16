@@ -83,7 +83,8 @@ JpNewGame:
 
 ; JP LoadRecordP1
 ;
-; Witness: L1 16 (c1, empty, fuel, kb, trail1, trails, warp).
+; Witness: L1 21 (c1, empty, fuel, kb, speedcrash, throwoff, trail1, trails,
+; turn, wallcrash, warp).
 JpLoadRecordP1:
   JP LoadRecordP1
 
@@ -95,7 +96,8 @@ JpLoadRecordP2:
 
 ; JP SaveRecordP1
 ;
-; Witness: L1 16 (c1, empty, fuel, kb, trail1, trails, warp).
+; Witness: L1 21 (c1, empty, fuel, kb, speedcrash, throwoff, trail1, trails,
+; turn, wallcrash, warp).
 JpSaveRecordP1:
   JP SaveRecordP1
 
@@ -125,13 +127,15 @@ JpSlowDown:
 
 ; JP ShowMaxTime
 ;
-; Witness: L1 16 (c1, empty, fuel, kb, trail1, trails, warp).
+; Witness: L1 21 (c1, empty, fuel, kb, speedcrash, throwoff, trail1, trails,
+; turn, wallcrash, warp).
 JpShowMaxTime:
   JP ShowMaxTime
 
 ; JP ShowClock
 ;
-; Witness: L1 16 (c1, empty, fuel, kb, trail1, trails, warp).
+; Witness: L1 21 (c1, empty, fuel, kb, speedcrash, throwoff, trail1, trails,
+; turn, wallcrash, warp).
 JpShowClock:
   JP ShowClock
 
@@ -143,7 +147,8 @@ JpClockTick:
 
 ; JP ShowBars
 ;
-; Witness: L1 18 (c1, empty, fuel, kb, trail1, trails, warp).
+; Witness: L1 23 (c1, empty, fuel, kb, speedcrash, throwoff, trail1, trails,
+; turn, wallcrash, warp).
 JpShowBars:
   JP ShowBars
 
@@ -167,7 +172,8 @@ JpPrintShadow:
 
 ; JP SetupIm2
 ;
-; Witness: L1 10 (c1, empty, fuel, kb, menu, trail1, trails, warp).
+; Witness: L1 15 (c1, empty, fuel, kb, menu, speedcrash, throwoff, trail1,
+; trails, turn, wallcrash, warp).
 JpSetupIm2:
   JP SetupIm2
 
@@ -186,9 +192,12 @@ JpSetupIm2:
 ; 5081 passes). Both players' Finished bits set (as Riding) end the trail
 ; (TrailEnd); the clock's first digit equal to MaxTime's: TIME OUT for both
 ; (TimeOut), then TrailEnd when someone finished, else 250 frames and the game
-; ends.
+; ends. With two players a pass is often longer: 8 to 13 frames in kb (640 of
+; 811 passes 7). The TIME OUT test ($D89E) compares only the hundreds digit
+; with MaxTime's first: a limit is a multiple of 100 passes.
 ;
-; Witness: L1 7 (c1, empty, fuel, kb, trail1, trails, warp).
+; Witness: L1 11 (c1, empty, fuel, kb, speedcrash, throwoff, trail1, trails,
+; turn, wallcrash, warp).
 NewGame:
   XOR A
   LD (Trail),A
@@ -251,14 +260,16 @@ WaitFrames:
 
 ; A = RecordP1's field +9 (speed), Z when 0
 ;
-; Witness: L1 5351 (c1, empty, fuel, kb, trail1, trails, warp).
+; Witness: L1 5866 (c1, empty, fuel, kb, speedcrash, throwoff, trail1, trails,
+; turn, wallcrash, warp).
 RecordFieldP1:
   LD IX,RecordP1
   JR l_D894
 
 ; A = RecordP2's field +9
 ;
-; Witness: L1 3592 (c1, empty, fuel, kb, trail1, trails, warp).
+; Witness: L1 3806 (c1, empty, fuel, kb, speedcrash, throwoff, trail1, trails,
+; turn, wallcrash, warp).
 RecordFieldP2:
   LD IX,RecordP2
 ; This entry point is used by the routine at RecordFieldP1.
@@ -313,7 +324,8 @@ Init:
 
 ; IM 2: I = $FE, the table $FE00-$FF00 all $80, JP Interrupt at $8080
 ;
-; Witness: L1 20 (c1, empty, fuel, kb, menu, trail1, trails, warp).
+; Witness: L1 26 (c1, empty, fuel, kb, menu, speedcrash, throwoff, trail1,
+; trails, turn, wallcrash, warp).
 SetupIm2:
   DI
   XOR A
@@ -335,7 +347,8 @@ SetupIm2:
 ; Controls1 = player 1's five tests as bits (4 left, 3 right, 2 up, 1 down, 0
 ; jump)
 ;
-; Witness: L1 24779 (c1, empty, fuel, kb, menu, trail1, trails, warp).
+; Witness: L1 27315 (c1, empty, fuel, kb, menu, speedcrash, throwoff, trail1,
+; trails, turn, wallcrash, warp).
 ReadP1Controls:
   LD IX,Controls1
   CALL JpP1Left
@@ -361,7 +374,8 @@ l_D939:
 
 ; Controls2 from player 2's tests
 ;
-; Witness: L1 24779 (c1, empty, fuel, kb, menu, trail1, trails, warp).
+; Witness: L1 27315 (c1, empty, fuel, kb, menu, speedcrash, throwoff, trail1,
+; trails, turn, wallcrash, warp).
 ReadP2Controls:
   LD IX,Controls2
   CALL JpP2Left
@@ -387,7 +401,8 @@ l_D96B:
 
 ; A = (IX + DE), Z when 0
 ;
-; Witness: L1 123050 (c1, empty, fuel, kb, trail1, trails, warp).
+; Witness: L1 134970 (c1, empty, fuel, kb, speedcrash, throwoff, trail1,
+; trails, turn, wallcrash, warp).
 RecordField:
   PUSH IX
   POP HL
@@ -402,7 +417,8 @@ RecordField:
 ; a square wave whose half-period is $1E - speed + 1 (Tone): the pitch rises
 ; with the speed.
 ;
-; Witness: L1 47176 (c1, empty, fuel, kb, trail1, trails, warp).
+; Witness: L1 51492 (c1, empty, fuel, kb, speedcrash, throwoff, trail1, trails,
+; turn, wallcrash, warp).
 EngineSound:
   LD IX,RecordP1
   CALL EngineOne
@@ -410,7 +426,8 @@ EngineSound:
 
 ; One record's engine tone
 ;
-; Witness: L1 94352 (c1, empty, fuel, kb, trail1, trails, warp).
+; Witness: L1 102984 (c1, empty, fuel, kb, speedcrash, throwoff, trail1,
+; trails, turn, wallcrash, warp).
 EngineOne:
   LD DE,$0002
   CALL RecordField
@@ -427,7 +444,8 @@ EngineOne:
 
 ; B bursts of a tone: Click, a delay of C x 3 loops
 ;
-; Witness: L1 159723 (c1, empty, fuel, kb, trail1, trails, warp).
+; Witness: L1 167597 (c1, empty, fuel, kb, speedcrash, throwoff, trail1,
+; trails, turn, wallcrash, warp).
 Tone:
   PUSH BC
   CALL Click
@@ -443,7 +461,8 @@ l_D9A4:
 
 ; C clicks with random delays (Random): the thump of a landing
 ;
-; Witness: L1 1530 (c1, empty, fuel, kb, trail1, trails, warp).
+; Witness: L1 1690 (c1, empty, fuel, kb, speedcrash, throwoff, trail1, trails,
+; turn, wallcrash, warp).
 Noise:
   CALL Click
   CALL JpRandom
@@ -465,7 +484,8 @@ SpeakerOff:
 
 ; Toggle the speaker bit in BeeperByte and send it
 ;
-; Witness: L1 161253 (c1, empty, fuel, kb, trail1, trails, warp).
+; Witness: L1 169287 (c1, empty, fuel, kb, speedcrash, throwoff, trail1,
+; trails, turn, wallcrash, warp).
 Click:
   LD A,(BeeperByte)
   XOR $10
@@ -478,9 +498,12 @@ Click:
 ;
 ; Saves every register. FrameCount < $FF: +1, ScanKeys, EngineSound. $FF:
 ; Controls1 = Controls2 = 0, ScanKeys, ReadP1Controls, ReadP2Controls. c1: 58
-; 177 interrupts.
+; 177 interrupts. An entry costs 2 555 T with no engine running, about 5 750 T
+; with one, about 12 600 T with two (Tone inside the interrupt); 3 585 T in the
+; front end (handler_time over c1 15055, 15356, 14700; kb 3118).
 ;
-; Witness: L1 60445 (c1, empty, fuel, kb, menu, trail1, trails, warp).
+; Witness: L1 66259 (c1, empty, fuel, kb, menu, speedcrash, throwoff, trail1,
+; trails, turn, wallcrash, warp).
 Interrupt:
   DI
   PUSH AF
@@ -506,8 +529,8 @@ l_D9F4:
   CALL EngineSound
   JR InterruptEnd
 
-; Restart the game when key 0 (KeyStates+15) is down: FrameCount = $FF, SP =
-; $FFDA, JP NewGame
+; Restart the game when key 1 (KeyStates+15: row $F7FE, bit 0) is down:
+; FrameCount = $FF, SP = $FFDA, JP NewGame
 ;
 ; No jump reaches it (the handler's two paths jump over it to $DA14): a debug
 ; or abort key left in. Known only from the code.
@@ -535,7 +558,8 @@ InterruptEnd:
 
 ; Each riding player's pass: PassP1, PassP2
 ;
-; Witness: L1 5349 (c1, empty, fuel, kb, trail1, trails, warp).
+; Witness: L1 5868 (c1, empty, fuel, kb, speedcrash, throwoff, trail1, trails,
+; turn, wallcrash, warp).
 Players:
   XOR A
   LD (SeenCount),A
@@ -553,7 +577,8 @@ Players:
 ; TrailListA, TrailListB and FinishDistance from the trail's record
 ; (TrailRecords, Trail5, Trail6)
 ;
-; Witness: L1 16 (c1, empty, fuel, kb, trail1, trails, warp).
+; Witness: L1 21 (c1, empty, fuel, kb, speedcrash, throwoff, trail1, trails,
+; turn, wallcrash, warp).
 SelectTrail:
   LD IX,Trail5
   LD A,(Trail)
@@ -591,7 +616,7 @@ l_ECBE:
 ; bands; CountBonus; 100 frames; Trail + 1, NextTrail. After trail 6,
 ; SecondRound = 1 and Trail = 0 (trails: 9 trail ends).
 ;
-; Witness: L1 9 (kb, trails, warp).
+; Witness: L1 10 (kb, trails, wallcrash, warp).
 TrailEnd:
   LD A,(Finished)
   LD (Riding),A
@@ -641,10 +666,10 @@ l_ED36:
   LD (Trail),A
   JP NextTrail
 
-; Count each finished player's Bonus into the score, a point and a tone at a
-; time
+; Count each finished player's Bonus into the score, a point (shown as 10) and
+; a tone at a time
 ;
-; Witness: L1 3611 (kb, trails, warp).
+; Witness: L1 3642 (kb, trails, wallcrash, warp).
 CountBonus:
   LD B,$00
 l_ED54:
@@ -661,7 +686,7 @@ BonusTone:
 
 ; Player 1's next bonus point
 ;
-; Witness: L1 3611 (kb, trails, warp).
+; Witness: L1 3642 (kb, trails, wallcrash, warp).
 BonusP1:
   LD A,(Finished)
   AND $01
@@ -677,7 +702,7 @@ BonusP1:
 
 ; Player 2's
 ;
-; Witness: L1 3611 (kb, trails, warp).
+; Witness: L1 3642 (kb, trails, wallcrash, warp).
 BonusP2:
   LD A,(Finished)
   AND $02
@@ -693,7 +718,7 @@ BonusP2:
 
 ; Bonus - 1; Z when it was 0
 ;
-; Witness: L1 3813 (kb, trails, warp).
+; Witness: L1 3844 (kb, trails, wallcrash, warp).
 BonusDec:
   LD BC,(Bonus)
   LD A,B
@@ -705,7 +730,7 @@ BonusDec:
 
 ; Colour player 1's band
 ;
-; Witness: L1 9 (kb, trails, warp).
+; Witness: L1 10 (kb, trails, wallcrash, warp).
 BandP1:
   LD H,$08
   LD L,$B0
