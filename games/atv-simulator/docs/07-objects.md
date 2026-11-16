@@ -91,7 +91,7 @@ sprite at the start of each trail. Command: `python3 tools/fig_objects.py fig-sh
 | 2 GRASSTRAKIN | `$7CA2` | `$0568` | 1 312 | 39 | 2 | 9 | the START banner |
 | 3 ICEBERGS | `$7CA8` | `$05D4` | 1 420 | 37 | 7 | 5 | 5 with motion |
 | 4 PYRAMIDS | `$7CAE` | `$0685` | 1 597 | 21 | 2 | 9 | the START banner |
-| 5 TROPICANA | `$EE84` | `$06B5` | 1 645 | 33 | 26 | 6 | 13 still, 9 with motion |
+| 5 TROPICANA | `$EE84` | `$06B5` | 1 645 | 33 | 26 | 6 | 13 still, 10 with motion |
 | 6 SWAMP | `$60AC` | `$069B` | 1 619 | 40 | 16 | 18 | 13 with motion |
 
 *The six trails (from `src/res/trails/trails14.txt`, `trail5.txt`, `trail6.txt`). The point: the trails grow
@@ -140,7 +140,7 @@ four places. Bit 0 picks the menu sprite bank, whose sprites carry attributes.
 *The kinds of item. The point: an item is solid only if it is in list A and drawn at once; "solid" is not a flag but a
 consequence of the draw order (7.5).*
 
-Bit 0 is not a mirror: it selects MenuSprite (`$8E66`). Bit 1 becomes ItemFlags bit 5, DeferB's test (`$8DE8`), so
+Bit 0 is not a mirror: it selects MenuSprite `$863D` (PlaceItem `$8E66`). Bit 1 becomes ItemFlags bit 5, DeferB's test (`$8DE8`), so
 draw mode 1 goes to DeferredB and 2 to DeferredA.
 
 ### InitListWidths: the y and the advance
@@ -199,7 +199,9 @@ The index is the byte offset of the last item wholly behind the window's left ed
 1. checks the item at the index; while that item is not behind the left edge, it steps the index back one item and
    starts again (riding backwards needs this);
 2. walks forward from the next item, placing each one;
-3. moves the index on past each item now behind the left edge;
+3. moves the index on by one item when the first item it places is behind the left edge too (NextIndex, from
+   `$8DD4` only); a later item behind the edge is skipped and the index kept, so the walk's start advances by at most
+   one item a pass;
 4. stops at the first item beyond the right edge, or at the list's end.
 
 PlaceItem sets up one item:
@@ -213,7 +215,7 @@ PlaceItem sets up one item:
 | --- | --- | --- |
 | 0 | the whole sprite fits: 0 <= x and x + advance + 8 < 176 | draws it, or defers it |
 | 1 | beyond the right edge: x > 175 | stops the walk |
-| 2 | behind the left edge: x + advance < 0 | moves the index on, draws nothing |
+| 2 | behind the left edge: x + advance < 0 | draws nothing; the first item placed moves the index on by one |
 | 3 | cut at the right: SpriteAdvance becomes 175 - x | draws the left part |
 | 4 | cut at the left: x < 0 <= x + advance | draws the right part |
 
@@ -232,7 +234,9 @@ WalkList(list, index, scroll):
         break
     for each item after it, until the end:
         code = PlaceItem(item)
-        if code == 2: index += 6; continue            # gone behind the left edge
+        if code == 2:                                 # gone behind the left edge
+            if this is the first item placed here: index += 6   # NextIndex, $8DD4 only
+            continue                                  # a later one: skipped, the index kept
         if code == 1: return                          # beyond the right edge
         if ItemFlags bit 6: DeferA()                  # in front of the ATV
         elif ItemFlags bit 5: DeferB()                # behind the ATV
@@ -338,7 +342,8 @@ flowchart TD
   E -->|"no: behind the left edge"| F["next item"]
   F --> P["PlaceItem: x = distance - scroll, clip code"]
   P --> C{"clip code"}
-  C -->|"2"| N["index + 6"] --> F
+  C -->|"2, the first item: NextIndex"| N["index + 6"] --> F
+  C -->|"2, a later item: skip"| F
   C -->|"1"| R["return"]
   C -->|"0, 3, 4"| K{"ItemFlags"}
   K -->|"bit 6"| DA["DeferA: drawn after the ATV"]
@@ -373,8 +378,8 @@ clip code (`l_8F09` is code 0, `l_8F0E` 1, `l_8F14` 2, `l_8F1A` 3):
 looked at.*
 
 1. The list A walk runs from 1 263 T 27 502 to 1 264 T 13 497: 55 883 T.
-2. PlaceItem for the sign takes 29 316 T of that, most of it SpriteGo shifting the sprite `$A5` to its new pixel
-   offset ([doc 6](06-rendering.md)).
+2. PlaceItem for the sign takes 29 316 T of that, most of it the measuring call shifting the sprite `$A5` to the previous
+   item's offset (-127 AND 7 = 1, the same as its own 25 AND 7 here; [doc 6, 6.7](06-rendering.md#67-the-measuring-call-rotations-twice)).
 3. The list B walk runs from 1 264 T 26 764 to 1 265 T 9 910.
 
 ![Trail 1 at TrackPos 1007: the buffer with each item's box](img/objects/stretch.png)
@@ -540,7 +545,7 @@ Worked example: the pass at frame 1 263, Speed 21.
    frame 1 264 and `00630` at 1 267 (one point shows as 10).
 
 Backwards, BackList `$E030` subtracts and calls ScoreDown at each bit-4 change: riding back loses the points. Under 0
-it puts both scrolls at 0 and stops the ATV.
+it gives the point back (ScoreStep, `$E05A`), puts both scrolls at 0 and stops the ATV.
 
 Witness: the scroll chart; in `trails-vars.jsonl` SceneryPos x 4 stays within 4 of TrackPos at every sample of
 trail 1.
@@ -575,8 +580,9 @@ AnimObject(item, rec):
     if PlayerIndex != 0:
         if rec.id in SeenIds[0:SeenCount]: return     # player 1 moved it: draw it where it is
     else:
-        if SeenCount >= 30: blue border, hang         # ListOverflow
-        SeenIds[SeenCount++] = rec.id
+        SeenCount += 1
+        if SeenCount == 30: blue border, hang         # ListOverflow: the 30th new id; 29 are stored
+        SeenIds[SeenCount - 1] = rec.id
     swing(rec[3], rec[4], step = rec[7] >> 4)  -> item.distance
     swing(rec[5], rec[6], step = rec[7] & 15)  -> item.y
     swing(rec[8] >> 4, rec[9], step = rec[8] & 15) -> rec[0], the sprite
@@ -707,7 +713,7 @@ player a pass. InitRecords `$E4CA` copies RecordTemplate `$D7A7` into both recor
 
 *The record. How to read: one box a byte, `+offset $address` at the top, the name in the middle, the template's
 value at the bottom; the colour is the group. The point: the ATV, the rider, the place on the trail and the HUD's
-numbers are all here, and seven bytes are read by no code. Command: `python3 tools/fig_objects.py fig-record
+numbers are all here, and six bytes are read by no code. Command: `python3 tools/fig_objects.py fig-record
 docs/img/objects/record.png`.*
 
 Notes on the fields:
@@ -725,17 +731,23 @@ Mounted 1, RiderX 77, Fuel `$1044`, Distance `$03EF00`, DistanceIndex 48 and Sce
 
 ## 7.9 Limits, quirks and what is known only from the code
 
-- **30 animated objects a pass.** Player 1's walk appends every animated item it steps to SeenIds. The 30th hangs the
+- **29 animated objects a pass.** Player 1's walk appends every animated item it steps to SeenIds. The 30th hangs the
   game with a blue border (ListOverflow `$8A90`). The busiest view in the data holds far fewer; no recording reaches
   it.
 - **An item placed too low.** PlaceItem compares SpriteY with the sprite's height. If y is below the height, part of
-  the sprite would fall under the window: ItemTooLow `$8EB2` sets a red border and restarts the game. No recording
-  shows it.
+  the sprite would fall under the window: ItemTooLow `$8EB2` sets a red border and restarts the game. No trail's data
+  has such an item; `work/stage1/rec/itemlow` (714 frames from `c1`'s menu snapshot, `tools/rec_crashes.py itemlow`)
+  makes one with a POKE at the menu: trail 1's list A item 2 (the START banner's `$C9`, 7 lines high) gets y 1
+  instead of 23. After START the first pass (frame 398) runs Update and WalkList once and PlaceItem 4 times; the
+  fourth finds y 1 under the height 7: ItemTooLow (`$8EB2`, the `OUT` at `$8EB4`, `JP RestartJump` at `$8EB9`),
+  Restart `$D7ED`, and the credits come back (its screens to frame 714). Witness: its L1 (Update 1, WalkList 1,
+  PlaceItem 4, all at frame 398; ItemTooLow is reached by falling through, so it has no L1 entry) and the trace
+  `work/review/fixB/itemlow/traces/397_0-400_0.uatr`: `$8EB2`, `$8EB4`, `$8EB9` and `$D7ED` once each, in frame 398.
 - **A double step.** An animated item at the walk's index can be stepped twice in one walk (7.7).
 - **Objects that freeze.** An animated item moves only while walked; one left behind keeps its place. Nothing in the
   code puts the distances back, so a second round of trails (after trail 6) finds the objects where the first round
   left them.
 - **Item flags.** Bit 0 is the menu bank, not a mirror; draw mode 1 (bit 1) defers to DeferredB, drawn before the
   ATV, and 2 (bit 2) to DeferredA, drawn after it; list B scrolls at a quarter of list A.
-- Known only from the code: AnimObject's motions, SeenIds' effect in a two-player game, ListOverflow, ItemTooLow and
-  the double step.
+- Known only from the code: AnimObject's motions, SeenIds' effect in a two-player game, ListOverflow and the double
+  step. ItemTooLow only with the POKE above.

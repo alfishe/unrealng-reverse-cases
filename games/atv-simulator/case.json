@@ -25,7 +25,10 @@
     "stage1/rec/turn",
     "stage1/rec/throwoff",
     "stage1/rec/speedcrash",
-    "stage1/rec/wallcrash"
+    "stage1/rec/wallcrash",
+    "stage1/rec/itemlow",
+    "stage1/rec/overhang",
+    "stage1/rec/dropout"
   ],
   "ref_builds": [
     [
@@ -51,7 +54,10 @@
     "stage1/rec/turn",
     "stage1/rec/throwoff",
     "stage1/rec/speedcrash",
-    "stage1/rec/wallcrash"
+    "stage1/rec/wallcrash",
+    "stage1/rec/itemlow",
+    "stage1/rec/overhang",
+    "stage1/rec/dropout"
   ],
   "no_roots": [
     "stage1/rec/menu",
@@ -64,6 +70,9 @@
     "stage1/rec/turn",
     "stage1/rec/throwoff",
     "stage1/rec/speedcrash",
-    "stage1/rec/wallcrash"
+    "stage1/rec/wallcrash",
+    "stage1/rec/itemlow",
+    "stage1/rec/overhang",
+    "stage1/rec/dropout"
   ]
 }

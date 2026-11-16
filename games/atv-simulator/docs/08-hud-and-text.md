@@ -511,8 +511,8 @@ What to watch:
 
 Worked example: TIME OUT on trail 1. MaxTime is "60"; the table MaxTimes `$D6CF` gives 60, 60, 60, 40, 50, 50, and
 "30" in the second round. The test compares only the hundreds: the clock reaches `6`, `0`, `0` after 600 passes,
-4 200 frames, 84 real seconds, while the screen reads 60.0. In `c1` the first pass is at frame 15 060; 15 060 +
-4 200 = 19 260, the frame of Figure 8.5.
+4 200 frames, 84 real seconds, while the screen reads 60.0. In `c1` the first pass (Update) is at frame 15 055; 15 055 +
+4 200 = 19 255, and Figure 8.5's screen is kept at 19 260.
 
 Witness: ClockTick 5 349 calls in the L1 profiles; in `c1` 600 calls, one per pass of trail 1. The ZXDB POKE
 60250,0 writes 0 into ClockAdd's operand `$EB5A`: `ADD A,$00`, and the clock stops. `fuel` and `empty` use it.
@@ -863,9 +863,13 @@ What to watch:
 - the bar standing still while the rider is thrown and walks: UseFuel runs only when he rides.
 
 Worked example: why the first cell goes at once. ShowBars sets `$2000` and FuelBar `$B0`, level `$20`. The first
-moving pass takes at least 2: `$1FFE`, level `$1C`, not `$20`, so the cell at `$AC` is cleared. The tank really holds
+moving pass takes at least 4 (Advance returns for a speed under 2, and UseFuel takes 2 x Speed): `$1FFC`, level
+`$1C`, not `$20`, so the cell at `$AC` is cleared. The tank really holds
 `$2000` − `$400` = `$1C00` before OutOfFuel: 7 168 units. At speed 21, 42 a pass, that is 171 passes, 1 195 frames,
 less than a third of trail 1's 600-pass limit. Rides last longer only because of crashes, walks and braking.
+Fuel is spent per pixel moved, forward or back: a pass moves Speed / 2 pixels and burns 2 x Speed, 4 a pixel at any
+speed, so a tank lasts 1 792 pixels, more than any trail's FinishDistance of 1 312-1 645: a clean ride never runs
+dry ([doc 10, 10.11](10-gameplay-logic.md#1011-fuel)).
 
 Witness: in `fuel` Fuel is `$1C00` at frame 881 and `$1BD6` at frame 882, the cell at `$A8` cleared at T 54 795.
 Figure 8.3 shows the bar after 2 310 frames. UseFuel has 1 582 calls in the L1 profiles.
@@ -996,8 +1000,8 @@ What to watch:
 (WALKTHROUGH 6.0).*
 
 Worked example: TIME OUT's place. x `$40` = 64 in the 176-pixel window, y `$44` = 11 lines below the window's top.
-TIME takes 7 + 5 + 8 + 7 = 27 pixels, the space 6, OUT 8 + 8 + 7 = 23: 56 pixels, from x 64 to 120. The main loop
-then waits 250 frames (`LD B,$FA` and HALT). Unless a player has finished, the game ends
+TIME takes 7 + 5 + 8 + 7 = 27 pixels, the space 6, OUT 8 + 8 + 7 = 23: 56 pixels, from x 64 to 120. If a player has
+finished, TrailEnd follows at once; if not, the main loop waits 250 frames (`LD B,$FA` and HALT) and the game ends
 ([doc 4](04-game-loop.md#49-the-end-of-a-pass-the-finish-time-out-game-over)).
 
 Witness: PrintShadow 1 162 calls in the L1 profiles (OUT OF FUEL, LAP TIME and EXTENDED PLAY, every pass they show);

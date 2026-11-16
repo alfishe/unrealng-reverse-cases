@@ -23,7 +23,8 @@ The recordings it rests on ([WALKTHROUGH](../WALKTHROUGH.md), 6.0), each started
 - `trails`: trail 1 to the finish with no POKE, trail 2 to distance 898;
 - `warp`: all six trails, the finishes, EXTENDED PLAY, LAP TIME, the second round, name entry; 14 distance POKEs put
   the ATV near each finish (said where it matters);
-- `empty`: the fuel's high byte POKEd to 5, the tank empty at frame 732.
+- `empty`: the clock stopped by POKE 60250,0 at frame 14 and the fuel's high byte POKEd to 5 at frame 567, the
+  tank empty at frame 732.
 
 A value sampled with `time_travel memory_at` is the state at T 0 of the frame named. A screenshot named
 `<recording>-<frame>` is the screen at the end of that frame.
@@ -55,7 +56,7 @@ flowchart TD
 
 **Worked example.** In `trails` the bot reaches the finish of trail 1 with the clock at 19.8, well under the maximum of
 60. The game prints EXTENDED PLAY and LAP TIME 19 8 and, at TIME OUT, counts the bonus into the score and goes on to
-trail 2. In `c1` the rider crashes, walks, gets stuck behind a dune and never finishes: TIME OUT at 60.0, the game is
+trail 2. In `c1` the rider crashes, walks on to the right, away from the ATV, and never rides again: TIME OUT at 60.0, the game is
 over.
 
 **Witness.** `docs/img/play/trails-001700-extended-play.png`, `c1-019260-time-out.png` (1.3).
@@ -73,8 +74,8 @@ Each player has five controls: left, right, wheel up, wheel down and jump. The m
 
 Left and right are the throttle in the direction the ATV faces, and the brake against it. At a standstill the brake
 turns the ATV round. Wheel up lifts the front wheel (a wheelie); wheel down brings it down. Jump gives the ATV extra
-lift on a ramp; on foot it makes the rider jump. In the menu any key moves the highlight to the next item, and SPACE or
-fire chooses it.
+lift on a ramp; on foot it makes the rider jump. In the menu any key moves the highlight to the next item, and SPACE, 0 or
+the Kempston's fire chooses it; ENTER only moves.
 
 ```mermaid
 flowchart LR
@@ -99,7 +100,10 @@ flowchart LR
 ![Every screen of ATV Simulator, in the order a player meets it](img/play/screens.png)
 
 *How to read: twenty screenshots in the order of play, each captioned with what it shows and the recording and
-frame it was taken from (the end of that frame). The point: the game has one play screen, the two halves with the HUD
+frame it was taken from (the end of that frame). The atlas holds 19 of the table's 23 rows and the redefine-keys page
+(`menu` 160); it leaves out "thrown" (`c1` 15 660), "finished, TIME OUT" (`trails` 4 510), "bonus" (`trails` 4 780)
+and "both finished" (`kb` 2 418), shown in the table only. Its panel 19 is the bonus band of a fast lap after a
+distance POKE (`warp` 1 163). The point: the game has one play screen, the two halves with the HUD
 panels on the right, and every other moment is text over it or a front-end page. Drawn by `python3
 tools/fig_screens.py docs/img/play/screens.png` from the screenshots below.*
 
@@ -118,7 +122,7 @@ tools/fig_screens.py docs/img/play/screens.png` from the screenshots below.*
 | a jump | the ATV in the air over a dune | ![jump, c1 15 540](img/play/c1-015540-jump.png) |
 | a crash | the ATV tumbling | ![tumble, c1 15 580](img/play/c1-015580-tumble.png) |
 | thrown | the rider thrown off | ![thrown, c1 15 660](img/play/c1-015660-thrown.png) |
-| on foot | the rider walking back to the ATV | ![on foot, c1 15 800](img/play/c1-015800-on-foot.png) |
+| on foot | the rider on foot; in `c1` he has walked right, away from the ATV, to the window's edge | ![on foot, c1 15 800](img/play/c1-015800-on-foot.png) |
 | OUT OF FUEL | the text in the half; the ATV crawls | ![out of fuel, empty 939](img/play/empty-000939-out-of-fuel.png) |
 | TIME OUT | the clock at 60.0, the text in the half | ![time out, c1 19 260](img/play/c1-019260-time-out.png) |
 | finish line | the FINISH sign | ![finish line, trails 1 640](img/play/trails-001640-finish-line.png) |
@@ -174,7 +178,7 @@ digit by digit.
 items' sprites from `src/res/sprites/game.png`. The red line is the finish, the trail's length less `$48`; the left
 column gives the length, the finish, the maximum time and the item counts. The orange lines mark recorded moments.
 The point: the trails differ in their obstacles more than their length; trail 2 has the high log stacks that stop the
-bot, trail 5 and 6 the most items. Drawn by `python3 tools/fig_trails.py`; the marks are `c1` frame 15 580,
+bot, trail 6 the most items (58), then trail 2 (48). Drawn by `python3 tools/fig_trails.py`; the marks are `c1` frame 15 580,
 `trails` frame 1 680, `trails`' stop at distance 898, `speedcrash` frame 1 032 and `wallcrash` frame 1 683.*
 
 | Trail | Name | Length | Finish | Maximum | List A, list B |
@@ -354,11 +358,13 @@ flowchart LR
     E --> F["crawl until TIME OUT"]
 ```
 
-**Worked example.** In `empty` the fuel's high byte is POKEd to 5 at frame 567, just above empty. It falls under `$400`
+**Worked example.** In `empty` the clock is stopped by POKE 60250,0 at frame 14 (it reads 00.0 throughout), and the
+fuel's high byte is POKEd to 5 at frame 567, just above empty. It falls under `$400`
 in the pass of frame 732 (OutOfFuel runs there; Fuel reads `$03F6` from 733). OUT OF FUEL blinks from frame 736 on
 (drawn in the passes that move; [doc 10](10-gameplay-logic.md)), and the score crawls from 50 at frame 939 to 90 by
-frame 2 269 while the throttle is held. A full tank of `$2000` at speed 21 lasts `$2000` / 42 = 195 moving passes, more than a trail's
-finish needs at that speed (about 154 passes, 1.5).
+frame 2 269 while the throttle is held. A full tank of `$2000` at speed 21 lasts (`$2000` − `$400`) / 42 = 171 moving passes: the tank is
+empty under `$400` (FuelEmptyTest `$DFBC`, the high byte AND `$FC`). That is still more than a trail's finish needs
+at that speed (about 154 passes, 1.5).
 
 **Witness.** `work/stage1/rec/empty`: OutOfFuel ran 83 times (its L1), first in frame 732 (the trace
 `work/docs/atC/empty/traces/732_0-733_0.uatr`); `docs/img/play/empty-000939-out-of-fuel.png`.
@@ -388,8 +394,9 @@ flowchart TD
     G -- "no" --> I["game over"]
 ```
 
-**Worked example.** In `kb` both players finish trail 1 at about frame 2 000 with the clock at 20.2. Their 205 passes
-took 8.78 frames each on average instead of 7. Both ride trail 2. At the end player 2's score enters the table, and
+**Worked example.** In `kb` both players finish trail 1 at about frame 2 000 with the clock at 20.2. The trail ends
+when both have stopped, with the clock at 21.3 (frame 2 150): 213 passes since 00.1 at frame 402, (2 150 − 402) / 212
+= 8.2 frames each on average instead of 7. Both ride trail 2. At the end player 2's score enters the table, and
 the name entry says PLAYER TWO (`kb` frame 8 260).
 
 **Witness.** `docs/img/play/kb-000834-split-screen.png`, `kb-002418-both-finished.png`; the clock samples in
@@ -430,8 +437,8 @@ of 230 beats nothing and the title comes back.
 
 These rules are in the code, and no recording shows them:
 
-- the menu, left alone, goes back to the title after about 10.5 minutes (TuneTimer reaching `$8000`; [doc 04,
-  4.10](04-game-loop.md#410-the-timers-and-every-delay));
+- the menu, left alone, goes back to the title after about 10.5 minutes (TuneTimer reaching `$8000`, counted on by
+  MenuLoop's HALT loop after the tune stopped at `$0A00`; [doc 04, 4.10](04-game-loop.md#410-the-timers-and-every-delay));
 - more than 30 animated objects in one pass turn the border blue and hang the game (ListOverflow `$8A90`);
 - key 1 would restart the game from the interrupt (AbortKey `$DA01`, KeyStates+15), but no jump reaches that code;
 - the bonus wraps for a lap of 09.0 or less on a "60" trail: shown only with the distance POKEs of `warp` (1.6).
@@ -441,6 +448,8 @@ flowchart LR
     A["the code"] --> B["menu timeout"]
     A --> E["ListOverflow hang"]
     A --> F["AbortKey, unreachable"]
+    A --> G["bonus wrap: lap 09.0 or less on a 60 trail"]
+    G --> H["seen only with warp's POKEs"]
 ```
 
 Full nose-up throwing the rider off (ThrowOff, then FallRider) was known only from the code until the recording

@@ -204,11 +204,10 @@ sequenceDiagram
     participant U as PassP1 and PassP2
     P->>K: ReadP1Controls, ReadP2Controls
     P->>K: ClearKeys
-    I->>K: ScanKeys, frame 1
-    I->>K: ScanKeys, frame 2
+    I->>K: ScanKeys, frames 1 to 4 (turn 737-740)
     U->>K: PassP1 ClearKeys after player 1's Update
-    I->>K: ScanKeys, frames 4 to 7
-    P->>K: the next read sees these scans only
+    I->>K: ScanKeys, frames 5 to 7 (turn 741-743)
+    P->>K: the next read sees only the scans after PassP1's ClearKeys
 ```
 
 ![The key latch](img/controls/latch.png)
@@ -223,7 +222,7 @@ How to read it:
 - each column is a frame; a green bar is a scan whose keys reach the next read, a red one a scan cleared first;
 - blue triangles: Pass reads; yellow lines: ClearKeys; violet dots: Controls `$E105` acting on the byte;
 - one player: of the 7 scans of a pass, 3 count (frames 741-743 for the read at 743);
-- two players: 7 of 12 count (frames 709-715 for the read at 715).
+- two players: 7 of 13 count (frames 709-715 for the read at 715; 703-708 are cleared).
 
 Worked example, `turn` pass 736-743 (from the trace `work/stage1/rec/turn/traces/701_0-771_0.uatr`):
 
@@ -241,8 +240,9 @@ never seen.
 
 Witness: the trace above; the right key held throughout `turn` gives Controls1 = `$08` at every pass.
 
-The point: a pass reads the keys of its last three frames only. A tap of up to four frames can vanish. A key
-held for a whole pass always counts.
+The point: a pass reads only the scans after PassP1's ClearKeys: 3 in a light one-player pass, fewer in a heavy one
+(PassP1's ClearKeys comes later), 7 of 13 in `kb`'s two-player pass 702-715. A tap of up to four frames can vanish
+in a light pass. A key held for a whole pass always counts.
 
 ## 5.4 ReadP1Controls, ReadP2Controls and the device
 
@@ -398,9 +398,10 @@ and Controls2, runs ScanKeys and both readers, every frame.
 
 MenuLoop `$737C` highlights the current item (attribute `$5E`), plays the title tune while no key is down and
 waits. Any key that is not a select key moves the highlight down, wrapping. SelectKey `$741F` is SPACE (index 35),
-key 0 (index 20) or the Kempston's fire when KempstonOn. ENTER only moves. In the main menu a timer (MenuTimer)
-shows the high-score table after a while and goes back to the title later; the key menus (MenuCount 6) have no
-timer.
+key 0 (index 20) or the Kempston's fire when KempstonOn. ENTER only moves. A timer (TuneTimer, counted by MenuTimer)
+shows the high-score table after about 27 s: MenuTick does it inside the tune, at `$0A00`, and stops the tune. In the
+main menu MenuLoop's HALT loop goes on counting and goes back to the title at `$8000`, about 10.5 minutes after the
+title; the key menus (MenuCount 6) skip that test.
 
 ```text
 MenuLoop():
@@ -408,8 +409,10 @@ MenuLoop():
     loop:
         HALT
         if MenuCount < 6:
-            if timer high byte == 4: HiScoreScreen(); restart MenuLoop
-            if timer high byte == 80: Title()
+            timer += 1
+            if timer low byte wrapped and high byte == 4:   # never reached: the timer starts at $04C8
+                HiScoreScreen(); restart MenuLoop           # and Title resets it at $8000
+            if timer high byte == $80: Title()
         if no key: continue
         if SelectKey(): MenuDispatch(item)          # SPACE, 0 or fire
         unhighlight ($1F); 3 HALTs; item = (item + 1) mod MenuCount
@@ -438,8 +441,8 @@ flowchart TD
     A["MenuLoop: highlight 5E, the tune until a key"] --> B["HALT"]
     B --> T{"MenuCount < 6?"}
     T -->|"yes"| U{"timer"}
-    U -->|"4"| H["HiScoreScreen, MenuLoop again"]
-    U -->|"80"| TI["Title"]
+    U -->|"0400, never reached"| H["HiScoreScreen, MenuLoop again"]
+    U -->|"8000"| TI["Title"]
     U -->|"else"| K
     T -->|"no"| K{"AnyKey?"}
     K -->|"no"| B
@@ -722,7 +725,8 @@ work/stage1/rec/turn --from 1093 --to 1534 --step 7 --width 1050 --delay 100 doc
 What to watch:
 
 - the SPEED bar under the top border growing and shrinking a block a pass;
-- the ATV head-on for one pass, then the other way round;
+- the ATV head-on for two passes (`$5C` set in the turn's 1st pass, replaced by `$38` in its 3rd), then the other
+  way round;
 - the score going down while the ATV rides left.
 
 ![ControlRight at work](img/routines/ControlRight.gif)
@@ -949,8 +953,11 @@ sequenceDiagram
     B->>P: WaitFrames: FrameCount already 7 or more
 ```
 
-Two updates rarely fit in 7 frames. In `kb` frames 684-758 the passes start at 684, 692, 702, 715, 725, 736, 747,
-758: 8 to 13 frames each, about 10.5 on average. WaitFrames finds FrameCount already past 7 and goes on at once.
+Two updates often overrun 7 frames where the scroll shifts large sprites. In `kb` frames 684-758, the start of
+trail 1 with the START sign and two engines, the passes start at 684, 692, 702, 715, 725, 736, 747, 758: 8 to 13
+frames each, about 10.5 on average. WaitFrames finds FrameCount already past 7 and goes on at once. Over the whole
+recording 640 of 811 passes still took 7 frames ([doc 04, 4.6](04-game-loop.md#46-the-fixed-7-frame-pass-and-the-wait-on-d6bc)); trail 1
+averaged 8.2 frames a pass (85 % of real time), trail 2 7.43 (94 %).
 The clock counts passes ([8.5](08-hud-and-text.md#85-the-clock)), so a two-player trail lasts longer in seconds,
 with the same number of passes.
 
@@ -962,13 +969,13 @@ and K wheel up), each on his half of the screen. Command: `python3 ../../kit/scr
 
 Worked example (`kb` pass 702-715, figure 5.2): Pass reads at 702:68 897, its ClearKeys runs at 703:1 124,
 player 1's Controls at 704:64 325, PassP1's ClearKeys at 708:30 009, player 2's Controls at 711:23 139, the next
-Pass at 715:17 191. Player 2's byte was read at 702:68 897, 8.5 frames before it acts. Both players' keys pressed
+Pass at 715:17 191. Player 2's byte was read at 702:68 897, 8.3 frames before it acts (583 234 T). Both players' keys pressed
 only between 703 and 708 are lost.
 
 Witness: `kb` (traces in `work/docs/atB/kb/traces`).
 
 The point: both players share one latch and one clock. Player 2 acts on keys a pass older than his update, and a
-two-player game runs about two thirds as fast.
+two-player game runs slower where the scroll is heavy: two thirds as fast at trail 1's start, 85 % over trail 1.
 
 ## 5.13 The key no path reads
 

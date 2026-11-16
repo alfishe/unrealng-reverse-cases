@@ -557,6 +557,7 @@ nose (AtvPhysics $E6F8):
     NoseGround = GroundScan(AtvX + dx + 1, NoseLine + 8)       # $D6C7
     if NoseLine == 0:                                          # nose on the window's floor
         if AtvHeight >= 3: NoseHigh(); else AtvFrame = $38
+        # NoseHigh $E7C5: 7 or more up and falling at 5 a pass (FastFall): CrashIfAir ($E7D1)
         return
     gap = NoseLine - NoseGround
     if gap >= 0:                                               # the nose is over the ground
@@ -777,6 +778,15 @@ test (`$E771`) at TrackPos 296, frames 1 676-1 683: speed 21 - 2 = 19, the tumbl
 **Witness.** The L1 of `work/stage1/rec/speedcrash` (Crash 1, `$E96E` 1, Throw 1) and of
 `work/stage1/rec/wallcrash` (Crash 1, `$E974` 1); their log.json samples.
 
+**CrashIfAir, recorded.** `c1`'s tumble is the third path. In the trace `work/docs/integrate/c1/traces/15400_0-15800_0.uatr`
+(`work/docs/atC/pcs.py`) `$E80D` (CrashIfAir's `JP Crash`) runs 8 times and Crash `$E94C` the same 8, at frames 15 574,
+15 581, 15 587, 15 594, 15 623, 15 630, 15 636 and 15 657; the step test's `$E6EB` and the nose test's `$E771` never.
+At 15 574 the call comes from the slope branch (`$E78F`: a lift of 6 or more frames while 4 or more above the
+ground): Speed 17 after the -2 ([doc 2](02-architecture.md)'s sample at 15 580), so the tumble branch (`$E974`) and
+Throw (`$E98D`). The later seven come from NoseHigh (`$E7D1`) while the ATV falls during the tumble: Crash returns at
+once for a tumbling ATV once more (15 581), takes the middle branch once as the speed falls (`$E96E`, 15 587, Stop;
+the rider is already off) and then only stops. The L1 of `c1` agrees: CrashIfAir 8 entries, Crash 8, first 15 574, last 15 657.
+
 **The point.** The crash rule measures the step against the momentum: a ramp the ATV is already climbing at 5 a
 pass can rise 11 in one pass, while a 7-line kerb hit on the flat is a crash at any speed. The penalty is by speed:
 riding slower than 12 never throws the rider.
@@ -909,8 +919,10 @@ SlowDowns of count 10 take the speed from 19 to 15, the tables give the frame an
 | 6 008 | 24 | 0 | 0 | `$85` | 616 |
 | 6 015 | 0 | 0 | 0 | `$44` | 616 |
 
-The heights follow Figure 10.2's bottom row from 5 to 45 and back: 15, 25, 33, 39, 43, 45, 41, 35, 27, 17, 5, 0. At
-count 13 the ATV is down: `$85`, and 4 off for the ground plus 4 for the count take 7 to 0. The ATV slid 93 pixels
+The heights follow Figure 10.2's bottom row from 5 to 45 and back: 15, 25, 33, 39, 43, 45, 41, 35, 27, 17, 5, 0. In
+count 13's pass the ATV was still 5 above the ground: OnGround failed, the air branch added 2 x TumbleHeights[11] =
+-12 and the `CP $A0` clamp gave height 0, so only the count's 4 applied (11 to 7, the sprite `$87`). At count 14
+the ATV is down: `$85` (`$E8DC`), and 4 off for the count plus 4 for the ground take 7 to 0. The ATV slid 93 pixels
 while tumbling (523 → 616); from 5 945 to 6 012 the count only counts, ten passes standing still.
 
 **Witness.** `work/docs/atC/trails-vars.jsonl`; `pcs.py` finds `$E8A6` (count 10 or more) in frame 5 914 of
@@ -1060,6 +1072,20 @@ work/docs/atC/trails --width 1050 --from 5826 --to 6040 --step 3 --delay 100 doc
 `tools/rec_crashes.py`) holds Up through a full wheelie: AtvFrame reaches `$44` at frame 612, ThrowOff `$E2E2` runs
 once and Mounted is 0 at 619 (speed 13 to 10); FallRider `$E991` runs 35 times while FallPhase counts 1 to 5, and the
 rider lies behind the ATV at x 35. Witness: its L1 (ThrowOff 1, FallRider 35, ControlUp 31) and log.json.
+
+**The overhang, recorded with a POKE.** No trail has a piece floating 12-30 lines over the track, so
+`work/stage1/rec/overhang` (1 060 frames from `c1`'s menu snapshot, `tools/rec_crashes.py overhang`) makes one: at the
+menu, trail 1's list A item 3 (distance `$0148`, the dune `$67`, 12 lines high, y 0) gets y 30 (POKE at its +2 byte,
+in `record.json`), so the dune floats with its top at 30 and its bottom at 19, above the wheels' scan (AtvHeight + 8)
+and the nose's. The rider rides right with no wheel key: at frame 756, speed 21, AtvFrame `$38` (level), RiderMounted
+finds the dune's top 21 above the rider (RiderHeight 9) and jumps to ThrowOff (`$DE76`, its only caller): Mounted 0,
+FallPhase 1, RiderX 77 to 61 (+`$10` - `$20`), RiderHeight 9 to 19. Witness: its L1 (ThrowOff 1 at frame 756, no
+Crash, no Throw) and log.json.
+
+![The overhang throws the rider off the back](img/play/overhang-000759-thrown.png)
+
+*Figure 10.3: `overhang` frame 759: the dune POKEd to float over the track; the rider, thrown off the back by
+RiderMounted's overhang test, rises behind the ATV. A screen kept by `tools/rec_crashes.py overhang`.*
 
 **The point.** The throw carries the rider forward, away from the ATV, and the ATV cannot come to him: only the rider
 on foot can close the gap.
@@ -1274,7 +1300,7 @@ throttle adds 1: 21 at 1 680, then down 1 a pass (7 at 1 780, 6 at 1 787, 5 at 1
 floors at 0 and Accelerate gives 1 again. At speed 1 Advance does not move: TrackPos stays 1 727 from frame 1 815 to
 the trail's end.
 
-**Witness.** `tab.py 1780 1830 7`; the Speed panel of Figure 10.3 (10.13).
+**Witness.** `tab.py 1780 1830 7`; the Speed panel of Figure 10.4 (10.13).
 
 **The point.** Speed is a budget: each bump, jump and landing costs 2 of 21, and one pass of throttle wins back only
 1. Holding the throttle after the finish keeps the speed at 1 for ever, which matters at the end of the trail (10.15).
@@ -1381,7 +1407,9 @@ crawls a pixel every few passes, too slow to reach any finish before the clock.
 ### In short
 
 The score goes up 10 (one point, the screen's tens digit) every time TrackPos crosses a multiple of 16 going forward,
-and down 10 going back. ScoreStep checks the Finished bit: after the finish no point is scored. The bonus adds its
+and down 10 going back. ScoreStep checks the Finished bit: after the finish no point is scored. ScoreDown `$E072`
+has no such test (BackList `$E04C` calls it straight): after the finish, riding back still costs a point each 16
+pixels, and riding forward does not return it. The bonus adds its
 points at the trail's end (10.14, 10.15).
 
 ### Pseudocode
@@ -1392,7 +1420,7 @@ ForwardList (in Advance):
 ScoreStep():                                   # $E0CB
     if this player has finished: return
     player 1 ? ScoreUpP1() : ScoreUpP2()       # +1 on the tens digit, with carries
-BackList: if bit 4 changed: ScoreDown()        # -1 on the tens digit
+BackList: if bit 4 changed: ScoreDown()        # -1 on the tens digit; no Finished test ($E04C, $E072)
 ```
 
 ### Assembly
@@ -1423,7 +1451,7 @@ flowchart LR
 **Worked example.** Trail 1 in `trails`: the score reads 01000 at the finish (frame 1 673, TrackPos 1 612): 1 600 / 16
 = 100 points. It stays 01000 while the ATV coasts to 1 727, and becomes 03030 after the bonus of 203 points.
 
-**Witness.** The Score panel of Figure 10.3.
+**Witness.** The Score panel of Figure 10.4.
 
 **The point.** The distance is worth about 100 points a trail; the bonus, from the lap time, is worth 150 to 1 000.
 The score rewards speed more than distance.
@@ -1482,7 +1510,7 @@ flowchart LR
 
 ![The course of the trails game](img/gameplay/course.png)
 
-*Figure 10.3: `trails` frame by frame (the `P1` record and the loop variables at the start of each frame). How to
+*Figure 10.4: `trails` frame by frame (the `P1` record and the loop variables at the start of each frame). How to
 read: six panels share the frame axis; the grey lines are the events named below. The values before frame 280 are
 the menu's memory. The point: trail 1 takes 166 passes from the mount (508) to the finish (1 673), then 402 passes of
 waiting at speed 1 until TIME OUT; trail 2 ends in a crash at 5 851 and a rider who never gets back on. Command:
@@ -1740,12 +1768,12 @@ starts. Command: `work/docs/atC/anims4.sh`.*
 
 ![TIME OUT with the rider finished](img/play/trails-004510-time-out-finished.png)
 
-*Figure 10.4: `trails` frame 4 510: the finish tune playing after TIME OUT; player 1's half keeps LAP TIME and
+*Figure 10.5: `trails` frame 4 510: the finish tune playing after TIME OUT; player 1's half keeps LAP TIME and
 EXTENDED PLAY, and no TIME OUT text (TimeOut skips a finished rider).*
 
 ![The bonus count](img/play/trails-004780-bonus-count.png)
 
-*Figure 10.5: `trails` frame 4 780: CountBonus at work, player 1's half in its band, the score climbing to 03030
+*Figure 10.6: `trails` frame 4 780: CountBonus at work, player 1's half in its band, the score climbing to 03030
 ([doc 9, 9.5](09-sound.md) for the tone, [CountBonus.gif](img/routines/CountBonus.gif)).*
 
 **Worked example.** In `trails` the rider finished at 1 673 but kept the throttle held: Speed stayed 1 (10.10), so
@@ -1755,7 +1783,22 @@ would have ended at about clock 21.0. The bonus is the same either way (it is fi
 only time; in a two-player game, though, the trail cannot end by the stop until both riders have finished.
 
 **Witness.** `pcs.py` over `4484_0-4492_0.uatr`: `$D89E`, `$D8A8`, `$D8B2` and `$ECE0` once each, all in frame
-4 490; the Speed panel of Figure 10.3.
+4 490; the Speed panel of Figure 10.4.
+
+**A drop-out, recorded.** `work/stage1/rec/dropout` (7 830 frames from recording menu's `menu-two-kb.szx`, two
+players on the keyboard, `tools/rec_crashes.py dropout`): player 1 mounts, his distance is POKEd to the finish less
+40 (`$D726` = 1 568, in `record.json`), he crosses the line (Finished 1 at frame 747) and stops; player 2 never leaves
+the start. At the clock's 60.0 TimeOut runs once (frame 6 783), TrailEnd follows at once (`$ECE0`, 6 784; Finished
+& 3 is 1, no 250-frame wait), Riding goes 3 to 1, and trail 2 starts for player 1 alone: PassP2 `$DA8F` runs its last
+time at 6 783, PassP1 on to 7 829, and player 2's half shows only the trail's name.
+
+![Trail 2 for player 1 alone](img/play/dropout-007830-trail2-alone.png)
+
+*Figure 10.7: `dropout` frame 7 830: trail 2 after TIME OUT; player 2 did not finish trail 1 and is out (Riding 1),
+his half shows the trail's name, his score stays 00000. A screen kept by `tools/rec_crashes.py dropout`.*
+
+**Witness.** The L1 of `dropout` (TimeOut 1, TrailEnd 1, PassP2 600 calls from 405 to 6 783, PassP1 664 to 7 829)
+and its log.json (Riding, Finished, the clock, each 13 frames).
 
 **The point.** "Finished and stopped" is the rule: the finish line does not end the trail, the player's own stopping
 does. A trail's end is also the only place a player can drop out.
@@ -1899,7 +1942,7 @@ at 5 851 meets a 7-line step on the flat at speed 21: the worst crash, a 23-pass
 rider walks right, away from the ATV. A jump in the pass before the step would have lifted the ATV over it, and a
 speed of 11 or less would have kept the rider on.
 
-**Witness.** `tests/inputs/trails.txt` and the course in Figure 10.3.
+**Witness.** `tests/inputs/trails.txt` and the course in Figure 10.4.
 
 **The point.** Every technique is a rule's edge: a threshold of 7, a window of 30 pixels, a test of speed 0.
 
@@ -1918,11 +1961,14 @@ speed of 11 or less would have kept the rider on.
 | the time test compares one digit | WaitFrames `$D89E` | right only because every MaxTime ends in 0 |
 | a crash during a tumble | Crash returns at `$E979` | at 15 or more only the -2 and the undone move |
 | DismountUnused `$E3BB` | no caller | a dismount left in the code |
+| ScoreDown has no Finished test | BackList `$E04C`, ScoreDown `$E072` | a finished rider riding back loses points he cannot win back (10.12); known only from the code |
 
 Recorded since (`tools/rec_crashes.py`): ThrowOff from a full wheelie and FallRider (`throwoff`), the nose test's
-crash (`wallcrash`, by the unsigned wrap), a crash at speed 12-16 (stop and throw, `speedcrash`). Known only from the
-code (no recording shows it): ThrowOff from an overhang (10.8), a nose crash on a real wall 21 or more high,
-CrashIfAir, OUT OF FUEL in a real ride (only POKEd in `empty`), a two-player drop-out at TIME OUT, and the second round's "30" maxima beyond its first trail.
+crash (`wallcrash`, by the unsigned wrap), a crash at speed 12-16 (stop and throw, `speedcrash`), ThrowOff from an
+overhang (`overhang`, with a POKE that floats a dune, 10.8), a two-player drop-out at TIME OUT (`dropout`, the
+distance POKEd, 10.15). CrashIfAir was in `c1` all along: its tumble at 15 574 (10.6). Known only from the code (no
+recording shows it): a nose crash on a real wall 21 or more high, OUT OF FUEL in a real ride (only POKEd in `empty`),
+the second round's "30" maxima beyond its first trail, and a finished rider losing points by riding back.
 
 ### Pseudocode
 

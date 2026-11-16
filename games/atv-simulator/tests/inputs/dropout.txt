@@ -1,0 +1,16 @@
+# dropout: from menu-two-kb.szx (two players on the keyboard); START; player 1 walks right and jumps on (A, M),
+# player 2 stands; player 1's TrackPos ($D726) POKEd to the finish less 40; right until player 1 has finished,
+# then nothing; TIME OUT drops player 2 (Riding = Finished = 1); trail 2 for player 1 alone, 700 frames
+# Start: work/stage1/rec/menu/menu-two-kb.szx
+0 SPACE
+4 -
+402 A
+442 A M
+448 A
+518 A M
+524 A
+594 A M
+600 A
+630 POKE 55078 32 6
+747 -
+7830 END

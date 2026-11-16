@@ -18,10 +18,10 @@ SHOTS = [
     ('menu-000776-p2-control', '7 P2 control choice'), ('c1-014900-trail-intro', '8 trail number'),
     ('c1-015000-trail-name', '9 trail name'), ('c1-015060-first-pass', '10 START, rider on foot'),
     ('kb-000834-split-screen', '11 two players'), ('c1-015540-jump', '12 a jump'),
-    ('c1-015580-tumble', '13 a crash'), ('c1-015800-on-foot', '14 walking back'),
+    ('c1-015580-tumble', '13 a crash'), ('c1-015800-on-foot', '14 on foot'),
     ('empty-000939-out-of-fuel', '15 OUT OF FUEL'), ('c1-019260-time-out', '16 TIME OUT'),
     ('trails-001640-finish-line', '17 the finish line'), ('trails-001700-extended-play', '18 EXTENDED PLAY'),
-    ('warp-001163-bonus-band', '19 bonus count'), ('warp-016479-name-entry', '20 name entry'),
+    ('warp-001163-bonus-band', '19 bonus band, fast lap (POKE)'), ('warp-016479-name-entry', '20 name entry'),
 ]
 
 

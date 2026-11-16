@@ -125,14 +125,19 @@ state. 48K; the original TZX; the L1 of each built (`kit/rs.py` through record.p
 | throwoff | c1 `menu.szx` | 850 | `python3 tools/rec_crashes.py throwoff --work work/stage1/rec/throwoff --start work/stage1/rec/c1/menu.szx --port-base 37780` (integration; no POKE): mount, right 42 frames, then right + wheel up held 140 frames | AtvFrame `$44` at frame 612, ThrowOff `$E2E2` once, Mounted 0 at 619; FallRider `$E991` 35 runs (FallPhase 1-5) |
 | speedcrash | c1 `menu.szx` | 1 432 | `python3 tools/rec_crashes.py speedcrash --work work/stage1/rec/speedcrash --start work/stage1/rec/c1/menu.szx --port-base 37780` (integration; no POKE): mount, right 140 frames, then nothing held | trail 1's step at TrackPos 614 at speed 15: the step test's Crash (`$E6EB`), 13 after the -2: Stop and Throw (`$E96E`), frames 1 025-1 032 |
 | wallcrash | c1 `menu.szx` | 2 083 | `python3 tools/rec_crashes.py wallcrash --work work/stage1/rec/wallcrash --start work/stage1/rec/c1/menu.szx --port-base 37780` (integration): the distance POKEd to 1 568 at frame 521 (`$D78A`, `$D726`: trail 1's finish less 40), trail 2 mounted at about 1 396, right 140 frames, then nothing held | the nose test's Crash (`$E771`) at TrackPos 296, speed 21: the tumble (`$E974`) and Throw, frames 1 676-1 683; the nose's ground 7 below the wheels' (unsigned `$F9`) |
+| itemlow | c1 `menu.szx` | 714 | `python3 tools/rec_crashes.py itemlow --work work/stage1/rec/itemlow --start work/stage1/rec/c1/menu.szx --port-base 37790` (review round 1): POKE at the menu, trail 1's list A item 2 (`$C9`, 7 lines) y 23 to 1; START | ItemTooLow `$8EB2` in the first pass (frame 398): the red border, Restart `$D7ED`, the credits again |
+| overhang | c1 `menu.szx` | 1 060 | `python3 tools/rec_crashes.py overhang --work work/stage1/rec/overhang --start work/stage1/rec/c1/menu.szx --port-base 37790` (review round 1): POKE at the menu, trail 1's list A item 3 (the dune `$67`, 12 lines) y 0 to 30, a floating piece; START, mount, right held, no wheel key | RiderMounted's overhang test: ThrowOff `$E2E2` at frame 756, speed 21, AtvFrame `$38`; FallPhase 1 |
+| dropout | menu `menu-two-kb.szx` | 7 830 | `python3 tools/rec_crashes.py dropout --work work/stage1/rec/dropout --start work/stage1/rec/menu/menu-two-kb.szx --port-base 37790` (review round 1): two players on the keyboard; player 1 mounts, his distance POKEd to the finish less 40 (`$D726`), crosses the line and stops; player 2 stands | TIME OUT at 6 783 with player 1 finished: TrailEnd at once, Riding 3 to 1, trail 2 for player 1 alone (PassP2's last call 6 783) |
 
 Each folder holds `session.ttd`, `l1.json`, `record.json`, `screens/` (and `log.json` for turn, throwoff, speedcrash,
-wallcrash); all five are in case.json's `read_builds`. Integration's traces of `c1` (the heaviest pass, doc 4 4.7)
+wallcrash, overhang, dropout); every recording of this table is in case.json's `read_builds`. CrashIfAir needed no recording of its own:
+`c1`'s tumble at 15 574 is a CrashIfAir crash (doc 10, 10.6). Integration's traces of `c1` (the heaviest pass, doc 4 4.7)
 are in `work/docs/integrate/c1/traces/`, opened with `python3 ../../kit/rs.py open --work work/docs/integrate/c1
 --ttd work/stage1/rec/c1/session.ttd --port-base 37780`.
 
 Not reached: trail 2 onwards ridden without a POKE beyond distance 898 (the bot's actions all failed there); a fuel
-tank emptied without the POKE; ThrowOff from an overhang; a nose crash on a real wall; CrashIfAir.
+tank emptied without the POKE; a nose crash on a real wall. ItemTooLow and ThrowOff from an overhang only with a POKE
+that changes an item of trail 1 (itemlow, overhang).
 
 ### 6.1 The screens
 

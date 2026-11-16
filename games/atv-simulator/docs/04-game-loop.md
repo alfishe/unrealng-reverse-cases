@@ -72,7 +72,7 @@ stateDiagram-v2
     OuterLoop --> Title: JP Title
     Title --> Menu: credits, high scores
     Menu --> Title: TuneTimer high byte 80
-    Menu --> HiScores: TuneTimer reaches 0400
+    Menu --> HiScores: in the tune, TuneTimer at xA00 (MenuTick)
     HiScores --> Menu
     Menu --> NewGame: START, the RET of ClearScreen
     NewGame --> NextTrail: scores 00000, Riding
@@ -138,8 +138,8 @@ goes on at `$D804`, `CALL NewGame`. NewGame sets Trail to 0, the scores to "0000
 clock reads 60.0 at about 19 255. No one has finished, so the game runs TIME OUT, 250 HALTs and the `RET` to
 OuterLoop. CheckHiScore finds no new score, and the title starts again.
 
-**Witness.** The L1 of `c1` counts GameEntry once, Init once, NewGame once and TrailEnd never; Pass runs 5 081 times
-in `c1` (game.ann). The screens are `docs/img/play/c1-014640-menu-hiscores.png`, `c1-015060-first-pass.png` and
+**Witness.** The L1 of `c1` counts GameEntry once, Init once, NewGame once and TrailEnd never; Pass runs 600 times
+in `c1`, one trail of 600 passes (L1: PassP1 `$DA4F` 600 entries). The screens are `docs/img/play/c1-014640-menu-hiscores.png`, `c1-015060-first-pass.png` and
 `c1-019260-time-out.png` ([doc 01, 1.3](01-game-design.md#13-every-screen)).
 
 **The point.** The program is a hub of three calls. The menu leaves through a `RET` that is not its own, and the game
@@ -219,7 +219,8 @@ the last 512 bytes above the second play buffer. Drawn from game.ann's entries b
 docs/img/arch/memmap.png`; the stages are `c1` frames 14 100, 14 101 and 15 055 on.*
 
 **Witness.** `c1/traces/15055_0-15062_0.uatr`: 7 interrupts in 7 frames, each entering `$D9D2` at T 1 841-1 856.
-game.ann counts SetupIm2 20 times over all recordings and Interrupt 58 177 times in `c1`.
+game.ann counts SetupIm2 20 times over all recordings; the L1 of `c1` counts Interrupt 6 766 times (58 177 over
+the seven recordings).
 
 **The point.** A table of one repeated byte makes the vector independent of the bus. The `$80` table points into the
 middle of the image, at a `JP` the game writes itself. The tune player's `$FD` table points at a `JP` just under the
@@ -345,8 +346,8 @@ the drums when C' reaches 0, and calls the hook at TuneHook `$F96C`.
 
 MenuLoop `$737C` patches the hook to `CALL MenuTick` before it starts tune 0. The menu's timer and keys therefore
 run inside the tune's interrupt. MenuTick `$7340` adds 1 to TuneTimer `$6724`. When the timer's low byte wraps and its
-high byte AND `$0F` is `$0A`, MenuTick shows the high score page and stops the tune. A Kempston fire, or any key
-through TuneKeyCheck `$F977`, stops it too.
+high byte AND `$0F` is `$0A`, MenuTick shows the high score page and stops the tune. Any Kempston direction or fire
+(port `$1F` AND `$1F`, when KempstonOn is set), or any key through TuneKeyCheck `$F977`, stops it too.
 
 TuneStop `$F97E` writes the ROM's `JP $0038` into TuneVector, puts SP back as TunePlay saved it and returns to
 MenuLoop. MenuLoop calls SetupIm2 at once: the game's vector is back for the menu's keys.
@@ -370,7 +371,8 @@ TuneInterrupt:
 MenuTick:
     TuneTimer += 1
     if TuneTimer low byte == 0 and (high byte AND $0F) == $0A: HiScoreScreen; TuneStop
-    if Kempston fire or a key: TuneStop
+    if KempstonOn and (in($1F) AND $1F) != 0: TuneStop     ; any direction or fire
+    TuneKeyCheck                         ; any key: TuneStop
 ```
 
 ```asm
@@ -430,13 +432,15 @@ main program and fills the frame with the beeper's notes.
 the tune plays for about 18 frames. MenuTick sees the key, TuneStop writes `$0038` into `$FDFE`, MenuLoop calls
 SetupIm2, and the table is `$80` again from the next frame. After the game over the title runs again, but the
 recording's keys are still held. The menu waits in WaitNoKey on vector `$8080` from about 19 600 to 20 500. The tune
-plays again from about 20 880 to 22 397: 1 517 entries of TuneInterrupt.
+plays again from about 20 898 to 22 397. The L1 counts 1 517 entries of TuneInterrupt in the whole recording, about
+18 of them in the first play, so about 1 499 in the second.
 
-**Witness.** game.ann counts MenuTick 5 388 runs in `c1`; TunePlay is called with A = 0 from `$7391` (`c1`: twice)
+**Witness.** The L1 of `c1` counts MenuTick 1 517 runs (5 388 over the seven recordings); TunePlay is called with A = 0 from `$7391` (`c1`: twice)
 and with A = 1 from `$ED00` (`warp`: 7 times). The 353 T come from `c1/traces/14645_0-14648_0.uatr`.
 
 **The point.** The front end is driven by music. The menu's timer and its keys live in the tune's interrupt hook, so
-the menu cannot react until the tune stops. The tune paces the high score pages and the fall-back to the title.
+the menu cannot react until the tune stops. The tune paces the first high score page (TuneTimer at `$0A00`); after
+the tune has stopped, MenuLoop's own HALT loop counts TuneTimer on to `$8000` and the fall-back to the title.
 
 ## 4.5 One pass: the order of work
 
@@ -459,7 +463,8 @@ of Update `$DACC` serves both. Update works in this order:
 
 1. WalkList `$8DA3` draws list A (the ground) at TrackPos.
 2. EngineSound, AtvPhysics `$E676` and Controls `$E105` move the ATV.
-3. JumpControl, RiderUpdate and Tumble run unless the rider is off the ATV (AtvFrame `$5C`).
+3. JumpControl, RiderUpdate and Tumble run unless the ATV is turning round (AtvFrame `$5C`, the head-on frame,
+   set by TurnLeft and TurnRight).
 4. WalkList draws list B (the scenery) at SceneryPos.
 5. FlushDeferredB, DrawAtvAndRider `$DC82` and FlushDeferredA draw the sprites around the ATV.
 6. FinishCheck `$DB34` tests the finish.
@@ -545,7 +550,7 @@ clock from 00.0 to 00.1; the screenshot at 15 060 shows "00.1". Players calls Pa
 at 15 059 T 1 652: 268 951 T, 55.0 % of 7 frames. WaitFrames then loops until the interrupt of frame 15 062 makes
 FrameCount 7, and the next pass starts.
 
-**Witness.** game.ann counts PassP1 5 081 times in `c1`; PassP2 runs 813 times in `kb` and never in `c1`. `python3
+**Witness.** The L1 of `c1` counts PassP1 600 times (5 081 over the seven recordings); PassP2 runs 813 times in `kb` and never in `c1`. `python3
 work/docs/atA/passwin.py work/docs/atA/c1/traces/15055_0-15062_0.uatr` lists Pass at 15 055 T 12 253 and the next
 WaitFrames exit.
 
@@ -607,7 +612,7 @@ five, and then the clock slows. Drawn by `python3 tools/fig_passes.py docs/img/l
 passes of 12 frames. The trace of 3 118-3 133 shows Pass at 3 119 T 22 776 and the next at 3 131 T 39 672: 12 frames
 and 16 896 T. The work of PassP1 and PassP2 together took 855 313 T, 174.8 % of the 7-frame budget. The largest
 shares were the two engines' Tone 15.9 %, RotateSpriteLeft 14.4 % and RotateSpriteRight 14.0 %. Over trail 1 of `kb`
-the 205 passes averaged 8.78 frames; on trail 2 the 598 passes averaged 7.43.
+the 213 passes (00.1 at frame 402, 21.3 at 2 150) averaged 8.2 frames; on trail 2 the 598 passes averaged 7.43.
 
 **Witness.** `work/docs/atA-kb-clock.txt` (the clock at T 0 of each frame); `kb/traces/3118_0-3134_0.uatr` read by
 `work/docs/atA/passwin.py`; `work/stage2/pass/passes.json`. The histogram counts 4 passes at 6 frames, 640 at 7, 43
@@ -633,13 +638,15 @@ another pixel offset in its byte, PlaceItem `$8E3C` calls ShiftLeftBy `$8759` or
 the whole sprite one bit a turn with RotateSpriteLeft `$871E` or RotateSpriteRight `$8742`. When the stored offset
 wraps through 0, ShiftBytesLeft `$86F7` or ShiftBytesRight `$86C4` moves the bytes back by one.
 
-In this pass, as in the one at 15 356, the shifters write three sprites:
+In this pass the shifters rewrite eleven sprites. The costly ones are three:
 
-- 123 (`$7B`), the START sign, 9 × 31 bytes at `$BE11`;
-- 124, its mask, at `$BF2C`;
-- 27, a dune slope, 8 × 29 bytes at `$9C58`.
+- 123 (`$7B`), the START sign, 9 × 31 bytes at `$BE11` (writes `$BE14-$BF2B`);
+- 124, its mask, 9 × 31 bytes at `$BF2C` (writes `$BF2F-$C046`);
+- 27, a dune slope, 8 × 29 bytes at `$9C58` (writes `$9C5B-$9D43`).
 
-The trace's writes go to 27, 123 and 124 only (stage 2 had named sprite `$A5`, a totem with an arrow, wrongly).
+The others are small: 22, 23, 103, 153, 154, 180, 201 and the menu bank's sprite 3 (`$650B-$6513`). The pass at
+15 356 rewrites 22, 23, 27, 80, 81, 103, 123, 124, 201 and menu sprite 3 (stage 2 had named sprite `$A5`, a totem
+with an arrow, wrongly).
 
 **How it works.**
 
@@ -711,7 +718,8 @@ ShiftRightBy the shifters take 233 324 T, 52 % of the work: more than the drawin
 
 **Witness.** `work/docs/integrate/c1/traces/15412_0-15419_0.uatr` and `15150_0-15450_0.uatr` (`tools/pass_trace.py`:
 42 passes, 6 over 400 000 T, from 15 251 to 15 412); `c1/traces/15356_0-15363_0.uatr`. `work/docs/atA/rotw.py` lists
-the write ranges of `$86C4-$8798`: in both passes `$9C58-$9D3F`, `$BE11-$BF2B` and `$BF2C-$BFFF`.
+the write ranges of `$86C4-$8798` (`python3 work/review/rvA/rotw.py <trace>`): at 15 412 `9B33-9B53 9B57-9B67
+9C5B-9D43 B6FE-B776 BE14-BF2B BF2F-C046 CB84-CB92 CB96-CBA4 D171-D1AD D62F-D652` and `650B-6513`, besides the stack.
 `work/stage2/pass/passes.json` holds the replay's 600 passes.
 
 **The point.** The game keeps one copy of each sprite and re-shifts it whenever its offset changes. Where the scroll
@@ -761,10 +769,11 @@ against the beam" --out docs/img/loop/beam-light-c1.png`; recording `c1`, frames
 
 **Worked example.** At frame 15 361 the copy starts at T 12 189. The beam reaches the half's first line, screen line
 8 at `$4021`, at T 16 152 + 8 × 224 = 17 944. By then CopyLines has written about 10 lines. The beam gains about
-250 T a line and catches the copy near line 50. The lines above it show the new pass; the lines below show the old
-one until the next frame.
+250 T a line and catches the copy at T 22 684, on screen line 29 (buffer line 21): 474 writes land before it, 1 286
+after. The lines above it show the new pass; the lines below show the old one until the next frame.
 
-**Witness.** The two traces. beam_timeline prints "CopyLines: 1760 screen writes: 474 before the beam, 1286 after
+**Witness.** The two traces. `python3 work/review/rvA/beam.py work/docs/atA/c1/traces/15356_0-15363_0.uatr 15361`
+prints the first write after the beam at 15 361 T 22 684, line 29. beam_timeline prints "CopyLines: 1760 screen writes: 474 before the beam, 1286 after
 it" for the heavy pass and no write before the beam for the light one.
 
 **The point.** The game does not synchronise its copy with the beam. A tear shows only when a pass's work ends early
@@ -876,7 +885,7 @@ The game has one frame counter, FrameCount. It counts everything else in passes 
 | a pass | WaitFrames `$D86B` | 7 frames (more when the work overruns) | frames |
 | the clock | ClockTick `$EB53` | one tenth a pass; 60.0 = 600 passes | passes |
 | WaitKey60 | `$6E4A` | 60 HALTs, or a key | frames |
-| the title tune's timer | MenuTick, TuneTimer `$6724` | from `$04C8`, + 1 a tune interrupt; the title at `$8000` | tune interrupts |
+| the title tune's timer | MenuTimer `$7368`, TuneTimer `$6724` | from `$04C8`, + 1 a tune interrupt (MenuTick) and + 1 a HALT of MenuLoop's loop (`$73BD`); the high scores at `$0A00` (MenuTick), the title at `$8000` (tested only in MenuLoop's loop, `$73CD`) | tune interrupts, then frames |
 | TrailEnd | `$ECE0` | tune 1, 50 HALTs, CountBonus, 100 HALTs | frames |
 | game over | `$D8BF` | 250 HALTs | frames |
 | a tumble | Tumble `$E89C` | TumbleCount up to 24 | passes |
@@ -888,12 +897,16 @@ flowchart LR
     B --> C["ClockTick: one tenth a pass"]
     C --> D["TIME OUT at MaxTime"]
     E["HALT loops"] --> F["WaitKey60 60, TrailEnd 50 and 100, game over 250"]
-    G["tune interrupt"] --> H["TuneTimer: high scores, title"]
+    G["tune interrupt: MenuTick"] --> H["TuneTimer plus 1: high scores at 0A00, tune stops"]
+    E --> I["MenuLoop HALT: TuneTimer plus 1, title at 8000"]
 ```
 
-**Worked example.** TuneTimer starts at `$04C8`, and MenuTick adds 1 each tune interrupt. Its high byte reaches `$80`
-after `$8000` − `$04C8` = 31 544 interrupts, about 10.5 minutes at 50 Hz, if no key is pressed. The menu then goes
-back to Title. The clock: in `c1` the first pass shows 00.1 at frame 15 060, and 60.0 comes at about 19 255. That is
+**Worked example.** TuneTimer starts at `$04C8`, and MenuTick adds 1 each tune interrupt. At `$0A00`, after
+`$0A00` − `$04C8` = 1 336 interrupts (about 27 s), MenuTick shows the high scores and stops the tune. MenuLoop's
+HALT loop then adds 1 a frame; its high byte reaches `$80` after `$8000` − `$0A00` = 30 208 more frames, 31 544 in
+all, about 10.5 minutes at 50 Hz, if no key is pressed. The menu then goes back to Title. MenuLoop's other test,
+TuneTimer = `$0400` (`$73C2`), is never met: the timer starts above it and Title resets it at `$8000` before it could
+wrap round. The clock: in `c1` the first pass shows 00.1 at frame 15 060, and 60.0 comes at about 19 255. That is
 4 200 frames for 600 passes, exactly 7 frames each.
 
 **Witness.** `c1play/l1.json` (frames 15 055-19 255) counts ClockTick `$EB53`, Players and PassP1 600 times each,
@@ -901,4 +914,4 @@ and Interrupt 4 200 times. The fall-back to the title at TuneTimer
 `$8000` is known only from the code: no recording waits ten minutes in the menu.
 
 **The point.** One frame counter makes the game's time; everything else counts its passes or HALTs. Only the title
-tune's timer runs on its own interrupts.
+tune's timer runs on the tune's interrupts while the tune plays, and on MenuLoop's HALTs after it.

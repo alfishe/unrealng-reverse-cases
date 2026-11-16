@@ -41,6 +41,15 @@ the pauses.
 
 The blocks alone play 272.0 s, 13 601 frames; with the pauses, 281.9 s and 14 096 frames.
 
+**Worked example.** Block 7, the game. A data block (flag `$FF`, 128 or more) has a pilot of 3 223 pulses, a header
+(flag `$00`) 8 063; each pulse is 2 168 T, so the pilot takes 6 987 464 T. The two sync pulses add 1 402 T. The
+40 002 bytes are 320 016 bits; 104 948 of them are 1 (32.8 %). A 0 costs two pulses of 855 T, a 1 two of 1 710 T:
+215 068 × 1 710 + 104 948 × 3 420 = 726 688 440 T. In all 733 677 306 T, 209.62 s at 3.5 MHz, the table's time. The
+same sum gives 37.63 s for the 6 914 bytes of the screen (17 618 ones) and 5.08 s for each 19-byte header.
+
+**Witness.** The bit counts are read from `work/media/ATV Simulator.tzx` itself (each block's bytes after its TZX
+id `10` header); `tapblocks.py list` prints the same times.
+
 ![The tape: eight standard ROM blocks, 281.9 s at ROM speed; the loader skips the two headers before the data](img/load/tape.png)
 
 *How to read: the top bar is the tape in time, one coloured box a block's signal and a grey line its pause; the
@@ -217,14 +226,17 @@ PC. The point: two `LDIR`s fill the BASIC area with the tune player and trail 6 
 --auto-labels owner --view buffer:5B00:32x96:rows --range 5B00-FFFF --pc D7D6-D80C --pictures 24 --title "..." --out
 docs/img/routines/GameEntry.gif`.*
 
-**Worked example.** At the entry SP is `$6323`, the ROM's stack under RAMTOP `$6338` (the trace's first instruction).
-The first `LDIR` copies 1 451 bytes, 21 × 1 451 − 5 = 30 466 T. The second copies 650 bytes, 13 645 T. The trail's
+**Worked example.** At the entry SP is `$6323`, the ROM's stack under RAMTOP `$6338` (the trace at `$D6B0` and
+`$D7D6`). The first `LDIR` copies 1 451 bytes in 44 571 T, from 14 100 T 18 033: 21 × 1 451 − 5 = 30 466 T
+uncontended, the rest the contention of its writes to `$5B00-$60AA` during the paper (T 14 336-57 344). The second
+copies 650 bytes from T 62 634, in the bottom border, in 13 645 T as written (21 × 650 − 5). The trail's
 lists hold addresses in `$60AC-$6335`, so its data only works after the copy. The tune player is copied back to
 `$F850` before each tune, because its code runs at `$F850`. The stack's new top `$FFDC` is the loader's first byte:
 the loader is no longer needed.
 
 **Witness.** The L1 of `c1` lists both copies (`LDIR` at `$D7E0` and `$D7EB`); `c1`'s trace of 14 100-14 101 shows SP
-`$6323` at `$D7D6`.
+`$6323` at `$D7D6`; `python3 work/review/rvA/ldir.py work/docs/atA/c1/traces/14100_17900-14101_69000.uatr` times the
+two `LDIR`s (44 571 T and 13 645 T).
 
 **The point.** The game uses the BASIC area for code and data. The CLEAR 25400 protects the image from BASIC's
 stack only until the entry; after it, every byte from `$5B00` is the game's.
@@ -257,7 +269,7 @@ flowchart LR
 ```
 
 **Worked example.** The START sign, sprite 123 at `$BE11`, is rotated in place in `c1`'s heavy pass of frames
-15 356-15 362 (and again in the heaviest, 15 412-15 418): `$BE11-$BF2B` and its mask `$BF2C-$BFFF` are written ([doc 04, 4.7](04-game-loop.md#47-the-heaviest-pass)).
+15 356-15 362 (and again in the heaviest, 15 412-15 418): `$BE14-$BF2B` and its mask's `$BF2F-$C046` are written, with nine smaller sprites ([doc 04, 4.7](04-game-loop.md#47-the-heaviest-pass)).
 A snapshot taken after it holds the sign at its new offset, with header byte +3 saying which.
 
 **Witness.** `work/stage1/images/` (`entry.bin`, `play.bin`); the trace `c1/traces/15356_0-15363_0.uatr`. The
@@ -420,7 +432,8 @@ pass, adds 0 and prints the same digits. The "Infinite Lives" of the `.pok` is t
 stopped clock means TIME OUT never comes.
 
 **Witness.** Recording `pokes` (the four POKEs) against `fuel`; game.ann's comments at `$EB59`, `$DFBC` and `$DFE6`;
-the empty tank in `work/stage1/rec/empty` (fuel high byte POKEd to 5 at frame 567, OutOfFuel 83 times, first at frame 732,
+the empty tank in `work/stage1/rec/empty` (the clock POKE 60250,0 at frame 14, the fuel high byte POKEd to 5 at
+frame 567, OutOfFuel 83 times, first at frame 732,
 "OUT OF FUEL" from frame 736).
 
 **The point.** Three POKEs do what a cheat wants, under each other's names; the fourth changes one byte of a picture

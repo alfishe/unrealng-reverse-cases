@@ -1,0 +1,7 @@
+# itemlow: from c1's menu.szx; POKE trail 1's list A item 2 (distance $0080, sprite $C9, 7 high) y 23 -> 1;
+# START: PlaceItem's height test fails, ItemTooLow $8EB2 (red border, restart); 400 frames after
+# Start: work/stage1/rec/c1/menu.szx
+0 SPACE
+0 POKE 31938 1
+4 -
+714 END

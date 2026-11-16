@@ -29,7 +29,10 @@ The instances ran in `work/docs/atB/` (one at a time, port base 37782). The comm
 Conventions:
 
 - **x** counts pixels from the window's left edge (0-175). **y** counts lines up from the window's bottom: SpriteY
-  `$80DD` is the line of the sprite's top, counted from the bottom (`$4F` = the window's top line).
+  `$80DD` is the line of the sprite's top, counted from the bottom. y 1 is the buffer's last row and `$4F` its second
+  row: BufferRows `$68A7` holds 22 (k + 1), so buffer row 0 is never drawn into (only ClearByPush writes it). No item
+  writes past the buffer's end: ItemTooLow refuses a y under the height, ClipY and ClipTop (`$DBD1`, `$DBE2`) clamp
+  y `$50` and over to `$4F`.
 - A **pass** is one turn of the main loop, 7 frames with one player ([doc 4](04-game-loop.md)).
 - Times are frame:T in the recording's trace, T counted from the frame's interrupt (69 888 T a frame).
 - The **heavy pass** is `c1` Pass 15356:7 833 to WaitFrames 15361:55 067 (81.1 % of 7 frames), a pass where the
@@ -46,7 +49,7 @@ changes.
 | --- | --- | --- | --- |
 | player 1's window | 8-87 (`$4021`) | BufferP1 `$F03C-$F71B`, CopyBufferP1 `$8CDA` | rebuilt and copied every pass |
 | player 2's window | 104-183 (`$48A1`) | BufferP2 `$F71C-$FDFB`, CopyBufferP2 `$8CE6` | two players only |
-| player 1's HUD | 0-7 | SpeedBar `$E59A`, FuelBarStep `$DFCD` | on the screen, a step at a time ([doc 8](08-hud-and-text.md)) |
+| player 1's HUD | 0-7 | SpeedBar `$E55D`, FuelBarStep `$DFCD` | on the screen, a step at a time ([doc 8](08-hud-and-text.md)) |
 | player 2's HUD | 184-191 | the same at HudY 6 | two players only |
 | the clock band | 88-103 | ClockTick: BigDigit, ClockDigit | ModeCopyScreen, once a pass |
 | the side panel | 0-191, columns 25-31 | ShowScore | ModeXorScreen, the digits that change |
@@ -95,7 +98,8 @@ GameSprite():
 SpriteHeader(h):
     SpriteWidth, SpriteHeight, SpriteAdvance = h[0], h[1], h[2]
     ShiftPtr = h + 3; SpriteData = h + 4
-    if SpriteWidth != 1:                          # one-byte sprites (the font) are never shifted
+    if SpriteWidth != 1:                          # no sprite in the banks is 1 byte wide: the test never skips;
+                                                  # the font's glyphs (2 bytes and more) are shifted too
         diff = h[3] - (SpriteX AND 7)
         if diff > 0: if diff < 5: ShiftLeftBy(diff) else ShiftRightBy(8 - diff)
         if diff < 0: if -diff < 5: ShiftRightBy(-diff) else ShiftLeftBy(8 + diff)
@@ -310,7 +314,8 @@ plus 29 line starts and the Multiply: about 9 500 T. ShiftLeftBy(4) costs about 
 for one sprite.
 
 Witness: `c1` L1: RotateSpriteLeft 3 716 calls, RotateSpriteRight 3 568, ShiftBytesRight 208, ShiftBytesLeft 152;
-the two rotations take 23.4 million T in all, about 39 000 T a pass.
+the two rotations take 23.4 million T in all. The totals count from frame 14 101, the front end's text included
+(the first pass, Update, is at 15 055), so the 600 passes take less than 39 000 T each on average.
 
 The point: the game trades time for memory. Eight shifted copies of the bank would not fit; one copy shifted in
 place does, at a few thousand T for each bit a sprite moves between draws.
@@ -408,9 +413,9 @@ PlaceItem `$8E3C` sets up one item and PlaceItemX `$8EC2` gives it a clip code:
 
 | ClipCode | x = distance - ListScroll | Drawn |
 | --- | --- | --- |
-| 0 | inside: x + advance + 8 within 175 | whole: OrBuffer, or MaskBufferAlt with a mask |
+| 0 | inside: x + advance + 8 under 175 | whole: OrBuffer, or MaskBufferAlt with a mask |
 | 1 | x above `$AF` | no, and the walk stops |
-| 2 | x negative and the advance does not reach 0 | no, and the index moves on |
+| 2 | x negative and the advance does not reach 0 | no; the first such item moves the index on by one |
 | 3 | cut at the right edge | OrBufferClip / MaskBufferClip, ClipWidth bytes a line |
 | 4 | cut at the left edge | the clipped modes from x AND 7, skipping bytes |
 
@@ -426,7 +431,9 @@ WalkList(list, index, scroll):
     else: item += 6
     loop:
         code = PlaceItem(item)                # sets SpriteX, the clip code
-        if code == 2: index = item - list     # NextIndex: the walk starts later next pass
+        if code == 2 and this is the first item tested here ($8DC8):
+            index += 6                        # NextIndex $8DD4: the walk starts one item later next pass
+                                              # (a later item with code 2 is skipped, the index kept)
         if code == 1: return                  # beyond the right edge: done
         if code != 2:
             if deferred to A: DeferA() elif deferred to B: DeferB() else PlaceClipped()
@@ -501,7 +508,7 @@ flowchart TD
     D --> E{"end of list?"}
     E -->|"yes"| Z["return"]
     E -->|"no"| F["PlaceItem: SpriteX, clip code"]
-    F -->|"2"| G["NextIndex, skip"]
+    F -->|"2, the first item: NextIndex; later: skip"| G["skip"]
     F -->|"1"| Z
     F -->|"0, 3, 4"| H{"ItemFlags"}
     H -->|"bit 6"| DA["DeferA"]
@@ -528,7 +535,7 @@ What to watch:
 
 Worked example: at speed 21 (`$15`) ForwardList adds 21 x 128 = 2 688 to Distance: TrackPos gains 10.5 pixels a
 pass. ForwardScenery adds 21 x 32 = 672 to Scenery: SceneryPos gains 2.6 pixels a pass. An item at distance 600
-with TrackPos 520 lies at x = 80, inside (code 0) if its advance + 8 is at most 175 - 80 = 95.
+with TrackPos 520 lies at x = 80, inside (code 0) if its advance + 8 is under 175 - 80 = 95.
 
 Witness: `c1` L1: WalkList 1 200 calls (two a pass for 600 passes), PlaceItem 4 306, PlaceClipped 1 901;
 `turn`'s log.json: TrackPos 128 at speed 21 after 859 frames ([doc 5](05-controls.md), 5.9).

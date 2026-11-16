@@ -29,7 +29,8 @@ The recordings and tools it rests on ([WALKTHROUGH 6.0](../WALKTHROUGH.md)):
   never played.
 
 A sample of frame N is the memory at the start of frame N. A trace shows an instruction in the frame in which it ran.
-A pass is one turn of the main loop: always 7 frames ([doc 4](04-game-loop.md)). The simulator's T-states are
+A pass is one turn of the main loop: 7 frames while its work fits, always with one player; with two players 640 of
+`kb`'s 811 passes, the others 8 to 15 ([doc 4, 4.6](04-game-loop.md#46-the-fixed-7-frame-pass-and-the-wait-on-d6bc)). The simulator's T-states are
 uncontended. The sound code lies above `$8000` and never reads the screen, so the real machine runs it at the same
 speed.
 
@@ -47,7 +48,7 @@ The game makes sound in three places:
 | the engine | EngineSound `$D97C`, EngineOne `$D987`, Tone `$D99E` | every frame of a ride, for each rider who is mounted and moving | the interrupt `$D9D2` (`$D9FC`), and Update (`$DAF7`) once a player a pass | 2 407-5 827 T a call for one rider | [engine.mp3](audio/engine.mp3) |
 | the landing thump | Landing `$E663`: Tone, then Noise `$D9AF` | the ATV meets the ground after a jump or a fall (VSpeed nonzero) | the main loop, in AtvPhysics | 19 169 T | [landing.wav](audio/landing.wav) |
 | the bonus count | CountBonus `$ED52`, BonusTone `$ED5D`: Tone | each bonus point moved into the score, after the finish tune | TrailEnd `$ECE0` | about 39 700 T a point | [bonus-count.wav](audio/bonus-count.wav) (25 points) |
-| the title tune | TunePlay `$F852` with A = 0 | the menu (MenuLoop `$737C`) until a key, a Kempston input or 51.2 s | the tune player, its own IM 2 | one pass of its lists: 46.0 s | [tune-title.mp3](audio/tune-title.mp3) |
+| the title tune | TunePlay `$F852` with A = 0 | the menu (MenuLoop `$737C`) until a key, a Kempston input or 26.7 s (TuneTimer starts at `$04C8`, the stop is at `$0A00`) | the tune player, its own IM 2 | one pass of its lists: 46.0 s | [tune-title.mp3](audio/tune-title.mp3) |
 | the finish tune | TunePlay with A = 1 | the end of a trail (TrailEnd) | the tune player | 3.37 s (169 frames) | [tune-finish.wav](audio/tune-finish.wav) |
 
 *Every sound of the game. The point: four routines make all the sound; only the tunes stop the game.*
@@ -259,7 +260,8 @@ interrupt (every frame):
 
 Update(player) (once a player a pass):
     walk list A
-    EngineSound()                                 # an eighth burst for one player, nine for two
+    EngineSound()                                 # one burst more: an EngineSound each frame of the pass
+                                                  # (7, more when a two-player pass overruns) plus one per Update
     AtvPhysics(); ...
 
 EngineSound():
@@ -602,7 +604,9 @@ falls under 1. Channel B's pulse decays the same way with its own counter. A not
 The hook is the menu's or the finish's:
 
 - the title: MenuLoop puts MenuTick `$7340` in the hook. MenuTick counts TuneTimer once an interrupt and stops the
-  tune for the high score screen when TuneTimer reaches `$0A00` (51.2 s from 0). A key (TuneKeyCheck `$F977`) or any
+  tune for the high score screen when TuneTimer's low byte wraps to 0 with the high byte's low nibble `$0A`: Title
+  `$6E06` starts it at `$04C8`, so the first stop is at `$0A00`, 1 336 interrupts (26.7 s); after the high score
+  screen the stops come every `$1000` interrupts (81.9 s). A key (TuneKeyCheck `$F977`) or any
   Kempston input stops it at once;
 - the finish: TrailEnd puts three NOPs over the hook. Nothing stops the finish tune but its own `$85`.
 
@@ -780,10 +784,13 @@ The model and the recording agree on the timing:
 3. at frame 4 670 FrameCount counts again: TrailEnd's 50 HALTs;
 4. the simulator plays tune 1 in 169.0 frames (11 811 973 T, 3.37 s) and stops at CommandEnd `$F9BD`, channel A's
    `$85`; the recordings never run `$F9BD`: the tunes in them end at channel B's `$85` at `$F9A4` (L1: trails 1,
-   warp 7, kb 1).
+   warp 7, kb 1). Both are right: PatFD8C (A) and PatFDBA (B) last exactly 168 interrupts each (3 x len an event,
+   from `tunes.txt`), so both note timers run out in the 169th interrupt. The loop tests A's timer at `$F8C0` and B's
+   at `$F90F`; when the interrupt lands between `$F8C1` and `$F90F`, B's `$85` is read first, elsewhere A's. It is a
+   race inside one turn of the ~180 T loop, not a fixed order, and either ends the tune in the same interrupt.
 
-The point: the finish tune is as long in the model as in the recording; which channel's end mark stops it, the
-model and the recording disagree (sent to the review).
+The point: the finish tune is as long in the model as in the recording; which channel's end mark stops it depends
+only on where in the player's loop the 169th interrupt lands.
 
 ## 9.8 The two tunes and when each plays
 
@@ -801,9 +808,9 @@ note. Command: `python3 tools/fig_sound.py fig-tunes docs/img/sound/tunes.png`.*
 - B = SeqFBEC: 14 patterns;
 - D = SeqFC0A: PatFD62, the drum loop.
 
-B's list takes 46.0 s. A's 24 patterns are shorter, so A starts its list again before B ends. The lists repeat
-until the hook stops the tune. MenuTick stops it after 51.2 s for the high score screen: the title tune is heard once
-and a little more. Channel B's PatFDF7 and PatFDF4 set the transposition to 2 and back to 0. There is only one
+A's 24 patterns and B's 14 take the same 2 304 interrupts (46.0 s): the two lists start again together (the
+simulator: both restart at interrupt 2 305). The lists repeat until the hook stops the tune. MenuTick stops it after
+26.7 s for the high score screen, before the lists end once (TuneTimer starts at `$04C8`, the stop is at `$0A00`). Channel B's PatFDF7 and PatFDF4 set the transposition to 2 and back to 0. There is only one
 transposition (9.10), so they shift channel A as well.
 
 **Tune 1, the finish.** Its lists:
@@ -811,7 +818,8 @@ transposition (9.10), so they shift channel A as well.
 - A = SeqFD7E (PatFD8C) and B = SeqFD82 (PatFDBA); both patterns end with `$85`;
 - D = SeqFD86: PatFD62, then PatFDF0, a step of 3 x 255 (253 as a byte) interrupts with nothing: the drums stop.
 
-Channel A reaches its `$85` first, at 169 interrupts.
+Both channels reach their `$85` in the 169th interrupt; whichever the loop reads first ends the tune: B (`$F9A4`)
+in every recording, A (`$F9BD`) in the simulator, because the interrupt lands at a different point of the loop (9.7).
 
 When each plays:
 
@@ -822,7 +830,7 @@ sequenceDiagram
   participant T as TrailEnd $ECE0
   participant C as CountBonus
   M->>P: A = 0, hook MenuTick
-  P-->>M: a key, a Kempston input, or 51.2 s
+  P-->>M: a key, a Kempston input, or 26.7 s
   Note over T: the trail ended: all finished and stopped, or TIME OUT
   T->>T: copy the player back from $5B00 to $F850
   T->>P: A = 1, hook NOP NOP NOP
@@ -867,14 +875,15 @@ late, even the heaviest.
   UnusedCommandA4 `$F9BA`; no tune uses it.
 - **The carry signal** (9.7): the envelope sees only the interrupts the loop does not clear first.
 - **Random is stuck on one page** (9.2): the lost `INC H` keeps the pointer in page `$08`, not `$0000-$1BFF`.
-- **Which end mark stops a tune.** The simulator stops at channel A's CommandEnd `$F9BD`; the recordings never run
-  it and stop at channel B's `$F9A4` (trails 1, warp 7, kb 1). The `.ann` keeps the recordings' account.
-- **EngineNote is not a sound.** EngineNote `$D79A` drives the wheels' flicker (Wheels `$DD5E`), not the engine's
+- **Which end mark stops a tune.** Both channels of the finish tune end in the same, 169th interrupt; the simulator
+  reads channel A's `$85` first (CommandEnd `$F9BD`), the recordings channel B's (`$F9A4`: trails 1, warp 7, kb 1).
+  A race inside one turn of the loop (9.7), not a fixed order.
+- **EngineNote is not a sound.** EngineNote `$D79A` drives the wheels' flicker (Wheels `$DD55`), not the engine's
   tone.
 - **Odd Clicks.** The engine's three Clicks a frame leave BeeperByte flipped, so every second burst loses its first
   edge (9.3).
 - **MIC.** The tune player writes `$18`, setting MIC (bit 3) with the speaker; the drums write the ROM's bits 3 and
   4. On a real 48K, MIC leaks into the speaker a little, so the tunes sound a touch louder than the effects.
 - Known only from the code: DrumUnused `$FA50` and DrumUnused2 `$FA6C` (no drum pattern uses `$84` or `$82`);
-  SetTransposeA (no `$84` on channel A); MenuTick's 51.2 s stop (no recording waits that long in the menu); AbortKey
+  SetTransposeA (no `$84` on channel A); MenuTick's 26.7 s stop (no recording waits that long in the menu); AbortKey
   `$DA01` in the interrupt, unreachable.

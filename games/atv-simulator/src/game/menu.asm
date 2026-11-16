@@ -40,9 +40,10 @@ MenuBoxHeight:
 MenuCount:
   DEFB $00                ; its item count
 TuneTimer:
-  DEFB $00                ; a word counted by MenuTick each frame: the menu
-                          ; falls back to the title (high byte $80) or the high
-                          ; scores ($0400)
+  DEFB $00                ; a word from $04C8 (Title), counted by MenuTick each
+                          ; tune interrupt and by MenuLoop each HALT: the high
+                          ; scores at $0A00 in the tune (26.7 s), the title at
+                          ; $8000 (MenuLoop)
 MenuSpare:
   DEFB $00                ; written 0 by ClearMenuSpare, never read
 MenuItem:
@@ -132,13 +133,13 @@ HiScores:
 ; $69BE, $69C7, $69CA, $69CD, $69D9, $69E2 and $69E5 are called by no one
 ; (known only from the code).
 ;
-; Witness: L1 4 (c1, trail1, warp).
+; Witness: L1 5 (c1, itemlow, trail1, warp).
 MenuTable:
   JP Title
 
 ; JP InitTextWidths
 ;
-; Witness: L1 1 (c1).
+; Witness: L1 2 (c1, itemlow).
 JpInitTextWidths:
   JP InitTextWidths
 
@@ -156,8 +157,8 @@ JpDissolve:
 
 ; JP Random
 ;
-; Witness: L1 1690 (c1, empty, fuel, kb, speedcrash, throwoff, trail1, trails,
-; turn, wallcrash, warp).
+; Witness: L1 1710 (c1, dropout, empty, fuel, kb, overhang, speedcrash,
+; throwoff, trail1, trails, turn, wallcrash, warp).
 JpRandom:
   JP Random
 
@@ -187,14 +188,14 @@ JpShowBufferAt:
 
 ; JP Print
 ;
-; Witness: L1 2368 (c1, empty, kb, trail1, trails, wallcrash, warp).
+; Witness: L1 4614 (c1, dropout, empty, kb, trail1, trails, wallcrash, warp).
 JpPrint:
   JP Print
 
 ; JP LoadIntro
 ;
-; Witness: L1 11 (c1, empty, fuel, kb, speedcrash, throwoff, trail1, trails,
-; turn, wallcrash, warp).
+; Witness: L1 14 (c1, dropout, empty, fuel, itemlow, kb, overhang, speedcrash,
+; throwoff, trail1, trails, turn, wallcrash, warp).
 JpLoadIntro:
   JP LoadIntro
 
@@ -218,21 +219,21 @@ JpAttrBoxes:
 
 ; JP TrailIntro
 ;
-; Witness: L1 21 (c1, empty, fuel, kb, speedcrash, throwoff, trail1, trails,
-; turn, wallcrash, warp).
+; Witness: L1 25 (c1, dropout, empty, fuel, itemlow, kb, overhang, speedcrash,
+; throwoff, trail1, trails, turn, wallcrash, warp).
 JpTrailIntro:
   JP TrailIntro
 
 ; JP ShowHud
 ;
-; Witness: L1 21 (c1, empty, fuel, kb, speedcrash, throwoff, trail1, trails,
-; turn, wallcrash, warp).
+; Witness: L1 25 (c1, dropout, empty, fuel, itemlow, kb, overhang, speedcrash,
+; throwoff, trail1, trails, turn, wallcrash, warp).
 JpShowHud:
   JP ShowHud
 
 ; JP FillAttrs
 ;
-; Witness: L1 11 (kb, trails, wallcrash, warp).
+; Witness: L1 12 (dropout, kb, trails, wallcrash, warp).
 JpFillAttrs:
   JP FillAttrs
 
@@ -244,15 +245,15 @@ JpAttrAddr:
 
 ; JP PixelMask
 ;
-; Witness: L1 26704 (c1, empty, fuel, kb, speedcrash, throwoff, trail1, trails,
-; turn, wallcrash, warp).
+; Witness: L1 32140 (c1, dropout, empty, fuel, kb, overhang, speedcrash,
+; throwoff, trail1, trails, turn, wallcrash, warp).
 JpPixelMask:
   JP PixelMask
 
 ; JP MenuSpriteAttrs
 ;
-; Witness: L1 2139 (c1, empty, fuel, kb, speedcrash, throwoff, trail1, trails,
-; turn, wallcrash, warp).
+; Witness: L1 3446 (c1, dropout, empty, fuel, kb, overhang, speedcrash,
+; throwoff, trail1, trails, turn, wallcrash, warp).
 JpMenuSpriteAttrs:
   JP MenuSpriteAttrs
 
@@ -270,26 +271,26 @@ JpFillAttrsBase:
 
 ; JP DetectKempston
 ;
-; Witness: L1 1 (c1).
+; Witness: L1 2 (c1, itemlow).
 JpDetectKempston:
   JP DetectKempston
 
 ; JP BuildRowAddrs
 ;
-; Witness: L1 1 (c1).
+; Witness: L1 2 (c1, itemlow).
 JpBuildRowAddrs:
   JP BuildRowAddrs
 
 ; JP BuildBufferRows
 ;
-; Witness: L1 1 (c1).
+; Witness: L1 2 (c1, itemlow).
 JpBuildBufferRows:
   JP BuildBufferRows
 
 ; JP InitListWidths
 ;
-; Witness: L1 21 (c1, empty, fuel, kb, speedcrash, throwoff, trail1, trails,
-; turn, wallcrash, warp).
+; Witness: L1 25 (c1, dropout, empty, fuel, itemlow, kb, overhang, speedcrash,
+; throwoff, trail1, trails, turn, wallcrash, warp).
 JpInitListWidths:
   JP InitListWidths
 
@@ -308,8 +309,8 @@ JpCheckHiScore:
 ; sprite list LoadIntroSprites with the menu bank, then the attribute boxes
 ; LoadIntroBoxes. Called through JpLoadIntro by NewGame.
 ;
-; Witness: L1 11 (c1, empty, fuel, kb, speedcrash, throwoff, trail1, trails,
-; turn, wallcrash, warp).
+; Witness: L1 14 (c1, dropout, empty, fuel, itemlow, kb, overhang, speedcrash,
+; throwoff, trail1, trails, turn, wallcrash, warp).
 LoadIntro:
   CALL ClearScreen
   HALT
@@ -340,8 +341,8 @@ LoadIntro:
 ; (PanelP1, PanelP2), each coloured by TrailAttrs. Called through JpTrailIntro
 ; before each trail (c1 frame 15 800).
 ;
-; Witness: L1 21 (c1, empty, fuel, kb, speedcrash, throwoff, trail1, trails,
-; turn, wallcrash, warp).
+; Witness: L1 25 (c1, dropout, empty, fuel, itemlow, kb, overhang, speedcrash,
+; throwoff, trail1, trails, turn, wallcrash, warp).
 TrailIntro:
   LD HL,Attributes
   LD (AttrBase),HL
@@ -442,8 +443,8 @@ l_6B19:
 
 ; Write E into B lines down from HL (screen)
 ;
-; Witness: L1 4006 (c1, empty, fuel, kb, speedcrash, throwoff, trail1, trails,
-; turn, wallcrash, warp).
+; Witness: L1 4878 (c1, dropout, empty, fuel, itemlow, kb, overhang,
+; speedcrash, throwoff, trail1, trails, turn, wallcrash, warp).
 FillColumn:
   LD (HL),E
   CALL JpNextLineHL
@@ -457,7 +458,7 @@ FillColumn:
 ; ShowMaxTime and the attribute boxes PanelP2Boxes. Only in a two-player game
 ; (menu: 2 runs).
 ;
-; Witness: L1 2 (kb).
+; Witness: L1 3 (dropout, kb).
 PanelP2:
   CALL ClearBottomHalf
   LD IX,PanelP2Sprites
@@ -491,8 +492,8 @@ PanelP2:
 ;
 ; As PanelP2 for the top half (y $BE).
 ;
-; Witness: L1 21 (c1, empty, fuel, kb, speedcrash, throwoff, trail1, trails,
-; turn, wallcrash, warp).
+; Witness: L1 25 (c1, dropout, empty, fuel, itemlow, kb, overhang, speedcrash,
+; throwoff, trail1, trails, turn, wallcrash, warp).
 PanelP1:
   CALL ClearTopHalf
   LD IX,PanelP1Sprites
@@ -527,8 +528,8 @@ PanelP1:
 ; A checkered band: B columns of C lines from the position in SpriteX/SpriteY,
 ; $AA and $55 by turns
 ;
-; Witness: L1 11 (c1, empty, fuel, kb, speedcrash, throwoff, trail1, trails,
-; turn, wallcrash, warp).
+; Witness: L1 14 (c1, dropout, empty, fuel, itemlow, kb, overhang, speedcrash,
+; throwoff, trail1, trails, turn, wallcrash, warp).
 Checker:
   CALL GfxTable
   SRL C
@@ -544,8 +545,8 @@ l_6BE1:
 
 ; One column of the band
 ;
-; Witness: L1 77 (c1, empty, fuel, kb, speedcrash, throwoff, trail1, trails,
-; turn, wallcrash, warp).
+; Witness: L1 98 (c1, dropout, empty, fuel, itemlow, kb, overhang, speedcrash,
+; throwoff, trail1, trails, turn, wallcrash, warp).
 CheckerColumn:
   LD E,$AA
   PUSH HL
@@ -558,8 +559,8 @@ CheckerColumn:
 
 ; Write E to every other line, C times
 ;
-; Witness: L1 13552 (c1, empty, fuel, kb, speedcrash, throwoff, trail1, trails,
-; turn, wallcrash, warp).
+; Witness: L1 17248 (c1, dropout, empty, fuel, itemlow, kb, overhang,
+; speedcrash, throwoff, trail1, trails, turn, wallcrash, warp).
 FillEveryOther:
   LD (HL),E
   CALL JpNextLineHL
@@ -589,8 +590,8 @@ PutGameSprite:
 ; IX the list. Each item through the routine in SpriteListCall ($6C2A, set by
 ; the caller to MenuSprite, GameSprite, PutMenuSprite or PutGameSprite).
 ;
-; Witness: L1 241 (c1, empty, fuel, kb, menu, speedcrash, throwoff, trail1,
-; trails, turn, wallcrash, warp).
+; Witness: L1 290 (c1, dropout, empty, fuel, itemlow, kb, menu, overhang,
+; speedcrash, throwoff, trail1, trails, turn, wallcrash, warp).
 SpriteList:
   LD A,(IX+$00)
   LD (SpriteX),A
@@ -609,8 +610,8 @@ SpriteListCall:
 
 ; A = A / 8 + 1 (pixels to attribute cells)
 ;
-; Witness: L1 777 (c1, empty, fuel, kb, menu, speedcrash, throwoff, trail1,
-; trails, turn, wallcrash, warp).
+; Witness: L1 953 (c1, dropout, empty, fuel, itemlow, kb, menu, overhang,
+; speedcrash, throwoff, trail1, trails, turn, wallcrash, warp).
 CellCount:
   SRL A
   SRL A
@@ -623,8 +624,8 @@ CellCount:
 ; IX the list; each box FillAttrs over (x2-x1)/8+1 columns and (y1-y2)/8+1
 ; rows.
 ;
-; Witness: L1 374 (c1, empty, fuel, kb, menu, speedcrash, throwoff, trail1,
-; trails, turn, wallcrash, warp).
+; Witness: L1 449 (c1, dropout, empty, fuel, itemlow, kb, menu, overhang,
+; speedcrash, throwoff, trail1, trails, turn, wallcrash, warp).
 AttrBoxes:
   LD H,(IX+$00)
   LD A,(IX+$02)
@@ -651,8 +652,8 @@ AttrBoxes:
 ; Zero the clock, draw the HUD's sprites and boxes, the maximum time and the
 ; clock
 ;
-; Witness: L1 21 (c1, empty, fuel, kb, speedcrash, throwoff, trail1, trails,
-; turn, wallcrash, warp).
+; Witness: L1 25 (c1, dropout, empty, fuel, itemlow, kb, overhang, speedcrash,
+; throwoff, trail1, trails, turn, wallcrash, warp).
 ShowHud:
   LD HL,$3030
   LD (Clock),HL
@@ -755,8 +756,8 @@ l_6D81:
 ; passes. Used by the title, the high scores, the menus and the trail intro
 ; (c1: 28 calls).
 ;
-; Witness: L1 34 (c1, empty, fuel, kb, menu, speedcrash, throwoff, trail1,
-; trails, turn, wallcrash, warp).
+; Witness: L1 39 (c1, dropout, empty, fuel, itemlow, kb, menu, overhang,
+; speedcrash, throwoff, trail1, trails, turn, wallcrash, warp).
 Dissolve:
   LD C,$08
 l_6D8A:
@@ -800,8 +801,8 @@ l_6DB5:
 
 ; Rotate a buffer byte left into the screen byte
 ;
-; Witness: L1 239360 (c1, empty, fuel, kb, menu, speedcrash, throwoff, trail1,
-; trails, turn, wallcrash, warp).
+; Witness: L1 274560 (c1, dropout, empty, fuel, itemlow, kb, menu, overhang,
+; speedcrash, throwoff, trail1, trails, turn, wallcrash, warp).
 RotateLeft:
   RL (HL)
   LD A,(DE)
@@ -813,8 +814,8 @@ RotateLeft:
 
 ; Rotate a buffer byte right into the screen byte
 ;
-; Witness: L1 239360 (c1, empty, fuel, kb, menu, speedcrash, throwoff, trail1,
-; trails, turn, wallcrash, warp).
+; Witness: L1 274560 (c1, dropout, empty, fuel, itemlow, kb, menu, overhang,
+; speedcrash, throwoff, trail1, trails, turn, wallcrash, warp).
 RotateRight:
   RR (HL)
   LD A,(DE)
@@ -829,8 +830,8 @@ RotateRight:
 ;
 ; Also the main menu's START action: the menu returns to NewGame.
 ;
-; Witness: L1 30 (c1, empty, fuel, kb, speedcrash, throwoff, trail1, trails,
-; turn, wallcrash, warp).
+; Witness: L1 37 (c1, dropout, empty, fuel, itemlow, kb, overhang, speedcrash,
+; throwoff, trail1, trails, turn, wallcrash, warp).
 ClearScreen:
   EI
   XOR A
@@ -863,7 +864,7 @@ RestoreTunePlayer:
 ; pages; ends in MenuLoop. OuterLoop calls it through MenuTable ($69A6, JP
 ; Title) (c1: from frame 14 101; the menu at 14 640).
 ;
-; Witness: L1 4 (c1, trail1, warp).
+; Witness: L1 5 (c1, itemlow, trail1, warp).
 Title:
   LD HL,TunePlayerCopy
   LD DE,TunePlay0
@@ -895,8 +896,8 @@ Title:
 
 ; Wait 60 frames or a key or fire (carry set on a key)
 ;
-; Witness: L1 50 (c1, empty, fuel, kb, speedcrash, throwoff, trail1, trails,
-; turn, wallcrash, warp).
+; Witness: L1 60 (c1, dropout, empty, fuel, itemlow, kb, overhang, speedcrash,
+; throwoff, trail1, trails, turn, wallcrash, warp).
 WaitKey60:
   EI
   CALL JpClearKeys
@@ -918,11 +919,12 @@ RandomSeed:
 ; H, so the pointer stays in its page ($08): Noise reads the same 256 ROM bytes
 ; over and over
 ;
-; HL = RandomSeed; H steps through 0-$1B, L by one: A = the ROM's byte there.
-; The noise effect (Noise $D9AF) is its only caller.
+; HL = RandomSeed; H AND $1B (taken before the INC H, so H keeps its value), L
+; + 3; A = the ROM's byte at the new HL. The noise effect (Noise $D9AF) is its
+; only caller.
 ;
-; Witness: L1 1690 (c1, empty, fuel, kb, speedcrash, throwoff, trail1, trails,
-; turn, wallcrash, warp).
+; Witness: L1 1710 (c1, dropout, empty, fuel, kb, overhang, speedcrash,
+; throwoff, trail1, trails, turn, wallcrash, warp).
 Random:
   LD HL,(RandomSeed)
   LD A,H
@@ -938,7 +940,7 @@ Random:
 
 ; Scroll the buffer's credits 32 times (the second credit screen)
 ;
-; Witness: L1 4 (c1, trail1, warp).
+; Witness: L1 5 (c1, itemlow, trail1, warp).
 Scroller:
   LD B,$20
 l_6E6E:
@@ -1073,7 +1075,7 @@ ShowAt284F:
 
 ; The six trail names in the buffer
 ;
-; Witness: L1 9 (c1, menu, trail1, warp).
+; Witness: L1 11 (c1, itemlow, menu, trail1, warp).
 TrailListScreen:
   CALL JpClearBufferP1
   LD HL,BufferP1
@@ -1086,7 +1088,7 @@ TrailListScreen:
 
 ; Print TrailList's lines
 ;
-; Witness: L1 9 (c1, menu, trail1, warp).
+; Witness: L1 11 (c1, itemlow, menu, trail1, warp).
 TrailListLines:
   LD HL,ListModes
   LD (ModeVector),HL
@@ -1386,11 +1388,16 @@ MenuDraw:
 
 ; The title tune's interrupt hook: count TuneTimer, run the menu
 ;
-; TuneHook calls it every frame while the title tune plays (c1: 5388 runs); it
-; counts TuneTimer (MenuTimer), checks the keys and returns to the tune player.
+; TuneHook calls it every frame while the title tune plays (c1: 1517 runs; 5388
+; over the seven recordings); it counts TuneTimer (MenuTimer), checks the keys
+; (any Kempston direction or fire when KempstonOn: port $1F AND $1F) and
+; returns to the tune player. When TuneTimer's low byte wraps with the high
+; byte's low nibble $0A it shows the high scores and stops the tune: first at
+; $0A00 (Title starts the timer at $04C8: 1 336 interrupts, 26.7 s), then every
+; $1000.
 ;
-; Witness: L1 5421 (c1, empty, fuel, kb, menu, speedcrash, throwoff, trail1,
-; trails, turn, wallcrash, warp).
+; Witness: L1 5424 (c1, dropout, empty, fuel, itemlow, kb, menu, overhang,
+; speedcrash, throwoff, trail1, trails, turn, wallcrash, warp).
 MenuTick:
   CALL MenuTimer
   JR NZ,l_7353
@@ -1412,8 +1419,8 @@ l_7353:
 
 ; TuneTimer + 1; Z when its low byte wraps
 ;
-; Witness: L1 5871 (c1, empty, fuel, kb, menu, speedcrash, throwoff, trail1,
-; trails, turn, wallcrash, warp).
+; Witness: L1 5877 (c1, dropout, empty, fuel, itemlow, kb, menu, overhang,
+; speedcrash, throwoff, trail1, trails, turn, wallcrash, warp).
 MenuTimer:
   LD HL,(TuneTimer)
   INC HL
@@ -1435,8 +1442,10 @@ WaitNoKey:
 ;
 ; Starts TunePlay with tune 0 and TuneHook = MenuTick; after a key stops it,
 ; the loop moves the highlight (any key the next item), SPACE/fire selects
-; (MenuDispatch); TuneTimer reaching $8000 goes back to Title, $0400 to the
-; high scores.
+; (MenuDispatch); TuneTimer reaching $8000 (counted here once a HALT after the
+; tune stops) goes back to Title; the $0400 test ($73C2) is never met (the
+; timer starts at $04C8, Title resets it at $8000); the high scores come from
+; MenuTick at $0A00.
 ;
 ; Witness: L1 7 (c1, menu, trail1, turn, warp).
 MenuLoop:
@@ -1506,8 +1515,8 @@ l_73F7:
 
 ; MenuSpare ($6725) = 0: a byte written here and read by no one
 ;
-; Witness: L1 42 (c1, empty, fuel, kb, menu, speedcrash, throwoff, trail1,
-; trails, turn, wallcrash, warp).
+; Witness: L1 45 (c1, dropout, empty, fuel, itemlow, kb, menu, overhang,
+; speedcrash, throwoff, trail1, trails, turn, wallcrash, warp).
 ClearMenuSpare:
   XOR A
   LD (MenuSpare),A
@@ -1515,8 +1524,8 @@ ClearMenuSpare:
 
 ; Carry when any key or the Kempston's fire is down
 ;
-; Witness: L1 77347 (c1, empty, fuel, kb, menu, speedcrash, throwoff, trail1,
-; trails, turn, wallcrash, warp).
+; Witness: L1 77950 (c1, dropout, empty, fuel, itemlow, kb, menu, overhang,
+; speedcrash, throwoff, trail1, trails, turn, wallcrash, warp).
 AnyKey:
   CALL JpScanKeys
   LD HL,KeyStates
@@ -1538,8 +1547,8 @@ l_740A:
 ; Carry when SPACE, 0 or the Kempston's fire is down (ENTER is not read here:
 ; it moves)
 ;
-; Witness: L1 32 (c1, empty, fuel, kb, menu, speedcrash, throwoff, trail1,
-; trails, turn, wallcrash, warp).
+; Witness: L1 35 (c1, dropout, empty, fuel, itemlow, kb, menu, overhang,
+; speedcrash, throwoff, trail1, trails, turn, wallcrash, warp).
 SelectKey:
   LD A,(KeyStates+$0023)
   ADD A,$FF
@@ -1590,8 +1599,8 @@ l_7465:
 
 ; IX = the current item's place in the menu (IY): HL its text
 ;
-; Witness: L1 78 (c1, empty, fuel, kb, menu, speedcrash, throwoff, trail1,
-; trails, turn, wallcrash, warp).
+; Witness: L1 81 (c1, dropout, empty, fuel, itemlow, kb, menu, overhang,
+; speedcrash, throwoff, trail1, trails, turn, wallcrash, warp).
 ItemPtr:
   PUSH IY
   POP IX
@@ -1609,8 +1618,8 @@ ItemPtr:
 
 ; Jump to the current item's action
 ;
-; Witness: L1 22 (c1, empty, fuel, kb, menu, speedcrash, throwoff, trail1,
-; trails, turn, wallcrash, warp).
+; Witness: L1 25 (c1, dropout, empty, fuel, itemlow, kb, menu, overhang,
+; speedcrash, throwoff, trail1, trails, turn, wallcrash, warp).
 MenuDispatch:
   CALL ItemPtr
   LD L,(IX+$02)
@@ -1817,8 +1826,8 @@ ChooseSinclair:
 
 ; HALT, copy the buffer (HL) to the screen (DE), $6E0 bytes
 ;
-; Witness: L1 188 (c1, empty, fuel, kb, menu, speedcrash, throwoff, trail1,
-; trails, turn, wallcrash, warp).
+; Witness: L1 206 (c1, dropout, empty, fuel, itemlow, kb, menu, overhang,
+; speedcrash, throwoff, trail1, trails, turn, wallcrash, warp).
 ShowBufferAt:
   HALT
   LD BC,$06E0
@@ -1826,7 +1835,7 @@ ShowBufferAt:
 
 ; Measure each of MenuTexts and store its centring offset and width
 ;
-; Witness: L1 1 (c1).
+; Witness: L1 2 (c1, itemlow).
 InitTextWidths:
   LD HL,DrawModes
   LD (ModeVector),HL
@@ -1863,8 +1872,8 @@ l_75CF:
 
 ; Print at H = x, L = y
 ;
-; Witness: L1 165 (c1, empty, fuel, kb, menu, speedcrash, throwoff, trail1,
-; trails, turn, wallcrash, warp).
+; Witness: L1 193 (c1, dropout, empty, fuel, itemlow, kb, menu, overhang,
+; speedcrash, throwoff, trail1, trails, turn, wallcrash, warp).
 PrintAt:
   LD A,H
   LD (SpriteX),A
@@ -1877,8 +1886,8 @@ PrintAt:
 ; digits are big sprites $99-$A2 (the buffer's line above), a-j sprites
 ; $8D-$96, letters A-Z sprites $1E-$37. Each character's advance + 2.
 ;
-; Witness: L1 36592 (c1, empty, fuel, kb, menu, speedcrash, throwoff, trail1,
-; trails, turn, wallcrash, warp).
+; Witness: L1 68701 (c1, dropout, empty, fuel, itemlow, kb, menu, overhang,
+; speedcrash, throwoff, trail1, trails, turn, wallcrash, warp).
 Print:
   LD A,(IX+$00)
   CP $7C
@@ -1945,8 +1954,8 @@ l_7679:
 
 ; Fill a box of attributes: A the byte, H/L the x/y, B columns, C rows
 ;
-; Witness: L1 627 (c1, empty, fuel, kb, menu, speedcrash, throwoff, trail1,
-; trails, turn, wallcrash, warp).
+; Witness: L1 720 (c1, dropout, empty, fuel, itemlow, kb, menu, overhang,
+; speedcrash, throwoff, trail1, trails, turn, wallcrash, warp).
 FillAttrs:
   LD (FillByte),A
   LD A,H
@@ -1972,8 +1981,8 @@ l_768D:
 
 ; HL = the attribute address of SpriteX / SpriteY (AttrBase)
 ;
-; Witness: L1 2766 (c1, empty, fuel, kb, menu, speedcrash, throwoff, trail1,
-; trails, turn, wallcrash, warp).
+; Witness: L1 4166 (c1, dropout, empty, fuel, itemlow, kb, menu, overhang,
+; speedcrash, throwoff, trail1, trails, turn, wallcrash, warp).
 AttrAddr:
   LD A,(SpriteX)
   SRL A
@@ -1999,8 +2008,8 @@ AttrAddr:
 
 ; A = the bit of SpriteX within its byte
 ;
-; Witness: L1 26704 (c1, empty, fuel, kb, speedcrash, throwoff, trail1, trails,
-; turn, wallcrash, warp).
+; Witness: L1 32140 (c1, dropout, empty, fuel, kb, overhang, speedcrash,
+; throwoff, trail1, trails, turn, wallcrash, warp).
 PixelMask:
   LD A,(SpriteX)
   AND $07
@@ -2015,8 +2024,8 @@ l_76CF:
 
 ; Draw mode 0: RET (measure only)
 ;
-; Witness: L1 117549 (c1, empty, fuel, kb, speedcrash, throwoff, trail1,
-; trails, turn, wallcrash, warp).
+; Witness: L1 138555 (c1, dropout, empty, fuel, itemlow, kb, overhang,
+; speedcrash, throwoff, trail1, trails, turn, wallcrash, warp).
 ModeNone:
   RET
 
@@ -2047,8 +2056,8 @@ l_76E4:
 
 ; Copy a sprite onto the screen
 ;
-; Witness: L1 6606 (c1, empty, fuel, kb, speedcrash, throwoff, trail1, trails,
-; turn, wallcrash, warp).
+; Witness: L1 7508 (c1, dropout, empty, fuel, itemlow, kb, overhang,
+; speedcrash, throwoff, trail1, trails, turn, wallcrash, warp).
 ModeCopyScreen:
   LD DE,(DestAddr)
   LD HL,(SpriteData)
@@ -2072,8 +2081,8 @@ l_7703:
 
 ; XOR a sprite onto the screen
 ;
-; Witness: L1 10292 (c1, empty, fuel, kb, speedcrash, throwoff, trail1, trails,
-; turn, wallcrash, warp).
+; Witness: L1 10396 (c1, dropout, empty, fuel, itemlow, kb, overhang,
+; speedcrash, throwoff, trail1, trails, turn, wallcrash, warp).
 ModeXorScreen:
   LD DE,(DestAddr)
   LD HL,(SpriteData)
@@ -2110,8 +2119,8 @@ l_7739:
 ; Read the attributes of a menu picture (MenuGfx): AttrSrc, AttrWidth,
 ; AttrHeight; call the attribute mode
 ;
-; Witness: L1 2139 (c1, empty, fuel, kb, speedcrash, throwoff, trail1, trails,
-; turn, wallcrash, warp).
+; Witness: L1 3446 (c1, dropout, empty, fuel, kb, overhang, speedcrash,
+; throwoff, trail1, trails, turn, wallcrash, warp).
 MenuSpriteAttrs:
   CALL AttrAddr
   LD (AttrDest),HL
@@ -2150,8 +2159,8 @@ MenuSpriteAttrs:
 
 ; RET
 ;
-; Witness: L1 2139 (c1, empty, fuel, kb, speedcrash, throwoff, trail1, trails,
-; turn, wallcrash, warp).
+; Witness: L1 3446 (c1, dropout, empty, fuel, kb, overhang, speedcrash,
+; throwoff, trail1, trails, turn, wallcrash, warp).
 ModeAttrsNone:
   RET
 
@@ -2181,8 +2190,8 @@ l_7786:
 
 ; Clear the screen's pixels
 ;
-; Witness: L1 30 (c1, empty, fuel, kb, speedcrash, throwoff, trail1, trails,
-; turn, wallcrash, warp).
+; Witness: L1 37 (c1, dropout, empty, fuel, itemlow, kb, overhang, speedcrash,
+; throwoff, trail1, trails, turn, wallcrash, warp).
 ClearPixels:
   LD HL,Screen
   LD DE,Screen+1
@@ -2193,8 +2202,8 @@ ClearPixels:
 
 ; Clear the screen's top half (96 lines)
 ;
-; Witness: L1 42 (c1, empty, fuel, kb, speedcrash, throwoff, trail1, trails,
-; turn, wallcrash, warp).
+; Witness: L1 50 (c1, dropout, empty, fuel, itemlow, kb, overhang, speedcrash,
+; throwoff, trail1, trails, turn, wallcrash, warp).
 ClearTopHalf:
   LD HL,Screen
   LD DE,Screen+1
@@ -2202,8 +2211,8 @@ ClearTopHalf:
 
 ; Clear the lower half
 ;
-; Witness: L1 23 (c1, empty, fuel, kb, speedcrash, throwoff, trail1, trails,
-; turn, wallcrash, warp).
+; Witness: L1 28 (c1, dropout, empty, fuel, itemlow, kb, overhang, speedcrash,
+; throwoff, trail1, trails, turn, wallcrash, warp).
 ClearBottomHalf:
   LD HL,$005F
   CALL ScreenAddrHL
@@ -2230,8 +2239,8 @@ l_77BE:
 
 ; Fill all 24 attribute rows with A
 ;
-; Witness: L1 42 (c1, empty, fuel, kb, speedcrash, throwoff, trail1, trails,
-; turn, wallcrash, warp).
+; Witness: L1 50 (c1, dropout, empty, fuel, itemlow, kb, overhang, speedcrash,
+; throwoff, trail1, trails, turn, wallcrash, warp).
 FillAllAttrs:
   LD HL,$00B8
   LD BC,$1818
@@ -2239,8 +2248,8 @@ FillAllAttrs:
 
 ; Fill the 768 attributes at AttrBase with A
 ;
-; Witness: L1 32 (c1, empty, fuel, kb, speedcrash, throwoff, trail1, trails,
-; turn, wallcrash, warp).
+; Witness: L1 39 (c1, dropout, empty, fuel, itemlow, kb, overhang, speedcrash,
+; throwoff, trail1, trails, turn, wallcrash, warp).
 FillAttrsBase:
   LD HL,(AttrBase)
   LD DE,(AttrBase)
@@ -2253,7 +2262,7 @@ FillAttrsBase:
 ; KempstonOn = 1 unless one of 255 reads of port 31 gives all five bits set (no
 ; interface: the bus floats to $FF)
 ;
-; Witness: L1 1 (c1).
+; Witness: L1 2 (c1, itemlow).
 DetectKempston:
   LD E,$00
   LD A,$01
@@ -2272,7 +2281,7 @@ l_77F1:
 
 ; Fill RowAddrs with the 192 lines' screen addresses
 ;
-; Witness: L1 1 (c1).
+; Witness: L1 2 (c1, itemlow).
 BuildRowAddrs:
   LD HL,$0000
   LD DE,RowAddrs
@@ -2290,7 +2299,7 @@ l_780B:
 
 ; Copy a sprite into the buffer (22 bytes a line)
 ;
-; Witness: L1 12838 (c1, empty, kb, trail1, trails, wallcrash, warp).
+; Witness: L1 25187 (c1, dropout, empty, kb, trail1, trails, wallcrash, warp).
 ModeCopyBuffer:
   LD HL,(SpriteData)
   LD DE,(DestAddr)
@@ -2313,8 +2322,8 @@ l_7822:
 
 ; XOR a sprite into the buffer
 ;
-; Witness: L1 8469 (c1, empty, fuel, kb, menu, speedcrash, throwoff, trail1,
-; trails, turn, wallcrash, warp).
+; Witness: L1 10009 (c1, dropout, empty, fuel, kb, menu, overhang, speedcrash,
+; throwoff, trail1, trails, turn, wallcrash, warp).
 ModeXorBuffer:
   LD DE,(SpriteData)
   LD HL,(DestAddr)
@@ -2342,7 +2351,7 @@ l_7847:
 
 ; Fill BufferRows: 80 offsets of 22
 ;
-; Witness: L1 1 (c1).
+; Witness: L1 2 (c1, itemlow).
 BuildBufferRows:
   LD IX,BufferRows
   LD HL,$0000
@@ -2363,8 +2372,8 @@ l_7865:
 ; item's animation record when flags bits 3-7 are set); +2 (y) becomes the
 ; height when 0, +3 the advance. Before each trail (c1: 15 runs).
 ;
-; Witness: L1 21 (c1, empty, fuel, kb, speedcrash, throwoff, trail1, trails,
-; turn, wallcrash, warp).
+; Witness: L1 25 (c1, dropout, empty, fuel, itemlow, kb, overhang, speedcrash,
+; throwoff, trail1, trails, turn, wallcrash, warp).
 InitListWidths:
   LD HL,(TrailListA)
   CALL InitList
@@ -2372,8 +2381,8 @@ InitListWidths:
 
 ; One list (HL)
 ;
-; Witness: L1 42 (c1, empty, fuel, kb, speedcrash, throwoff, trail1, trails,
-; turn, wallcrash, warp).
+; Witness: L1 50 (c1, dropout, empty, fuel, itemlow, kb, overhang, speedcrash,
+; throwoff, trail1, trails, turn, wallcrash, warp).
 InitList:
   PUSH HL
   POP IY
@@ -2424,8 +2433,8 @@ l_78D0:
 
 ; Draw mode 8: a sprite scaled by BigScaleX / BigScaleY, ORed or cleared
 ;
-; Witness: L1 823 (c1, empty, fuel, kb, speedcrash, throwoff, trail1, trails,
-; turn, wallcrash, warp).
+; Witness: L1 972 (c1, dropout, empty, fuel, itemlow, kb, overhang, speedcrash,
+; throwoff, trail1, trails, turn, wallcrash, warp).
 BigPrint:
   LD A,(SpriteX)
   PUSH AF
@@ -2487,8 +2496,8 @@ l_7934:
 
 ; One sprite byte, scaled
 ;
-; Witness: L1 10924 (c1, empty, fuel, kb, speedcrash, throwoff, trail1, trails,
-; turn, wallcrash, warp).
+; Witness: L1 12904 (c1, dropout, empty, fuel, itemlow, kb, overhang,
+; speedcrash, throwoff, trail1, trails, turn, wallcrash, warp).
 BigByte:
   LD B,$08
 l_7948:
@@ -2525,8 +2534,8 @@ l_796C:
 
 ; One scaled pixel: OR the mask in or clear it
 ;
-; Witness: L1 75443 (c1, empty, fuel, kb, speedcrash, throwoff, trail1, trails,
-; turn, wallcrash, warp).
+; Witness: L1 88985 (c1, dropout, empty, fuel, itemlow, kb, overhang,
+; speedcrash, throwoff, trail1, trails, turn, wallcrash, warp).
 BigPlot:
   LD A,(BigClear)
   CP $01
@@ -2547,8 +2556,8 @@ l_7983:
 ; Copy the trail's 11-character name over the dots after "TRAIL NO."
 ; (TrailNameSlot)
 ;
-; Witness: L1 21 (c1, empty, fuel, kb, speedcrash, throwoff, trail1, trails,
-; turn, wallcrash, warp).
+; Witness: L1 25 (c1, dropout, empty, fuel, itemlow, kb, overhang, speedcrash,
+; throwoff, trail1, trails, turn, wallcrash, warp).
 CopyTrailName:
   LD DE,(Trail)
   SLA E
@@ -2565,8 +2574,8 @@ CopyTrailName:
 ; Colour a half's playfield with the trail's attribute (TrailInks): 22 x 5
 ; cells at IX; trails 3 and 6 (Icebergs, Swamp) add a blue row (9) at IY
 ;
-; Witness: L1 44 (c1, empty, fuel, kb, speedcrash, throwoff, trail1, trails,
-; turn, wallcrash, warp).
+; Witness: L1 53 (c1, dropout, empty, fuel, itemlow, kb, overhang, speedcrash,
+; throwoff, trail1, trails, turn, wallcrash, warp).
 TrailAttrs:
   LD DE,(Trail)
   LD D,$00
@@ -2615,8 +2624,8 @@ TrailNameSlot:
 ; Carry: player 1 reads the Kempston; else NZ: the Sinclair keys (two players
 ; and Keyboard1Alt)
 ;
-; Witness: L1 136575 (c1, empty, fuel, kb, menu, speedcrash, throwoff, trail1,
-; trails, turn, wallcrash, warp).
+; Witness: L1 149220 (c1, dropout, empty, fuel, itemlow, kb, menu, overhang,
+; speedcrash, throwoff, trail1, trails, turn, wallcrash, warp).
 P1UsesJoystick:
   LD A,(KempstonOn)
   SUB $01
@@ -2631,8 +2640,8 @@ P1UsesJoystick:
 
 ; Carry when player 1's left is held (the key KeyIndexes1+0, Kempston bit 1)
 ;
-; Witness: L1 27315 (c1, empty, fuel, kb, menu, speedcrash, throwoff, trail1,
-; trails, turn, wallcrash, warp).
+; Witness: L1 29844 (c1, dropout, empty, fuel, itemlow, kb, menu, overhang,
+; speedcrash, throwoff, trail1, trails, turn, wallcrash, warp).
 P1Left:
   CALL P1UsesJoystick
   JP C,l_8424
@@ -2655,8 +2664,8 @@ l_8424:
 
 ; Player 1's right (KeyIndexes1+1, Kempston bit 0)
 ;
-; Witness: L1 27315 (c1, empty, fuel, kb, menu, speedcrash, throwoff, trail1,
-; trails, turn, wallcrash, warp).
+; Witness: L1 29844 (c1, dropout, empty, fuel, itemlow, kb, menu, overhang,
+; speedcrash, throwoff, trail1, trails, turn, wallcrash, warp).
 P1Right:
   CALL P1UsesJoystick
   JP C,l_8445
@@ -2679,8 +2688,8 @@ l_8445:
 
 ; Player 1's wheel up (KeyIndexes1+2, Kempston bit 3)
 ;
-; Witness: L1 27315 (c1, empty, fuel, kb, menu, speedcrash, throwoff, trail1,
-; trails, turn, wallcrash, warp).
+; Witness: L1 29844 (c1, dropout, empty, fuel, itemlow, kb, menu, overhang,
+; speedcrash, throwoff, trail1, trails, turn, wallcrash, warp).
 P1Up:
   CALL P1UsesJoystick
   JP C,l_8466
@@ -2703,8 +2712,8 @@ l_8466:
 
 ; Player 1's wheel down (KeyIndexes1+3, Kempston bit 2)
 ;
-; Witness: L1 27315 (c1, empty, fuel, kb, menu, speedcrash, throwoff, trail1,
-; trails, turn, wallcrash, warp).
+; Witness: L1 29844 (c1, dropout, empty, fuel, itemlow, kb, menu, overhang,
+; speedcrash, throwoff, trail1, trails, turn, wallcrash, warp).
 P1Down:
   CALL P1UsesJoystick
   JP C,l_8487
@@ -2727,8 +2736,8 @@ l_8487:
 
 ; Player 1's jump (KeyIndexes1+4, Kempston fire, bit 4)
 ;
-; Witness: L1 27315 (c1, empty, fuel, kb, menu, speedcrash, throwoff, trail1,
-; trails, turn, wallcrash, warp).
+; Witness: L1 29844 (c1, dropout, empty, fuel, itemlow, kb, menu, overhang,
+; speedcrash, throwoff, trail1, trails, turn, wallcrash, warp).
 P1Jump:
   CALL P1UsesJoystick
   JP C,l_84A8
@@ -2751,8 +2760,8 @@ l_84A8:
 
 ; Player 2's left: KeyIndexes2+0, or key 6 with the Sinclair joystick
 ;
-; Witness: L1 27315 (c1, empty, fuel, kb, menu, speedcrash, throwoff, trail1,
-; trails, turn, wallcrash, warp).
+; Witness: L1 29844 (c1, dropout, empty, fuel, itemlow, kb, menu, overhang,
+; speedcrash, throwoff, trail1, trails, turn, wallcrash, warp).
 P2Left:
   LD A,(SinclairOn)
   CP $00
@@ -2775,8 +2784,8 @@ SinclairLeft:
 
 ; Player 2's right: KeyIndexes2+1 or key 7
 ;
-; Witness: L1 27315 (c1, empty, fuel, kb, menu, speedcrash, throwoff, trail1,
-; trails, turn, wallcrash, warp).
+; Witness: L1 29844 (c1, dropout, empty, fuel, itemlow, kb, menu, overhang,
+; speedcrash, throwoff, trail1, trails, turn, wallcrash, warp).
 P2Right:
   LD A,(SinclairOn)
   CP $00
@@ -2799,8 +2808,8 @@ SinclairRight:
 
 ; Player 2's wheel up: KeyIndexes2+2 or key 9
 ;
-; Witness: L1 27315 (c1, empty, fuel, kb, menu, speedcrash, throwoff, trail1,
-; trails, turn, wallcrash, warp).
+; Witness: L1 29844 (c1, dropout, empty, fuel, itemlow, kb, menu, overhang,
+; speedcrash, throwoff, trail1, trails, turn, wallcrash, warp).
 P2Up:
   LD A,(SinclairOn)
   CP $00
@@ -2823,8 +2832,8 @@ SinclairUp:
 
 ; Player 2's wheel down: KeyIndexes2+3 or key 8
 ;
-; Witness: L1 27315 (c1, empty, fuel, kb, menu, speedcrash, throwoff, trail1,
-; trails, turn, wallcrash, warp).
+; Witness: L1 29844 (c1, dropout, empty, fuel, itemlow, kb, menu, overhang,
+; speedcrash, throwoff, trail1, trails, turn, wallcrash, warp).
 P2Down:
   LD A,(SinclairOn)
   CP $00
@@ -2847,8 +2856,8 @@ SinclairDown:
 
 ; Player 2's jump: KeyIndexes2+4 or key 0
 ;
-; Witness: L1 27315 (c1, empty, fuel, kb, menu, speedcrash, throwoff, trail1,
-; trails, turn, wallcrash, warp).
+; Witness: L1 29844 (c1, dropout, empty, fuel, itemlow, kb, menu, overhang,
+; speedcrash, throwoff, trail1, trails, turn, wallcrash, warp).
 P2Jump:
   LD A,(SinclairOn)
   CP $00
@@ -2873,8 +2882,8 @@ SinclairFire:
 
 ; Zero KeyStates and JoyBits
 ;
-; Witness: L1 418942 (c1, empty, fuel, kb, menu, speedcrash, throwoff, trail1,
-; trails, turn, wallcrash, warp).
+; Witness: L1 420475 (c1, dropout, empty, fuel, itemlow, kb, menu, overhang,
+; speedcrash, throwoff, trail1, trails, turn, wallcrash, warp).
 ClearKeys:
   LD BC,$0027
   LD HL,KeyStates
@@ -2893,8 +2902,8 @@ ClearKeys:
 ; The latch keeps a key for 3 scans: only the last 3 interrupts of a 7-frame
 ; pass count.
 ;
-; Witness: L1 143606 (c1, empty, fuel, kb, menu, speedcrash, throwoff, trail1,
-; trails, turn, wallcrash, warp).
+; Witness: L1 153629 (c1, dropout, empty, fuel, itemlow, kb, menu, overhang,
+; speedcrash, throwoff, trail1, trails, turn, wallcrash, warp).
 ScanKeys:
   LD L,$2F
   LD BC,$FEFE

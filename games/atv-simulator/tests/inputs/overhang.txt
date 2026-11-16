@@ -1,0 +1,14 @@
+# overhang: from c1's menu.szx; POKE trail 1's list A item 3 (distance $0148, sprite $67, 12 high) y 0 -> 30, a
+# floating piece 19-30 lines up; START; mount; right held until the rider is off (RiderMounted's overhang test,
+# ThrowOff $E2E2) or 700 frames; 300 frames after. Samples of the record and FallPhase in log.json
+# Start: work/stage1/rec/c1/menu.szx
+0 SPACE
+0 POKE 31944 30
+4 -
+402 KR
+465 KR KF
+472 KR
+493 KR KF
+500 KR
+759 -
+1060 END

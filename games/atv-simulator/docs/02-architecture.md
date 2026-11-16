@@ -30,10 +30,10 @@ The source (`src/game/game.ann`, 466 entries) is split into eight modules by wha
 | entry | 1 (1) | 55 (55) | GameEntry: the two copies, SP, Init, IM 2, OuterLoop | `$D7D6-$D80C` |
 | loop | 43 (42) | 939 (902) | the jump table, the game's variables, NewGame, Pass, the wait, the interrupt, TrailEnd | `$D6B0-$D70B`, `$D80D-$DA1D`, `$EC7F-$EDB1` |
 | menu | 155 (136) | 6 280 (3 805) | the title, the menus, the controls, the text printer, the trail intro, the HUD frame | `$6338-$69F6`, `$6A09-$79F0`, `$83F9-$859C` |
-| render | 111 (99) | 24 361 (3 305) | the draw modes, the sprite bank, the shifters, the buffers and their copy, the trail lists | `$8080-$8F5C`, `$8F5C-$D6AF` (GameGfx), `$DBD1-$DD96`, `$F03C-$FDFB` |
+| render | 111 (99) | 24 361 (3 305) | the draw modes, the sprite bank, the shifters, the buffers and their copy, the trail lists | `$8080-$8F5B`, `$8F5C-$D6AF` (GameGfx), `$DBD1-$DD96`, `$F03C-$FDFB` |
 | vehicle | 71 (60) | 3 809 (3 430) | the records, the ATV and the rider, the ground, crashes, fuel | `$D70E-$D7A7`, `$DA1E-$DB34`, `$DE2A-$EAAE` |
-| scores | 32 (29) | 1 288 (1 172) | the high score table, the name entry, the clock, the finish, the score | `$7A3E-$7C91`, `$EABF-$EC71`, `$EDBB-$EE4C` |
-| trails | 13 (0) | 1 436 (0) | the six trails' records and lists | `$7C9C-$807F`, `$EE84-$F03B` |
+| scores | 32 (29) | 1 288 (1 172) | the high score table, the name entry, the clock, the finish, the score | `$7A3E-$7C90`, `$EABF-$EC71`, `$EDBB-$EE4C` |
+| trails | 13 (0) | 1 436 (0) | the six trails' records and lists | `$7C9C-$807A`, `$EE84-$F03B` |
 | sound | 40 (31) | 1 832 (797) | the tune player and its tunes, the IM 2 table | `$F850-$FF18` |
 
 *The bytes are counted from each entry to the next one in game.ann; render's count holds the sprite bank (18 260
@@ -91,16 +91,16 @@ game no longer needs. Drawn from game.ann's entries by `python3 tools/fig_memmap
 | `$60AC-$6335` | 650 | Trail6: trail 6's record and lists, copied from `$F230` by GameEntry | SelectTrail `$EC9C` picks `$60AC` |
 | `$6338-$66FC` | 965 | MenuGfx: the front end's 14 pictures | `src/res/sprites/menu.png` |
 | `$6720-$69A5` | 646 | the menu's variables, RowAddrs (192 screen lines), BufferRows (80 buffer lines), PlayerCount `$6947`, Scores `$6948` | built by Init |
-| `$69A6-$7C91` | 4 844 | code: the menu's jump table, the front end, the text printer, the high scores | `c1` executed |
-| `$7C9C-$807F` | 996 | trails 1-4: four records of 6 bytes and their lists | `src/res/trails/trails14.txt` |
+| `$69A6-$7C90` | 4 843 | code: the menu's jump table, the front end, the text printer, the high scores | `c1` executed |
+| `$7C9C-$807A` | 991 | trails 1-4: four records of 6 bytes and their lists | `src/res/trails/trails14.txt` |
 | `$8080-$82FD` | 638 | the render variables: Im2Jump `$8080`, the deferred lists, Controls1 `$8113`, Controls2 `$8114`, the key states | written in play |
 | `$82FE-$8F25` | 3 112 | code: the draw modes, the sprite entry `$865F`, the shifters, CopyLines, the lists | `c1` executed |
 | `$8F5C-$D6AF` | 18 260 | GameGfx: 203 sprites with 4-byte headers (the ATV, the rider, the ground, the scenery, the font, the digits) | `src/res/sprites/game.png` |
 | `$D6B0-$D7D5` | 294 | EntryJumps, GameTable, the game's variables, RecordP1 `$D70E`, RecordP2 `$D740`, Record `$D772`, RecordTemplate `$D7A7` | 2.5 |
 | `$D7D6-$EE4B` | 5 750 | code: the entry, the loop, the vehicle, the clock, the finish, the trail end | `c1` executed |
 | `$EE84-$F03B` | 440 | Trail5: trail 5's record and lists | `src/res/trails/trail5.txt` |
-| `$F03C-$F71B` | 1 760 | BufferP1: player 1's buffer, 22 × 80 bytes; the front end draws there too | written each pass |
-| `$F71C-$FDFB` | 1 760 | BufferP2: player 2's buffer; over the tune player and trail 6's load place | written in `kb` |
+| `$F03C-$F71B` | 1 760 | BufferP1: player 1's buffer, 22 × 80 bytes, over trail 6's load place `$F230-$F4B9`; the front end draws there too | written each pass |
+| `$F71C-$FDFB` | 1 760 | BufferP2: player 2's buffer, over the tune player `$F850-$FDFA` | written in `kb` |
 | `$FDFD-$FDFF` | 3 | TuneVector: `JP TuneInterrupt` while a tune plays | 4.4 of [doc 04](04-game-loop.md#44-the-title-tunes-vector-fdfd-and-the-menu-inside-it) |
 | `$FE00-$FF00` | 257 | Im2Table: `$80` (the game) or `$FD` (a tune) | SetupIm2, TunePlay |
 | `$FF01-$FFDB` | 219 | the stack: SP = `$FFDC` at the entry | 2.4 |
@@ -115,8 +115,8 @@ almost all pictures. Drawn by `python3 tools/sprite_sheet.py work/stage1/media/t
 docs/img/sprites/sprites-stage1.png work/stage1/rec/{warp,kb,trail1,trails,menu,fuel}/l1.json` (stage 1); the whole
 bank of 203 is `src/res/sprites/game.png`.*
 
-The code lies in two blocks: `$69A6-$8F25` (the front end and the renderer, 7 956 bytes with the trails 1-4 between
-them) and `$D6B0-$EE4B` (the game, 6 044 bytes). The sprite bank fills the 18 K between them.
+The code lies in two blocks: `$69A6-$8F25` (the front end and the renderer, 7 956 bytes of code in a 9 600-byte span,
+with the trails 1-4 between them) and `$D6B0-$EE4B` (the game, 6 044 bytes). The sprite bank fills the 18 K between them.
 
 **How it works.** The copies are the whole of the relocation:
 
@@ -149,12 +149,14 @@ flowchart LR
     C -- "GameEntry LDIR" --> E["60AC Trail6"]
     D -- "Title, TrailEnd LDIR" --> B
     F["BufferP2 F71C-FDFB in play"] -. "overwrites" .-> B
+    G["BufferP1 F03C-F71B"] -. "overwrites" .-> C
 ```
 
 **Worked example.** The tune player is written at `$F850`, and its code uses absolute addresses there. In play,
 BufferP2 `$F71C-$FDFB` covers `$F850-$FDFA` with player 2's picture. So Title and TrailEnd copy
 `$5B00` back to `$F850` before every tune, 1 451 bytes, and the tune runs at its own address. Trail 6 is different:
-its lists hold addresses in `$60AC-$6335`, so it is used at the copy and never copied back.
+its lists hold addresses in `$60AC-$6335`, so it is used at the copy and never copied back; its load place
+`$F230-$F4B9` lies inside BufferP1 `$F03C-$F71B` and is free for the buffer once the copy is done.
 
 **Witness.** The L1 of `c1` lists the copy `$F850` → `$5B00` (`LDIR` at `$D7E0`) and `$F230` → `$60AC` (at `$D7EB`);
 [GameEntry.gif](03-build-and-load.md#34-the-entry-two-copies-out-of-the-buffers-way) shows both.
@@ -181,7 +183,31 @@ flowchart TD
 after block 3, the entry at 14 100 T 17 980, the title and menu screenshots. [Doc 03](03-build-and-load.md) follows
 the load block by block.*
 
-**The point.** One load, no packer and no second stage: the game is in place 282 s after the tape starts, and the
+**How it works.**
+
+```text
+ROM: LOAD ""                 ; block 1, the BASIC: CLEAR 25400; LOAD ""CODE; RANDOMIZE USR 65500
+ROM: LOAD ""CODE             ; block 3 to $FFDC, then USR 65500 runs it
+Loader ($FFDC):              ; skips the headers 4 and 6 by their flag
+    LD-BYTES($4000, 6912)    ; block 5, the loading screen
+    LD-BYTES($6338, 40000)   ; block 7, the game
+    JP $D6B0                 ; EntryJumps: JP GameEntry
+GameEntry ($D7D6):
+    copy the tune player to $5B00, trail 6 to $60AC; SP = $FFDC; Init; IM 2 on $FE00
+    OuterLoop: Title (credits, menu), NewGame, the trails' passes
+```
+
+**Worked example.** In `c1` the loader's code first runs at frame 1 017. The game's entry follows at 14 100 T 17 980,
+282 s after power-on; the emulator's tape stops later, at 14 182. The IM 2
+vector's `JP $D9D2` at `$8080` first runs at 14 114, 14 frames after the entry.
+The credits are on screen at 14 300, the menu at 14 640, and SPACE at 14 657 starts the game: the trail intro at
+14 900 and the first pass at 15 055, 955 frames (19 s) after the entry.
+
+**Witness.** `kit/rs.py stages` on `c1` (code arrivals: `$FFDC` at 1 017, `$8080` at 14 114, the tune player at
+14 639; WALKTHROUGH 1); the screenshots `c1-000582-basic.png`, `c1-014300-credits.png`, `c1-014640-menu-hiscores.png`,
+`c1-014900-trail-intro.png` and `c1-015060-first-pass.png` in `docs/img/play`.
+
+**The point.** One load, no packer and no second stage: the game is in place 282 s after power-on, and the
 only work before the title is the two copies and Init.
 
 ## 2.4 Memory use over the recordings, and the stack
@@ -214,8 +240,8 @@ each recording reached:
 So the game's stack uses at most 54 bytes of the 219 between the IM 2 table and the loader. The lowest write of all,
 `$FE00`, is SetupIm2's `LDIR`, not the stack.
 
-**Worked example.** The deepest stack in `warp` is 54 bytes, 27 words. An interrupt alone pushes 14 of them: its
-return address and six register pairs (4.3 of [doc 04](04-game-loop.md#43-the-interrupt-handler-d9d2)). The other
+**Worked example.** The deepest stack in `warp` is 54 bytes, 27 words. An interrupt alone pushes 14 bytes of them, 7 words:
+its return address and six register pairs (4.3 of [doc 04](04-game-loop.md#43-the-interrupt-handler-d9d2)). The other
 40 bytes are the calls and pushes of the main program at that moment, OuterLoop's call to NewGame being the first.
 
 **Witness.** `work/docs/atA/l1-all.json`; merge_l1's printout (`work/docs/atA-NOTES.md`).
@@ -252,7 +278,7 @@ player's pass and back after it (LoadRecordP1, SaveRecordP1), so the vehicle cod
 | Address in Record | Name | What |
 | --- | --- | --- |
 | `$D774` | Mounted | 1 on the ATV, 0 on foot |
-| `$D775` | AtvFrame | the ATV's sprite: `$38-$4E` nose up or down, `$5C` riderless, `$7D-$87` tumbling |
+| `$D775` | AtvFrame | the ATV's sprite: `$38` level, `$3A-$44` nose up, `$46-$4C` nose down, `$5C` turning round (head-on, drawn without the rider), `$7D-$87` tumbling |
 | `$D776` | Facing | 0 right, 1 left |
 | `$D77B` | Speed | the speed level, 0-21 |
 | `$D77C` | Fuel | a word, `$2000` full, empty under `$400` |
