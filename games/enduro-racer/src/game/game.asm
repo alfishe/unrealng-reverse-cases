@@ -5,7 +5,6 @@
 
 ; Names that cannot be labels (@alias)
 RowList        EQU Mover  ; the road's row list $5B00-$5B7F, written over Mover in play
-KeyItem        EQU Start  ; after the start: the item MenuSelect is on (also DEFINE KEYS' key being set)
 MenuItem       EQU Start+1  ; after the start: the main menu's item
 WaitCount      EQU Start+2  ; after the start: WaitKey's count (two bytes, over $8003)
 LineBuffer     EQU Start  ; after the start: the sprite routines' line buffer $8000-$80B7

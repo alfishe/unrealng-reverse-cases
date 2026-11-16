@@ -539,14 +539,10 @@ BikeLateral:
   LD A,(ScrollStep+$0001) ; the bend's push (factor by the bend, bits 0-1) and
                           ; the sideways speed into LateralX, kept within the
                           ; road's scale; the jump's height
-
-; ADD A,A on stages 2 and 4, NOP elsewhere (StartRace writes it): the bend's
-; push doubled there
-;
-; L1 has the byte executed in every recording; the kit keeps it as a byte
-; because StartRace changes the instruction.
 BendOp:
-  DEFB $87
+  ADD A,A                 ; the opcode StartRace writes: ADD A,A on stages 2
+                          ; and 4 (the bend's push doubled there), NOP
+                          ; elsewhere
 
 ; The push: (ScrollStep's high byte, doubled on stages 2 and 4) * the bend's
 ; factor ($52, $8F, $A4; BendPrev holds the bend), signed by BendDir;

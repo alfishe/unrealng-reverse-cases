@@ -131,8 +131,9 @@ that has no witness line yet its `> Witness: L1 N (builds).` after its last `>` 
 too (no seed line by hand; an entry no build ran gets none and is listed; any `Witness:` text counts as a line; a
 plain run counts the missing lines only in an `.ann` that already holds some), and writes the source again from it (with `--install` one run leaves the `.asm` current too); a range it wrote is read back as its builds
 whatever the family's prefix (`load-l2-load-l5`, `sec-l2-s10-sec-l2-s12`); a build that `case.json` lists in both
-`read_builds` and `code_builds` counts once; a line that names a
-build mkgame did not load is kept as written and printed (`kept: NAME not among the builds`), a name a build had
+`read_builds` and `code_builds` counts once; a line that names a build no list of the segment names any more (a
+build taken out of `read_builds`, or put in `witness_skip`) is rewritten without it (`NAME left the lists`); a line
+that names a listed build mkgame did not load (a glob that matched nothing) is kept as written and printed (`kept: NAME not among the builds`), a name a build had
 before `witness_names` renamed it (its own name, `c1g`, or its path) is that build's and rewritten (`renamed
 (witness_names): c1g is c1`), and a name it drops is
 printed as `NAME ran no instruction there` (not for an entry no build ran at all, `L1 0 ()`, a data entry or a dormant
@@ -167,6 +168,18 @@ Without KIND the line names or comments an address **inside** an entry.
 - On a data entry's first address, a name other than the entry's is the record's **first field**: a second label
   after the entry's (`PlayerVars:` then `PocketTurn:`). An `LD` through memory at that address (`LD A,($9F43)`,
   `LD ($9F43),HL`) is written with the field's name, every other operand (`LD HL,$9F43`) with the entry's.
+- On a code entry's first address the same when an instruction reads or writes that address through memory
+  (`(nn)`): a variable the program later keeps over its own first instruction (Enduro Racer `$8000 KeyItem` on
+  `Start`, the `JP Init` the menus reuse as work space) is a second label after the entry's, and the `LD`s through
+  memory there use it, with no `@isub` or `@alias`. With no such access the inner name stays only a name for the
+  line (a loop's name on its first instruction): the entry's label is the one written. A name inside an
+  instruction (`Start+1`) has no line of its own: it stays an `@alias`.
+- Two instructions that share bytes (Enduro Racer `$A9C2`: the `$08` operand of `JR Z` is also the `EX AF,AF'` a
+  jump enters at `$A9C3`) have one source line for one byte: the first stays a `b` entry of one byte, so that the
+  second is an instruction; an assembler source holds one reading of a byte, so this is left as it is.
+- A self-modified opcode (one the program writes, Enduro Racer's `$9562` RoadRunOp and `$AE63` BendOp) is code:
+  an inner line names it and the code entry keeps it as the instruction the image holds; it needs no `b` entry
+  unless a recording also reads it outside the load (then the kind check says `is c, the recordings say data`).
 - Inside an `@res` entry an inner label splits the `INCBIN` there. The label must lie inside the entry, or the
   generator fails with `... inside the resource ... has no address in it`. In an `@res ... include` entry the label
   goes inside the `.inc` (mkgame's numeric one at its offset; the case's res tool writes it from the editable form,
@@ -351,7 +364,7 @@ reads them for a part of segments in `case.json` `ref_parts`:
 | `top` / `name`, `dest`, `bin` / `out` | the top file `TOP.asm`, where `--install` writes it and the modules, the `SAVEBIN` name |
 | `header`, `written`, `device` | the top file's first comment lines, its "Written by" line (default: from the `.ann`), the sjasmplus `DEVICE` (`ZXSPECTRUM48`) |
 | `witness_builds`, `witness_skip` | more recordings for the witness counts only (section 3.2): `work/<build>/l1.json`; the builds of `l1` left out of them (a whole recording whose frame windows are in `witness_builds`) |
-| `l1` | the recordings: `"PATH"` or `{"path", "reads", "lo", "hi", "roots", "format", "optional", "load_end"}`. `reads`: its data reads count (not for a build over a depacker's input; default: the build's folder is in `read_builds`). `load_end` (a frame, with `reads`): only the bytes the recording still accessed from that frame on count as read (L1 `byte_counts` `last_frame`), so the ROM's RAM test at power-on and a tape load, which read every byte before the program runs, stop no walk. `lo`/`hi`: only this window of addresses counts (the bytes that held this part while it ran). `roots: false`: a routine that is only the window's root (where the build began) is no entry. `format: "trace"`: a simulator's `{"starts": {ADDR: length}, "entries": [ADDR], "reads": {ADDR: count}}`. A path may be a glob. A segment's own `l1` replaces the part's |
+| `l1` | the recordings: `"PATH"` or `{"path", "reads", "lo", "hi", "roots", "format", "optional", "load_end"}`. `reads`: its data reads count (not for a build over a depacker's input; default: the build's folder is in `read_builds`). `load_end` (a frame, with `reads`): only the bytes the recording still accessed from that frame on count as read (L1 `byte_counts` `last_frame`), so the ROM's RAM test at power-on and a tape load, which read every byte before the program runs, stop no walk; nor a byte whose last reader (L1 `byte_use`) first ran before the frame and last ran in it or before (a mover's `LDDR`: the later accesses were writes). `read_end` (a frame, with `reads`): the frame a recording crashes into the ROM; a byte first accessed at or after it, or first read by an instruction that first ran at or after it, is not read, and an instruction first run at or after it is not one of the recording's. `lo`/`hi`: only this window of addresses counts (the bytes that held this part while it ran). `roots: false`: a routine that is only the window's root (where the build began) is no entry. `format: "trace"`: a simulator's `{"starts": {ADDR: length}, "entries": [ADDR], "reads": {ADDR: count}}`. A path may be a glob. A segment's own `l1` replaces the part's |
 | `mode` | `"instructions"` (default: every recorded instruction whose opcode and length are the image's) or `"blocks"` (only whole recorded basic blocks whose every instruction has the image's bytes, no routine entries: a later program at the same addresses cannot make a lone byte look like code) |
 | `bases`, `pages`, `bank` | L1 page -> Z80 base (`{"5": "4000", "2": "8000", "0": "C000"}` by default); `pages` lists pages at their natural base (5 `$4000`, 2 `$8000`, any other `$C000`); `bank` N adds `SLOT 3` / `PAGE N` to the top file |
 | `same_bytes` | count a recorded instruction only when all its bytes are the image's (code overwritten later in the same window), for the code and the witness counts (section 3.2); a list of builds (`work/<build>` names, globs): only for those recordings (their routine entries too only at such an instruction), the others count as before |
@@ -372,7 +385,10 @@ counts (section 3.2; Earth Shaker's two death recordings, which its `.ann` names
 builds of its `read_builds` / `code_builds` (globs) read as `{"roots": false}` (a routine that is only the
 recording's root, a snapshot start's PC, is no entry). A build in both `read_builds` and `code_builds` is read once,
 as a read build. `ref_load_end` (`{"stage1/c1": 13998}`, kit/refdocs.py's key too) gives a read build its `load_end`:
-a recording from power-on and the tape load can be a read build (Rick Dangerous 2's `c1`, `c48`).
+a recording from power-on and the tape load can be a read build (Rick Dangerous 2's `c1`, `c48`). `ref_read_end`
+(`{"stage1/rec/reset3": 6759}`) gives a read build its `read_end`: a recording that crashes into the ROM can be a
+read build (Enduro Racer's `reset3`, with `witness_skip` so its runs leave the witness counts alone); refdocs
+leaves it out of docs 11 and 12.
 
 ### 5.3 One image on the command line
 

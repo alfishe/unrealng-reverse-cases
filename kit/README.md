@@ -75,6 +75,17 @@ tape off, `POST /tape/load`, then `kitlib.tape_wait` (polls `GET /tape` until `b
 then one frame at a time, at most 10) and `POST /tape/seek`; `settle=F` runs exactly F frames first (a timeline that
 ran a fixed number, R-Type's 2). It returns the frames run, the seek's answer, the tape's state and block.
 
+A menu with a highlighted line (the item under the cursor shown by its paper colour) is driven by reading the
+attributes, not by counting keys: `kitlib.paper_rows(attributes, paper, lo=0, hi=24, cells=3, ink=None)` gives the
+character rows whose first `cells` cells have paper P (attributes: the 768 bytes at `$5800` or a `read(addr, n)`),
+and `kitlib.wait_paper(read, step, row, paper, tries=40)` calls `step()` (a key press and a frame or two) until row R
+has paper P, returning the steps taken (Enduro Racer's `tools/record.py`).
+
+`rs.py interrupts` prints, after re_session's table, the kit's own length an entry from the same L1 (the handler's
+own T-states plus its call callees' inclusive ones): re_session's inclusive count runs on past a handler that
+leaves by a patched `JP` (Enduro Racer `$643C`: 676 717 T an entry, "968.3 % of the CPU"; the kit 11 357 T), and
+`handler_time.py` measures every entry exactly over a trace window.
+
 ```bash
 python3 ../../kit/rs.py capture --work work/stage2/rec/L20 --snapshot work/stage2/lv/L20.szx \
     --inputs work/stage2/lv/L20.txt --ranges 4000-FFFF --port-base 37490 --stop --expect work/stage2/lv/L21.szx@2097
@@ -90,7 +101,8 @@ what the generator does with it, the part files); every file of a case and the c
 | --- | --- |
 | `case-template/` | the skeleton of a new case: README, WALKTHROUGH sections, the twelve documents with their figure lists, `case.json`, `src/game/game.ann`, `src/res/README.md`, `tools/build.sh`, a bytes-only `tools/res_formats.py` |
 | `tapblocks.py list FILE.tap` | the blocks of a tape: lengths, header fields, the play time at ROM speed, checksums |
-| `tapblocks.py FILE.tap N OUT` | one block's data |
+| `tapblocks.py list FILE.tzx` | the same for a TZX (by the `ZXTape!` magic): every TZX 1.20 block (`10`-`19`, `20`-`28`, `2A`, `2B`, `30`-`35`, `40`, `5A`), the loop blocks `24`/`25` of MakeTZX dumps included, the play time; a damaged file prints what it read and `stopped: block id ... at offset ...` (exit 1); `parse_tzx`, `tzx_seconds`, `tzx_describe`, `tzx_block_data` for a case's tools (Enduro Racer's `tools/tzxblocks.py` is a wrapper) |
+| `tapblocks.py FILE.tap N OUT` | one block's data (a TZX: the data block's bytes, flag and checksum included) |
 | `tap.py` | writes a tape of standard ROM blocks (the build's last step); a `basic` header's program length is the program without its variables, found as SAVE writes it (or given: `basic:NAME:LINE:FILE:LENGTH`) |
 | `mkgame.py --case C` | `src/game/*.asm` from `game.ann` (`src/main`, `main.ann` in a case whose `case.json` names `"main": "main"`) ([format](../docs/ann-format.md)), the recordings' `l1.json` and the image `case.json` names; refuses to install unless sjasmplus gives the image's bytes |
 | `mkgame.py --part F.json` / `--image BIN --org A ...` | any other code image the same way: a loader, a menu, a bank, an image of several segments or pieces ([part files](../docs/ann-format.md#5-parts-banks-and-pieces)) |
@@ -98,6 +110,9 @@ what the generator does with it, the part files); every file of a case and the c
 | `cells.py` (a module) | sprite cells of no fixed stride (an attribute and 8 lines, or one marker byte for an empty cell) as a res format: `export(data, pieces(objects, base))` gives `{".png", ".csv"}` (each piece the object table points at drawn at a place of its own, index 0 paper, 1 ink, 2 no pixel; the CSV a line a piece in byte order: place, size, object numbers, an attribute a cell or `-`, and `bytes` lines for what no piece holds), `build(files)` the bytes from the two files alone; `empty` (`$36`) and `attr` (`first` / `last`) are kept in the CSV's first line. R-Type's `graphics/sprites` and `levels/levelN/sprites` |
 | `ctl2ann.py DRAFT.ctl --out F.ann` | a first `.ann` from `re_session.py`'s `draft.ctl` (or an L2 export JSON) |
 | `toolpaths.py` | finds sjasmplus, the SkoolKit venv, unreal-ng and its `re_session.py` (above) |
+| `toolpaths.py build [BINARY]` | which unreal-ng commit a binary holds (`kGitCommit` of the build dir's `buildinfo.h`; the worktree's HEAD when the binary is newer than that commit) and whether it holds the fixes a recipe needs (`FIXES`: f13cee7da, the ended tape's last edge, recipe 02); exit 2 when one is lacking. `rs.py open` / `capture` print the same warning |
+| `handler_time.py (--trace F.uatr \| --work W --window F:T-F:T) [--exit ADDR] [--ann F.ann] [--json OUT]` | the length of each interrupt entry in a trace window, however the handler leaves: it ends where the PC is back at the interrupted address with SP above the pushed word (RET, RETI, a patched `JP nn`: Enduro Racer `$643C` -> `JP $6523`); `--exit` ends it at an address instead; the mean, least, most and a per-routine split. `rs.py interrupts` prints the kit's estimate from L1 beside re_session's (wrong for a JP exit) |
+| `last_frames.py --work W [--reset F] [--frames 100] [--into W2] [--dry-run]` | the last N frames before a reset: the frame the ROM's `$0000` ran (from W/l1.json, or `--reset`), `rs.py build` over the N frames before it, then the calls into `$0000`/`$0008`/`$0038` from the game, the code first run in the window (the crash's path) and what ran last; `--l1 L1` alone reports from a built L1 |
 | `rs.py ARGS` | runs unreal-ng's `re_session.py` with ARGS (`open`, `build`, `stop`, ...; above); checks `capture --inputs` scripts and splits their `W+O` chords; `capture --stop` stops the instance after it, `capture --expect STATE[@FRAME]` checks that the replay reaches the live run's state |
 | `z80sim.py` (a module) | SkoolKit's simulator for a case's tools: `run(memory, start, stop, registers)` gives the memory after the run, `simulator(memory, registers)` one for several runs. `CSimulator` (SkoolKit's C one, about 50 times faster) works on its own copy of the memory: read and poke through `sim.memory`, never the bytearray passed in (`python3 kit/z80sim.py --self-test` shows it); the pure Python `Simulator` works in that bytearray itself. SkoolKit is found as `toolpaths.py` finds the venv |
 | `ann_names.py --case C [--ann F] [--names FILE] ADDR=Name ...` | names labels inside entries of `game.ann` (or F); `--names FILE` reads the pairs from a file, `ADDR=Name` a line or several on a line, `#` comments (a list of 101 names is one word as `$(cat names.txt)` in zsh) |
@@ -127,12 +142,13 @@ what the generator does with it, the part files); every file of a case and the c
 | `built` | `{NAME: PATH}`: resources the build makes (a loader stage, a player): the game's `INCBIN "res/NAME"` is installed as `INCBIN "PATH"` and NAME is not installed, optional |
 | `dest`, `work`, `res_install`, `operands`, `mode`, ... | any key of a part file ([ann-format.md 5.2](../docs/ann-format.md#52-part-files)), optional |
 | `ref_builds` | `[key, text]` of the builds docs 11 and 12 report first (each its own Runs row); the other recordings count after them |
-| `witness_skip` | builds of `read_builds` / `code_builds` left out of the `.ann`'s witness counts, optional |
+| `witness_skip` | builds of `read_builds` / `code_builds` left out of the `.ann`'s witness counts, optional; `--fix-witness` drops these from the witness lines, and any build no list names any more ("left the lists"); a listed build whose recording this run did not load is kept |
 | `witness_builds` | recordings that count in the witness lines only (a fuel failure, an armour test), optional |
 | `witness_names` | `{build: name}` for a witness list: a windowed copy of a recording under its recording's name (Battle Command `{"stage1/c1g": "c1"}`), optional |
 | `ref_parts` | part files (`"src/bank3/bank3.json"` or `[path, title]`) docs 11 and 12 cover after the game, a section each (a part of segments a section a segment with an `.ann`, "Title: segment title"), optional; a part file's `ref_builds` (else the case's) are its first builds, its other `l1` sources the others (`other_builds` overrides them; `[]` for none) |
 | `ref_skip_moves` | `true`: doc 11's readers and writers leave out the block moves, the bytes an L1 loop copies (a read and a write stride of step 1 or -1 over as many bytes, 16 or more in a range: `LDIR`, `LDDR`, an in-place decryption; not an `LDIR` fill, whose destination is its source a byte on) or loads (a write stride alone whose store wrote code a recording later ran, an L1 arrival's writer: a tape loader, a depacker of code); doc 12's Reads and Writes keep them. A part file's own key for a part. Optional |
-| `ref_load_end` | `{build: frame}`: the frame from which a recording that loads the game (`stage1/c1`) runs the game's image; its routines first run before it (a loader at the game's addresses) write no entry's "Written by" (Switchblade: the tape loader at `$FF00`, whose block writes fell to DrawMeter `$FF7C`); for mkgame's walk, a read build with a frame here reads only the bytes it still accessed from that frame on (L1 `byte_counts` `last_frame`: the ROM's RAM test and the tape load read every byte before; a part file's source: `load_end`), so the recording can be a read build (Rick Dangerous 2: `c1` 13 998, `c48` 14 243), optional |
+| `ref_load_end` | `{build: frame}`: the frame from which a recording that loads the game (`stage1/c1`) runs the game's image; its routines first run before it (a loader at the game's addresses) write no entry's "Written by" (Switchblade: the tape loader at `$FF00`, whose block writes fell to DrawMeter `$FF7C`); for mkgame's walk, a read build with a frame here reads only the bytes it still accessed from that frame on (L1 `byte_counts` `last_frame`: the ROM's RAM test and the tape load read every byte before; a part file's source: `load_end`), so the recording can be a read build (Rick Dangerous 2: `c1` 13 998, `c48` 14 243); a byte whose last reader (L1 `byte_use`) is the load's, an instruction that first ran before the frame and last ran in it or before, is not read either: its later accesses were writes (Enduro Racer: Mover's `LDDR` and BikeRoadPlace's writes to `$9ADA`), optional |
+| `ref_read_end` | `{build: frame}`: a recording that crashes into the ROM at that frame (the ROM's `$0000`; `last_frames.py` finds it): mkgame takes its reads first made before the frame (by a reader first run before it) and its instructions first run before it, so the RAM test and the crash's path through data count for nothing (Enduro Racer `reset3`: 6759); refdocs leaves the recording out of docs 11 and 12 (L1's profiles cannot be cut by frame); give it `witness_skip` too to keep the witness counts, optional |
 | `res_comments` | `true`: the row comments inside `@res` entries stay in the sources as comment lines before their `INCBIN` slice (every part of the case; a part file may set its own), optional |
 | `overlay` | a buffer laid over code once play starts (`lo`, `hi`, `name`, `why`), optional |
 | `header`, `data_note` | the first comment lines of `game.asm`; a sentence for doc 11, optional |
@@ -298,7 +314,7 @@ yellow fading through red, trails dark.
 
 | Script | Draws | From |
 | --- | --- | --- |
-| `routine_anim.py` | a routine at work: memory map lit by age, the screen or buffer it draws into, the listing window, the registers | an access trace |
+| `routine_anim.py` | a routine at work: memory map lit by age, the screen or buffer it draws into, the listing window, the registers; the GIF records its command (`--title` in full; `routine_anim.py --command GIF` prints it; memanim and screen_anim too), check_docs compares captions with it and flags two captions writing one file | an access trace |
 | `writers_map.py` | code vs screen: each byte of the screen or a buffer coloured by the routine (or instruction) that wrote it, the data it read, a zoom | an access trace |
 | `beam_timeline.py` | code vs the beam: the routines along a frame's T-states (frame T, the INT marked), every screen write against the raster | an access trace |
 | `memanim.py` | memory over a longer stretch (a load, an unpack, a level set-up) | `memory_at` samples |
@@ -306,7 +322,7 @@ yellow fading through red, trails dark.
 | `screen_shot.py` | the screen at named moments | `memory_at` |
 | `merge_l1.py OUT.json L1 ... [--stack LO-HI]` | several L1 builds summed into one for `heatmap.py` (pages 5, 2, 0; the frames summed); `--stack` prints each build's lowest SP in that range (the lowest byte a `PUSH`, `CALL`, `RST` or an interrupt wrote: the L1's `byte_use` stack-write flag; Rex `5C00-6017`: `$5FE2` to `$5FDA` over the object records) and its lowest data write (the low mark where the stack is also written as data, `LD SP` over a buffer: Switchblade `5B00-5BFF`, Myth `FF00-FFFF`); give play windows, a load's stack counts too | `l1.json` |
 | `heatmap.py` | executed / read / written per byte over a build; `--panels` (any of `executed,read,written,composite`), `--columns` (2), `--regions` (a file of `START END NAME` lines, or inline `START-END:NAME,...`), TrueType text that reads at 900 px | `l1.json` |
-| `fig_budget.py` | where the CPU time goes: each routine's (or module's) own T-states as a share of all the frames, coloured by module; several `.ann` parts (page, range), HALT and the ROM apart, a panel per state | `l1.json` |
+| `fig_budget.py` | where the CPU time goes: each routine's (or module's) own T-states as a share of all the frames, coloured by module; several `.ann` parts (page, range), HALT and the ROM apart, a panel per state; the L1 may be a trace window instead (`FILE.uatr` or `W@F:T-F:T`: one pass's per-routine T-states from the trace's instruction times, cached in W/traces), OUT `-` prints the table only | `l1.json` or an access trace |
 | `zxscreen.py` | a 6912-byte screen or a 64 K image to PNG | a file |
 
 The access trace is unreal-ng's `analysis trace` (docs/emulator/analysis/analysis-layers.md, "Access trace"): one

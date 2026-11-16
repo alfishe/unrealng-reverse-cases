@@ -241,8 +241,9 @@ def main():
     durations = [args.delay] * (len(pictures) - 1) + [args.hold]
     if os.path.exists(args.out):
         print(f'note: {args.out} exists and is replaced (a second animation of one routine: NAME-what.gif)')
+    import kitlib
     pictures[0].save(args.out, save_all=True, append_images=pictures[1:], duration=durations, loop=0,
-                     optimize=True)
+                     optimize=True, comment=('command: ' + kitlib.tool_command()).encode('utf-8'))
     print(f'{args.out}: {len(pictures)} pictures')
 
 

@@ -132,14 +132,23 @@ class Source:
                   "no_entries" naming the build: a recording started from a snapshot, whose jumps out of the routine
                   it started in look like routine starts)
         load_end  with reads: the frame from which the recording runs this image (case.json "ref_load_end", a
-                  part's source "load_end"): only the bytes it still accessed from that frame on count as read, so the
+                  part's source "load_end"): only the bytes it still read from that frame on count as read, so the
                   ROM's RAM test at power-on and a tape load, which read every byte before, stop no walk (L1
-                  byte_counts' last_frame: a byte whose last access came before is left out)
+                  byte_counts' last_frame: a byte whose last access came before is left out; and a byte whose last
+                  reader, byte_use's, is the load's, an instruction that first ran before that frame and last in it
+                  or before: its later accesses were writes, e.g. a mover's LDDR read it at the load and the game
+                  only writes it after; read_frames)
+        read_end  with reads: the frame at which the recording stops running this image (case.json "ref_read_end",
+                  a part's source "read_end": a crash into the ROM, whose RAM test then reads every byte): a byte
+                  first accessed at or after it, or whose first reader first ran at or after it, is not read;
+                  an instruction that first ran in that frame or after (the crash's path through data, the frame
+                  the ROM's $0000 ran) is not one of its instructions
     """
 
-    def __init__(self, path, reads=False, lo=None, hi=None, roots=True, fmt='l1', optional=False, load_end=None):
+    def __init__(self, path, reads=False, lo=None, hi=None, roots=True, fmt='l1', optional=False, load_end=None,
+                 read_end=None):
         self.path, self.reads, self.lo, self.hi, self.roots, self.format = path, reads, lo, hi, roots, fmt
-        self.optional, self.load_end = optional, load_end
+        self.optional, self.load_end, self.read_end = optional, load_end, read_end
         self.same_bytes, self.skip, self.entries = False, [], True
 
     def skipped(self, a):
@@ -148,14 +157,14 @@ class Source:
     @staticmethod
     def parse(spec, root, read_builds=()):
         """a source from a part file: "PATH" or {"path", "reads", "lo", "hi", "roots", "format", "optional",
-        "load_end"}"""
+        "load_end", "read_end"}"""
         if isinstance(spec, str):
             spec = {'path': spec}
         path = os.path.join(root, spec['path'])
         reads = spec.get('reads', os.path.basename(os.path.dirname(path)) in read_builds)
         return Source(path, reads, hexa(spec['lo']) if 'lo' in spec else None,
                       hexa(spec['hi']) if 'hi' in spec else None, spec.get('roots', True), spec.get('format', 'l1'),
-                      spec.get('optional', False), spec.get('load_end'))
+                      spec.get('optional', False), spec.get('load_end'), spec.get('read_end'))
 
 
 EXECS = {}  # l1.json path -> {address: [(page, bytes, runs, self-modified)]}, filled by read_sources
@@ -163,6 +172,47 @@ EXECS = {}  # l1.json path -> {address: [(page, bytes, runs, self-modified)]}, f
 # them in any recording): a recording that starts from a snapshot taken inside a routine; write_ctl starts no entry
 # there when the code before falls into it (a mid-routine root), unless the .ann makes it one
 ROOT_ONLY = set()
+
+
+def read_frames(doc):
+    """{page: (first, last, first readers, last readers)} of an L1, for a read build with a load_end or read_end:
+    first / last the frames (counted from the replay's first, as byte_counts' are) in which the instruction at each
+    offset of the page first and last ran (its routines' profiles: the executes ranges with their first_frame /
+    last_frame; -1 where no routine holds it), the readers each byte's first and last reading instruction as
+    (page, offset) from byte_use (None where byte_use has no row)"""
+    base = doc['replay'].get('first_frame', 0)
+    ran = {}
+    for r in doc['routines']:
+        p = r['profile']
+        if not p.get('entries') and not p.get('active_frames') and not p.get('tstates'):
+            continue
+        f0, f1 = p.get('first_frame', 0) - base, p.get('last_frame', 0) - base
+        for x in p.get('executes', ()):
+            page = x.get('page', r['page'])
+            lo, hi = int(x['from'][1:], 16) & 0x3FFF, int(x['to'][1:], 16) & 0x3FFF
+            first, last = ran.setdefault(page, ([1 << 30] * 0x4000, [-1] * 0x4000))
+            for k in range(lo, hi + 1 if hi >= lo else 0x4000):
+                if f0 < first[k]:
+                    first[k] = f0
+                if f1 > last[k]:
+                    last[k] = f1
+    readers = {}
+    for row in doc.get('byte_use', ()):
+        page, offset, length = row[0], row[1], row[2]
+        fr = None if row[4] == 0xFFFF else (row[4], row[5] & 0x3FFF)
+        lr = None if row[6] == 0xFFFF else (row[6], row[7] & 0x3FFF)
+        firsts, lasts = readers.setdefault(page, ([None] * 0x4000, [None] * 0x4000))
+        for k in range(offset, min(0x4000, offset + length)):
+            firsts[k], lasts[k] = fr, lr
+    return ran, readers
+
+
+def reader_ran(ran, key, which):
+    """the first (which 0) or last (1) frame the instruction at key (page, offset) ran, or None"""
+    if key is None or key[0] not in ran:
+        return None
+    f = ran[key[0]][which][key[1]]
+    return None if f < 0 or f >= 1 << 30 else f
 
 
 def add_runs(ran, doc, bases):
@@ -198,6 +248,7 @@ def read_sources(sources, mem, lo, hi, bases, mode='instructions', same_bytes=Fa
                 EXECS[path] = {}  # this segment's pages: never added to an earlier segment's (or call's) runs
                 add_runs(EXECS[path], doc, bases)
             src_same = same_bytes or src.same_bytes
+            frames = None
             own = set()  # this recording's instruction starts (same_bytes: its entries only there)
             if src.format == 'trace':
                 for a, n in doc['starts'].items():
@@ -227,10 +278,15 @@ def read_sources(sources, mem, lo, hi, bases, mode='instructions', same_bytes=Fa
                     if a == last + 1:
                         starts.update(block)
             else:
+                frames = read_frames(doc) if src.load_end is not None or src.read_end is not None else None
                 for z80, page, code, *_ in doc['instructions']:
                     a = int(z80[1:], 16)
                     raw = bytes.fromhex(code)
                     if a < wlo or page not in bases or a + len(raw) > whi or src.skipped(a):
+                        continue
+                    # read_end: an instruction that first ran in that frame or after is the crash's, not the game's
+                    if src.read_end is not None and (reader_ran(frames[0], (page, a & 0x3FFF), 0) or 0) >= \
+                            src.read_end:
                         continue
                     # The opcode as the image holds it (an operand may be self-modified)
                     if decode(mem, a)[0] == len(raw) and mem[a] == raw[0] and \
@@ -264,13 +320,34 @@ def read_sources(sources, mem, lo, hi, bases, mode='instructions', same_bytes=Fa
             # their reads say nothing
             if not src.reads:
                 continue
+            if frames is None and (src.load_end is not None or src.read_end is not None):
+                frames = read_frames(doc)
             for page in doc.get('byte_counts', []):
                 base = bases.get(page['page'])
                 if base is not None:
                     last = page.get('last_frame') if src.load_end is not None else None
+                    first = page.get('first_frame') if src.read_end is not None else None
+                    firsts, lasts = frames[1].get(page['page'], (None, None)) if frames else (None, None)
                     for i, n in enumerate(page['reads']):
-                        if n and wlo <= base + i < whi and (last is None or last[i] >= src.load_end):
-                            reads[base + i] += n
+                        if not n or not wlo <= base + i < whi:
+                            continue
+                        if last is not None:
+                            if last[i] < src.load_end:
+                                continue
+                            # the last reader is the load's: it first ran before load_end and not after its
+                            # frame (a mover that ends in the entry's frame): the later accesses were writes
+                            key = lasts[i] if lasts else None
+                            f0, f1 = reader_ran(frames[0], key, 0), reader_ran(frames[0], key, 1)
+                            if f1 is not None and f0 < src.load_end and f1 <= src.load_end:
+                                continue
+                        if first is not None:
+                            if first[i] >= src.read_end:
+                                continue
+                            # the first reader first ran at or after read_end: every read came after it
+                            f = reader_ran(frames[0], firsts[i] if firsts else None, 0)
+                            if f is not None and f >= src.read_end:
+                                continue
+                        reads[base + i] += n
     if same_bytes:  # a routine whose bytes another program later put there is not one of this image's
         entries &= starts
     ROOT_ONLY.clear()
@@ -645,11 +722,16 @@ class Annotations:
             return self.inline[a][0]
         return None
 
-    def fields(self):
-        """{address: name} of the inner names on the first address of a data entry that has a name of its own (a
-        record's first field): a second label there, the name of the LDs through memory at that address"""
+    def fields(self, through=()):
+        """{address: name} of the inner names on the first address of an entry that has a name of its own: a data
+        entry's (a record's first field) or, where an instruction reads or writes that address through memory
+        (through: the nn of the (nn) operands), a code entry's (a variable the code later keeps over its own first
+        bytes, Enduro Racer's KeyItem on Start $8000): a second label there, the name of the LDs through memory at
+        that address. A code entry's inner name no (nn) uses (a loop's name on its first instruction) stays as
+        before: the entry's label only"""
         return {a: self.inline[a][0] for a, (kind, name, _, _) in self.entries.items()
-                if kind != 'c' and LO <= a < HI and name and self.inline.get(a, (None,))[0] not in (None, name)}
+                if LO <= a < HI and name and self.inline.get(a, (None,))[0] not in (None, name) and
+                (kind != 'c' or a in through)}
 
     def cut(self):
         """the walk's filter of branch targets: none into @over addresses, and none into an @bank address from an
@@ -1554,7 +1636,7 @@ def generate(seg, mem, args, out, top):
     ports = {a: t for a, t in port_loads(sk).items() if a not in written and a not in listed}
     written.update(ports)
     isubs = dict(written)
-    fields = ann.fields()
+    fields = ann.fields({int(x, 16) for x in re.findall(r'^[ c*]\$[0-9A-F]{4} [^;\n]*\(\$([0-9A-F]{4})\)', sk, re.M)})
     sk, inner = label_inner_addresses(sk, written, seg.operands, fields)
     if written:
         sys.exit('%s: @isub on no instruction: %s' % (os.path.relpath(seg.ann, ROOT),
@@ -2185,6 +2267,17 @@ def check_witness(seg, skip=(), fix=False, mem=None):
             same, skips = seg.build_options(path)
             builds[build] = Runs(ran, mem, 'all' if same else match, windows, skips)
     known = {build_name(b) for b in builds}
+    # the names the segment's lists still give (its sources and witness builds, less skip), loaded or not: a line's
+    # name outside them is a build that left the lists (--fix-witness drops it); one inside them whose recording
+    # this run did not load is kept. A glob source may name any build: then every name is listed
+    listed, globbed = set(), False
+    for path in [x.path for x in seg.sources] + list(seg.witness):
+        if any(c in path for c in '*?['):
+            globbed = True
+            continue
+        b = os.path.relpath(os.path.dirname(path), work)
+        if b not in skip:
+            listed.update({build_name(b), build_name(b, renames=False)})
     # the names a build had before witness_names renamed it (its own name, its path): a line that still gives one
     # is the renamed build's, and --fix-witness writes the new name
     former = {}
@@ -2246,14 +2339,17 @@ def check_witness(seg, skip=(), fix=False, mem=None):
             had = witness_items(w.group(2))
             renamed = sorted(x for x in had if x in former)
             unknown = sorted(x for x in had if x not in known and x not in former and not re.match(r'.* x\d+$', x))
-            dropped = sorted(had - witness_items(names) - set(unknown) - set(renamed) -
+            left = [] if globbed else sorted(x for x in unknown if x not in listed)
+            unknown = [x for x in unknown if x not in left]
+            dropped = sorted(had - witness_items(names) - set(unknown) - set(renamed) - set(left) -
                              {x for x in had if re.match(r'.* x\d+$', x)})
             # an entry no build ran at all (data, or code no recording reaches) is no build's miss: nothing said
-            print('witness: %s:%d $%04X %s: L1 %s (%s), the builds give L1 %d (%s)%s%s%s' % (
+            print('witness: %s:%d $%04X %s: L1 %s (%s), the builds give L1 %d (%s)%s%s%s%s' % (
                 os.path.relpath(seg.ann, ROOT), i + 1, entry[0], entry[2] or '', w.group(1), w.group(2), n, names,
                 ('; %s ran no instruction there' % ', '.join(dropped)) if dropped and n else '',
                 ('; renamed (witness_names): %s' % ', '.join('%s is %s' % (x, former[x]) for x in renamed))
                 if renamed else '',
+                ('; %s left the lists (case.json builds, witness_skip)' % ', '.join(left)) if left else '',
                 ('; kept: %s not among the builds' % ', '.join(unknown) if unknown else ': rewritten') if fix else ''))
             if unknown:
                 return w.group(0)
@@ -2393,11 +2489,13 @@ def case_builds(config):
     code_builds (instructions only), never every work/*/l1.json; a build in both lists is read once, as a read build
     (its runs counted once in the witness lines); a build case.json "no_roots" names (globs) as a part file's
     {"roots": false}: a recording started from a snapshot makes no entry at its start PC; a read build with a frame
-    in case.json "ref_load_end" reads only the bytes it still accessed from that frame on (Source load_end)"""
+    in case.json "ref_load_end" reads only the bytes it still read from that frame on (Source load_end), one in
+    "ref_read_end" only those it read before that frame (Source read_end: a crash into the ROM)"""
     rootless = config.get('no_roots', ())
     if isinstance(rootless, str):
         rootless = [rootless]
     load_end = config.get('ref_load_end', {})
+    read_end = config.get('ref_read_end', {})
 
     def source(b, reads):
         spec = {'path': os.path.join('work', b, 'l1.json'), 'reads': reads}
@@ -2405,6 +2503,8 @@ def case_builds(config):
             spec['roots'] = False
         if reads and b in load_end:
             spec['load_end'] = load_end[b]
+        if reads and b in read_end:
+            spec['read_end'] = read_end[b]
         return spec
     read = list(dict.fromkeys(config.get('read_builds', ())))
     return [source(b, True) for b in read] + \

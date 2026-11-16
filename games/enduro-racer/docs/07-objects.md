@@ -709,7 +709,8 @@ reaches its JP (IY) at T 44 525 and goes to DrawSprite `$8F29`.
 *ObjectWalk and DrawObject in frame 15 015 of `c1`, with the back buffer `$EB00` as 32 × 152 bytes under the memory
 map; the sprite routines show as "other". Command: `python3 ../../kit/routine_anim.py --work work/docs/integrate/c1 --window
 15015:42600-15015:69300 --listing build/game.lst --pc 9F18-A0AF,A6D9-A839 --view buffer:EB00:32x152:rows --range
-EB00-FDFF --pictures 60 --title "..." --out docs/img/routines/ObjectWalk.gif`.*
+EB00-FDFF --pictures 60 --title "ObjectWalk and DrawObject, c1 frame 15015: the elements ahead drawn into the back
+buffer" --out docs/img/routines/ObjectWalk.gif`.*
 
 The point: the near sprites, the big ones, are drawn byte-aligned. They move many pixels a pass, so the lost 0-7 pixels
 do not show, and the shift is saved where it costs most.

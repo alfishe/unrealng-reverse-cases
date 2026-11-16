@@ -27,6 +27,9 @@ case.json keys read here (beside mkgame.py's):
     "ref_load_end": {"stage1/c1": 15505}     (optional) per recording, the frame from which it runs the game's
                                image: a routine first run before it ran during the load (a loader at the game's
                                addresses), its writes are the blocks landing and are no entry's "Written by"
+    "ref_read_end": {"stage1/rec/reset3": 6759}   (optional; mkgame's) a recording that crashes into the ROM at
+                               that frame: left out of docs 11 and 12 (L1's routine profiles cannot be cut by
+                               frame), mkgame still takes its reads and instructions before the frame
     "ref_skip_moves": true     (optional; a part file's own key for a part) doc 11's readers and writers leave out
                                the block moves: an L1 loop that copies (a read and a write stride of step 1 or -1
                                over as many bytes, 16 or more: LDIR, LDDR, an in-place decryption; not an LDIR
@@ -691,8 +694,11 @@ def reference(v, config):
     # writes count too) and code_builds (runs, calls and callers only: their reads may be a depacker's input)
     ref_keys = [k for k, _ in BUILDS]
     read_keys = set(ref_keys) | set(v.read_builds)
+    # a recording with a "ref_read_end" (a crash into the ROM) is left out: L1's routine profiles hold no frames, so
+    # the crash's reads, writes and calls cannot be cut from the game's; mkgame cuts its reads and instructions
+    crashed = set(config.get('ref_read_end', {})) - set(ref_keys)
     every = [k for k in dict.fromkeys(ref_keys + list(v.read_builds) + list(v.code_builds))
-             if k in ref_keys or os.path.exists(os.path.join(ROOT, 'work', k, 'l1.json'))]
+             if k not in crashed and (k in ref_keys or os.path.exists(os.path.join(ROOT, 'work', k, 'l1.json')))]
     builds = {}  # the ref builds (their totals)
     # Per routine entry of the game: what each build saw
     seen = {}

@@ -214,7 +214,7 @@ $8000 c Start ; JP Init: the entry Mover jumps to; its three bytes and the 181 a
 > After the start $8000-$8002 hold variables (MenuItem $8001, KeyItem $8000, WaitCount $8002-$8003) and $8000-$80B7 is the line buffer of the sprite routines (DrawShifted, DrawMirrored, BuildRoadRows: up to 184 bytes).
 > Recorded: c1 frame 11646: Mover's JP $8000.
 > Witness: L1 2 (c1, m128).
-@alias KeyItem Start ; after the start: the item MenuSelect is on (also DEFINE KEYS' key being set)
+$8000 KeyItem ; after the start KeyItem: the item MenuSelect is on (also DEFINE KEYS' key being set)
 @alias MenuItem Start+1 ; after the start: the main menu's item
 @alias WaitCount Start+2 ; after the start: WaitKey's count (two bytes, over $8003)
 @alias LineBuffer Start ; after the start: the sprite routines' line buffer $8000-$80B7
@@ -246,9 +246,6 @@ $8178 c Menu ; The main menu: draw it, MenuSelect, then the item's action
 @isub $817F LD (MenuItem),A
 @isub $81E3 LD A,(MenuItem)
 @isub $81F1 LD (MenuItem),A
-@isub $824F LD (KeyItem),A
-@isub $8280 LD A,(KeyItem)
-@isub $8293 LD (KeyItem),A
 @isub $822D LD DE,$FE20 ; not RowTable: PatchControls' D and E, port $FE and JR NZ
 @isub $82CD LD DE,$FE20
 $818C MenuDraw ; redraw the menu (the actions come back here)
@@ -356,13 +353,9 @@ $85F9 c MenuSelect ; Highlight item A of menu HL, colour E, until SPACE or fire 
 > HL = a list: the count, then four bytes an item (line, column, attribute, length), the PrintList layout of the same texts. The item's bar (column - 1, length + 2) gets attribute (attr AND $47) OR E (PaintAttrs; RestoreBar puts it back). WaitKey $04E2: SPACE (3) or ReadControls = brakes only picks; THROTTLE moves up (MenuUp), any other key down, wrapping.
 > Recorded: c1, m128, ctl.
 > Witness: L1 29 (c1, ctl, m128, twoplayer).
-@isub $85F9 LD (KeyItem),A
-@isub $8605 LD A,(KeyItem)
-@isub $863C LD A,(KeyItem)
 $8624 MenuColour ; OR n: n = the highlight colour E
 $8644 c MenuUp ; THROTTLE: the item before (wrapping)
 > Known only from the code: the recordings moved down only.
-@isub $8650 LD (KeyItem),A
 $864B MenuDown ; the next item, wrapping to 0
 $8658 c RestoreBar ; PaintAttrs with the bar's saved BC and DE (the operands at $8659 and $865C, written by MenuSelect)
 > Witness: L1 61 (c1, ctl, m128, twoplayer).
@@ -598,8 +591,7 @@ $942F DrawRoadNext ; next line
 $9439 DrawRoadEnd ; MultiplyEnd = RET; SP back
 $9443 DrawRoadOff ; the row is off the road's table: skip its line
 $9446 DrawRoadRun ; a run of lines of one row: the edges interpolated line by line (slopes by Divide)
-$9562 b RoadRunOp ; One opcode the run writes per line: $BF (CP A) or $23 (INC HL), executed after POP DE
-> DrawRoadRun writes it at $94B2 and $95F1. L1 has the byte executed in every recording; the kit keeps it as a byte because its instruction changes.
+$9562 RoadRunOp ; the opcode the run writes per line ($94B2, $95F1): $BF (CP A) or $23 (INC HL), run after POP DE
 $9563 c DrawRoadRunLine ; One line of a run: the left edge, the right edge at the interpolated x, then the slopes added
 > Witness: L1 142770 (c1, crash, ctl, m128, names, stages, tech-brake-bend, tech-cheat, tech-land-wheelie, tech-ramp-wheelie, truck, twoplayer).
 $9601 c DrawRoadRunOff ; A run whose row is off the table: SP past its lines, MultiplyEnd = JP again, on to DrawRoadNext
@@ -681,7 +673,6 @@ $9A91 c RoadNone ; Stage 5's road routine: IX = RowList, no drawing
 > Recorded: stages: stage 5.
 > Witness: L1 456 (fall5, stages).
 @isub $9A91 LD IX,RowList
-@code $9A96-$9CAE ; the reads are the tape load's (Mover's LDDR); L1's last_frame also counts BikeRoadPlace's later writes to $9ADA/$9B59, so load_end does not drop them
 $9A96 c RoadRowsOld ; A row builder no stage uses: rows into the line buffer at $8000, edges from $75B0
 > 537 bytes. It sets MultiplyEnd = RET, fills the buffer with per-line x positions (Divide's slopes, like DrawRoadRun) and draws from it with IX = $75B0. No StageParams entry and no instruction points at it. Known only from the code.
 @isub $9A96 LD HL,LineBuffer
@@ -916,8 +907,7 @@ $ADB2 ; WHEELIE: Wheelies + 1, pose 0
 $ADC4 ; riding: the lean from LEFT and RIGHT, or back toward 0
 $AE15 ; the sideways speed: SteerTable * LeanTable / 8, at most 5
 $AE60 BikeLateral ; the bend's push (factor by the bend, bits 0-1) and the sideways speed into LateralX, kept within the road's scale; the jump's height
-$AE63 b BendOp ; ADD A,A on stages 2 and 4, NOP elsewhere (StartRace writes it): the bend's push doubled there
-> L1 has the byte executed in every recording; the kit keeps it as a byte because StartRace changes the instruction.
+$AE63 BendOp ; the opcode StartRace writes: ADD A,A on stages 2 and 4 (the bend's push doubled there), NOP elsewhere
 $AE64 c BikeLateralPush ; The push: (ScrollStep's high byte, doubled on stages 2 and 4) * the bend's factor ($52, $8F, $A4; BendPrev holds the bend), signed by BendDir; HorizonSpeed too
 > Then LateralX += the sideways speed (BounceSpeed added during a bounce) + the push, clamped to $A4-$5C. In the air: JumpHeight += JumpSpeed, JumpSpeed -= $02F0; the landing (below the road's line) ends the jump: pose 3, lean 0, Wheelies 0, and with WHEELIE not held a 6-pass bounce.
 > Witness: L1 4934 (c1, crash, ctl, fall5, m128, names, stages, tech-brake-bend, tech-cheat, tech-land-wheelie, tech-ramp-wheelie, truck, twoplayer).

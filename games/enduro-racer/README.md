@@ -1,6 +1,6 @@
 # Enduro Racer (Activision, 1987)
 
-State: docs written, in review (2026-11-16): docs 01-10 by three writers, docs 11 and 12 generated, integrated; the
+State: complete (2026-11-16; two review rounds, kit gaps fixed): docs 01-10 by three writers, docs 11 and 12 generated, integrated; the
 tape builds identical from the sources. 12 documents, 86 figures (PNG), 47 animations (GIF), 67 mermaid diagrams and
 12 audio files (7 short WAV, the longest 3.5 s; 5 MP3 over 5 s: the two tunes, the two engines and the 128K race;
 3.0 MB), 14 recordings (WALKTHROUGH 6.0; three tries kept out), counted on 2026-11-16 with:

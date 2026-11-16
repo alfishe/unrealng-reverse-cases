@@ -397,7 +397,7 @@ l_AE15:
 BikeLateral:
   LD A,(ScrollStep+$0001)
 BendOp:
-  DEFB $87                ; ADD A,A on stages 2 and 4, NOP elsewhere
+  ADD A,A                 ; StartRace writes it: ADD A,A on stages 2 and 4, NOP elsewhere
 BikeLateralPush:
   LD L,A
   LD A,(BendPrev)         ; the bend, bits 0-1 of the segment

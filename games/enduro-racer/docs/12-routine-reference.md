@@ -25,9 +25,9 @@ follow the game, each under its own heading with its modules, its source, its an
 | [`flow`](#flow) | `$8755`-`$8E7C` | 16 of 28 |
 | [`render`](#render) | `$8E7D`-`$9110`, `$970C`-`$975A`, `$98EF`-`$9999` | 15 of 15 |
 | [`objects`](#objects) | `$9111`-`$9126`, `$917E`-`$9210`, `$9615`-`$970B`, `$975B`-`$98EE`, `$9F18`-`$9FBD`, `$A09A`-`$A142`, `$A21A`-`$A300` | 10 of 16 |
-| [`bike`](#bike) | `$9127`-`$917D`, `$9FBE`-`$A099`, `$A1C9`-`$A1CB`, `$A1D9`-`$A219`, `$ACDF`-`$AFFD`, `$AFFE`-`$B07C` | 14 of 17 |
+| [`bike`](#bike) | `$9127`-`$917D`, `$9FBE`-`$A099`, `$A1C9`-`$A1CB`, `$A1D9`-`$A219`, `$ACDF`-`$AFFD`, `$AFFE`-`$B07C` | 14 of 16 |
 | [`horizon`](#horizon) | `$9211`-`$931D`, `$99F0`-`$9A90`, `$9E3A`-`$9F17` | 13 of 16 |
-| [`road`](#road) | `$931E`-`$9614`, `$999A`-`$99EF`, `$9A91`-`$9E39`, `$A301`-`$A45C`, `$B07D`-`$B11C` | 15 of 19 |
+| [`road`](#road) | `$931E`-`$9614`, `$999A`-`$99EF`, `$9A91`-`$9E39`, `$A301`-`$A45C`, `$B07D`-`$B11C` | 15 of 18 |
 | [`race`](#race) | `$A143`-`$A1C8`, `$A1CC`-`$A1D8`, `$A45D`-`$ABA0`, `$ABA1`-`$ACDE` | 25 of 31 |
 
 ## entry
@@ -48,7 +48,7 @@ Witness: L1 1379 (c1, m128).
 | Runs (the other recordings) | 1,378 calls (`stage1/rec/m128` 1,378) |
 | Called from | `MoverTail` |
 | Calls | `Start` (tail) |
-| Reads | `$5B5C` (`RowListTail+28`); `$5BC4`-`$FA1F` (`BendRows+68`, `RoadLines`, `Riders`, `ReverseTable` and 242 more) |
+| Reads | `$5B5C` (`RowListTail+28`); `$5BC4`-`$FA1F` (`BendRows+68`, `RoadLines`, `Riders`, `ReverseTable` and 240 more) |
 | Ports out | `$7FFD` |
 
 ### `Start` (`$8000`)
@@ -126,8 +126,8 @@ Witness: L1 79550 (c1, crash, ctl, fall5, m128, names, stages, tech-brake-bend, 
 | --- | --- |
 | Runs (c1: a 48K from power-on, the TOSEC [SpeedLock 2] copy at signal speed, the menu tour, stage 1 to the time out) | 9,617 calls, 5,796,632 t-states own (0.39 %) |
 | Runs (the other recordings) | 69,933 calls (`stage1/rec/stages` 23,908, `stage1/rec/twoplayer` 21,272, `stage1/rec/m128` 5,226 and 9 more) |
-| Entered by | the interrupt, 79,550 times in 90 routines |
-| Calls | `PlayChannel`, `WriteMixer`, `AyWrite`, `LineAddress`, `EngineSound`, `Attract` (tail), `Menu` (tail), `PrintString` (tail), `PrintChar` (tail), `PrintGlyph` (tail), `PrintNumber` (tail), `DrawWindow` (tail), `DrawFrame` (tail), `SetAttr` (tail), `BigDigit` (tail), `ScrollUp` (tail), `ScanKeys` (tail), `WaitKeyTimeout` (tail), `Delay` (tail), `ReadControls` (tail), `ClearScreen` (tail), `DelayBC` (tail), `PrintList` (tail), `AddScore` (tail), `DrawScore` (tail), `NewGame` (tail), `PlayTurn` (tail), `RecordTie` (tail), `NameEntrySound` (tail), `Divide` (tail), `Multiply` (tail), `Copy32` (tail), `SetRowTable` (tail), `CopyRows` (tail), `DrawSprite` (tail), `DrawShifted` (tail), `ShiftCopyHead` (tail), `ShiftRightHead` (tail), `ShiftLeftHead` (tail), `BlitHead` (tail), `RotateRight1` (tail), `RotateLeft1` (tail), `DrawRoad` (tail), `RoadRunOp` (tail), `DrawRoadRunLine` (tail), `DrawRiders` (tail), `MirrorCarry` (tail), `GapRowsJump` (tail), `CopyBuffer` (tail), `RoadJumpRows` (tail), `HorizonScrollStep` (tail), `RoadRowsCrest` (tail), `RoadRowsFlat` (tail), `DrawHorizon` (tail), `HorizonHidden` (tail), `DrawObject` (tail), `DrawBike` (tail), `CountGlyphC` (tail), `MoveRidersLoop` (tail), `RiderNoRamp` (tail), `GroundTexture` (tail), `StartRace` (tail), `RacePass` (tail), `RampSpeed` (tail), `RiderBounce` (tail), `HudPlayer` (tail), `RaceQuit` (tail), `BeepTone` (tail), `TrackStep` (tail), `CrashSoundD` (tail), `BikeControl` (tail), `GetUpSlide` (tail), `AdvanceTrack` (tail), `SegmentDecode` (tail), `BikeRoadPlace` (tail), `ScrollBends` (tail) |
+| Entered by | the interrupt, 79,550 times in 89 routines |
+| Calls | `PlayChannel`, `WriteMixer`, `AyWrite`, `LineAddress`, `EngineSound`, `Attract` (tail), `Menu` (tail), `PrintString` (tail), `PrintChar` (tail), `PrintGlyph` (tail), `PrintNumber` (tail), `DrawWindow` (tail), `DrawFrame` (tail), `SetAttr` (tail), `BigDigit` (tail), `ScrollUp` (tail), `ScanKeys` (tail), `WaitKeyTimeout` (tail), `Delay` (tail), `ReadControls` (tail), `ClearScreen` (tail), `DelayBC` (tail), `PrintList` (tail), `AddScore` (tail), `DrawScore` (tail), `NewGame` (tail), `PlayTurn` (tail), `RecordTie` (tail), `NameEntrySound` (tail), `Divide` (tail), `Multiply` (tail), `Copy32` (tail), `SetRowTable` (tail), `CopyRows` (tail), `DrawSprite` (tail), `DrawShifted` (tail), `ShiftCopyHead` (tail), `ShiftRightHead` (tail), `ShiftLeftHead` (tail), `BlitHead` (tail), `RotateRight1` (tail), `RotateLeft1` (tail), `DrawRoad` (tail), `DrawRoadRunLine` (tail), `DrawRiders` (tail), `MirrorCarry` (tail), `GapRowsJump` (tail), `CopyBuffer` (tail), `RoadJumpRows` (tail), `HorizonScrollStep` (tail), `RoadRowsCrest` (tail), `RoadRowsFlat` (tail), `DrawHorizon` (tail), `HorizonHidden` (tail), `DrawObject` (tail), `DrawBike` (tail), `CountGlyphC` (tail), `MoveRidersLoop` (tail), `RiderNoRamp` (tail), `GroundTexture` (tail), `StartRace` (tail), `RacePass` (tail), `RampSpeed` (tail), `RiderBounce` (tail), `HudPlayer` (tail), `RaceQuit` (tail), `BeepTone` (tail), `TrackStep` (tail), `CrashSoundD` (tail), `BikeControl` (tail), `GetUpSlide` (tail), `AdvanceTrack` (tail), `SegmentDecode` (tail), `BikeRoadPlace` (tail), `ScrollBends` (tail) |
 | Reads | `$643A`-`$643B` (`TuneHeld`, `TunePlaying`); `$6460`-`$6462` (`TuneMark`, `TuneRequest`, `EffectTime`); `$6586`-`$6587` (`IntSavedSp`); `$66C2`-`$66C9` (`TuneTable`); `$7C2F` (`Beeper`); `$B2FF`-`$B300` (`Im2Table+255`); 3 more ranges |
 | Writes | `$5BCB`-`$5BFE` (`BendRows+75`); `$643A`-`$643B` (`TuneHeld`, `TunePlaying`); `$6460` (`TuneMark`); `$6524`-`$6525` (`IntReturn+1`); `$6586`-`$6587` (`IntSavedSp`); `$67FC` (`AyMixer+1`); 6 more ranges |
 
@@ -1923,7 +1923,7 @@ Witness: L1 4740 (c1, crash, ctl, m128, names, stages, tech-brake-bend, tech-che
 | Runs (c1: a 48K from power-on, the TOSEC [SpeedLock 2] copy at signal speed, the menu tour, stage 1 to the time out) | 785 calls, 38,234,201 t-states own (2.57 %) |
 | Runs (the other recordings) | 3,955 calls (`stage1/rec/stages` 1,382, `stage1/rec/m128` 577, `stage1/rec/crash` 576 and 8 more) |
 | Called from | `IntVector` (tail), `Multiply` (tail), `DrawRoadRunLine` (tail), `RacePass` |
-| Calls | `Divide`, `Multiply`, `RoadRunOp` (falls into), `GapRowsJump` |
+| Calls | `Divide`, `Multiply`, `DrawRoadRunLine` (falls into), `GapRowsJump` |
 | Reads | `$5B00`-`$5B49` (`Mover`, `MoverTail`, `RowListTail`); `$5B80`-`$5BFE` (`BendRows`); `$5CE7`-`$5CE8` (`SavedSp2`); `$5E26` (`SegmentLeft+1`); `$7898`-`$79E7` (`EdgePatterns+24`); `$7A98`-`$7BE7` (`EdgePatterns2+24`); 5 more ranges |
 | Writes | `$5CE7`-`$5CE8` (`SavedSp2`); `$7C38`-`$7C52` (`SavedSp`, `InGap`, `ScoreDigits`, `RunLines`); `$8BEA`-`$8BEC` (`MultiplyEnd`, `MultiplyJump`); `$9371` (`l_9366+11`); `$93C1`-`$93CF` (`l_93BB+6`); `$93FA`-`$93FC` (`DrawRoadRight+1`); 6 more ranges |
 
@@ -1937,7 +1937,7 @@ Witness: L1 142770 (c1, crash, ctl, m128, names, stages, tech-brake-bend, tech-c
 | --- | --- |
 | Runs (c1: a 48K from power-on, the TOSEC [SpeedLock 2] copy at signal speed, the menu tour, stage 1 to the time out) | 25,191 runs of its first instruction (entered by a jump or by running on, no routine of its own in the L1), 11,582,379 t-states own (0.78 %) |
 | Runs (the other recordings) | 18,129 calls (`stage1/rec/crash` 18,129) |
-| Called from | `IntVector` (tail), `RoadRunOp` (falls into) |
+| Called from | `IntVector` (tail), `DrawRoad` (falls into) |
 | Calls | `DrawRoad` (tail) |
 | Reads | `$78F8`-`$79E7` (`EdgePatterns+120`); `$7AF8`-`$7BE7` (`EdgePatterns2+120`); `$7C46`-`$7C52` (`RunLines`); `$93CE`-`$93CF` (`l_93BB+19`) |
 | Writes | `$7C46`-`$7C4C` (`RunLines`); `$9562` (`RoadRunOp`); `$F620`-`$FDDF` (`BackBuffer+96`); `$FF06`-`$FF75` (`RowTable+262`) |

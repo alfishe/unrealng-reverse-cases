@@ -11,10 +11,13 @@
    python3 $RS open --work work/stage2/c1 --ttd work/stage1/c1/session.ttd --model PENTAGON \
        --port-base <yours> --ranges 5B00-FFFF --binary $BIN
    python3 $RS build --work work/stage2/c1 --from-frame 2613 --from-tinframe 53257 --into work/game
-   python3 $RS interrupts --work work/game
+   python3 $RS interrupts --work work/game          # + the kit's own length an entry (kit/handler_time.py: exact)
    python3 $RS stop --work work/stage2/c1
    ```
 
+   - `interrupts` prints re_session's length of a handler entry and then the kit's: re_session's is wrong for a
+     handler that leaves by a patched `JP` (Enduro Racer `$643C`, 676 717 T "an entry"). For the exact lengths of
+     a window: `python3 ../../kit/handler_time.py --work W --window F:T-F:T [--exit ADDR]`.
    - The window's `start.bin` must equal your depacker's output. In hate it did, byte for byte.
    - Start the window after the load, so that loaded code is not taken for data (editor: from frame 2700).
    - Put a build the kit should read in `work/<name>/l1.json`. Put one it must not read (another program at the

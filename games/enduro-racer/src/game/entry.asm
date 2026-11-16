@@ -496,7 +496,9 @@ TunePlaying:
 ;
 ; Witness: L1 2 (c1, m128).
 Start:
-  JP Init
+KeyItem:
+  JP Init                 ; after the start KeyItem: the item MenuSelect is on
+                          ; (also DEFINE KEYS' key being set)
 
 ; The five stage records (99"59 each) and their total, copied to Records
 ; ($5E00) by Init

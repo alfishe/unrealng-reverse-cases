@@ -16,6 +16,11 @@ prose are not checked). Anchors follow GitHub's slugs: the heading's text with t
 but letters, digits, '-', '_' and spaces removed, spaces as '-', a repeated slug numbered -1, -2. An explicit
 <a name="..."> or id="..." counts as well. Links inside code (fenced blocks, `spans`) are not links.
 
+Animation captions: two captions whose `kit/routine_anim.py` / `memanim.py` / `screen_anim.py` commands write one
+`--out` file with different options are a problem (two writers of one name, the second's picture replaced the
+first's); a GIF that records its command (kitlib.save_gif, from 2026-11-16) must match its caption's, `"..."` standing
+for any one argument (`routine_anim.py --command GIF` prints the recorded one, --title in full).
+
 Docs 11 and 12 (11-data-reference.md, 12-routine-reference.md) are written by kit/refdocs.py once the sources are
 in; a link to one that does not exist yet is a problem that says so ("not generated yet: kit/refdocs.py --case C
 writes docs 11 and 12"). --no-refdocs (stages 1 and 2, before refdocs) skips those links and their anchors and
@@ -171,6 +176,65 @@ def check_links(path, text, linked, rel, no_refdocs=False):
     return bad
 
 
+COMMAND = re.compile(r'`(python3 [^`]*?kit/(routine_anim|memanim|screen_anim)\.py\b[^`]*)`')
+
+
+def caption_commands(files):
+    """{output file: [(rel, line, tokens)]} of the animation commands the documents give in code spans"""
+    import shlex
+    found = {}
+    for path in files:
+        text = open(path, encoding='utf-8').read()
+        for m in COMMAND.finditer(text):
+            try:
+                tokens = shlex.split(m.group(1).replace('\n', ' '))
+            except ValueError:
+                continue
+            out = next((tokens[k + 1] for k, t in enumerate(tokens[:-1]) if t == '--out'), None)
+            if out:
+                found.setdefault(os.path.normpath(out), []).append(
+                    (os.path.relpath(path, here), text.count('\n', 0, m.start()) + 1, tokens))
+    return found
+
+
+def same_command(given, recorded):
+    """a caption's tokens against the GIF's: '...' (`--title "..."`) stands for any one token; the tool by name"""
+    if len(given) != len(recorded):
+        return False
+    for k, (a, b) in enumerate(zip(given, recorded)):
+        if k == 1:
+            a, b = os.path.basename(a), os.path.basename(b)
+        if a != b and a != '...':
+            return False
+    return True
+
+
+def check_commands(files):
+    """two captions whose animation commands write one file (two writers of one name: the second's picture
+    replaced the first's), and a caption whose command is not the one its GIF recorded (kitlib.save_gif)"""
+    import shlex
+    sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+    import kitlib
+    bad = 0
+    for out, uses in sorted(caption_commands(files).items()):
+        if any(not (same_command(a[2], b[2]) or same_command(b[2], a[2])) for a in uses for b in uses):
+            bad += 1
+            print(f'{out}: written by {len(uses)} different commands: ' +
+                  ', '.join(f'{rel}:{n}' for rel, n, _ in uses) + ' (one file a picture: NAME-what.gif)')
+            continue
+        recorded = kitlib.gif_command(os.path.join(here, out)) if out.endswith('.gif') else None
+        if recorded:
+            try:
+                rec = shlex.split(recorded)
+            except ValueError:
+                continue
+            for rel, n, tokens in uses:
+                if not same_command(tokens, rec):
+                    bad += 1
+                    print(f'{rel}:{n}: the caption\'s command is not the one {out} was drawn with: {recorded}')
+    return bad
+
+
 def default_files(repo_mode):
     if repo_mode:
         files = [os.path.join(REPO, 'README.md'), os.path.join(REPO, 'GUIDE.md')]
@@ -216,6 +280,8 @@ def main():
                 bad += 1
                 print(f'{rel}:{n}: $ in prose renders as math on GitHub (code_addresses.py)')
         bad += check_mermaid(blocks, tmp)
+        if not repo_mode:
+            bad += check_commands(files)
         if not argv and not repo_mode:
             for path in res_readmes():
                 bad += check_links(path, open(path, encoding='utf-8').read(), linked, os.path.relpath(path, here),

@@ -28,6 +28,7 @@ import time
 HERE = os.path.dirname(os.path.abspath(__file__))
 sys.path.insert(0, HERE)
 from lab import Lab, CASE  # noqa: E402
+import kitlib as K  # noqa: E402  (lab put the kit on the path)
 
 TAPE = os.path.join(CASE, 'work', 'candidates', 'tosec-2023',
                     'Enduro Racer (1987)(Activision)(48K-128K)[SpeedLock 2].tzx')
@@ -156,10 +157,9 @@ DEFINE = {'exit': 14, 'throttle': 15, 'wheelie': 16, 'left': 17, 'right': 18, 'b
 
 
 def paper_rows(r, paper, lo=4, hi=23, cells=3):
-    """The character rows lo..hi with at least @p cells cells of paper @p paper: the menu's highlight is blue paper
-    (1), the popups' highlight red paper (2) on a blue box"""
-    a = r.rd(0x5800, 768)
-    return [y for y in range(lo, hi) if sum(1 for x in range(32) if (a[32 * y + x] >> 3) & 7 == paper) >= cells]
+    """The character rows lo..hi with at least @p cells cells of paper @p paper (kitlib.paper_rows): the menu's
+    highlight is blue paper (1), the popups' highlight red paper (2) on a blue box"""
+    return K.paper_rows(r.rd, paper, lo, hi, cells)
 
 
 def main_sel(r):

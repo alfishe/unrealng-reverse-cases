@@ -50,6 +50,11 @@ the listing names the code and shows its lines, NAME stands for "RAM N" ("Update
 --page 6=build/music.lst --pc 6:C000-CD60` follows a player in RAM 6, and the game's code at the same addresses
 counts as "other", its listing shown from the game's.
 
+The GIF records the command that drew it (every option, --title in full) in its comment extension
+(kitlib.save_gif; memanim.py and screen_anim.py the same): `routine_anim.py --command GIF ...` prints it, so a
+caption that writes `--title "..."` can be completed and the picture rebuilt; check_docs.py compares a caption's
+command with the GIF's and flags two captions whose commands write one file.
+
 --label ADDR=NAME (comma-separated or repeated) names the code at ADDR; --auto-labels owner names SkoolKit's l_XXXX
 labels after the nearest named label before them (ScrollRows_8846): loops the .ann leaves unnamed, no listing copy
 (kitlib.add_listing_arg).
@@ -235,6 +240,11 @@ def fit(image, height):
 
 
 def main():
+    if sys.argv[1:2] == ['--command']:
+        # the command a GIF was drawn with (kitlib.save_gif records it): a caption's `--title "..."` completed
+        for path in sys.argv[2:]:
+            print(f'{path}: {K.gif_command(path) or "no command recorded (drawn before 2026-11-16)"}')
+        return
     p = argparse.ArgumentParser(description=__doc__.split('\n\n')[0])
     K.add_trace_args(p)
     K.add_listing_arg(p)
@@ -313,6 +323,10 @@ def main():
     if os.path.exists(args.out):
         print(f'note: {args.out} exists and is replaced (a second animation of one routine: NAME-what.gif)')
     durations = [args.delay] * (len(pictures) - 1) + [args.hold]
+    was = K.gif_command(args.out) if os.path.exists(args.out) else None
+    if was and was != K.tool_command():
+        print(f'note: {args.out} was drawn by another command and is replaced (two writers of one name? a second '
+              f'animation of one routine is NAME-what.gif): {was}')
     K.save_gif(args.out, pictures, durations)
     print(f'{args.out}: {len(pictures)} pictures, {step} T each, {n} instructions, '
           f'{os.path.getsize(args.out) // 1024} KB')

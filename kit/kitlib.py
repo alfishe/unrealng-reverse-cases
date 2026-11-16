@@ -6,6 +6,7 @@ through --unreal, $UNREAL_NG, the unreal-ng submodule of this repository, or a c
 import importlib.util
 import os
 import re
+import sys
 from bisect import bisect_right
 
 from PIL import Image, ImageFont
@@ -304,7 +305,27 @@ def buffer_cells(base, width, height, order='rows'):
             yield row, column, (base + offset) & 0xFFFF
 
 
-def save_gif(path, pictures, durations):
+def tool_command(argv=None):
+    """the command that runs this tool as a case's caption gives it: python3 ../../kit/TOOL.py and its arguments
+    (shell-quoted)"""
+    import shlex
+    argv = list(sys.argv if argv is None else argv)
+    return 'python3 ../../kit/%s %s' % (os.path.basename(argv[0]), shlex.join(argv[1:]))
+
+
+def gif_command(path):
+    """the command save_gif recorded in a GIF (its comment extension), or None (a GIF drawn before 2026-11-16)"""
+    try:
+        with Image.open(path) as im:
+            comment = im.info.get('comment')
+    except OSError:
+        return None
+    if isinstance(comment, bytes):
+        comment = comment.decode('utf-8', 'replace')
+    return comment[len('command: '):] if comment and comment.startswith('command: ') else None
+
+
+def save_gif(path, pictures, durations, command=True):
     """An animated GIF of RGB pictures, small: one palette for all (255 colours, no dithering) and, from the second
     picture on, every pixel that did not change since the previous picture written as the transparent index 255, so
     each picture costs only what changed (a routine animation of 90 pictures is about 1 MB, not 10).
@@ -312,7 +333,11 @@ def save_gif(path, pictures, durations):
     No pixel is ever quantized to 255: the palette's unused entries and entry 255 repeat entry 0, and a pixel that
     lands on 255 all the same is moved to 0 (the same colour). Index 255 used to be black, so a pure black pixel the
     255 colours did not hold exactly (the Spectrum's black ink beside the kit's dark background) went to 255 and
-    showed the page through in the first picture and in every later one"""
+    showed the page through in the first picture and in every later one.
+
+    command: the GIF's comment extension holds "command: " and the tool's command line (tool_command: every option,
+    --title in full), so a caption that cuts the command short can be completed from the file
+    (`kit/routine_anim.py --command GIF`, check_docs); a string gives the command, False writes none"""
     import numpy
     os.makedirs(os.path.dirname(os.path.abspath(path)), exist_ok=True)
     picks = [pictures[i * (len(pictures) - 1) // 7] for i in range(8)] if len(pictures) > 8 else pictures
@@ -336,8 +361,11 @@ def save_gif(path, pictures, durations):
         frame = Image.fromarray(out, 'P')
         frame.putpalette(entries)
         frames.append(frame)
+    extra = {}
+    if command:
+        extra['comment'] = ('command: ' + (tool_command() if command is True else command)).encode('utf-8')
     frames[0].save(path, save_all=True, append_images=frames[1:], duration=durations, loop=0, optimize=False,
-                   disposal=1, transparency=255)
+                   disposal=1, transparency=255, **extra)
 
 
 class Listing:
@@ -711,6 +739,39 @@ def screen_line(address):
 
 def screen_address(line, column):
     return 0x4000 | ((line & 0xC0) << 5) | ((line & 0x07) << 8) | ((line & 0x38) << 2) | column
+
+
+# ---------------------------------------------------------------------------------------------------------------
+# a menu read from the screen's attributes (a highlighted line is a row of another paper)
+
+
+def paper_rows(attributes, paper, lo=0, hi=24, cells=3, ink=None):
+    """The character rows lo..hi-1 with at least @p cells cells of paper @p paper (0-7; and of ink @p ink when
+    given) in @p attributes: the 768 bytes at $5800, or a callable read(address, count) -> bytes (a lab's memory
+    read). A menu's highlighted line is the row of the highlight's paper (Enduro Racer: blue paper on the main menu,
+    red in its popups). Key counts miss when a game ignores the first presses (an attract mode, a debounce); the
+    attributes say where the highlight is"""
+    a = attributes(0x5800, 768) if callable(attributes) else attributes
+    return [y for y in range(lo, hi)
+            if sum(1 for x in range(32) if (a[32 * y + x] >> 3) & 7 == paper and
+                   (ink is None or a[32 * y + x] & 7 == ink)) >= cells]
+
+
+def wait_paper(read, step, row, paper, tries=40, cells=3, ink=None, only=False):
+    """Calls @p step() (a key press and the frames after it, or a run of frames) until character row @p row has
+    paper @p paper (paper_rows over read(address, count)); @p only: and no other row has it. Returns the steps taken
+    (0: the row had it already); fails naming the rows that had the paper after @p tries steps.
+
+        kitlib.wait_paper(r.rd, lambda: r.tap('ENTER', 4, 25), 12, 1)      # the menu's line on row 12 highlighted
+    """
+    rows = []
+    for k in range(tries + 1):
+        rows = paper_rows(read, paper, cells=cells, ink=ink)
+        if row in rows and (not only or rows == [row]):
+            return k
+        if k < tries:
+            step()
+    raise RuntimeError(f'wait_paper: row {row} has no paper {paper} after {tries} steps (rows with it: {rows})')
 
 
 def render_screen(memory, base=0x4000):

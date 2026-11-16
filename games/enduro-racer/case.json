@@ -26,7 +26,8 @@
     "stage1/rec/tech-ramp-wheelie",
     "stage1/rec/tech-land-wheelie",
     "stage1/rec/tech-brake-bend",
-    "stage1/rec/tech-cheat"
+    "stage1/rec/tech-cheat",
+    "stage1/rec/reset3"
   ],
   "ref_builds": [
     [
@@ -41,6 +42,9 @@
     "stage1/rec/c1": 11646,
     "stage1/rec/m128": 11458
   },
+  "ref_read_end": {
+    "stage1/rec/reset3": 6759
+  },
   "no_roots": [
     "stage1/rec/stages",
     "stage1/rec/ctl",
@@ -52,7 +56,8 @@
     "stage1/rec/tech-ramp-wheelie",
     "stage1/rec/tech-land-wheelie",
     "stage1/rec/tech-brake-bend",
-    "stage1/rec/tech-cheat"
+    "stage1/rec/tech-cheat",
+    "stage1/rec/reset3"
   ],
   "overwritten": [
     [
@@ -103,6 +108,10 @@
     "stage1/rec/tech-ramp-wheelie",
     "stage1/rec/tech-land-wheelie",
     "stage1/rec/tech-brake-bend",
-    "stage1/rec/tech-cheat"
+    "stage1/rec/tech-cheat",
+    "stage1/rec/reset3"
+  ],
+  "witness_skip": [
+    "stage1/rec/reset3"
   ]
 }

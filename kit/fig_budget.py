@@ -33,6 +33,18 @@ none; --colour MODULE=#RRGGBB (repeatable) gives a module a colour of the case's
 
 The picture is --width pixels wide (1050, the figure limit) and as tall as its rows; a --note longer than the width
 wraps onto more lines.
+
+A window instead of a whole build: L1 (and a --state's) may be an access trace, a FILE.uatr (`analysis trace`), or
+W@F:T-F:T, a re_session work folder whose instance holds the recording and the window to trace (traced once into
+W/traces/ and read from there afterwards, kitlib.load_trace). One pass over the trace sums each instruction's
+T-states (to the next instruction's start; the interrupt's acknowledge counts for the instruction it followed) per
+routine as above; the shares are of the window's T-states (truncated trace: of the T-states it covers), the frames
+the window's length over the frame (the trace's own, or --frame). A pass of the main loop is one such window:
+
+    python3 ../../kit/fig_budget.py 'work/docs/c1@16008:0-16015:0' docs/img/arch/budget-pass.png --top 20
+    python3 ../../kit/fig_budget.py work/docs/c1/traces/16008_0-16015_0.uatr -      # the table only, no picture
+
+OUT `-` prints the table and draws nothing.
 """
 import argparse
 import json
@@ -122,7 +134,64 @@ def frame_length(doc, given):
     sys.exit('the L1 records no frames / T-states: give --frame')
 
 
+def is_trace(path):
+    return path.endswith('.uatr') or ('@' in path and not os.path.exists(path))
+
+
+def load_window(path):
+    """the access trace of FILE.uatr or W@F:T-F:T"""
+    import types
+    if path.endswith('.uatr') and os.path.exists(path):
+        args = types.SimpleNamespace(trace=path, work=None, window=None, max_cycles=None, unreal=None)
+    else:
+        work, _, window = path.rpartition('@')
+        args = types.SimpleNamespace(trace=None, work=work, window=window, max_cycles=None, unreal=None)
+    return K.load_trace(args)
+
+
+def trace_budget(path, parts, given_frame, page_names):
+    """budget() of a trace window: each instruction's T-states up to the next one's start, in one pass"""
+    tr = load_window(path)
+    if not tr.instructions:
+        sys.exit(f'{path}: the trace holds no instruction')
+    frame = given_frame or tr.frame_t or 69888
+    times = K.instruction_times(tr)
+    per, module_of, part_t, halt = {}, {}, {}, 0
+    for i, x in enumerate(tr.instructions):
+        tstates = times[i + 1] - times[i] if i + 1 < len(times) else 4
+        a = x.pc
+        fetch = next((c.value for c in x.cycles if c.tag == 'F'), None)
+        page = tr.pages[a >> 14] if len(tr.pages) == 4 else None
+        if fetch == 0x76:
+            name, module, part = HALT_NAME, HALT_NAME, HALT_NAME
+            halt += tstates
+        elif a < 0x4000:
+            name, module, part = ROM_NAME, ROM_NAME, ROM_NAME
+        else:
+            owner = next((p for p in parts if p.holds(a, page)), None)
+            if owner is None:
+                name = module = part = page_names.get(page, f'page {page}, no .ann')
+            else:
+                name, module = owner.routine(a)
+                part = owner.label
+        per[name] = per.get(name, 0) + tstates
+        module_of[name] = module
+        part_t[part] = part_t.get(part, 0) + tstates
+    covered = sum(per.values())
+    window = (tr.to_frame - tr.from_frame) * (tr.frame_t or frame) + tr.to_t - tr.from_t
+    total = covered if tr.truncated or window <= 0 else max(window, covered)
+    if tr.truncated:
+        print(f'{path}: the trace is truncated (its cap): the shares are of the {covered:,} T-states it covers')
+    frames = total / frame
+    replay = {'first_frame': f'{tr.from_frame}:{tr.from_t}', 'last_frame': f'{tr.to_frame}:{tr.to_t}',
+              'frames': frames}
+    return {'path': path, 'replay': replay, 'frame': frame, 'frames': round(frames, 2), 'total': total,
+            'per': per, 'module_of': module_of, 'part_t': part_t, 'halt': halt, 'busy': covered - halt}
+
+
 def budget(path, parts, given_frame, page_names):
+    if is_trace(path):
+        return trace_budget(path, parts, given_frame, page_names)
     doc = json.load(open(path))
     rom_pages = {p['page'] for p in doc.get('pages', []) if p.get('name', '').startswith('ROM')}
     frame = frame_length(doc, given_frame)
@@ -269,6 +338,8 @@ def draw(panels, args):
         d.text((10, y), note, fill=K.DIM, font=f)
         y += 16
     im = im.crop((0, 0, W, y + 8))
+    if args.out == '-':
+        return
     os.makedirs(os.path.dirname(os.path.abspath(args.out)), exist_ok=True)
     im.save(args.out)
     print(args.out, im.size)
@@ -277,8 +348,8 @@ def draw(panels, args):
 def main():
     p = argparse.ArgumentParser(description=__doc__.split('\n\n')[0],
                                 formatter_class=argparse.RawDescriptionHelpFormatter, epilog=__doc__)
-    p.add_argument('l1')
-    p.add_argument('out')
+    p.add_argument('l1', help='l1.json, or a window: FILE.uatr or W@F:T-F:T (an access trace)')
+    p.add_argument('out', help='the PNG, or - for the table only')
     p.add_argument('--ann', action='append', help='PATH[,page=N[/N..]][,range=LO-HI][,delta=D][,label=L] (repeatable)')
     p.add_argument('--title', default='where the CPU time goes, per routine')
     p.add_argument('--top', type=int, default=24)

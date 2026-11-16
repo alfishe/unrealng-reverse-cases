@@ -31,7 +31,7 @@
    | Medium | Command | Notes |
    | --- | --- | --- |
    | TAP | `python3 ../../kit/tapblocks.py list orig/GAME.TAP` | each block's length, header fields, checksum and play time at ROM speed; the total in 48K frames (nether-earth: 264.7 s, 13258 frames) |
-   | TZX | the case's `tools/tzxblocks.py list` (zynaps), `tools/tzx_blocks.py` (nether-earth-editor) | the pulse lengths of a non-standard block; the archive-info block may name the loader (zynaps: "Hewson Countdown II", so no turbo) |
+   | TZX | `python3 ../../kit/tapblocks.py list orig/GAME.tzx` (every TZX 1.20 block, the loop blocks `24`/`25` of MakeTZX dumps too; a damaged file says where it stopped); older cases' `tools/tzxblocks.py list` (zynaps), `tools/tzx_blocks.py` (nether-earth-editor) | the pulse lengths of a non-standard block; the archive-info block may name the loader (zynaps: "Hewson Countdown II", so no turbo) |
    | SCL / TRD | `tools/disk_files.py IMAGE --out work/media/<medium>/files` (nether-earth-gs, zynaps-gs), `tools/disk.py list` (zynaps-128), `tools/scl.py list` (ZS) | the catalogue; each file's start, length and sectors; **the bytes past the stated length** |
    | BASIC | `tools/basic_list.py FILE LINE` (GS, zynaps), `tools/zxbasic.py list` (editor) | the loader program, and any REM with code in it |
 

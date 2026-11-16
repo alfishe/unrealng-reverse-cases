@@ -217,7 +217,6 @@ follow the game, each under its own heading with its modules, its source, its an
 | `$A1C9` | `BounceTime` | 1 of 3 | A bounce's passes left (3, or 6 after a landing) | `BikeControl`, `Mover`, `RacePass`, `RampSpeed`, `GetUpSlide` (`stage1/rec/stages`) +4 | `BikeControl`, `RacePass`, `RampSpeed`, `StartRace`, `GetUpSlide` (`stage1/rec/stages`) +2 |
 | `$A1CA` | `BounceDir` (`BounceTime`+1) | 1 | the bounce's push: 8 right, 4 left, 0 random | `BikeControl`, `Mover`, `GetUpSlide` (`stage1/rec/stages`) | `BikeControl`, `RacePass`, `RampSpeed`, `GetUpSlide` (`stage1/rec/stages`), `l_A894` (code) +1 |
 | `$A1CB` | `BikeHitX` (`BounceTime`+2) | 1 | the bike's x for the collisions (`$82` + LateralX * `$C0` / 256) | `Mover`, `RacePass`, `RampSpeed` | `StartRace`, `RacePass` (`stage1/rec/fall5`) |
-| `$AE63` | `BendOp` | 1 | ADD A,A on stages 2 and 4, NOP elsewhere (StartRace writes it): the bend's push doubled there. L1 has the byte executed in every recording; the kit keeps it as a byte because StartRace changes the instruction. | `Mover` | `StartRace` |
 
 ## horizon
 
@@ -231,7 +230,6 @@ follow the game, each under its own heading with its modules, its source, its an
 
 | Address | Name | Bytes | What | Read by | Written by |
 | --- | --- | --- | --- | --- | --- |
-| `$9562` | `RoadRunOp` | 1 | One opcode the run writes per line: `$BF` (CP A) or `$23` (INC HL), executed after POP DE. DrawRoadRun writes it at `$94B2` and `$95F1`. L1 has the byte executed in every recording; the kit keeps it as a byte because its instruction changes. | `Mover` | `DrawRoad`, `DrawRoadRunLine` |
 | `$9CAF` | `DotMasks` | 8 | Eight bytes for GroundTexture's dots (`$FF` `$7F` `$3F` `$1F` `$0F` `$07` `$03` `$01`): the entry for x AND 7, plus 1, is the dot's one pixel (`$80`, `$40`, ...; 0 for x AND 7 = 0, no dot) | `Mover`, `GroundTexture` (`stage1/rec/stages`) | - |
 | `$A45B` | `RandomPtr` | 2 | GroundTexture's ROM pointer (`$0000-$1FFF`) | `Mover`, `GroundTexture` (`stage1/rec/stages`) | `GroundTexture` (`stage1/rec/stages`) |
 | `$B11C` | `RowsScrolled` | 1 | The road rows the segment moved this pass (AdvanceTrack), for ScrollBends | `Mover`, `ScrollBends` | `AdvanceTrack` |

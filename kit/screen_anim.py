@@ -61,7 +61,7 @@ def main():
     pictures = [zxscreen.render(screen_at(session, f), args.scale).convert('P', palette=0, colors=16)
                 for f in frames]
     pictures[0].save(args.out, save_all=True, append_images=pictures[1:], duration=durations, loop=0,
-                     optimize=True)
+                     optimize=True, comment=('command: ' + kitlib.tool_command()).encode('utf-8'))
     print(f'{args.out}: {len(pictures)} pictures')
 
 

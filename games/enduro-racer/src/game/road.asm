@@ -391,14 +391,9 @@ l_9552:
 l_955E:
   LD A,(RunLines+$0002)
   POP DE
-
-; One opcode the run writes per line: $BF (CP A) or $23 (INC HL), executed
-; after POP DE
-;
-; DrawRoadRun writes it at $94B2 and $95F1. L1 has the byte executed in every
-; recording; the kit keeps it as a byte because its instruction changes.
 RoadRunOp:
-  DEFB $00
+  NOP                     ; the opcode the run writes per line ($94B2, $95F1):
+                          ; $BF (CP A) or $23 (INC HL), run after POP DE
 
 ; One line of a run: the left edge, the right edge at the interpolated x, then
 ; the slopes added

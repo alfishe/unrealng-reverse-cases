@@ -36,13 +36,21 @@ Everything after the optional --unreal goes to re_session.py unchanged, but for 
   --binary    capture and open with no --binary take $UNREAL_BINARY (work/env.sh sets it to the case's BIN;
               toolpaths.unreal_binary checks it is an executable) and pass it on, printing "rs.py: --binary B
               (UNREAL_BINARY)"; re_session.py's own default (the checkout's cmake-build-agent-release) only when the
-              variable is unset. A --binary given is kept
+              variable is unset. A --binary given is kept. The binary that will run is checked for the unreal-ng
+              fixes the recipes name (kit/toolpaths.py build): a warning for each it lacks (f13cee7da: a TZX whose
+              last block has no pause does not load), the run goes on
 
   --snapshot S without --model: re_session.py would create its default 48K and a 128K state would not load there;
               rs.py reads the model from the snapshot (an SZX's machine id, a .z80's hardware byte, a .sna's length)
               and passes --model itself, printing "rs.py: --model 128K from S". A --model that differs from the
               snapshot's is kept, with a warning. A case wrapper that calls re_session.main itself gets the same with
               kitlib.model_from_snapshot(argv)
+
+  interrupts  after re_session.py's lines, a handler that leaves by a patched jump (its tail jumps from one site go
+              to several routines: the operand is the interrupted address, Enduro Racer `JP nn` at `$6523`) gets the
+              kit's own T-states an entry: L1's inclusive count runs on after such a jump (676 717 T for Enduro
+              Racer's 744-25 467), so the kit sums the handler's own T-states and its calls' (rs.handler_estimates).
+              kit/handler_time.py measures each entry exactly over a trace window
 
 re_session.py's docstring (python3 kit/rs.py -h) is the reference for the rest. The cases' `$RS` (docs/case-files.md)
 is this script. The checkout is found as kit/toolpaths.py finds it: --unreal, $UNREAL_NG, the unreal-ng submodule, a
@@ -243,17 +251,82 @@ def capture(args, script):
     return status
 
 
+def given_binary(args):
+    """the --binary of re_session.py's arguments, or None"""
+    for k, a in enumerate(args):
+        if a == '--binary' and k + 1 < len(args):
+            return args[k + 1]
+        if a.startswith('--binary='):
+            return a.split('=', 1)[1]
+    return None
+
+
 def binary_args(args):
     """capture / open with no --binary: $UNREAL_BINARY (a case's work/env.sh sets it to its BIN) passed on as
     --binary, so the instance is the case's build, not re_session.py's default (the checkout's
-    cmake-build-agent-release); printed once. Without the variable the arguments stay as they are"""
-    if args[:1] not in (['capture'], ['open']) or any(a == '--binary' or a.startswith('--binary=') for a in args):
+    cmake-build-agent-release); printed once. Without the variable the arguments stay as they are. Either way the
+    binary that will run is checked for the unreal-ng fixes the recipes name (toolpaths.warn_binary: a warning a
+    fix it lacks, e.g. f13cee7da, the tape's last edge)"""
+    if args[:1] not in (['capture'], ['open']):
         return args
-    if not os.environ.get('UNREAL_BINARY'):
-        return args
-    binary = toolpaths.unreal_binary()
-    print(f'rs.py: --binary {binary} (UNREAL_BINARY)', flush=True)
-    return args + ['--binary', binary]
+    binary = given_binary(args)
+    if binary is None and os.environ.get('UNREAL_BINARY'):
+        binary = toolpaths.unreal_binary()
+        print(f'rs.py: --binary {binary} (UNREAL_BINARY)', flush=True)
+        args = args + ['--binary', binary]
+    found = binary or toolpaths.unreal_binary(required=False)
+    if found and os.path.isfile(found):
+        toolpaths.warn_binary(found, 'rs.py')
+    return args
+
+
+def handler_estimates(doc):
+    """[(entry, T an entry, own T, calls T, the tail site, its targets)] of the interrupt handlers of an L1 that
+    leave by a patched jump: their tail calls from one site go to more than one routine (Enduro Racer: `JP nn` at
+    `$6523`, its operand the interrupted address). L1's tstates_inclusive of such a handler runs on after the jump;
+    the kit counts the handler's own T-states and those of the routines it calls (each callee's inclusive count, or
+    its own when that is larger, times the share of its entries the handler made), not the tail jumps"""
+    routines, out = doc['routines'], []
+    calls = {}
+    for c in doc['calls']:
+        calls.setdefault(c['caller'], []).append(c)
+    for i, r in enumerate(routines):
+        kinds = r['kinds'].split(',') if isinstance(r['kinds'], str) else r['kinds']
+        if not any(k.strip() in ('interrupt', 'nmi') for k in kinds):
+            continue
+        sites = {}
+        for c in calls.get(i, []):
+            if c['kind'] == 'tail':
+                for site in c.get('sites', []):
+                    sites.setdefault(site, set()).add(c['callee'])
+        patched = [(site, len(t)) for site, t in sites.items() if len(t) > 1]
+        if not patched:
+            continue
+        p = r['profile']
+        entries = max(1, p['entries'])
+        own, called = p['tstates'], 0
+        for c in calls.get(i, []):
+            if c['kind'] == 'tail':
+                continue
+            q = routines[c['callee']]['profile']
+            called += max(q['tstates_inclusive'], q['tstates']) * c['count'] / max(1, q['entries'])
+        site, targets = max(patched, key=lambda x: x[1])
+        out.append((r['entry'], (own + called) / entries, own / entries, called / entries, site, targets))
+    return out
+
+
+def interrupts_note(args):
+    """after re_session.py interrupts: the kit's own T-states an entry for a handler that leaves by a patched jump"""
+    work = args[args.index('--work') + 1] if '--work' in args[:-1] else None
+    path = os.path.join(work, 'l1.json') if work else None
+    if not path or not os.path.exists(path):
+        return
+    with open(path) as f:
+        doc = json.load(f)
+    for entry, each, own, called, site, targets in handler_estimates(doc):
+        print(f'rs.py: {entry} leaves by a patched jump ({site} to {targets} places): the T an entry above runs on '
+              f'after it. The kit: {each:.0f} T an entry (own {own:.0f} + calls {called:.0f}, the mean over the '
+              f'build); kit/handler_time.py --exit {site.lstrip("$")} measures each entry over a trace window')
 
 
 def main(argv=None):
@@ -270,6 +343,9 @@ def main(argv=None):
     sys.argv = [script] + args
     sys.path.insert(0, os.path.dirname(script))
     runpy.run_path(script, run_name='__main__')
+    if args[:1] == ['interrupts']:
+        sys.stdout.flush()
+        interrupts_note(args)
     return 0
 
 

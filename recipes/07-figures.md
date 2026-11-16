@@ -63,7 +63,13 @@ Do not make a figure that says nothing.
    ```
 
    `memanim.py --screen` puts the screen under the grid when the two side by side would pass 1050 px (`--width`;
-   `--layout wide` keeps them side by side). `fig_budget.py` is 1050 px wide and wraps a long `--note`.
+   `--layout wide` keeps them side by side). `fig_budget.py` is 1050 px wide and wraps a long `--note`; given a trace window instead of an L1
+   (`W@F:T-F:T` or `FILE.uatr`) it profiles one pass per routine (OUT `-`: the table only).
+
+   A routine animation (`routine_anim.py`, also `memanim.py`, `screen_anim.py`) records its command in the GIF:
+   `routine_anim.py --command GIF` gives it with `--title` in full, so a caption can cite the whole command.
+   `check_docs.py` flags a caption whose command is not its GIF's and two captions writing one file name
+   (a second animation of one routine is `NAME-what.gif`).
 
    `screen_shot.py` reads the CPU's view at `$4000`. On a 128K game that shows screen 7, read the page through
    `memory_at` instead (ANE).

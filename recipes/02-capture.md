@@ -35,6 +35,10 @@ BIN=$UNREAL_NG/cmake-build-agent-release/bin/unreal-qt.app/Contents/MacOS/unreal
      `kitlib.tape_insert(s, path, block=N)`: while a TTD recording runs the tape goes in only at the next frame
      boundary, so a seek straight after the load answers "Block N out of range" (R-Type); the helper waits for it.
    - `rs.py open` and `capture` take `$UNREAL_BINARY` (set by `work/env.sh` to `$BIN`) when no `--binary` is given.
+   - **Check what the binary holds**: `python3 ../../kit/toolpaths.py build $BIN` prints the unreal-ng commit it was
+     built from and warns (exit 2) when it lacks a fix this recipe needs: f13cee7da, an ended tape keeps the level
+     of its last edge (without it a TZX whose last block has no pause does not load: Enduro Racer's case binary,
+     recorded from TOSEC's dump with a pause). `rs.py open` / `capture` print the same warning.
 
 2. **Note how the tape loaded.** Every frame number of a recording depends on it. In every document, write the
    recording's name and how it loaded next to each frame number.
@@ -58,6 +62,14 @@ BIN=$UNREAL_NG/cmake-build-agent-release/bin/unreal-qt.app/Contents/MacOS/unreal
      than a pass and taps whose gap is shorter than a pass: Rex's code entry lost most 8-frame taps with 22-frame
      gaps and took every key with 30-frame holds and 40-frame gaps. Time the loop (a `--pc-log` of its key read,
      `kit/rzx_dump.py`, or the L1's frames per pass) and hold each key for more than a pass.
+   - **A menu with a highlighted line: wait for its paper, do not count keys.** Press, run a frame or two, and read
+     the attributes until the line you want has the highlight's paper: `kitlib.wait_paper(read, step, row, paper)`
+     (`kitlib.paper_rows` lists the rows with a paper). Enduro Racer's key counts missed lines; this did not.
+   - **A run that ends in a reset: the last N frames before it.** The TTD recording keeps every frame up to a
+     crash into the ROM. `python3 ../../kit/last_frames.py --work W` (W: an `rs.py open` of the recording) finds the
+     frame the ROM's `$0000` ran, builds L1 over the 100 frames before it (`--frames N`) and names the jump into
+     `$0000`, the code first run in the window and what ran last (Enduro Racer `reset3`, frame 6759: DrawRoad's SP
+     run into the ROM). Such a recording can still be a read build: `case.json` `ref_read_end` (kit README).
    - **An RZX run replayed from its own states: on the RZX's model.** Segments cut from a published RZX
      (`kit/rzx_dump.py --snap` states, the RZX's keys as an input script, `kit/rzx_match.py` against its screens)
      drift when the machine is not the one the RZX was made on: its frame is another length, so the keys land on
