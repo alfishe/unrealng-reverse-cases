@@ -2608,7 +2608,10 @@ l_FB7B:
   JP l_FB69
 SL7Start:
   NOP                     ; the reader: the ROM check ($0000 = $F3), the ports
-                          ; $1F, $7B, $BB, $7F, the RAM cleared
+                          ; $1F, $7B, $BB, $7F, $4000-$5BFF cleared, then LDDR
+                          ; with DE = HL - 1 from $FBC5 (BC = $9F0E) smears the
+                          ; NOP's $00 over $5CB7-$FBC4: the BASIC and the chain
+                          ; below are zeroed
   CCF
   LD A,($0000)
   CP $F3

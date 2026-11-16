@@ -428,8 +428,9 @@ TableEntry:
 ; $C3CE 3 times: 8 lives, 8 runs of ShipDies.
 ;
 ; $91F5 is a NOP in play; a RET there makes the ship immortal (BossDestroyed
-; and the end of level 8 put it there; the immortality POKE of the stage 1
-; recordings writes $C9 at $91F2).
+; and the end of level 8 put it there, ClearPlayState $8707 puts the NOP back
+; at every level load and life; the immortality POKE of the stage 1 recordings
+; writes $C9 at $91F2).
 ;
 ; Witness: L1 7575 (boss, c1, continue, ctl-if2, ctl-kempston, ctl-sinclair,
 ; deaths-l7, ending, force, gameover, hiscore, hiscore-typed, restart, l1-l8).

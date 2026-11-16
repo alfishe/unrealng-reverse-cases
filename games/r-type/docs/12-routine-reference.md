@@ -200,6 +200,8 @@ Witness: L1 807 (c1, ctl-if2, ctl-kempston, ctl-sinclair, ending, gameover, hisc
 
 Stars off, the play state cleared, TitleLogo, the title lines; DefineKeys while the title waits (ENTER defines keys); then the high-score table, polling SelectControl; round again. SelectControl leaves the loop through the stack with the method chosen.
 
+The two waits take C from the code before them: `$0400` = 1024 turns (C = 0 from FillBlock), then `$5404` = 21 508 SelectControl polls (C = 4 from ShowHiScores).
+
 Witness: L1 8 (c1, gameover, hiscore).
 
 | | |
@@ -485,9 +487,9 @@ Witness: L1 18787 (boss, c1, continue, ctl-if2, ctl-kempston, ctl-sinclair, deat
 
 ### `ScrollRows` (`$8842`)
 
-**Shift the 20 rows of the shadows one cell left and copy the changed cells to the screen**
+**Put the 20 play rows on the screen: attributes copied, scenery shifted one pixel left, changed sprite cells copied**
 
-For each row of RowTable: the attribute shadow and the solid map row shifted; the row walked from the right, scenery cells shifted in the shadow, other cells copied from the pixel shadow to the screen. While the map moves (ScrollHalted `$7A8E` = 0) the runs of scenery cells are shifted one pixel left through the unrolled chain ShiftRun; while it stands they are skipped. Sprite cells (tag 1 to `$DB`) are copied from the pixel shadow and DrawnMap set; untagged cells with DrawnMap 1 are cleared; every tag but `$9C` is cleared, `$9C` only when FrameCounter AND 7 = 7 (`$88CD`).
+For each row of RowTable: the row's attributes copied from PlayAttrs to the screen (LDDR, columns 1-30); the row walked from the right by its SolidMap tags, scenery cells shifted on the screen (RowTable holds the screen pages, `$40`xx), other cells copied from the pixel shadow to the screen. While the map moves (ScrollHalted `$7A8E` = 0) the runs of scenery cells are shifted one pixel left through the unrolled chain ShiftRun; while it stands they are skipped. Sprite cells (tag 1 to `$DB`) are copied from the pixel shadow and DrawnMap set; untagged cells with DrawnMap 1 are cleared; every tag but `$9C` is cleared, `$9C` only when FrameCounter AND 7 = 7 (`$88CD`).
 
 Witness: L1 33972 (boss, c1, continue, ctl-if2, ctl-kempston, ctl-sinclair, deaths-l7, ending, force, gameover, hiscore, hiscore-typed, pause, restart, l1-l8).
 
@@ -1505,6 +1507,8 @@ Witness: L1 893818 (c1, deaths-l7, ending, l1-l8).
 
 **Wait for one edge on the EAR bit, counting B; carry when found**
 
+Each edge flips the border: AND (patched at `$8FB4`: `$02` pilot and sync, `$01` data) OR `$08`: red/black, then blue/black.
+
 Witness: L1 1866762 (c1, deaths-l7, ending, l1-l8).
 
 | | |
@@ -1763,7 +1767,7 @@ Witness: L1 388175 (boss, c1, continue, ctl-if2, ctl-kempston, ctl-sinclair, dea
 
 Three ways in: JP NC at `$956D` (scenery ahead of the ship, GetCell), JP NZ at `$9574` (an enemy's cell), JP at `$C3CE` (an enemy shot, MoveEnemyShots). Without the immortality POKE: gameover, continue and hiscore (level 1) (and c1) take `$9574` 2-6 times and `$956D` 0-1 times, `$C3CE` never; deaths-l7 (level 7, the stage 1 POKE undone, 8390 frames) takes `$956D` 4 times, `$9574` once and runs `$C3CE` 3 times: 8 lives, 8 runs of ShipDies.
 
-`$91F5` is a NOP in play; a RET there makes the ship immortal (BossDestroyed and the end of level 8 put it there; the immortality POKE of the stage 1 recordings writes `$C9` at `$91F2`).
+`$91F5` is a NOP in play; a RET there makes the ship immortal (BossDestroyed and the end of level 8 put it there, ClearPlayState `$8707` puts the NOP back at every level load and life; the immortality POKE of the stage 1 recordings writes `$C9` at `$91F2`).
 
 Witness: L1 7575 (boss, c1, continue, ctl-if2, ctl-kempston, ctl-sinclair, deaths-l7, ending, force, gameover, hiscore, hiscore-typed, restart, l1-l8).
 
@@ -4152,7 +4156,7 @@ src/tape/basic.json`; the recordings: `work/stage1/c1` (c1: a 48K from power-on,
 
 **Blacken the attributes, copy the chain to `$EC00-$FEE7` and return into it**
 
-Entered by line 0's USR (PROG+59). Interrupts off; fills the attributes `$5800-$5BFF` with zero (INK 0 on PAPER 0: the screen goes black, the bitmap stays), border black. HL = PROG + `$5C` (ChainTape, found from the system variable PROG at 23635 rather than assumed); DE = `$EC00`, BC = 4840; `$EC00` pushed, then LDIR and RET: the RET enters the chain's first layer at `$EC00`. SP stays where the ROM's USR left it.
+Entered by line 0's USR (PROG+59). Interrupts off; fills `$5800-$5BFF` with zero: the 768 attribute bytes (INK 0 on PAPER 0: the screen goes black, the bitmap stays) and the printer buffer `$5B00-$5BFF`, border black. HL = PROG + `$5C` (ChainTape, found from the system variable PROG at 23635 rather than assumed); DE = `$EC00`, BC = 4840; `$EC00` pushed, then LDIR and RET: the RET enters the chain's first layer at `$EC00`. SP stays where the ROM's USR left it.
 
 c1: the LDIR wrote `$EC00-$FEE7` in work/stage2/c1/chain.
 
@@ -5067,7 +5071,7 @@ Witness: L1 1028 (boss, l1).
 
 #### `L1BlastRecord` (`$F53B`)
 
-**Free the record at HL: zero it, take its position less one column, start an explosion there (FreeExplosion)**
+**Free the record at HL: zero it, take its position less one column, start an explosion there (FreeExplosion, its Z flag ignored) and its sound (AwardScore); AwardScore's DE is dropped, so no points**
 
 Witness: L1 4 (l1).
 

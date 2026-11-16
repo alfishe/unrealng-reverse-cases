@@ -81,8 +81,8 @@ at the same place, `$C4AE`.
 
 Total 659.3 s with the pauses: 32 967 frames.
 
-*From `tools/tzxblocks.py list`, the two block tables (3.5) and c1. The point: 13 SpeedLock data blocks, read in one
-stream with a mark between each two; the levels are a second format, the game's own (3.9).*
+*From `tools/tzxblocks.py list`, the two block tables (3.5) and c1. The point: 13 SpeedLock blocks, Stage2Start (block 7)
+alone, then 12 data blocks read in one stream with a 3-byte mark between each two; the levels are a second format, the game's own (3.9).*
 
 Stage 1's first table took the destinations from memory samples every 25 frames. It placed blocks 7, 19, 23, 29,
 31, 33 and 35 wrongly: the samples cannot see a block land on bytes that already hold the same values, nor one that
@@ -123,9 +123,9 @@ The point: the listing lies on purpose, and the program area holds machine code 
 
 ### CopyChain: the first machine code
 
-CopyChain `$5D06` blackens the attribute file `$5800-$5BFF` (the bitmap stays, so whatever the ROM printed goes
-invisible), sets the border black and copies 4840 bytes from PROG + `$5C` = `$5D27` to `$EC00-$FEE7`. It pushes
-`$EC00` first, so the `RET` after the LDIR enters the copy.
+CopyChain `$5D06` zeroes `$5800-$5BFF`: the 768 attribute bytes (black on black: the bitmap stays, so whatever the ROM
+printed goes invisible) and the printer buffer `$5B00-$5BFF`. It sets the border black and copies 4840 bytes from
+PROG + `$5C` = `$5D27` to `$EC00-$FEE7`. It pushes `$EC00` first, so the `RET` after the LDIR enters the copy.
 
 ```asm
 CopyChain:            ; $5D06
@@ -134,7 +134,7 @@ CopyChain:            ; $5D06
   LD DE,$5801
   LD BC,$03FF
   LD (HL),L           ; L = 0
-  LDIR                ; the attributes black
+  LDIR                ; the attributes black, the printer buffer zeroed
   XOR A
   OUT ($FE),A         ; the border black
   LD HL,($5C53)       ; PROG
@@ -151,7 +151,7 @@ Pseudocode:
 
 ```text
 interrupts off
-attributes[0 .. 1023] = 0              # black on black
+memory[$5800 .. $5BFF] = 0             # attributes (black on black) + printer buffer
 border = black
 copy 4840 bytes from PROG + $5C to $EC00
 jump to $EC00
@@ -354,7 +354,11 @@ CheckRom:              ; $FB85
   LD BC,$1BFF
   LD (HL),L
   LDIR                 ; $4000-$5BFF cleared
-  ...                  ; an LDDR of 15 bytes
+  LD BC,$9F0E          ; 40 718 bytes
+  LD HL,$FBC5          ; the NOP below: a 0
+  LD DE,$FBC4
+  NOP
+  LDDR                 ; the 0 smeared down over $5CB7-$FBC4
   JP SL7Main           ; $FECD
 ```
 
@@ -362,6 +366,11 @@ CheckRom:              ; $FB85
 interface's ROM at `$0000`, not `$F3`, and the machine resets. The writes to `$1F`, `$7B`, `$BB` and `$7F` go to the
 paging ports of other interfaces; which interface answers which port was not determined here. The LDIR and LDDR over
 `$0000-$3FFF` change nothing in a ROM, but would wipe RAM paged there.
+
+The last LDDR is a fill, not a move: `DE` is `HL` - 1, so each byte copied down is the one just written, and the `NOP`
+at `$FBC5` (a `$00`) is smeared over the 40 718 bytes `$5CB7-$FBC4`. The BASIC, the chain below SL7Start and
+SL7Start itself are zeroed; only the `LDDR` and `JP` above `$FBC5` survive to run. A dump taken after this point holds
+none of the first stage.
 
 ```mermaid
 flowchart TD
@@ -371,7 +380,7 @@ flowchart TD
     C --> D{"($0000) = $F3?"}
     D -->|"no"| R
     D -->|"yes"| E["OUT $1F, $7B, $BB, $7F"]
-    E --> F["write over $0000-$3FFF, clear $4000-$5BFF"]
+    E --> F["write over $0000-$3FFF, clear $4000-$5BFF, zero $5CB7-$FBC4"]
     F --> G["SL7Main $FECD: SP = $FFFF, load the second stage"]
 ```
 
@@ -558,7 +567,7 @@ device. Witness: c1 (48K) and m128 (128K) load alike ([doc 2, 2.9](02-architectu
 ## 3.6 The timing check
 
 SL7LoadStage2 does more than load block 7. After it, it samples the EAR line 255 times into `$9000`, each sample the
-number of level changes SL7CountEdges sees in 255 polls (about 4.4 ms). Then, unless the ROM byte at `$006D` is
+number of level changes SL7CountEdges sees in 255 polls of 72 T (18 360 T, about 5.2 ms). Then, unless the ROM byte at `$006D` is
 `$28`, it calls SL7CheckSamples:
 
 ```text
@@ -570,8 +579,8 @@ elif S2 - S1 < 50:         ok
 else:                      flag = 1
 ```
 
-The samples cover about 1.1 s of the 1.7 s pause after block 7. On the original the line is quiet there. A copy that
-shortened the pause would put block 13's pilot under the second window: about 7 edges a sample, S2 near 350 against
+The samples cover about 1.34 s of the 1.7 s pause after block 7. On the original the line is quiet there. A copy that
+shortened the pause would put block 13's pilot under the second window: about 8.5 edges a sample (a pilot pulse is 2168 T), S2 near 425 against
 S1 near 50, and the flag set. The flag is SL7Pattern `$FEB3`. Nothing happens at once: the reader goes on, and
 Stage2End wipes memory at the very end (3.8), two and a half minutes later.
 
@@ -742,7 +751,7 @@ Pseudocode:
 if the timing check failed: wipe memory for ever
 restore the BASIC's IY and HL'; IM 1; R = 0; I = $3F
 for p in $7000 .. $C4AD: memory[p] ^= $92
-move $C53C .. $E7CD up by $1FD4 (to $DD10 .. $FFA1)
+move $C53C .. $E7CD up by $17D4 (6100) to $DD10 .. $FFA1
 port $7FFD = $30          # 128K: paging locked in the 48K layout
 jump to the game's entry $85FD
 ```
@@ -769,8 +778,8 @@ The point: the whole game is enciphered in memory until 0.4 s before it runs.
 
 The Tail's LDDR copies 8850 bytes, from `$E7CD` down to `$C53C`, to `$FFA1` down to `$DD10`. Block 27 put the game's
 top, 8841 bytes, at `$C544-$E7CC`. After the move it is at `$DD18-$FFA0`: TitleScreen `$DD18`, the level space's
-tail, the sound and the tail module ([doc 2, 2.2](02-architecture.md#22-the-memory-map)). The 9 bytes below it move to
-`$DD10-$DD17`. The bytes left at `$C544-$DD0F` are LoaderLeftover, in the level space; the first level overwrites
+tail, the sound and the tail module ([doc 2, 2.2](02-architecture.md#22-the-memory-map)). The 8 bytes below it
+(`$C53C-$C543`) move to `$DD10-$DD17`. The bytes left at `$C544-$DD17` (6100) are LoaderLeftover, in the level space; the first level overwrites
 them.
 
 Witness: c1 Decipher from frame 11 680 to about 11 697; the Tail in 11 697-11 700; the entry `$85FD` at frame
@@ -805,7 +814,9 @@ LoadBytes `$8F1F` is the ROM's LD-BYTES re-timed, with three changes:
 - `DI` and a `PUSH` of LoadDone `$FEC0`, so every return, good or bad, goes through `EI` and `RET C`;
 - its own counts: the pilot from `$90` to above `$BF`, 256 pairs; the sync below `$D4` from `$C3`; the bits from `$C0`
   (`$C2` after a byte) against `$DB`;
-- the border: `$0F` (white) while it waits, then the ROM's stripes.
+- the border: `$0F` (white) until the first edge, then its own stripes (EdgeOne's `AND`, patched at `$8FB4`): red and
+  black on the pilot and the sync (`AND $02`), blue and black on the data (`AND $01`), not the ROM's red/cyan and
+  blue/yellow.
 
 ```asm
 LoadBytes:             ; $8F1F
@@ -929,7 +940,14 @@ says otherwise (`work/docs/rtA/wound.py`, its log `work/docs/rtA/wound.txt`; fra
 So on this tape a skipped header always leads to ERROR IN LOADING: the 128-frame wait is shorter than the pause plus
 the pilot (3.96 s). The header check does reject a wrong level; the player then has to wind on by hand. With the
 tape played on after the error, the experiment met a second ERROR, and level 2's header was not read by frame 4493.
-Why is open (the run and the question are in `work/docs/rtA-NOTES.md`).
+A run of `$FF` bytes cannot be taken for a pilot: EdgeLoop costs 59 T a count (`INC B` 4, `RET Z` 5, `LD A,n` 7, `IN`
+11, `RRA` 4, `RET NC` 5, `XOR C` 4, `AND` 7, `JR` 12), a pilot pair must take `B` from `$90` past `$BF`, 48 counts or
+about 2830 T, and a "1" bit pair of these blocks is 2332 T (2 x 1166), under 40 counts. A timeout in the pilot or
+sync search loops back (`JR NC,l_8F38`) and raises no error. The shots of the run
+(`work/docs/rtA/wound/b-03393.png`, SEARCHING ... LEVEL 2, and `b-03593.png`, REWIND TAPE) put the second error
+right after the script's `/tape/play` (about frame 3293) past TZX block 41, a 0 ms pause, which stops the tape. The
+second error most likely comes from the emulator's tape position at that stop block, not from the loader; it was
+not traced (`work/docs/rtA/wound2.py`, `work/docs/rtA-NOTES.md`).
 
 The experiment also found that SPACE as the "any key" at START TAPE breaks the load at once: the key is still held
 when LoadBytes starts, and EdgeLoop gives up.
@@ -951,7 +969,7 @@ sequenceDiagram
 ### The wrap after level 8
 
 LevelEnd `$C25E` turns the digit `'8'` into `'9'` and does not load: level 8's boss stays on screen and the ship is
-made immortal (`RET` at `$91F5`). At the next level end it sets `'0'` and calls LoadLevel, which shows REWIND SIDE 2
+made immortal (`RET` at `$91F5`; the controls stay off too, `RET` at `$95A5`). At the next level end it sets `'0'` and calls LoadLevel, which shows REWIND SIDE 2
 THEN PRESS ANY KEY and then looks for level 1 (recording `ending`: `$C28B`, `$C290` and `$C2A3` once each; LoadError
 twice). At the very start of a game the digit is `'0'` too, so the first load also asks to rewind side 2 (c1 frame
 13 784).
@@ -1001,7 +1019,7 @@ flowchart TD
 
 *From `../../kit/rs.py stages --work work/docs/rtA/c1` (the code arrivals and their writers) and the screens of
 [WALKTHROUGH 6.1](../WALKTHROUGH.md#61-the-screens). The point: 229 s of SpeedLock, of which 6 s are the chain and
-146 s the game's big blocks under the countdown.*
+144 s the game's big blocks (blocks 17, 25 and 27; 146 s under the countdown).*
 
 | Stage | Entered (c1) | From | Its bytes written by | Static decode against the recording |
 | --- | --- | --- | --- | --- |
@@ -1094,7 +1112,8 @@ The ZXDB POKE file "R-Type (1988)(Electric Dreams Software).pok":
 | `37362,201` | `$91F2`, ShipDies' first byte | `CALL ClearHits` | `RET` | the ship cannot die |
 
 The level recordings `l1`-`l8` use the second, in RAM only, and say so in their `record.json`. The game itself puts
-a `RET` three bytes later, at `$91F5`, after level 8: the same immortality the POKE gives
+a `RET` three bytes later, at `$91F5`, after level 8 (until ClearPlayState writes the `NOP` back at the wrap) and
+during the boss blast: the same immortality the POKE gives
 ([doc 10](10-gameplay-logic.md)).
 
 ## 3.15 Known only from the code

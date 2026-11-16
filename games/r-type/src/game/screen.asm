@@ -145,6 +145,10 @@ DetachKey:
 ; polling SelectControl; round again. SelectControl leaves the loop through the
 ; stack with the method chosen.
 ;
+; The two waits take C from the code before them: $0400 = 1024 turns (C = 0
+; from FillBlock), then $5404 = 21 508 SelectControl polls (C = 4 from
+; ShowHiScores).
+;
 ; Witness: L1 8 (c1, gameover, hiscore).
 TitleLoop:
   CALL StarsOff

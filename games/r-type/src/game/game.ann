@@ -32,11 +32,11 @@ $70CB t ContinueText ; "C O N T I N U E" over the countdown
 @res texts/continue.bin
 $70DA t BeamMeterFull ; '@': a full step of the BEAM meter
 $70DB t BeamMeterStep ; '>': the step being filled
-$70DC b ScoreAwards 2 ; The score awards: 10 pairs (place, digit) AwardScore hands to AddScore
+$70DC b ScoreAwards 2 ; The score awards: 10 pairs (place, digit) AwardScore hands to AddScore; an eleventh, 04 05 (5000) at $70F0, no kind uses
 @res tables/score-awards.bin
 > Indexed by the low nibble of an enemy kind's byte 2 less 1: place 3 with the digits 1-9, then place 4 with 1 (100-900 and 1000 points; known only from the code and the score in the level recordings).
-> A kind whose score nibble is 11 or 12 reads past the 10 pairs: zeros, no points (AddScore returns at E = 0).
-$70F0 b ShadowLine0Tail ; zeros up to the next shadow line
+> A kind whose score nibble is 11 would read the pair 04 05 at $70F0 (5000 points), but no kind of any level has it; nibble 12 reads the zeros after it: no points (AddScore returns at E = 0).
+$70F0 b ShadowLine0Tail ; 04 05 (award 11's pair, 5000 points, unused), then zeros up to the next shadow line
 $7100 b ShadowLine1 ; The pixel shadow, third third, pixel line 1
 $7180 t HiScoreLabel ; "HI SCORE" on the HUD
 @res texts/hi-score.bin
@@ -143,6 +143,7 @@ $778C w ControlVectors ; The four control readers by ControlMethod: ReadIf2, Rea
 $7794 b DetachKey ; the joystick methods' detach key: port $7F, bit 0 (SPACE)
 $7796 c TitleLoop ; The title: logo, texts and the high-score table in turn until a fire picks the control method
 > Stars off, the play state cleared, TitleLogo, the title lines; DefineKeys while the title waits (ENTER defines keys); then the high-score table, polling SelectControl; round again. SelectControl leaves the loop through the stack with the method chosen.
+> The two waits take C from the code before them: $0400 = 1024 turns (C = 0 from FillBlock), then $5404 = 21 508 SelectControl polls (C = 4 from ShowHiScores).
 > Witness: L1 8 (c1, gameover, hiscore).
 $77FF b Unused77FF ; a byte no recording reads (known only from the heatmap)
 $7800 b PlayAttrs 32 ; The play field's attribute shadow: 20 rows of 32 attributes
@@ -272,8 +273,8 @@ $87F2 c CutMetatileBoth ; Cut a column from a metatile mirrored and upside down
 > Witness: L1 220 (boss, l x5).
 $882D c MetatileAddress ; HL = the metatile A's data below the level's map (LevelMetatiles - (A + 1) x 144)
 > Witness: L1 18787 (boss, c1, continue, ctl-if2, ctl-kempston, ctl-sinclair, deaths-l7, force, gameover, hiscore, hiscore-typed, pause, restart, l1-l8).
-$8842 c ScrollRows ; Shift the 20 rows of the shadows one cell left and copy the changed cells to the screen
-> For each row of RowTable: the attribute shadow and the solid map row shifted; the row walked from the right, scenery cells shifted in the shadow, other cells copied from the pixel shadow to the screen. While the map moves (ScrollHalted $7A8E = 0) the runs of scenery cells are shifted one pixel left through the unrolled chain ShiftRun; while it stands they are skipped. Sprite cells (tag 1 to $DB) are copied from the pixel shadow and DrawnMap set; untagged cells with DrawnMap 1 are cleared; every tag but $9C is cleared, $9C only when FrameCounter AND 7 = 7 ($88CD).
+$8842 c ScrollRows ; Put the 20 play rows on the screen: attributes copied, scenery shifted one pixel left, changed sprite cells copied
+> For each row of RowTable: the row's attributes copied from PlayAttrs to the screen (LDDR, columns 1-30); the row walked from the right by its SolidMap tags, scenery cells shifted on the screen (RowTable holds the screen pages, $40xx), other cells copied from the pixel shadow to the screen. While the map moves (ScrollHalted $7A8E = 0) the runs of scenery cells are shifted one pixel left through the unrolled chain ShiftRun; while it stands they are skipped. Sprite cells (tag 1 to $DB) are copied from the pixel shadow and DrawnMap set; untagged cells with DrawnMap 1 are cleared; every tag but $9C is cleared, $9C only when FrameCounter AND 7 = 7 ($88CD).
 > Witness: L1 33972 (boss, c1, continue, ctl-if2, ctl-kempston, ctl-sinclair, deaths-l7, ending, force, gameover, hiscore, hiscore-typed, pause, restart, l1-l8).
 $8914 c ShiftRun ; The unrolled RL (HL) / DEC L chain, entered 3 bytes a cell from its end to shift a run of cells one pixel left
 > Witness: L1 255048 (boss, deaths-l7, force, restart, l1-l8).
@@ -417,6 +418,7 @@ $8F1F c LoadBytes ; Load DE bytes to IX from tape at the game's turbo speed
 $8F9E c EdgePair ; Wait for two edges
 > Witness: L1 893818 (c1, deaths-l7, ending, l1-l8).
 $8FA2 c EdgeOne ; Wait for one edge on the EAR bit, counting B; carry when found
+> Each edge flips the border: AND (patched at $8FB4: $02 pilot and sync, $01 data) OR $08: red/black, then blue/black.
 > Witness: L1 1866762 (c1, deaths-l7, ending, l1-l8).
 $8FA3 EdgeLoop ; the counting loop
 $8FBB b Unused8FBB ; bytes no recording reads (known only from the heatmap)
@@ -452,7 +454,7 @@ $91E6 c TableEntry ; HL = the word at HL + 2 x A
 > Witness: L1 388175 (boss, c1, continue, ctl-if2, ctl-kempston, ctl-sinclair, deaths-l7, ending, force, gameover, hiscore, hiscore-typed, restart, l1-l8).
 $91F2 c ShipDies ; The ship is hit: a life off, the explosion, DeathTimer 32
 > Three ways in: JP NC at $956D (scenery ahead of the ship, GetCell), JP NZ at $9574 (an enemy's cell), JP at $C3CE (an enemy shot, MoveEnemyShots). Without the immortality POKE: gameover, continue and hiscore (level 1) (and c1) take $9574 2-6 times and $956D 0-1 times, $C3CE never; deaths-l7 (level 7, the stage 1 POKE undone, 8390 frames) takes $956D 4 times, $9574 once and runs $C3CE 3 times: 8 lives, 8 runs of ShipDies.
-> $91F5 is a NOP in play; a RET there makes the ship immortal (BossDestroyed and the end of level 8 put it there; the immortality POKE of the stage 1 recordings writes $C9 at $91F2).
+> $91F5 is a NOP in play; a RET there makes the ship immortal (BossDestroyed and the end of level 8 put it there, ClearPlayState $8707 puts the NOP back at every level load and life; the immortality POKE of the stage 1 recordings writes $C9 at $91F2).
 > Witness: L1 7575 (boss, c1, continue, ctl-if2, ctl-kempston, ctl-sinclair, deaths-l7, ending, force, gameover, hiscore, hiscore-typed, restart, l1-l8).
 $9218 c ClearShipStuff ; Clear the ship's, the shots' and the enemy shots' state
 > Witness: L1 85 (c1, continue, ctl-if2, ctl-kempston, ctl-sinclair, deaths-l7, gameover, hiscore, hiscore-typed, restart).

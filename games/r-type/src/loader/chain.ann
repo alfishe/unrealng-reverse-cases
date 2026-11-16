@@ -119,7 +119,7 @@ $FB2D c Layer45 ; The next layers: wipe the 100 bytes behind, decipher the rest 
 > Witness: L1 1 (c1).
 $FB62 c LayerKeyed46 ; A keyed layer: POP IX (its return address) + 28, then each byte = ((R XOR IXH) - byte) XOR IXL
 > Witness: L1 1 (c1).
-$FB7E SL7Start ; the reader: the ROM check ($0000 = $F3), the ports $1F, $7B, $BB, $7F, the RAM cleared
+$FB7E SL7Start ; the reader: the ROM check ($0000 = $F3), the ports $1F, $7B, $BB, $7F, $4000-$5BFF cleared, then LDDR with DE = HL - 1 from $FBC5 (BC = $9F0E) smears the NOP's $00 over $5CB7-$FBC4: the BASIC and the chain below are zeroed
 $FBCB c SL7WipeTrap ; Zero memory upward from $FBD7 for ever: the end of a failed check
 > No recording ran it: known only from the code (the load passed every check).
 $FBD7 c SL7Reveal ; The per-bit hook: while $82FF is set, LDI 12 bytes from $8000 to the attributes a step (the screen revealed as it loads)

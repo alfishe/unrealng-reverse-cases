@@ -74,7 +74,7 @@ level 1 (`play-L1.cpu.bin`), the executed ranges of the 16 recordings (`work/sta
 | --- | --- | --- |
 | `$0000-$3FFF` | the ROM; its bytes are also the random numbers (NextRandom `$C05D` reads them through RandomPtr `$7ACD`) | |
 | `$4000-$5AFF` | the screen: 20 character rows of play field, the HUD below (BEAM, score, lives, HI SCORE) | |
-| `$5B00-$5B63` | below EntryCopy; the same bytes at the entry and in play on level 1 | |
+| `$5B00-$5B63` | zeroes: CopyChain's fill of `$5800-$5BFF` ([doc 3, 3.2](03-build-and-load.md#32-the-basic-line-and-its-hidden-number)) left them so, and no recording writes them | |
 | `$5B64-$5D01` | EntryCopy: 414 bytes copied from `$7EE2` at the entry; its last two bytes land on BitReverse (below) | |
 | `$5D00-$5DFF` | BitReverse: each byte with its bits reversed, built at the entry (the mirrored metatiles and sprites) | |
 | `$5E00-$5EB3` | ColumnBuffer: the column the scroll brings in, 20 cells of 9 bytes | |
@@ -96,7 +96,7 @@ level 1 (`play-L1.cpu.bin`), the executed ranges of the 16 recordings (`work/sta
 | `$BE23-$C4AD` | the interrupt and its task table `$BE60`, the stars, the keys, the control choice; the text printer, the cells, the score, the boss | interrupt, util |
 | `$C4AE-$F871` | the level space: each level's body, loaded by LoadLevel (2.3) | levelspace |
 | `$F872-$F87B` | SoundStack: ten bytes the tone player uses as a stack | levelspace |
-| `$F87C-$FDA4` | the sound: PlaySound, the three channel tasks, NoiseBurst `$FAA2`, TonePlayer `$FB52`, the sound table and scripts | sound |
+| `$F87C-$FDA4` | the sound: PlaySound, the three channel tasks, NoiseBurst `$FA71`, TonePlayer `$FB2F`, the sound table and scripts | sound |
 | `$FDA5-$FF93` | CheckExtraLife, WaitFrames, the fills, LoadLevel `$FE03`, DrawFirstScreen `$FEEB` | tail |
 | `$FF94-$FFFF` | StackArea: loader leftovers, then the stack below `$FFFE` | tail |
 
@@ -152,8 +152,9 @@ Single bytes of the code change in play (`tools/image_diff.py --gap 64` over the
 
 | Address | At the entry | In play | Written by |
 | --- | --- | --- | --- |
-| `$95A5` ShieldControls | `$00` | `$C9` (`RET`) | `$86FE`, `$8BC2`, `$8CBA`, `$C1B7`, LevelEnd `$C263` |
-| `$91F5` (in ShipDies) | `$00` (`NOP`) | `$C9` after level 8 | LevelEnd at the digit `'8'` ([doc 4, 4.7](04-game-loop.md#47-the-level-start)) |
+| `$95A5` ShieldControls | `$00` | `$00` in play; `$C9` (`RET`: no fire, no detach) during the fly-in, the boss blast and the level end | `$00`: ClearPlayState `$86FE`, the fly-in end `$8CBA`; `$C9`: the fly-in start `$8BC2`, BossDestroyed `$C1B7`, LevelEnd `$C263` |
+| `$91F5` (in ShipDies) | `$00` (`NOP`) | `$00`; `$C9` (immortal) after the boss blast starts and from level 8's first end to the wrap | `$C9`: BossDestroyed `$C1B4`, LevelEnd `$C283` at the digit `'8'`; `$00`: ClearPlayState `$8707` ([doc 4, 4.7](04-game-loop.md#47-the-level-start)) |
+| `$C138` (the `CALL` at `$C137` in BossBlastOnce) | ClearCells `$C20B` | `$C1DF` (a `RET`: the first blasts leave the cells) from the boss's end until BossBlastCount = `$32`, then ClearCells again | BossDestroyed `$C1AF`; BossBlastOnce `$C112` |
 | `$8FB4` (EdgeLoop's border mask) | `$02` | `$02` in a pilot, `$01` in the data | LoadBytes `$8F27`, `$8F5B` |
 | `$9D3F`, `$9E59-$9E5A`, `$97C4-$97D9`, `$A161-$A174`, `$A1C6` | as loaded | different from one level's end to the next | the weapon code: `$9B3D`, `$9D00` and `$9D4F` write `$9D3F`, `$9E53` writes `$9E59`, `$9BE5` writes `$A1C6` ([doc 10](10-gameplay-logic.md)) |
 | `$BECB`, `$BF24-$BF25` | as loaded | `$3C` / `$08 $77` on the title, `$00` / `$3E $02` in play | TitleStarsOn `$73D8`, PlayStars `$73C5` |
@@ -343,7 +344,7 @@ Command: `python3 tools/fig_arch.py modules docs/img/arch/modules.png`.*
 | sound | `$F87C-$FDA4` | 17 code, 7 data | the three beeper channels, PlaySound, the players, the data |
 | tail | `$FDA5-$FFFF` | 11 code, 2 data | the extra life, the waits and fills, LoadLevel, the first screen, the stack area |
 
-388 entries in 17 modules; each module is one `src/game/*.asm` written from the `.ann` by `kit/mkgame.py`, and the
+319 entries in 17 modules (the counts above); each module is one `src/game/*.asm` written from the `.ann` by `kit/mkgame.py`, and the
 game assembles identical to the image at the entry.
 
 ## 2.8 The main loop's call graph
@@ -370,7 +371,7 @@ flowchart LR
     TL --> LD["LoadLevel $FE03 (tail)"]
     INT["Interrupt $BE23 (interrupt)"] --> ST["StarTask $BE79"]
     INT --> SND["SoundTask1-3 (sound)"]
-    SND --> NB["NoiseBurst $FAA2, TonePlayer $FB52"]
+    SND --> NB["NoiseBurst $FA71, TonePlayer $FB2F"]
 ```
 
 *The calls of a pass and of the interrupt, by module (`src/game`). How to read it: an arrow is a call; the module is

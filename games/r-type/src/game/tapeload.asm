@@ -104,6 +104,9 @@ EdgePair:
 
 ; Wait for one edge on the EAR bit, counting B; carry when found
 ;
+; Each edge flips the border: AND (patched at $8FB4: $02 pilot and sync, $01
+; data) OR $08: red/black, then blue/black.
+;
 ; Witness: L1 1866762 (c1, deaths-l7, ending, l1-l8).
 EdgeOne:
   AND A

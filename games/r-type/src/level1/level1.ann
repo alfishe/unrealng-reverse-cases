@@ -115,7 +115,7 @@ $F777 c L1MoverB15 ; Mover B15
 $F42B b L1Gap ; two bytes between the movers ($30, $C9): no recording reads or runs them (known only from the code)
 $F42D c L1BossHit ; Mover A4's end: LevelVars = $1A, the slot indestructible ($3F), the explosions drawn first (L1ExplosionsFirst), points (AddScore with $0104 and $0503)
 > No recording ran it: known only from the code.
-$F53B c L1BlastRecord ; Free the record at HL: zero it, take its position less one column, start an explosion there (FreeExplosion)
+$F53B c L1BlastRecord ; Free the record at HL: zero it, take its position less one column, start an explosion there (FreeExplosion, its Z flag ignored) and its sound (AwardScore); AwardScore's DE is dropped, so no points
 > Witness: L1 4 (l1).
 $F5E5 b L1SpawnA ; A wave record (kind $0D, then the position the movers write) passed to StartWaveAt
 $F6E4 b L1SpawnB ; Two wave records (kinds $2A and $26) the movers fill and pass to StartWaveAt

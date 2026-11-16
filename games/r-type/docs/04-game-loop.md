@@ -20,7 +20,7 @@ The recordings it rests on ([WALKTHROUGH 6.0](../WALKTHROUGH.md#60-the-recording
 | `c1` | a 48K from power-on, the original tape at signal speed | the entry (frame 11 700), the title, the last life |
 | `pause` (rtB, [doc 5](05-controls.md)) | CAPS SHIFT and 1, 150 frames paused, CAPS SHIFT and 2 | the pause |
 | `continue`, `gameover`, `hiscore` | a game lost with and without a continue, a high score entered | the death paths, MISSION OVER, CONTINUE |
-| `deaths-l7` | three deaths on level 7 without the POKE | DeathTimer |
+| `deaths-l7` | eight deaths on level 7 without the POKE (all three death paths) | DeathTimer |
 | `ending` | level 8's end and the wrap | LevelEnd with the digits `'8'` and `'9'` |
 
 Frame numbers: a picture of frame N is the state at the start of frame N; a trace puts an instruction in the frame
@@ -463,10 +463,11 @@ work/stage1/pass-frames-l2.txt`.*
 The one pass of 2 frames is a sampling effect: the tool reads the counter at the start of each frame, and a pass that
 begins just before an interrupt and ends just after its third spans only two frame starts.
 
-The boss does not slow the game. While the map is halted on level 2's boss (frames 10 200-15 525) a pass takes 4.67
-frames, against 4.672 while the map moves (1080 and 1423 passes). The boss passes have more lengths of 6-9 frames. A
-12-frame window on the boss (12 500-12 512) runs 17 300 more instructions in ScrollRows and 9883 more in DrawSprite
-than a 12-frame window of scrolling (stage 2 NOTES, Facts 6).
+The boss does not slow the game. While the map is halted on level 2's boss (from frame 10 200; the window's last
+pass starts at 15 243) a pass takes 4.670 frames (1080 passes, 5044 frames), against 4.679 while the map moves (1432
+passes, 6701 frames, 3501-10 199; counted from `work/stage1/pass-frames-l2.csv`). The boss passes have more lengths
+of 6-9 frames (308 against 279). A 12-frame window on the boss (12 500-12 512) runs 17 300 more instructions in
+ScrollRows and 9883 more in DrawSprite than a 12-frame window of scrolling (stage 2 NOTES, Facts 6).
 
 ### Worked example: one pass, l2 frames 8961-8966
 
@@ -505,20 +506,21 @@ The beam timeline puts the screen writes of one pass on the raster. The pass is 
   key under the figure);
 - the bar on top of each panel is the routine running.
 
-The point: there is no sync with the beam. ScrollRows' inner loops (`l_8881`, `l_8846`, `l_88B3`) and the ShiftRun
+The point: there is no sync with the beam. ScrollRows' inner loops (at `$8881`, `$8846` and `$88B3`) and the ShiftRun
 chain make 3005 screen writes in the pass; 1443 of them land before the beam reaches their line, so those lines show
 the new picture on this frame and the others on the next. A row can show half shifted for a frame. Command: `python3
-../../kit/beam_timeline.py --work work/docs/rtA/l2 --window 8961:0-8967:0 --listing build/game.lst --listing
+../../kit/beam_timeline.py --work work/docs/rtA/l2 --window 8961:0-8967:0 --listing work/docs/rtA/game-scrollrows.lst --listing
 build/level2.lst --out docs/img/loop/beam-pass.png --frames 8961-8966 --title "One pass of level 2 against the beam
-(l2 frames 8961-8966)"`.*
+(l2 frames 8961-8966)"`, where `game-scrollrows.lst` is `build/game.lst` with ScrollRows' three loop labels named after
+their routine: `sed -E 's/ l_(8846|8881|88B3):/ ScrollRows_\1:/' build/game.lst`.*
 
 The writes by routine, from the figure's key:
 
 | Routine | What it writes | Screen writes | Before the beam | After it | Instructions |
 | --- | --- | --- | --- | --- | --- |
-| `l_8881` | a cell's 8 pixel bytes, copied from the pixel shadow (`H + $20`) | 1120 | 374 | 746 | 7078 |
-| `l_8846` | a row's attributes, shifted by `LDDR` | 660 | 300 | 360 | 1059 |
-| `l_88B3` | a cell's 8 pixel bytes, cleared | 160 | 48 | 112 | 2482 |
+| ScrollRows (`$8881`) | a cell's 8 pixel bytes, copied from the pixel shadow (`H + $20`) | 1120 | 374 | 746 | 7078 |
+| ScrollRows (`$8846`) | a row's attributes, shifted by `LDDR` | 660 | 300 | 360 | 1059 |
+| ScrollRows (`$88B3`) | a cell's 8 pixel bytes, cleared | 160 | 48 | 112 | 2482 |
 | ShiftRun1-ShiftRun9 | a run of scenery cells, shifted one pixel left by the unrolled `RL (HL)` chain | 1065 | 721 | 344 | 2589 |
 
 The frame budget of the whole of `l2` and of a 12-frame window, by module and by routine, is in
@@ -609,6 +611,7 @@ LevelEnd:                                   # each pass
     if digit = '8':                         # the end of level 8
         digit = '9'; WavesHalted = 0; LevelEndTimer = 0
         ShipDies + 3 ($91F5) = RET          # the ship cannot die
+        # ShieldControls keeps its RET: no fire, no detach, until ClearPlayState at the wrap
         return
     if digit = '9': digit = '0'             # LoadLevel will ask for side 2 again
     ScrollRows; StarsOff; sound $1583; LevelEndTimer = 0
@@ -661,11 +664,14 @@ are 0, so the level ends at once. The end of the boss blast (`$C190`) writes `$3
 The digit at `$719C` is `'8'` when level 8's end comes:
 
 1. LevelEnd sees `'8'`, writes `'9'`, clears WavesHalted and the timer, and writes `RET` at `$91F5`, inside ShipDies.
-   The pass goes on; the waves run again; a hit now returns after ClearHits and costs no life.
+   The pass goes on; the waves run again; a hit now returns after ClearHits and costs no life. LevelEnd's earlier
+   steps have left `RET` at ShieldControls `$95A5` too, and nothing clears it before the wrap: the ship moves but
+   cannot fire or detach the Force.
 2. The next level end finds `'9'`, writes `'0'` and goes on to LoadLevel.
 3. LoadLevel sees `'0'`: REWIND SIDE 2, then the digit becomes `'1'` and level 1 loads.
 
-Witness: `ending` (SEARCHING FOR R TYPE LEVEL 1 at frame 1808). The `RET` at `$91F5` stays in memory after the wrap
+Witness: `ending` (SEARCHING FOR R TYPE LEVEL 1 at frame 1808). Both `RET`s end at the wrap: LoadLevel calls ClearPlayState (`$FE06`), whose `$8707` and `$86FE`
+write `$00` back to `$91F5` and `$95A5`, so level 1 starts mortal and with the controls on
 ([doc 2, 2.2](02-architecture.md#22-the-memory-map)).
 
 ![The level start of level 2, in memory](img/play/level-start-l2.gif)
@@ -715,11 +721,13 @@ FDEE  RET
 | `HALT` | the credits scroll `$8188` | one frame a step | ShowLoadingScreen at the entry |
 | DeathTimer `$7A8D` | ShipDies `$9213`, LoseLife `$924B` | 32 passes, about 150 frames | a death: the second explosion at 24, the life ends at 0 |
 | LevelEndTimer `$7A9B` | `$90E5`, `$C190`, LevelEnd | 1 or 31 passes | a level's end |
-| ShieldTimer `$7A98` | StartPlay `$8BAE` | `$38` on the first life (with the fly-in), `$20` on later lives | the ship cannot be hit ([doc 10](10-gameplay-logic.md)) |
+| ShieldTimer `$7A98` | StartPlay `$8BAE` | `$38` on the first life (with the fly-in), `$20` on later lives | the shield is drawn; it does not protect: no test reads ShieldTimer, and `deaths-l7` 8376 is a death under it ([doc 10](10-gameplay-logic.md)) |
 | CheckExtraLife | `$FDA5` | each pass the score changed | a life at 50 000, then each 100 000 |
 
 The title waits on nothing. TitleLoop `$7796` draws the logo and the texts, then runs DefineKeys, StarTask and an
-attribute copy 1024 times, then shows the high scores and polls SelectControl `$54xx` times, and starts again. Its
+attribute copy 1024 times, then shows the high scores and polls SelectControl 21 508 (`$5404`) times, and starts again. The counts come from
+`BC` across calls: the first loop's `B` = 4 meets the `C` = 0 FillBlock leaves (`$0400`, 1024), the second loop's
+`B` = `$54` meets the `C` = 4 ShowHiScores leaves from its `LD BC,$0304` (`$5404`). Its
 pace is the speed of its own code, with the interrupts on. (The title cycle, `c1` frames 16 540-17 900, is animated
 in [doc 1](01-game-design.md).)
 
@@ -750,7 +758,7 @@ ShipDies writes `$20` to DeathTimer. LoseLife, first in every pass, counts it do
 | 32 | `$00` | LoseLifeNow: PILOT STAND BY or MISSION OVER |
 
 At 4.68 frames a pass the 32 passes take about 150 frames, 3 s, during which the playfield goes on scrolling and the
-enemies go on moving. Witness: `deaths-l7` (three deaths without the POKE) and `c1` frames 19 230-19 884 (the last
+enemies go on moving. Witness: `deaths-l7` (eight deaths without the POKE) and `c1` frames 19 230-19 884 (the last
 life of `c1`, animated in [doc 1](01-game-design.md)).
 
 ## 4.9 Known only from the code

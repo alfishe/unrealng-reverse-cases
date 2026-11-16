@@ -65,18 +65,21 @@ BeamMeterFull:
 BeamMeterStep:
   DEFM ">"+$80
 
-; The score awards: 10 pairs (place, digit) AwardScore hands to AddScore
+; The score awards: 10 pairs (place, digit) AwardScore hands to AddScore; an
+; eleventh, 04 05 (5000) at $70F0, no kind uses
 ;
 ; Indexed by the low nibble of an enemy kind's byte 2 less 1: place 3 with the
 ; digits 1-9, then place 4 with 1 (100-900 and 1000 points; known only from the
 ; code and the score in the level recordings).
 ;
-; A kind whose score nibble is 11 or 12 reads past the 10 pairs: zeros, no
-; points (AddScore returns at E = 0).
+; A kind whose score nibble is 11 would read the pair 04 05 at $70F0 (5000
+; points), but no kind of any level has it; nibble 12 reads the zeros after it:
+; no points (AddScore returns at E = 0).
 ScoreAwards:
   INCBIN "res/tables/score-awards.bin",$0000,20
 
-; zeros up to the next shadow line
+; 04 05 (award 11's pair, 5000 points, unused), then zeros up to the next
+; shadow line
 ShadowLine0Tail:
   DEFB $04,$05,$00,$00,$00,$00,$00,$00
   DEFB $00,$00,$00,$00,$00,$00,$00,$00

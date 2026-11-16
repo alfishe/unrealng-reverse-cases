@@ -21,7 +21,7 @@ sys.path.insert(0, os.path.join(CASE, '..', '..', 'kit'))
 import kitlib as K  # noqa: E402
 from PIL import Image, ImageDraw  # noqa: E402
 
-W = 1050
+W = 1090
 COL = {'rom': (90, 90, 100), 'screen': (70, 160, 220), 'buffer': (60, 110, 150), 'code': (90, 200, 120),
        'data': (220, 170, 70), 'level': (200, 110, 230), 'levelcode': (240, 90, 160), 'sound': (240, 90, 80),
        'stack': (240, 230, 120), 'free': (45, 45, 55), 'loader': (200, 70, 60), 'basic': (120, 120, 140)}
@@ -37,7 +37,7 @@ def memory(out):
     common = [(0x0000, 0x3FFF, 'rom', 'the ROM'),
               (0x4000, 0x5AFF, 'screen', 'the screen'),
               (0x5B00, 0x5FFF, 'buffer', 'EntryCopy, BitReverse, shots'),
-              (0x6000, 0x77FF, 'buffer', 'the pixel shadow, texts, title code'),
+              (0x6000, 0x77FF, 'buffer', 'pixel shadow, texts, title code'),
               (0x7800, 0x7FFF, 'data', 'attributes, vars, SolidMap'),
               (0x8000, 0x85FC, 'data', 'rows, intro code, IM 2, enemies'),
               (0x85FD, 0xA5F6, 'code', 'the game code $85FD'),
@@ -69,7 +69,7 @@ def memory(out):
            fill=K.DIM, font=f)
     y0, y1 = 90, H - 60
     ax = 70
-    colw, gap = 90, 230
+    colw, gap = 80, 255
     py = lambda a: y0 + a * (y1 - y0) / 0x10000  # noqa: E731
     for a in range(0, 0x10001, 0x2000):
         d.line((ax - 6, py(a), ax, py(a)), fill=K.DIM)

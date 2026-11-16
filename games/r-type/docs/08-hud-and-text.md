@@ -171,7 +171,7 @@ The font is upper case only: digits, letters, a few signs. Fifteen glyphs are no
 | `$5B` | `[` | blank | the space; the name entry |
 | `$5C`, `$5D` | `\` `]` | rub out, end | the name entry ([doc 5](05-controls.md#511-the-name-entry)) |
 
-The "=BEAM" string at Font+6 is the strangest: the six bytes `3D 42 45 41 4D` + bit 7 sit in the last two lines of
+The "=BEAM" string at Font+6 is the strangest: the five bytes `3D 42 45 41 CD` (the last one, M, with bit 7) sit in the last two lines of
 the `!` glyph and the first lines of `"`. No string of the game contains `!` or `"`, so those glyphs are free, and
 the author stored a string in them. Where the text needs an exclamation mark it uses `$`.
 
@@ -309,7 +309,7 @@ l_C251: ADD A,(HL)             ; add to the ASCII digit
 ```
 
 The awards come from ScoreAwards `$70DC`, pairs (place, digit) picked by the low nibble of the enemy's kind
-(AwardScore `$A5B4`): 100 to 900 (place 3), 1000 and 5000 (place 4). A pick-up gives 400, the shield 600 more
+(AwardScore `$A5B4`): 100 to 900 (place 3), 1000 (place 4); a pair for 5000 follows as award 11, which no kind uses. A pick-up gives 400, the shield 600 more
 ([doc 10](10-gameplay-logic.md)). The last two digits never change: the score counts hundreds.
 
 AddScore only marks ScoreChanged `$7A99`. The pass ends with CheckExtraLife `$FDA5`, which returns at once unless
@@ -486,7 +486,7 @@ stateDiagram-v2
     Play --> StandBy: a life lost, lives left
     StandBy --> Play: 80 frames, ClearTextRow, DrawHud
     Play --> Over: the last life lost
-    Over --> Continue: 80 frames
+    Over --> Continue: 80 + 96 frames, then the best pilots (CheckHiScore)
     Play --> Paused: the pause key
     Paused --> Play: DrawHud
     note right of StandBy
@@ -553,8 +553,8 @@ the new entry at No. 5; memory panel `$7C00-$7DFF` (HiScoreTable). Command: `pyt
 
 *Figure 8.5: the result, hiscore frame 5959: "AABAAAAAA" 052600 at No. 5.*
 
-Worked example: entry 5 is printed at row 3 + 2 x 4 = 11. "No. " at columns 4-7, '5' at 8, a space at 9, the name
-from 10 to 19, the score from 20 to 25, and the `$A0` blank at 26.
+Worked example: entry 5 is printed at row 3 + 2 x 4 = 11. NoText `$73A8` (`28 29 2A 2B A0`, "No. " and a blank) at columns 4-8,
+'5' at 9, a space at 10, the name from 11 to 20, the score from 21 to 26, and the `$A0` blank at 27.
 
 The point: the table is printed exactly as it is stored; inserting a score is moving bytes.
 
@@ -576,21 +576,23 @@ Why it never shows (stage 2, `work/stage2/NOTES.md` item 1):
 - level 8's wave script has command 5, the level's end, at map column 56 and again at 66;
 - the wave kinds `$1C`-`$28` that would draw the text come at columns 67-73, with a last command 5 at 82;
 - LevelEnd `$C25E` at digit '8' makes it '9', clears WavesHalted and makes the ship immortal (a `RET` at
-  ShipDies + 3); at '9' it makes '0' and loads level 1. So command 5 at column 66 ends the game first.
+  ShipDies + 3); at '9' it makes '0', runs ScrollRows, the tune `$15`, LoadLevel, RestartPoint and `JP StartLife`: level 1 again,
+  the score and lives kept (the wrap). Command 5 also halts the waves (WavesHalted), so the command 5 at 66.3.7
+  ends level 8 one step before the text's kinds at 67.0.0.
 
 ```mermaid
 flowchart LR
     C56["column 56: command 5"] --> E8["LevelEnd: digit 8 to 9, waves on, ship immortal"]
     E8 --> C66["column 66: command 5"]
     C66 --> E9["LevelEnd: digit 9 to 0, LoadLevel"]
-    E9 --> T["the title, level 1"]
+    E9 --> W["level 1 loaded, play goes on: the wrap"]
     C67["columns 67-73: the kinds that draw object 32"] -.->|"never reached"| X["the closing text"]
 ```
 
 Witness: the `ending` recording runs from digit '9' through the level 1 search; it reads nothing in
 `$CAFF`-`$D2CE`.
 
-The point: the game's last message exists in the data, placed in the map six columns too late.
+The point: the game's last message exists in the data, placed in the map one step after the level's second end.
 
 ## 8.10 Summary
 

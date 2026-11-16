@@ -120,7 +120,8 @@ Everything the player owns is a handful of bytes:
 | ShieldTimer | `$7A98` | passes left | pick-up 6, a new life |
 | BeamCharge, BeamPower | `$7ABF`, `$7AC0` | the charge, the beam's power | FireBeam, BeamRelease |
 
-A death clears all of them (ClearShipStuff zeroes `$55` bytes from ShipColumn).
+A death clears all of them but ShieldTimer, which the next life sets (ClearShipStuff zeroes the `$55` bytes
+`$7AA1-$7AF5` from ShipColumn; ShieldTimer `$7A98` lies before them).
 
 ![The game variables over l1: the weapons build up through the level](img/objects/l1-vars.png)
 
@@ -158,7 +159,7 @@ Worked example: at frame 2060 the samples show ForceLevel going 0 → 1 and Weap
 
 Witness: `l1`, the samples above; the pick-up at 2056:38791 (TakePickup), the dock at 2083:17238.
 
-**The point**: the ship's whole arsenal is seven bytes. A death empties them at once, which is why a death in R-Type
+**The point**: the ship's whole arsenal is a handful of bytes. A death empties them at once, which is why a death in R-Type
 costs so much more than a life.
 
 ## 10.3 The controls in a pass: fire, charge, detach
@@ -466,9 +467,12 @@ Recording `l1`, frames 2040 to 2100, every second frame: `python3 ../../kit/scre
 --from 2040 --to 2100 --step 2 --width 1050 docs/img/play/l1-pickup-force.gif`.
 
 Its shots: on each release of fire ([10.4](#104-the-shot-and-the-charged-beam)) a free Force fires from its own
-place (record 1: one shot, record 2: ShotFireDouble). A docked Force fires the weapon of WeaponKind: 1 the bouncing
-laser (BounceShot `$A060`, sound `$18`), 2 the ground laser (ForceGround `$9C40`, `$1C`), 3 the anti-air shots
-(MoveAntiAir `$9ED5`, `$16`).
+place (record 1: one shot, record 2: ShotFireDouble, record 3: ShotFireTriple). Docked, the Force fires the weapon of
+WeaponKind from ForceLevel 2 (`$9AE8`-`$9C99`): 1 the bouncing laser (BounceShot `$A060`, sound `$18`), 2 the ground
+laser (ForceGround `$9C40`, `$1C`), 3 the anti-air shots (MoveAntiAir `$9ED5`, `$16`). Record 2 fires it with
+parameter 3 (`$9B27`-`$9B54`: `JP l_9BDE`, `JP l_9C42`, or the ForceShotA/B pair), record 3 in full (`$9B76`: the
+`$0F` patches, AntiAirShots, sound `$16`). At ForceLevel 1 a docked Force fires nothing of its own (`$9B07` →
+`$9B57` → FireMissiles).
 
 Worked example: at 2083 the Force comes from the left in state 4. The ship is at a column at or above the Force's
 column + 1, so B goes to 2: ForceAttached = 2, docked at the tail.
@@ -583,15 +587,19 @@ changes the colour of its weapon.
 
 The two bits are small satellites. MoveBitDevices `$9969` places them on the ship's trail: TrailPoint gives a place
 the ship passed a few passes ago; the upper bit sits 4 rows above it, the lower 3 rows below. Each is drawn with an
-animated frame (BitFrame) and its hits go to AddScoreFlag, so a bit kills what it touches. On each release of fire
-FireBits `$9CF2` fires a shot from the upper bit's place (ForceShotA).
+animated frame (BitFrame) and its hits go to AddScoreFlag, so a bit kills what it touches. FireBits `$9CF2` passes record
+3's state (`$7AAE`) to ForceShotA (the upper bit) and ForceShotB (the lower one), and ForceShotFrom `$9D16` returns
+unless that state is 1 or 2, ForceAttached is not 0 and WeaponKind is 3: the bits fire only with a docked
+ForceLevel 3 Force and the anti-air weapon.
 
 ```text
 MoveBitDevices:
     if BitUpperOn: p = TrailPoint(); BitPositions[0] = (p.column, p.row - 4); draw; damage the hits
     if BitLowerOn: p = TrailPoint(); BitPositions[1] = (p.column, p.row + 3); draw flipped; damage the hits
-FireBits (on release):
-    if BitUpperOn: a shot from BitPositions[0]
+FireBits (fire released):
+    if record 3 docked (state 1 or 2) and ForceAttached and WeaponKind == 3:
+        if BitUpperOn: a shot from BitPositions[0] (ForceShotA)
+        if BitLowerOn: a shot from BitPositions[1] (ForceShotB)
 ```
 
 ```asm
@@ -625,7 +633,8 @@ flowchart LR
     P --> L["lower bit: row + 3"]
     U --> D["draw, damage what it touches"]
     L --> D
-    U --> F["on release: a shot (FireBits)"]
+    U --> F["on release, docked ForceLevel 3 and anti-air only: a shot (FireBits)"]
+    L --> F
 ```
 
 ![l1 frames 8430-8478: the bit pick-up taken, the upper bit trails the ship](img/play/l1-bits.gif)
@@ -643,18 +652,23 @@ Witness: `l1`, BitUpperOn 1 from the sample at 8450; the lower bit never came in
 ## 10.8 The missiles
 
 With MissilesOn, FireMissiles `$9C99` launches a pair of missiles whenever MissileTimer is 0 and both launch
-records are free. It sets MissileTimer to `$20` and plays `$06`. One missile starts at the ship's row - 1, the other
-at the row; MoveMissileSet `$A01F` moves the three missile records with two steps of BounceShot's movement a pass and
-draws their trails.
+records (MissileLaunch `$7AE7`, `$7AED`) are free. It has no caller of its own: it runs at the end of FireBeam's chain
+(`JP FireMissiles` at `$9B5B`, `$9B63`, `$9B73`, `$9B86`, `$9B9F`, `$9BC3`), and FireBeam runs only from
+ShieldControls (at `$95B3`) while fire is held or on the release pass. It sets MissileTimer to `$20` and plays `$06`. One
+missile starts at the ship's row - 1, the other at the row; MoveMissiles `$93D0` moves the two along their frame
+lists, turning each toward a target (MoveMissile `$93F0`: they home), and counts MissileTimer down. (MoveMissileSet
+`$A01F` moves other records, MissileA-C `$5F00`, `$5F34`, `$5F68`, that StartMissile `$9C2C` fills for the docked
+bouncing laser at `$9BDC`.)
 
 ```text
-FireMissiles (each pass):
+FireMissiles (FireBeam's chain: fire held, or the release pass):
     if MissilesOn and MissileTimer == 0 and both launch records free:
         MissileTimer = $20
         launch one at (ShipColumn, ShipRow - 1), one at (ShipColumn, ShipRow)
         PlaySound($06, $81)
-MoveMissileSet:
-    for each missile record: BounceShot twice; draw the trail
+MoveMissiles:
+    if MissileTimer: MissileTimer -= 1
+    for each of the two missiles: MoveMissile (along its frame list, turning toward a target)
 ```
 
 ```asm
@@ -684,8 +698,9 @@ flowchart TD
     O -- "no" --> B["FireBits"]
     O -- "yes" --> L["timer $20; two missiles; sound $06"]
     L --> B
-    M["MoveMissileSet"] --> S["BounceShot x 2 per missile"]
-    S --> T["draw the trails"]
+    FB["FireBeam: fire held or released"] --> F
+    M["MoveMissiles $93D0"] --> S["MoveMissile x 2: homing"]
+    M --> T["MissileTimer - 1"]
 ```
 
 ![l1 frames 9320-9380: the missile pick-up taken, the first pairs fly](img/play/l1-missiles.gif)
@@ -694,16 +709,17 @@ Recording `l1`, frames 9320 to 9380, every second frame: `python3 ../../kit/scre
 --from 9320 --to 9380 --step 2 --width 1050 docs/img/play/l1-missiles.gif`.
 
 Worked example: MissileTimer counts down from `$20`. A new pair can leave only when it is 0 and both earlier missiles
-are gone, so the missiles fire by themselves, without the fire key.
+are gone, and only in FireBeam's chain: holding fire launches a pair whenever both are free. (With a free
+level 1 Force and fire held, `$9AF9` jumps over FireMissiles to FireBits.)
 
 Witness: `l1`, MissilesOn 1 from the sample at 9340; FireMissiles started `$06` 482 times over the recordings.
 
-**The point**: the missiles are an automatic weapon: once taken they fire on their own.
+**The point**: the missiles ride on the fire key: holding it keeps launching homing pairs, with no aiming.
 
 ## 10.9 The shield
 
 ShipShield `$9577` runs every pass after MoveShip. While ShieldTimer is above 0 it counts it down and draws object
-`$62` around the ship, flipped on alternate frames. A new life starts with ShieldTimer `$20` (StartPlay `$8BD3`; `$38` on the first
+`$62` around the ship, flipped on alternate frames. A new life starts with ShieldTimer `$20` (StartPlay `$8BAE`, its `$20` branch at `$8BD3`; `$38` on the first
 play); the shield item sets it to `$30`.
 
 No test reads ShieldTimer but ShipShield. The nose test and the hit test run before it in MoveShip, and the enemy
@@ -843,7 +859,7 @@ moment is [L1MoverA8.gif](img/routines/L1MoverA8.gif) in [doc 7, 7.8](07-objects
 Drawn by `python3 tools/fig_level.py waves docs/img/levels/waves.png` (from the level blocks, no recording).
 
 Worked example: level 1's boss halts the screen at MapColumn 107 (frame 12 050 of `l1`). The core's mover A8 waits
-for MapColumn 115 (frame 13 518) and blows the parts in slots 20-23, each with its points: the boss "dies" by the
+for MapColumn 115 (frame 13 518) and blows the parts in slots 20-23, each with an explosion but no points (L1BlastRecord never calls AddScore): the boss "dies" by the
 clock, 1468 frames after the halt.
 
 Witness: `l1` 13518 (L1MoverA8). BossDestroyed ran only in `boss` (the integration's recording, `l1`'s keys from c1's
@@ -862,7 +878,7 @@ The ship dies by one of three tests. All three jump to ShipDies `$91F2`:
 | Path | Where | Test | `deaths-l7` |
 | --- | --- | --- | ---: |
 | scenery ahead | `$956D`, MoveShip | GetCell at (ShipColumn + 3, ShipRow) returns no carry: a solid cell at the nose | 4 |
-| an enemy on the ship | `$9574`, MoveShip | HitCount not 0: an enemy drawn over the ship's cells | 1 |
+| something under the ship | `$9574`, MoveShip | HitCount not 0: the ship's draw found a taken cell under one of its cells, an enemy's or scenery (`$FF`) | 1 |
 | an enemy shot | `$C3CE`, MoveEnemyShots | the shot's cell holds a tag below 6: the ship | 3 |
 
 The tags come from the drawing: each sprite marks its cells, and a draw over a marked cell adds a hit
@@ -874,7 +890,7 @@ clears every weapon, shot and enemy shot (ClearShipStuff).
 ```text
 MoveShip, after the move:
     if GetCell(ShipColumn + 3, ShipRow) is solid: ShipDies      # $956D
-    if HitCount: ShipDies                                       # $9574
+    if HitCount: ShipDies                                       # $9574: enemy or scenery cells
 MoveEnemyShots, per shot:
     if the cell's tag < 6: ShipDies                             # $C3CE
 ShipDies:
@@ -892,7 +908,7 @@ ShipDies:
 956D  JP NC,ShipDies          ; scenery ahead
 9570  LD A,(HitCount)
 9573  AND A
-9574  JP NZ,ShipDies          ; an enemy on the ship
+9574  JP NZ,ShipDies          ; something under the ship: an enemy or scenery
 ShipDies:
 91F2  CALL ClearHits
 91F5  NOP                     ; RET: the ship cannot die
@@ -915,7 +931,7 @@ ClearShipStuff:
 ```mermaid
 flowchart TD
     N["$956D: solid cell at the nose"] --> D["ShipDies $91F2"]
-    H["$9574: HitCount, an enemy on the ship"] --> D
+    H["$9574: HitCount, an enemy or scenery under the ship"] --> D
     S["$C3CE: an enemy shot on a ship tag"] --> D
     D --> P{"$91F5 patched to RET?"}
     P -- "yes" --> I["nothing: immortal"]
@@ -948,11 +964,18 @@ Witness: `deaths-l7` (8390 frames, lives 8 → 0), the deaths by path (frame:T):
 | Path | Deaths |
 | --- | --- |
 | `$956D` scenery | 3824:17111, 6065:7070, 6792:14220, 7528:18071 |
-| `$9574` an enemy | 5203:60884 |
+| `$9574` under the ship | 5203:60884 (tag `$82`, enemy slot 2) |
 | `$C3CE` a shot | 4353:9936, 4782:52111, 8376:45567 |
 
-**The point**: the nose is the only part of the ship that touches the scenery. Flying low under a ledge is safe as
-long as the nose is in the open.
+The scenery kills through both tests. MoveShip draws the ship with DrawGame `$99FE`, whose DrawPrepare turns the hit
+gathering on, and CollectHit `$8EDB` stores any nonzero SolidMap tag, scenery's `$FF` included. At 3824 and 6065 the
+ship's draw gathered `$FF` tags too, but the nose test came first. In `l2` at 8978 and 8990 (ShipDies made harmless
+there by the recording's POKE) the nose cell was free and `$9574` fired on HitCount 3: `$FF`, `$FF` and `$82`.
+Witness: the traces `work/docs/rtC/d7/traces/` and `work/docs/rtC/l2/traces/8976_0-8996_0.uatr`, the instruction
+at `$8EEC` (CollectHit's store) between `$9560` and `$9563`.
+
+**The point**: the whole ship touches the scenery, not just the nose. The nose test only looks one cell ahead; any
+ship cell drawn over scenery is gathered as a hit, and the ship dies on it.
 
 ## 10.12 Death, lives and continues
 
@@ -1253,8 +1276,8 @@ second end loads level 1 with the score and the lives kept: the game wraps.
 
 ## 10.15 The notable features
 
-- **Every shot leaves on release.** Fire held charges; letting go fires a shot, a beam, the Force's shot and the bits'
-  shot at once ([10.4](#104-the-shot-and-the-charged-beam)).
+- **Every shot leaves on release.** Fire held charges; letting go fires a shot, a beam and the Force's shot at once (the bits'
+  shots only with a docked ForceLevel 3 Force and the anti-air weapon) ([10.4](#104-the-shot-and-the-charged-beam)).
 - **The Force docks on either side**, by where it touches ([10.5](#105-the-force-levels-attach-detach-and-its-shots)).
 - **The shield does not protect** ([10.9](#109-the-shield)).
 - **One patched byte switches the weapons** (ShieldControls) and **one switches death** (ShipDies+3): the boss's

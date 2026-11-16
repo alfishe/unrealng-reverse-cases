@@ -41,12 +41,13 @@ BasicHiddenNumber:
 
 ; Blacken the attributes, copy the chain to $EC00-$FEE7 and return into it
 ;
-; Entered by line 0's USR (PROG+59). Interrupts off; fills the attributes
-; $5800-$5BFF with zero (INK 0 on PAPER 0: the screen goes black, the bitmap
-; stays), border black. HL = PROG + $5C (ChainTape, found from the system
-; variable PROG at 23635 rather than assumed); DE = $EC00, BC = 4840; $EC00
-; pushed, then LDIR and RET: the RET enters the chain's first layer at $EC00.
-; SP stays where the ROM's USR left it.
+; Entered by line 0's USR (PROG+59). Interrupts off; fills $5800-$5BFF with
+; zero: the 768 attribute bytes (INK 0 on PAPER 0: the screen goes black, the
+; bitmap stays) and the printer buffer $5B00-$5BFF, border black. HL = PROG +
+; $5C (ChainTape, found from the system variable PROG at 23635 rather than
+; assumed); DE = $EC00, BC = 4840; $EC00 pushed, then LDIR and RET: the RET
+; enters the chain's first layer at $EC00. SP stays where the ROM's USR left
+; it.
 ;
 ; c1: the LDIR wrote $EC00-$FEE7 in work/stage2/c1/chain.
 ;

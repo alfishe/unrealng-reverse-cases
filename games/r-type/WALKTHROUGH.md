@@ -184,7 +184,8 @@ What no recording reached, and why:
   recording reads those bytes ([doc 8, 8.9](docs/08-hud-and-text.md#89-the-closing-text-that-never-shows)).
 - **A boss killed by hits.** No recording's shots destroyed a boss part that ends a level; `boss` reaches
   BossDestroyed `$C19C` only through a POKE (above). L1BossHit `$F42D` and mover A3's kill count `$F3C6` never ran.
-- **Sounds `$07`, `$0B`, `$17`, `$1F`-`$21`**: no code or wave started them; doc 9 renders them from the table.
+- **Sounds `$07`, `$17`, `$1F`-`$21`**: no code or wave starts them; `$0B` is started by DefineKeys (`$BF99`, `$C00A`)
+  but no recording ran it; doc 9 renders all of them from the table.
 - **The other items known only from the code** are listed at the end of each document (1.7, 3.15, 9.11, 10.16 and
   the rest).
 - **The level 1 start of the probe chain** is not a TTD recording; the level recordings that follow from it are.
@@ -204,7 +205,7 @@ Every screen the documents link, from the recordings' `screens/` (the recording'
 | `c1` 17 278 | [TODAY'S BEST PILOTS](docs/img/play/c1-017278-best-pilots.png) |
 | `c1` 17 858 | [define keys: PRESS A KEY FOR LEFT](docs/img/play/c1-017858-define-keys.png) |
 | `c1` 18 302 | [level 1, the start](docs/img/play/c1-018302-level1-start.png) |
-| `c1` 18 630 | [the charged beam fired](docs/img/play/c1-018630-beam-fired.png) |
+| `c1` 18 630 | [30 frames after the charged beam: the ship exploding, the meter empty](docs/img/play/c1-018630-beam-fired.png) |
 | `c1` 18 778 | [PILOT STAND BY ! after the life lost near 18 640 (CAPS SHIFT+1 pressed here paused nothing)](docs/img/play/c1-018778-pause.png) |
 | `ctl-kempston` 296 | [play on the Kempston](docs/img/play/ctl-kempston-000296-moved.png) |
 | `l1` 7009, 14 016 | [level 1](docs/img/play/l1-007009-level1.png), [its boss](docs/img/play/l1-014016-level1-boss.png) |

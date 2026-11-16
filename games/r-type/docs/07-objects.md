@@ -66,7 +66,7 @@ entry. This table groups them by owner.
 | `$7A9A` | WaveOverride | 1 | wave command 3: the slot of the next wave | CommandWave | 7.3 |
 | `$7A9B` | LevelEndTimer | 1 | counts down after the level's end | command 5, BossBlast | 10 |
 | `$7A9C` | DrawTag | 1 | the tag the next draw writes into SolidMap | every drawer | 7.9 |
-| `$7A9D` | StarFrame | 1 | the star task's counter | interrupt task 5 | 4 |
+| `$7A9D` | StarFrame | 1 | the star task's counter | StarTask `$BE79` (TaskTable entry 1) | 4 |
 | `$7A9E` | ShooterLimit, Shooters | 2 | how many enemies may have a shot out; how many have | command 4, EnemyFire | 7.9 |
 | `$7AA0` | Lives | 1 | the lives | ShipDies | 10 |
 | `$7AA1` | ShipColumn, ShipRow | 2 | the ship's cell | MoveShip | 10 |
@@ -82,7 +82,7 @@ entry. This table groups them by owner.
 | `$7ACD` | RandomPtr | 2 | NextRandom's pointer into the ROM | NextRandom | 7.10 |
 | `$7ACF` | Scratch | 8 | scratch words of the shot and award code | many | |
 | `$7AD7` | HitList | 16 | the tags gathered by the last draw | CollectHit | 7.9 |
-| `$7AE7` | MissileLaunch | 9 | the missiles' launch records | MoveMissileSet | 10 |
+| `$7AE7` | MissileLaunch | 9 | the missiles' launch records | FireMissiles, MoveMissiles | 10 |
 
 Three tables beside the block belong to the objects:
 
@@ -92,7 +92,9 @@ Three tables beside the block belong to the objects:
 | `$8386` | EnemyShots | 84 | 28 records of 3 bytes, one per slot: object and direction, column, row |
 | `$8501` | EnemySlots | 252 | 28 slots of 9 bytes ([7.7](#77-the-slots-and-moveenemies)) |
 
-The level adds its own: LevelVars `$C4C4-$C4DF`, 28 bytes inside the level block, which only the level's movers use.
+The levels add their own: LevelVars `$7DF9-$7DFF`, 7 bytes in the game's variables, cleared by ClearPlayState, which
+only the level's movers use (level 1: `LD HL,LevelVars+1` at `$F3CB`). The 28 bytes `$C4C4-$C4DF` after the header
+are spare zeros.
 
 ![The game variables over l1: a lane per variable, sampled every 10 frames](img/objects/l1-vars.png)
 
@@ -133,8 +135,8 @@ Worked example, the `l1` samples:
 
 Witness: the 1526 samples behind the figure.
 
-**The point**: the rules have one small state block, and a level adds only its 28 LevelVars. Saving `$7A80-$7AEF`,
-the slots and the level space is saving the game.
+**The point**: the rules have one small state block, and a level adds only its 7 LevelVars `$7DF9`. Saving `$7A80-$7AEF`,
+LevelVars, the slots and the level space is saving the game.
 
 ## 7.2 The level block: what lies where
 
@@ -153,7 +155,7 @@ The game's code reaches into the level only through the header's pointers.
 
 How to read it:
 
-- a row is a level, x is the address from `$C4AE` to `$FA00`;
+- a row is a level, x is the address from `$C4AE` to `$F871`, the level space;
 - a box is a part, its colour in the key, its start address under it;
 - "records" are the kind records, "kinds" the kind table of words;
 - "movers" are the two tables of 16 words, "code" the level's own movers and helpers.
@@ -166,9 +168,9 @@ The order is the same in every level. Level 1's parts:
 | Part | Level 1 | What it is | Read by |
 | --- | --- | --- | --- |
 | header | `$C4AE-$C4C3` | 22 bytes ([7.2.1](#721-the-header-byte-by-byte)) | RestartPoint, CheckRestart, the pointers |
-| LevelVars | `$C4C4-$C4DF` | 28 spare bytes, zero on tape: the level code's own variables | the level's movers |
+| spare | `$C4C4-$C4DF` | 28 spare bytes, zero on tape (the level code's LevelVars are `$7DF9`, in the game) | nothing |
 | sprites | `$C4E0-$D7F8` | the cells (9 bytes each) of the level's objects | DrawSprite |
-| objects | `$D7F9-$D910` | the object table: size and cell pointer per object | LevelObject `$8E5F` |
+| objects | `$D7F9-$D910` | the object table: size and cell pointer per object | LevelObject `$8E85` |
 | metatiles | `$D911-$E570` | 144 bytes each, numbered down from the map | MetatileAddress |
 | map | `$E571-$E787` | 5 bytes per block column | Scroll |
 | waves | `$E788-$ECA0` | the wave script, 5 bytes an entry | RunWaves |
@@ -180,7 +182,7 @@ The order is the same in every level. Level 1's parts:
 
 ```text
 level block at $C4AE:
-    header -> LevelVars -> sprites -> objects -> metatiles -> map -> waves
+    header -> spare -> sprites -> objects -> metatiles -> map -> waves
            -> kind records -> kind table -> scripts -> movers A, movers B -> mover code
 ```
 
@@ -199,7 +201,7 @@ flowchart LR
 ```
 
 Worked example: level 1 is 13 228 bytes, `$C4AE-$F859`. Level 6 is the smallest, 8849 bytes ending at `$E73E`. The
-space up to `$FA00` is free in every level.
+space up to `$F871` is free in every level (SoundStack `$F872` and PlaySound `$F87C` follow).
 
 Witness: `build/level1.bin` to `build/level8.bin` rebuild the TZX identically ([doc 3](03-build-and-load.md#313-the-build)).
 
@@ -311,7 +313,7 @@ Worked example, level 1's header: `00 00 00 06 25 4B 88 E7 AF E8 44 EA F9 D7 71 
 Witness: the `l1` samples of MapColumn ([7.1](#71-the-game-variables)): it passes 37 and 75 on its way to 123. A
 restart: `restart` (the integration's recording: c1's play start, POKE `$91F2` = `$C9` until frame 2640). At 2640
 MapColumn is 39, past the checkpoint 37, and LevelRestartColumn `$C4AE` is 29; the POKE undone, a life is lost at
-2667 to an enemy shot (`$C3CE`); the next life (StartPlay `$8BD3` at 2858) begins with MapColumn 37: the first screen
+2667 to an enemy shot (`$C3CE`); the next life (StartPlay `$8BAE`, its later-life branch `$8BD3`, at 2858) begins with MapColumn 37: the first screen
 covers the 8 block columns from 29, its right edge at the checkpoint.
 
 **The point**: a checkpoint is a map column, not a time. A life lost restarts one screen before the last checkpoint
@@ -604,12 +606,13 @@ record says how the enemy moves, how hard it is, what it scores and which script
 | 3.. | scripts | script addresses, a word each; a word `$00xx` frees the slot, `$FFxx` starts the list again |
 
 The award n picks the pair (place, digit) number n - 1 of ScoreAwards `$70DC` (`src/res/tables/score-awards.csv`).
-Awards 1-9 give 100-900 points and award 10 gives 1000. The table has 10 pairs. Award 12, which every indestructible
-kind carries, reads the zeros after it, and AddScore returns at once on place 0: no points.
+Awards 1-9 give 100-900 points and award 10 gives 1000. The table has 10 pairs, then an eleventh at `$70F0`, `04 05` (5000
+points), which no kind uses (award 11). Award 12, which most indestructible kinds carry (level 1's kind 42 carries
+award 3, and level 2's indestructible kinds award 2), reads the zeros after it, and AddScore returns at once on place 0: no points.
 
 The alias: when bytes 3 and 4 are equal and below `$80`, they are a kind number. The slot then takes that kind's
 record (its scripts and its score), but keeps its own movers and flags. Level 1's kinds 11 and 44 borrow kind 10's
-scripts: the same path, with a different mover and other hits.
+scripts: the same path. Kind 11 has mover `$14` and 2 hits; kind 44 has kind 10's mover `$15` and 63 hits, but fires.
 
 ```text
 StartWave(kind, x, y):
@@ -1076,7 +1079,7 @@ Level 1's movers:
 | A5 | `$F408` | the big ship's explosions, counted by LevelVars | 10, 44 |
 | A6 | `$F468` | a ceiling pod: moves every 8th pass, draws with tag `$DC` + slot and soft cells, faces the ship | 19, 22 |
 | A7 | `$F4D8` | plays sound `$09` once, at script 1 | 9, 21 |
-| A8 | `$F4EC` | the boss core: at MapColumn 115 frees slots 20-23 with explosions and points | 42 |
+| A8 | `$F4EC` | the boss core: at MapColumn 115 frees slots 20-23 with explosions and their sounds; no points | 42 |
 | A9 | `$F559` | the boss tail: 14 segments of object `$39` from L1ShapeFrames; when slot 2 is free, BossDestroyed and 3000 points | 23 |
 | A10 | `$F5AD` | follows the ship's row on odd scripts; at script 6 starts kind 13 and plays sound `$09` | 12 |
 | A11 | `$F5E8` | one column left a pass | 13 |
@@ -1168,7 +1171,9 @@ mirror bit of its step. Recording `l1`, frame 3270, T 21 800 to 23 600 (253 inst
 - It draws with DrawTag `$9C`, so a ring part (mover A15) that touches it dies.
 - It drifts left with L1DriftLeft.
 - At MapColumn 115, once every 32 passes, it frees the four slots 20-23 with L1BlastRecord. Command 3 put boss parts
-  there at block column 100. Each is zeroed, an explosion starts at its place, and its award is added.
+  there at block column 100. Each is zeroed, an explosion starts at its place (FreeExplosion,
+  its Z flag ignored), and AwardScore plays the sound; no points are added: L1BlastRecord drops AwardScore's DE and
+  never calls AddScore (EnemyDies `$A599` is the routine that does).
 - Above 115 it moves slot 2's part one column left every 8th pass.
 
 Mover A3 sets MapColumn to 115 when four kind 6 or 46 parts are killed, so both ways lead to the same blast. In `l1`
@@ -1179,7 +1184,7 @@ L1MoverA8:
     DrawTag = $9C; L1DriftLeft()
     if MapColumn == 115:
         if FrameCounter & $1F == $10:
-            for slot in 20, 21, 22, 23: L1BlastRecord(slot)   # free, explode, award
+            for slot in 20, 21, 22, 23: L1BlastRecord(slot)   # free, explode, sound; no points
     elif MapColumn > 115 and FrameCounter & 7 == 0:
         slot 2's column -= 1
     if FrameCounter & 7: MoveDone else MoveStore
@@ -1217,7 +1222,7 @@ F53E  JR Z,l_F553               ; already free
 F540  LD (HL),$00
 ...
 F54D  CALL FreeExplosion
-F550  CALL AwardScore
+F550  CALL AwardScore           ; the explosion and its sound; DE (the award) dropped
 ```
 
 ```mermaid
@@ -1226,14 +1231,14 @@ flowchart TD
     T --> M{"MapColumn"}
     M -- "below 115" --> E["MoveDone or MoveStore"]
     M -- "115" --> F{"FrameCounter & $1F = $10?"}
-    F -- "yes" --> B["L1BlastRecord x 4: slots 20-23 freed, exploded, scored"]
+    F -- "yes" --> B["L1BlastRecord x 4: slots 20-23 freed, exploded, no points"]
     F -- "no" --> E
     M -- "above 115" --> S["every 8th pass slot 2 one column left"]
     B --> E
     S --> E
 ```
 
-![L1MoverA8 at l1 frame 13518: MapColumn 115, the boss parts in slots 20-23 freed, exploded and scored](img/routines/L1MoverA8.gif)
+![L1MoverA8 at l1 frame 13518: MapColumn 115, the boss parts in slots 20-23 freed and exploded, no points](img/routines/L1MoverA8.gif)
 
 How to read it: the slot rows 20-23 (`$85AC`-`$85D3`) go to zero one after the other as L1BlastRecord, FreeExplosion
 and AwardScore run. Recording `l1`, frame 13 518, T 19 900 to 24 600 (576 instructions), 50 pictures:
@@ -1267,8 +1272,8 @@ was there first. The tag is DrawTag:
 | `$80` | an enemy shot, or an object drawn without a slot | MoveEnemyShots, level code |
 | `$80` + n | enemy slot n | MoveEnemies |
 | `$DC` + n | an enemy slot drawn over soft cells (mover A6) | level code |
-| `$FA` | a soft cell, scenery a shot can blow up | SoftCellsOn |
-| `$FB-$FF` | scenery | the scroll feed, BossDestroyed |
+| `$FA` | a soft cell, scenery a shot can blow up | drawn as DrawTag by level 4's movers (`$F30E`), written by ExplodeSoftCell (at `$A533`); SoftCellsOn enables its handling |
+| `$FF` | scenery | the scroll feed, FirstScreenMarks, BossDestroyed (`$FB-$FE` are never written) |
 
 CellFree `$8EC2` decides, cell by cell, whether a sprite may be drawn there:
 
@@ -1453,7 +1458,7 @@ C067  JR Z,NextRandom
 C069  RET
 ```
 
-Its only user is the boss explosion. BossDestroyed `$C19C` sets RandomPtr to 0 and every nonzero SolidMap cell to
+Its users: the boss explosion (BossBlastOnce), level 7's mover A4 (`$F540`) and level 8 (`$EF75`). BossDestroyed `$C19C` sets RandomPtr to 0 and every nonzero SolidMap cell to
 `$FF`. BossBlastOnce `$C0FC` then draws a column below `$1E` and a row below `$12`, again and again (up to 128 tries)
 until it finds a cell of `$80` or more, and explodes there. So every boss explodes at the same sequence of places,
 taken from the ROM's first bytes.
@@ -1649,7 +1654,8 @@ kinds a level brings.
 - **Slots 25-28** are never searched by StartWave; only command 3 reaches them.
 - **A wave with no free slot is lost**: StartWave pops and returns, and WavePtr has already moved on.
 - **Level 7's command `$5D`** at `$EC16` is a no-op: a data slip, or a command dropped in development.
-- **Indestructible kinds score nothing**: their award 12 reads past the 10 pairs of ScoreAwards into zeros.
+- **Award 12 scores nothing**: it reads past ScoreAwards' 10 pairs and the unused eleventh into zeros. Most
+  indestructible kinds carry it (level 1's kind 42 carries award 3).
 - **EnemyDies with no free explosion** (all 20 busy) skips AwardScore, and AddScore then runs with the caller's DE.
   No recording was checked for it.
 - **Known only from the code**: command 2 (in no script); a boss killed by hits (BossDestroyed `$C19C`,

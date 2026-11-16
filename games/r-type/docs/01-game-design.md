@@ -89,6 +89,7 @@ The screens, with what leads to the next:
 | 6 TODAY'S BEST PILOTS | the nine high scores | fire on any device, or back to 5 |
 | 7 PRESS A KEY FOR LEFT ... DETACH | DEFINE, under the logo | six keys |
 | 8 play | the play field, 20 character rows; the HUD: the BEAM meter, the score, the lives as ship icons, HI SCORE | the last life lost, or the level's end |
+| 9 the beam | play with the charged beam in flight, two columns a pass ([doc 5, 5.8](05-controls.md#58-the-fire-and-the-beam-charge)); the figure's shot, 30 frames after the release, already shows `c1`'s ship exploding (ShipFrame 0 at 18 624) | the beam's hit or the right edge; back to 8 |
 | 10 PILOT STAND BY ! | a life lost, lives left | 80 frames, then the same level from its restart point |
 | 11 MISSION OVER ! | the last life lost | 176 frames |
 | 12 ENTER YOUR NAME PILOT ! | the table with the new score in place | the name |
@@ -242,7 +243,8 @@ is another). Witnesses: `continue` (fire on the count, CREDIT 4), `gameover` (th
 ### The beam
 
 Holding fire charges the beam. The BEAM meter in the HUD fills as BeamCharge `$7ABF` grows by 2 each pass, up to
-`$3E` (the next step, `$40`, is never stored). Releasing fire shoots the beam; its strength depends on the charge reached (thresholds `$14` and `$24`), and
+`$3E` (the next step, `$40`, is never stored). Releasing fire shoots the beam; its strength depends on the charge reached (thresholds `$0C`, below which the release fires a plain shot, `$14` and
+`$24`), and
 the beam is drawn and moved by MoveBeam `$9E6B` ([doc 5, 5.8](05-controls.md#58-the-fire-and-the-beam-charge),
 [doc 10](10-gameplay-logic.md)).
 
@@ -255,7 +257,8 @@ The charge starts at 0 and grows by 2 a pass:
 3. 31 x 4.68 = 145 frames, 2.9 s at 50.08 frames a second.
 
 A busy screen makes the passes longer, and the beam takes longer to charge: the charge counts passes, not time.
-Witness: `c1` frame 18 630, the beam fired.
+Witness: `c1` frames 18 602-18 620, the full beam in flight (BeamPower 30, its column 8 to 16; Animation 5.4 in
+[doc 5](05-controls.md#58-the-fire-and-the-beam-charge)).
 
 ### The Force and the pick-ups
 
@@ -307,7 +310,7 @@ beats the ninth is inserted, the table shown with ENTER YOUR NAME PILOT !, and t
 | R TYPE LEVEL 1 LOADED OK | `c1` 16 528 |
 | the title | `c1` 16 828 |
 | level 1, the first pass | `c1` 18 302 |
-| the beam fired | `c1` 18 630 |
+| the beam fired, in flight | `c1` 18 602-18 620 |
 | the longest pass of level 2 (12 frames) | `l2` 8982 |
 | level 2's boss | `l2` 14 504 |
 | MISSION OVER | `continue` 3796 |
@@ -322,7 +325,9 @@ beats the ninth is inserted, the table shown with ENTER YOUR NAME PILOT !, and t
   no recording shows it ([doc 2, 2.5](02-architecture.md#25-the-leftovers), [doc 8](08-hud-and-text.md)).
 - **The immortal stretch after level 8:** LevelEnd at the digit `'8'` writes `RET` into ShipDies, so the ship cannot
   die between level 8's first level-end command and the wrap ([doc 4, 4.7](04-game-loop.md#47-the-level-start)).
-  `ending` starts after it; the write is read from the code.
+  It cannot fire or detach either: the same LevelEnd passes leave `RET` at ShieldControls `$95A5`, and only
+  ClearPlayState, when level 1 is loaded, writes the two `NOP`s back. `ending` starts after it; the writes are read
+  from the code.
 - **The restart columns** are no longer only from the code: `restart` (the integration's recording, with the
   immortality POKE until frame 2640) passes the checkpoint 37, LevelRestartColumn `$C4AE` becomes 29, and the life
   after the death at 2667 starts with MapColumn 37, its first screen from block column 29

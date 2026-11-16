@@ -462,7 +462,8 @@ l_F530:
   JP MoveStore
 
 ; Free the record at HL: zero it, take its position less one column, start an
-; explosion there (FreeExplosion)
+; explosion there (FreeExplosion, its Z flag ignored) and its sound
+; (AwardScore); AwardScore's DE is dropped, so no points
 ;
 ; Witness: L1 4 (l1).
 L1BlastRecord:

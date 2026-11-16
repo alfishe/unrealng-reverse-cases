@@ -38,11 +38,11 @@ runs its task.
 
 | Entry | Address | Task | Mask | Counter, reload | Runs |
 | ---: | --- | --- | --- | --- | --- |
-| 1 | `$BE60` | `$BE79` | 0 | 3, 3 | off in play |
+| 1 | `$BE60` | StarTask `$BE79`, the stars | 0 in the file | 3, 3 | on in play (StarsOn `$73BC`, from StartPlayField) |
 | 2 | `$BE65` | SoundTask1 `$F8E8` | 1 | 1, 3 | every third interrupt |
 | 3 | `$BE6A` | SoundTask2 `$F8F8` | 1 | 2, 3 | every third interrupt, one later |
 | 4 | `$BE6F` | SoundTask3 `$F908` | 1 | 3, 3 | every third interrupt, two later |
-| 5 | `$BE74` | the stars `$76CB` | 0 in the file | 1, 8 | while the stars are on |
+| 5 | `$BE74` | CycleTitleColour `$76CB`, the title colour | 0 in the file | 1, 8 | on the title pages (`$7698`, `$86FB`, `$92F6` switch it) |
 
 The three sound tasks are staggered, so each interrupt runs exactly one of them. A task plays one step of its
 channel's script: a "tick". A channel therefore moves once every 3 frames, 16.7 times a second.
@@ -143,7 +143,7 @@ PlaySound `$F87C` takes H = the sound (`$00`-`$22`) and L = the channel bits. It
 | L bits | Meaning |
 | --- | --- |
 | 0-1 = 3 | channel 3, whatever it plays (the sound replaces it) |
-| 0-1 = 1 or 2 | the first free channel, searching 3, 2, 1; none free: the sound is dropped |
+| 0-1 = 0, 1 or 2 | the first free channel, searching 3, 2, 1; none free: the sound is dropped |
 | 5-7 = `$80` | TimbreHigh for that channel |
 | 5-7 = `$40` | TimbreMid |
 | 5-7 = other, not 0 | TimbreLow |
@@ -236,7 +236,8 @@ flowchart TD
     T --> S["pointer = ScriptTable[H]"]
 ```
 
-The timbre routines patch three operands. They set how long a note lasts and how many bursts a noise step plays:
+The timbre routines patch four operands: the length shift (`$F9F2`), NoiseBurst's shifts (`$FA84`, the same
+value), the mask (`$F9FE`) and the voice factor (`$F9E8`). They set how long a note lasts and how many bursts a noise step plays:
 
 | Timbre | Bits | Length shift | Mask | Voice factor | Effect |
 | --- | --- | ---: | ---: | ---: | --- |
@@ -656,7 +657,7 @@ Notes on the table:
 
 - the scripts of `$15`-`$1E` live at `$5B64`, in the copy the entry makes from EntryCopySource `$7EE2`;
 - bits in parentheses are the simulation's choice for a sound no code starts;
-- a wave command 6 always uses bits `$83` (StartWave `$90EF`: `LD L,$83`), so the level sounds take channel 3;
+- a wave command 6 always uses bits `$83` (CommandWave at `$90EF`: `LD L,$83`), so the level sounds take channel 3;
 - after BossDestroyed, BossBlastOnce (`$C134`) starts `$09` or `$0A` by the frame's parity, bits `$81`: only in the
   `boss` recording, whose kill is POKEd (156 starts, frames 12 375-12 995);
 - the WAV files are 44.1 kHz renders of the speaker bit; a sound over 2 s is an MP3 made by `lame -V 4`;
@@ -692,8 +693,8 @@ flowchart LR
     E["enemies"] --> B["$04, $08, $09, $0A, $0F"]
     P["pick-ups and the Force"] --> C["$0D, $0E, $14"]
     L["levels"] --> D["$03, $0A, $10-$13, $15"]
-    M["menus"] --> F["$0C, $16, $19-$1E, $22"]
-    U["unused"] --> G["$07, $0B, $17, $1F-$21"]
+    M["menus"] --> F["$0B, $0C, $16, $19-$1E, $22"]
+    U["unused"] --> G["$07, $17, $1F-$21"]
 ```
 
 Worked example: a level 1 kill of a kind with score byte `$12` has size `$10`. AwardScore plays `$08` with bits `$82`
@@ -707,12 +708,13 @@ The figure of [9.4](#94-the-35-sounds-as-pitch-over-time) draws every row of thi
 The unused ones:
 
 - `$07`: a 3-second noise sweep that no code and no wave starts;
-- `$0B`: the "key defined" sound of DefineKeys and DefineKey; no recording ran either;
+- `$0B` is not unused: the "key defined" sound, started by DefineKeys (`$BF99`) and DefineKey (`$C00A`); only no
+  recording ran either;
 - `$17`: the same script as `$18`; nothing starts it;
 - `$1F`-`$21`: their words point into level 1's space (`$F168`, `$F294`, `$F35C`), so they would play level data;
   nothing starts them.
 
-**The point**: 29 of the 35 sounds are played. The game has no music in play: effects, a beat in level 2 and short
+**The point**: 30 of the 35 sounds are started by code, and 29 ran in a recording (`$0B` did not). The game has no music in play: effects, a beat in level 2 and short
 tunes between the screens.
 
 ## 9.8 The cost: the 12-frame pass
@@ -867,6 +869,7 @@ The pitch figure of [9.4](#94-the-35-sounds-as-pitch-over-time) holds for the 12
 - **The interrupt waits**: the handler runs with the interrupts off. No tick is longer than 0.94 of a frame, so no
   interrupt is lost and the tasks keep their beat.
 - **The spare commands**: 6 is bytes left over; 14 and 15 are chord variants (`$FB0F`, `$FB1F`) that no script uses.
-- **Known only from the code or the simulation**: sounds `$07`, `$0B`, `$17`, `$1F`-`$21` (never started); Silence on
+- **Known only from the code or the simulation**: sounds `$07`, `$17`, `$1F`-`$21` (never started) and `$0B` (started by DefineKeys at `$BF99`
+  and `$C00A`, never recorded); Silence on
   channels 1 and 2. BossBlastOnce's `$09`/`$0A` and the detach sound `$14` from ShieldControls ran only in the
   integration's recordings `boss` (the kill POKEd) and `force`.

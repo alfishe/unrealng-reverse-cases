@@ -298,7 +298,7 @@ The game reads these ports and no other (the only port it writes is `$FE`, [doc 
 
 | Port read | Where | What must answer |
 | --- | --- | --- |
-| `$FEFE` ... `$7FFE`, any half-row | TestKey `$8B70`, ReadKey `$BF55`, CheckPause `$8BA4` | the keyboard: bits 0-4, 0 = down |
+| `$FEFE` ... `$7FFE`, any half-row | TestKey `$8B70`, ReadKey `$BF55`, ReadRow0 `$8BA4` (CheckPause) | the keyboard: bits 0-4, 0 = down |
 | `$F7FE` | ReadIf2 `$8B0A`, ReadRow1 `$8BA0` | keys 1-5 (an Interface 2 joystick maps onto these keys) |
 | `$EFFE` | ReadSinclair `$8B2D` | keys 6-0 (the other Interface 2 joystick) |
 | `$BFFE` | DefineKeys `$BF92` | ENTER, bit 0 |
@@ -308,9 +308,12 @@ Two things matter for an emulator:
 
 - **The Kempston must read 0 at rest.** ProbeKempston ([5.4](#54-the-kempston-probe)) takes any non-zero low nibble
   as "no Kempston here" and hides the method for the whole session.
-- **A port `$1F` without a Kempston** returns what the bus holds. On a real 48K that is the floating bus: `$FF` in
-  the border and screen bytes during the picture. Either way the low nibble is rarely zero 255 times in a row, so the
-  game hides the Kempston, as it should.
+- **A port `$1F` without a Kempston** returns what the bus holds. On a real 48K that is the floating bus: screen bytes
+  during the 128 T of each picture line the ULA fetches, `$FF` in the other 96 T and in the border and retrace. A
+  probe read takes 42 T (`IN` 12, `AND` 7, `JR` 7, `DEC` 4, `JR` 12), so a `$FF`, whose low nibble is not zero, comes
+  within one 224 T line, about six reads; the 255 reads span about 10 700 T and cannot miss it. A machine without a
+  Kempston never passes, and the game hides the method, as it should. This is derived from the code and the 48K
+  timing; no recording ran without a Kempston.
 
 The Interface 2 needs no decoding of its own: its joysticks press keys 1-5 and 6-0.
 
@@ -364,7 +367,7 @@ TitleLoop:                     ; $7796
         CALL StarsOff
         CALL ClearPlayState
         ...                    ; the logo and five lines of TitleTexts
-        LD B,$04               ; about $0400 turns
+        LD B,$04               ; C = 0 from FillBlock: $0400 = 1024 turns
 l_77D5: PUSH BC
         CALL DefineKeys        ; ENTER: define; else falls into SelectControl
         CALL StarTask          ; the stars, by hand
@@ -378,7 +381,7 @@ l_77D5: PUSH BC
         OR C
         JR NZ,l_77D5
         CALL ShowHiScores      ; TODAY'S BEST PILOTS
-        LD B,$54
+        LD B,$54               ; C = 4 from ShowHiScores: $5404 = 21 508 turns
 l_77F2: PUSH BC
         CALL SelectControl
         POP BC
@@ -388,6 +391,11 @@ l_77F2: PUSH BC
         JR NZ,l_77F2
         JP TitleLoop
 ```
+
+Neither wait sets `C`: each takes the low byte the code before it left. FillBlock, the last call before the first
+wait, returns from its `LDIR` with `BC` = 0, so the first wait runs `$0400` = 1024 turns. ShowHiScores loads
+`BC` = `$0304`, keeps it across its prints with `PUSH BC` / `POP BC` and returns when `B` reaches `$15` with `C` still
+4, so the second wait runs `$5404` = 21 508 turns.
 
 DefineKeys `$BF92` tests ENTER first. With ENTER up it jumps (not calls) to SelectControl, so the title page tests
 both ENTER and the fire on every turn. The high-score page tests only the fire.
@@ -430,14 +438,14 @@ Both callers leave the stack the same way: a pushed counter under a return addre
 
 ```mermaid
 flowchart TD
-    T["TitleLoop 7796: logo, texts"] --> L1["about 0400 turns"]
+    T["TitleLoop 7796: logo, texts"] --> L1["0400 turns (1024)"]
     L1 --> DK{"DefineKeys BF92: ENTER down?"}
     DK -->|"yes"| DEF["define six keys, 5.6"]
     DEF --> L1
     DK -->|"no, JR"| SC1["SelectControl C011"]
     SC1 -->|"no fire"| L1
     L1 -->|"done"| HS["ShowHiScores: TODAY'S BEST PILOTS"]
-    HS --> L2["54xx turns: SelectControl"]
+    HS --> L2["5404 turns (21 508): SelectControl"]
     L2 -->|"no fire"| L2
     L2 -->|"done"| T
     SC1 -->|"fire"| GO["POP BC twice, ControlMethod, sounds, RET: play"]
@@ -753,8 +761,7 @@ l_9A87: ...                    ; the glow at (row - 1, column + 3), 3 more with 
 The plain shot comes on release, not on press. A tap shorter than six passes (charge below `$0C`) gives one shot.
 Holding longer gives a beam when fire is let go.
 
-The charge rises 2 a pass. The compare with `$40` skips the store, so the charge tops out at `$3E`, 31 passes after
-the first.
+The charge rises 2 a pass. The compare with `$40` skips the store, so the charge tops out at `$3E` on the 31st pass.
 
 The meter is the ten cells of row 20 from column 11 (the HUD, [doc 8](08-hud-and-text.md)). Each cell shows '<' when
 empty, '>' when it starts to fill and '@' when full. Two passes fill a cell. The meter is full at `$28`, after 20
@@ -827,8 +834,9 @@ columns a pass.
 
 ![The beam fired](img/play/c1-018630-beam-fired.png)
 
-*Figure 5.5: c1 frame 18630, the full beam crossing the playfield and the meter empty again. Screenshot from the c1
-recording.*
+*Figure 5.5: c1 frame 18630, 30 frames after the release: the beam has gone, the meter is empty again and c1's ship
+is exploding (ShipFrame 0 at 18624, the life lost near 18 640). The full beam in flight is in Animation 5.4, frames
+18602-18620. Screenshot from the c1 recording.*
 
 The charge stops at `$3E`: the code compares the new value with `$40` and stores it only
 when it differs, so `$40` is never stored. c1 shows `$3E` at the top.
@@ -1091,7 +1099,7 @@ and no letter changes.
 *Figure 5.6: hiscore frame 5959, TODAY'S BEST PILOTS with AABAAAAAA at No. 5. Screenshot from the hiscore
 recording.*
 
-The WALKTHROUGH says "up and down change the letter". The code and the recording say left and right.
+The WALKTHROUGH and the code agree: left and right change the letter.
 
 The point: the name entry is a joystick entry. It works the same with any method, and a keyboard player must use
 the direction keys, not the letters.

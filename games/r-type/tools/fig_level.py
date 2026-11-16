@@ -23,7 +23,7 @@ sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import wavescript  # noqa: E402
 
 ORG = 0xC4AE
-COLOURS = {'header': (120, 120, 120), 'sprites': (90, 150, 220), 'objects': (40, 90, 190), 'metatiles': (110, 190, 110),
+COLOURS = {'header': (120, 120, 120), 'spare': (205, 205, 205), 'sprites': (90, 150, 220), 'objects': (40, 90, 190), 'metatiles': (110, 190, 110),
            'map': (40, 140, 60), 'waves': (220, 120, 40), 'records': (200, 70, 70), 'kinds': (150, 40, 40),
            'scripts': (190, 90, 190), 'movers': (230, 200, 60), 'code': (60, 60, 60)}
 
@@ -49,7 +49,7 @@ def regions(n):
     first_record = min(k['record'] for k in d['kinds'])
     first_mover = min(a for a in d['movers_a'] + d['movers_b'])
     script_end = label(lb, 'MoversA', n)
-    return d, [('header', ORG, 0xC4E0), ('sprites', 0xC4E0, h['objects']),
+    return d, [('header', ORG, 0xC4C4), ('spare', 0xC4C4, 0xC4E0), ('sprites', 0xC4E0, h['objects']),
                ('objects', h['objects'], label(lb, 'Metatiles', n)), ('metatiles', label(lb, 'Metatiles', n), h['map']),
                ('map', h['map'], h['waves'][0]), ('waves', h['waves'][0], first_record),
                ('records', first_record, h['kinds']), ('kinds', h['kinds'], h['kinds'] + 2 * len(d['kinds'])),
@@ -59,16 +59,16 @@ def regions(n):
 
 def cmd_blocks(out):
     W, top, rowh = 1050, 92, 74
-    im = Image.new('RGB', (W, top + 8 * rowh + 70), 'white')
+    im = Image.new('RGB', (W, top + 8 * rowh + 88), 'white')
     dr = ImageDraw.Draw(im)
     f17, f14, f13 = font(17), font(14), font(13)
     dr.text((10, 8), 'The 8 level bodies: each loads at $C4AE and brings its own sprites, map, wave script, kinds and '
                      'mover code', fill='black', font=f17)
     dr.text((10, 32), 'tools/fig_level.py blocks, from build/levelN.bin and the labels of build/levelN.lst; x: the address '
-                      '$C4AE-$FA00 (the level space, LoadLevel $FE03 fills it); a box per part', fill=(60, 60, 60),
+                      '$C4AE-$F871 (the level space LoadLevel $FE03 fills); a box per part', fill=(60, 60, 60),
             font=f13)
     x0, x1 = 70, W - 100
-    lo, hi = ORG, 0xFA00
+    lo, hi = ORG, 0xF872
 
     def X(a):
         return x0 + (a - lo) * (x1 - x0) / (hi - lo)
@@ -92,10 +92,12 @@ def cmd_blocks(out):
         dr.rectangle([x, ly, x + 14, ly + 14], fill=c)
         dr.text((x + 18, ly - 1), name, fill='black', font=f13)
         x += 26 + int(dr.textlength(name, font=f13)) + 6
-    dr.text((10, ly + 24), 'header $C4AE-$C4DF (50 bytes, mostly spare zeros); records: the kind records, between the wave '
-                           'script\'s end and the kind table; movers: the two tables', fill=(60, 60, 60), font=f13)
-    dr.text((10, ly + 42), 'of 16 words; code: the level\'s own movers and helpers. Levels 5 and 6 are about 4 KB shorter '
-                           '(less sprite data).', fill=(60, 60, 60), font=f13)
+    dr.text((10, ly + 24), 'header $C4AE-$C4C3 (22 bytes); spare $C4C4-$C4DF (zeros; the levels\' LevelVars are $7DF9 in the game\'s '
+                           'variables); SoundStack $F872 follows the space;', fill=(60, 60, 60), font=f13)
+    dr.text((10, ly + 42), 'records: the kind records, between the wave script\'s end and the kind table; movers: the two tables '
+                           'of 16 words; code: the level\'s own', fill=(60, 60, 60), font=f13)
+    dr.text((10, ly + 60), 'movers and helpers. Levels 5 and 6 are about 4 KB shorter (less sprite data).',
+            fill=(60, 60, 60), font=f13)
     im.save(out)
     print(out, im.size)
 

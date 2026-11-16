@@ -454,7 +454,7 @@ for column = 31 down to 1:
         if ScrollHalted: continue
         run = the scenery cells from here leftwards, plus the cell after them (none past column 1)
         shift the 8 lines of the run 1 pixel left, right to left, the carry passing between cells
-        continue at the cell after the run
+        resume at the run's left non-scenery cell (LD L,E): its tag then copies or erases it
     elif tag != 0:                              # a sprite drew itself here in this pass
         copy the cell's 8 lines from the shadow (screen + $2000) to the screen
         DrawnMap[row][column] = 1
@@ -507,8 +507,8 @@ l_88FB: LD A,B
         LD L,C
         RET                    ; into the chain
 
-ShiftRun:                      ; $8914: 31 x (RL (HL), DEC L), 3 bytes a cell
-        RL (HL)
+ShiftRun:                      ; $8914: 30 x (RL (HL), DEC L), 3 bytes a cell,
+        RL (HL)                ; then ShiftRun1: 31 cells from this top entry
         DEC L
         ...
 ShiftRun1:                     ; $896E
@@ -520,7 +520,7 @@ ShiftRun1:                     ; $896E
 
 ShiftRunDone:                  ; $8974
         LD H,B
-        LD L,E                 ; the cell after the run
+        LD L,E                 ; the run's left non-scenery cell, handled next by its tag
         JP l_8869              ; and on along the row
 ```
 
@@ -539,7 +539,7 @@ flowchart TD
     T -->|"DC or more"| H{"ScrollHalted?"}
     H -->|"no"| S["count the run, push the chain 8 times, RET: 8 lines shifted"]
     H -->|"yes"| N["next cell"]
-    S --> N2["continue after the run"]
+    S --> N2["resume at the run's left non-scenery cell"]
     T -->|"1 to DB"| CP["copy 8 lines from the shadow; DrawnMap = 1"]
     T -->|"0"| D{"DrawnMap = 1?"}
     D -->|"yes"| E["clear 8 lines; DrawnMap = 0"]
@@ -745,8 +745,8 @@ l_8EB7: INC HL
 
 SoftCellsOn `$C3E5` patches two bytes: `ADD A,$60` at `$8EBE` becomes `ADD A,$40`, so the cells go straight to the
 screen, and the `RET NC` at `$8F10` becomes `RET C`. With `RET C` an empty cell with no scenery to its right returns
-free at once, and one with scenery to its right goes on to the ScrollStep test, which also lets it through. So the
-scenery-to-the-right rule is off. SoftCellsOff `$C3EE` puts back `$60` and `$D0` (`RET NC`). Three users switch it on:
+free at once, and one with scenery to its right goes on to the ScrollStep test, which lets it through, except at step 7
+when `+2` is scenery too (`CP $DC`, NC). So the scenery-to-the-right rule is off. SoftCellsOff `$C3EE` puts back `$60` and `$D0` (`RET NC`). Three users switch it on:
 
 - DrawFirstScreen ([6.6](#66-the-first-screen-and-the-stars)), which draws the scenery itself;
 - the level code that places ground objects (level 1 `$F4A3`): DrawTag = `$DC` + slot, a scenery tag, so the object
@@ -776,7 +776,7 @@ pass; the old cells, not redrawn, are erased by ScrollRows through DrawnMap.
 ## 6.6 The first screen and the stars
 
 At the start of each life StartPlayField `$8721` sets MapColumn from the restart point and calls DrawFirstScreen
-`$FEEB`. With the scroll's cutters it would take 32 passes to fill the screen, so it draws the 8 x 5 metatiles of
+`$FEEB`. With the scroll's cutters it would take 256 passes to fill the screen (32 columns, one every 8 passes), so it draws the 8 x 5 metatiles of
 the first 8 column blocks directly, as 4 x 4 sprites:
 
 ```asm

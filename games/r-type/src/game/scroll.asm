@@ -201,17 +201,18 @@ MetatileAddress:
   SBC HL,DE
   RET
 
-; Shift the 20 rows of the shadows one cell left and copy the changed cells to
-; the screen
+; Put the 20 play rows on the screen: attributes copied, scenery shifted one
+; pixel left, changed sprite cells copied
 ;
-; For each row of RowTable: the attribute shadow and the solid map row shifted;
-; the row walked from the right, scenery cells shifted in the shadow, other
-; cells copied from the pixel shadow to the screen. While the map moves
-; (ScrollHalted $7A8E = 0) the runs of scenery cells are shifted one pixel left
-; through the unrolled chain ShiftRun; while it stands they are skipped. Sprite
-; cells (tag 1 to $DB) are copied from the pixel shadow and DrawnMap set;
-; untagged cells with DrawnMap 1 are cleared; every tag but $9C is cleared, $9C
-; only when FrameCounter AND 7 = 7 ($88CD).
+; For each row of RowTable: the row's attributes copied from PlayAttrs to the
+; screen (LDDR, columns 1-30); the row walked from the right by its SolidMap
+; tags, scenery cells shifted on the screen (RowTable holds the screen pages,
+; $40xx), other cells copied from the pixel shadow to the screen. While the map
+; moves (ScrollHalted $7A8E = 0) the runs of scenery cells are shifted one
+; pixel left through the unrolled chain ShiftRun; while it stands they are
+; skipped. Sprite cells (tag 1 to $DB) are copied from the pixel shadow and
+; DrawnMap set; untagged cells with DrawnMap 1 are cleared; every tag but $9C
+; is cleared, $9C only when FrameCounter AND 7 = 7 ($88CD).
 ;
 ; Witness: L1 33972 (boss, c1, continue, ctl-if2, ctl-kempston, ctl-sinclair,
 ; deaths-l7, ending, force, gameover, hiscore, hiscore-typed, pause, restart,
