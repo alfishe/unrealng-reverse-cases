@@ -165,7 +165,7 @@ flowchart TD
 Print never decides how pixels land: the caller does. BufferAddr places the glyph in the buffer at BufferBase, or on
 the screen when ScreenBase is used. The draw mode decides the rest: OR, copy, XOR, scaled. The same Print draws the
 menus (OR into a buffer), the HUD digits (copy or XOR on the screen), the trail messages (8.9) and the big titles
-(BigPrint, mode `$10`, 8.11).
+(BigPrint, draw mode 8, offset `$10` in DrawModes, 8.11).
 
 Worked example: OUT OF FUEL at x `$3C` (60). The letters' advances are 6, except E, F, L and T (5) and I (3). O
 draws at 60, U at 68, T at 76; the space takes x from 83 to 89; O at 89, F at 97; the space takes 104 to 110; F at
@@ -643,8 +643,8 @@ drawing it again.
 
 SpeedBar `$E55D` runs every pass. It turns the speed into a bar length: `$40` + ((speed − 1) × 2 AND `$FC`), one
 cell of 4 pixels per two speed units. Then it changes one cell, the one at the old length. If the bar got shorter,
-or the speed is down to 1 or 0, BarNibble `$E5A1` clears that cell. Otherwise SpeedBar ORs 3 pixels of it in (`$E0`
-or `$0E`), which leaves a gap between cells.
+or the speed is 2 or less (length `$40`), BarNibble `$E5A1` clears that cell. Otherwise SpeedBar ORs 3 pixels of it
+in (`$E0` or `$0E`), which leaves a gap between cells.
 
 ```text
 SpeedBar():                                    # once a pass, on the screen at HudY
@@ -735,12 +735,12 @@ The point: one cell a pass is enough for a bar that a player only glances at, an
 
 ## 8.8 Fuel and the FUEL bar
 
-The tank holds `$2000` at the start of a trail. UseFuel `$DF91` runs each pass while the player rides. It takes
-twice the speed from Fuel and stops at 0. The bar shows the high byte AND `$FC`: one 4-pixel cell per `$400`. When
+The tank holds `$2000` at the start of a trail. UseFuel `$DF91` runs in each pass that moves (speed 2 or more:
+Advance returns before it for a lower speed, `$E011`). It takes twice the speed from Fuel and stops at 0. The bar shows the high byte AND `$FC`: one 4-pixel cell per `$400`. When
 that level differs from the bar, FuelBarStep `$DFCD` clears one cell. Below `$400` the player is out of fuel.
 
 ```text
-UseFuel():                                    # each riding pass
+UseFuel():                                    # each pass at speed 2 or more
     Fuel = max(Fuel - Speed * 2, 0)
     level = high(Fuel) AND $FC                # $1C, $18 ... $04, 0
     if level == 0: OutOfFuel(); return
@@ -823,7 +823,9 @@ OutOfFuel:
 
 ```mermaid
 flowchart TD
-    A["UseFuel"] --> B["Fuel - speed x 2, not below 0"]
+    P["Advance: speed 2 or more?"] -->|"no"| R
+    P -->|"yes"| A["UseFuel"]
+    A --> B["Fuel - speed x 2, not below 0"]
     B --> C["level = high byte AND FCh"]
     C --> D{"level 0?"}
     D -->|"yes"| E["OutOfFuel: last cell cleared, SlowDown twice"]
@@ -865,7 +867,7 @@ What to watch:
 Worked example: why the first cell goes at once. ShowBars sets `$2000` and FuelBar `$B0`, level `$20`. The first
 moving pass takes at least 4 (Advance returns for a speed under 2, and UseFuel takes 2 x Speed): `$1FFC`, level
 `$1C`, not `$20`, so the cell at `$AC` is cleared. The tank really holds
-`$2000` − `$400` = `$1C00` before OutOfFuel: 7 168 units. At speed 21, 42 a pass, that is 171 passes, 1 195 frames,
+`$2000` − `$400` = `$1C00` before OutOfFuel: 7 168 units. At speed 21, 42 a pass, that is about 171 passes, 1 195 frames,
 less than a third of trail 1's 600-pass limit. Rides last longer only because of crashes, walks and braking.
 Fuel is spent per pixel moved, forward or back: a pass moves Speed / 2 pixels and burns 2 x Speed, 4 a pixel at any
 speed, so a tank lasts 1 792 pixels, more than any trail's FinishDistance of 1 312-1 645: a clean ride never runs
@@ -1159,7 +1161,7 @@ tools/fig_hud.py docs/img/hud`.*
 
 How to read it:
 
-- left of clock 090 the half plus 1 is 256 or more, and only its low byte survives;
+- at clock 090 and below the half plus 1 is 256 or more, and only its low byte survives;
 - the red line drops to the bottom there: the fastest laps earn the least;
 - from 091 on the two lines agree.
 
@@ -1176,19 +1178,36 @@ longest limit. Only a lap no rider can make (the POKE) shows the bug.
 
 ## 8.11 The trail intro and the front end
 
-Large text uses BigPrint `$78E3`, draw mode `$10`. It draws each pixel of a sprite as a block BigScaleX wide and
-BigScaleY high, ORed in or cleared (BigClear). The trail intro prints "TRAIL NO." three times: ORed at (0, `$4F`),
-cleared at (2, `$4E`), ORed again at (3, `$4E`). What stays of the first print is an edge up and to the left of the
-last: a shadow. The trail's big digit gets the same three prints. Then Dissolve `$6D88` brings the buffer onto the
-screen, its bits rotating in from the sides over eight passes.
+Large text uses BigPrint `$78E3`, draw mode 8 (offset `$10` in DrawModes). It turns each pixel of a sprite into
+BigRepeat `$695A` lines out of a pitch of BigScaleY `$6959` lines, BigScaleX (2) pixels wide, ORed in or cleared
+(BigClear). BigScaleY is only the step from one source row to the next (`$7930`); BigRepeat is how many lines
+BigPlot draws for a set pixel (`$7950`, each call 22 bytes down). A caller sets the pair as one word: `LD HL,$0205`
+then `LD (BigScaleY),HL` is pitch 5, repeat 2, so each source row becomes a stripe 2 lines high every 5 lines.
+
+The trail intro prints "TRAIL NO." three times. First ORed at (0, `$4F`) with repeat 2: stripes. Then cleared at (2,
+`$4E`) and ORed at (3, `$4E`), both with repeat 5 (`$6A80`): a solid face 6 pixels right of the stripes (x counts
+source pixels, 2 pixels each) and one line lower; the clear, 2 pixels left of the face, wipes the stripes there.
+What stays of the stripes is a hatched shadow up and to the left: 2-line dashes before each left edge of the face,
+and a 1-line edge above each top row. The trail's big digit gets the same three prints at (`$40`, `$4F`), (`$42`,
+`$4F`) and (`$43`, `$4F`), pitch 4, repeat 2 and then 4 (`$6AB9`). All three are on the same line, so its shadow is
+only the dashes on its left. The trail's name is one print with pitch 3, repeat 2: striped letters, 2 lines of every 3. The name entry
+(NameScreen `$7C1C`) uses pitch 4, repeat 3. Then Dissolve `$6D88` brings the buffer onto the screen, its bits
+rotating in from the sides over eight passes.
 
 ```text
 TrailIntro():
-    clear the screen; ModeVector = BigPrint; BigScaleX 2, BigScaleY 5
-    PrintAt "TRAIL NO." at (0, $4F) OR, (2, $4E) clear, (3, $4E) OR       # the shadow, then the face
-    PrintAt Trail + 'b' (a big digit) at ($40, $4F), ($42, $4F), ($43, $4F), scale 2 x 4
+    clear the screen; ModeVector = BigPrint; BigScaleX 2
+    BigScaleY 5, BigRepeat 2: PrintAt "TRAIL NO." at (0, $4F) OR             # stripes: the shadow
+    BigRepeat 5: PrintAt it at (2, $4E) clear, then at (3, $4E) OR           # wipe ahead, then the solid face
+    BigScaleY 4, BigRepeat 2: PrintAt Trail + 'b' (a big digit) at ($40, $4F) OR
+    BigRepeat 4: PrintAt it at ($42, $4F) clear, then at ($43, $4F) OR
     Dissolve the buffer to (x 8, y $A5); wait 50 frames
-    CopyTrailName; PrintAt the name at (3, $3F), scale 2 x 3; the boxes; ShowBufferPlace (8, $4F)
+    CopyTrailName; BigScaleY 3, BigRepeat 2: PrintAt the name at (3, $3F); the boxes; ShowBufferPlace (8, $4F)
+
+BigPrint(sprite at SpriteX, SpriteY):                                         # draw mode 8
+    for each source row r, for each source pixel c set in it:
+        for line in 0 .. BigRepeat - 1:                                       # BigPlot, 22 bytes a line
+            the 2 pixels at 2 x (SpriteX + c), line r x BigScaleY + line: OR in, or clear if BigClear
     wait 150 frames
     PanelP1 if player 1 rides; PanelP2 if player 2 rides; TrailAttrs
 ```
@@ -1229,12 +1248,28 @@ TrailIntro:
   6A8D  LD IX,TrailTexts
   6A91  LD HL,$034E
   6A94  CALL PrintAt
+  6A97  LD A,$02
+  6A99  LD (BigScaleX),A
+  6A9C  LD HL,$0204
+  6A9F  LD (BigScaleY),HL
   6AA2  LD A,(Trail)
   6AA5  ADD A,$62
   6AA7  LD IX,BigChar
   6AAB  LD (IX+$00),A
   6AAE  LD HL,$404F
   6AB1  CALL PrintAt
+  6AB4  LD A,$01
+  6AB6  LD (BigClear),A
+  6AB9  LD A,$04
+  6ABB  LD (BigRepeat),A
+  6ABE  LD IX,BigChar
+  6AC2  LD HL,$424F
+  6AC5  CALL PrintAt
+  6AC8  XOR A
+  6AC9  LD (BigClear),A
+  6ACC  LD IX,BigChar
+  6AD0  LD HL,$434F
+  6AD3  CALL PrintAt
   6AD6  LD H,$08
   6AD8  LD L,$A5
   6ADA  CALL ScreenAddrHL
@@ -1242,6 +1277,22 @@ TrailIntro:
   6ADE  LD HL,BufferP1
   6AE1  CALL Dissolve
   6AE4  LD B,$32
+BigByte:
+  794D  EX DE,HL
+  794E  PUSH HL
+  794F  PUSH DE
+  7950  LD A,(BigRepeat)
+  7953  LD B,A
+l_7954:
+  7954  CALL BigPlot
+  7957  DJNZ l_7954
+BigPrint:
+  7930  LD A,(BigScaleY)
+  7933  LD B,A
+l_7934:
+  7934  LD DE,$0016
+  7937  ADD HL,DE
+  7938  DJNZ l_7934
 HiScoreLines:
   6FEA  LD HL,ListModes
   6FED  LD (ModeVector),HL
@@ -1282,10 +1333,11 @@ box lists (`src/res/tables/credits.csv`) and the credit lines of MenuTexts, cent
 
 ```mermaid
 flowchart TD
-    A["TrailIntro"] --> B["TRAIL NO. in big print: OR, clear, OR"]
-    B --> C["the trail's big digit, the same three prints"]
+    A["TrailIntro"] --> B["TRAIL NO.: OR repeat 2 of pitch 5 (stripes)"]
+    B --> B2["clear 2 right, 1 down; OR 3 right, 1 down; repeat 5 (the face)"]
+    B2 --> C["the trail's big digit: the same three prints, pitch 4, all on one line"]
     C --> D["Dissolve onto the screen; 50 frames"]
-    D --> E["the trail's name at scale 2 x 3; 150 frames"]
+    D --> E["the trail's name: pitch 3, repeat 2 (striped); 150 frames"]
     E --> F["PanelP1 / PanelP2, TrailAttrs: the HUD, 8.4"]
     G["front end"] --> H{"HiScorePage"}
     H -->|"1"| I["HiScoreLines: five names and scores"]
@@ -1302,29 +1354,47 @@ GRASSTRAKIN, then the HUD and the start line. Command: `python3 ../../kit/screen
 
 What to watch:
 
-- the big letters' shadow on their upper left;
+- the big letters' hatched shadow on their upper left: dashes before each left edge, a line above the tops
+  (Figure 8.7);
 - the dissolve, bits sliding in from both sides;
 - the HUD's fields appearing at once when the panels are drawn: clock 000, max, full bars.
 
+![The big print's three passes](img/hud/bigprint.png)
+
+*Figure 8.7: TrailIntro's prints for trail 2, simulated from the code and the sprites: the stripes, the clear 2
+source pixels right, the face 3 right, and what is left. Command: `python3 tools/fig_hud.py docs/img/hud`.*
+
+How to read it: the first three panels are the buffer after each print; in the last, orange is what survives of the
+stripes. Compare Animation 8.9's TRAIL NO. 2.
+
 ![The high score table on the menu](img/play/c1-014640-menu-hiscores.png)
 
-*Figure 8.7: `c1` frame 14 640: the menu and, below it, the table from HiScoreLines. A screen kept by
+*Figure 8.8: `c1` frame 14 640: the menu and, below it, the table from HiScoreLines. A screen kept by
 `tools/record.py c1` (WALKTHROUGH 6.0).*
 
 ![The credits](img/play/c1-014300-credits.png)
 
-*Figure 8.8: `c1` frame 14 300: the credits from Credits `$6E81`. A screen kept by `tools/record.py c1` (WALKTHROUGH
+*Figure 8.9: `c1` frame 14 300: the credits from Credits `$6E81`. A screen kept by `tools/record.py c1` (WALKTHROUGH
 6.0).*
+
+Worked example: the letter T of "TRAIL NO.". Its source pixel (c, r) becomes, in the first print, the lines 5r and
+5r + 1 at x 2c and 2c + 1. The clear at (2, `$4E`) wipes x 2c + 4 and 2c + 5, lines 5r + 1 to 5r + 5; the face at
+(3, `$4E`) fills x 2c + 6 and 2c + 7 over the same lines. So only pixel c - 2's clear can wipe pixel c's stripes.
+Where pixel c - 2 is not set (the left end of each row of the T), both stripe lines stay: a 2 x 2 dash, 4 pixels
+left of the face. Where it is set (along the T's bar), its clear takes line 5r + 1, and line 5r stays as a 1-line
+edge above the face; a set pixel c - 2 in the row above takes that line too (its clear reaches line 5r), so the edge
+shows only over the top rows.
 
 Worked example: the table's rows. SpriteY starts at `$47` and drops by 9: `$47`, `$3E`, `$35`, `$2C`, `$23`. The
 names go at x `$30`, the scores at `$60`. A row is 6 bytes: "H O T|" (the spaces are part of the name), and in
 HiScores "20000|".
 
-Witness: TrailIntro 16 calls (one per trail started) and BigPrint 637 in the L1 profiles; HiScoreScreen 5, Credits 6.
+Witness: TrailIntro 25 calls (one per trail started), BigPrint 972, BigByte 12 904 and BigPlot 88 985 in the L1
+profiles of the 14 recordings (the `.ann`'s witness lines); HiScoreScreen 5, Credits 6. Animation 8.9's frames show the shadow as Figure 8.7 computes it.
 In `warp` trail 2's intro starts at frame 1 295.
 
-The point: the front end and the intro reuse the game's own Print with other draw modes. A scale and a shadow pass
-turn the 6-line font into a title.
+The point: the front end and the intro reuse the game's own Print with other draw modes. A scale, a repeat
+that leaves stripes, and a clear and redraw one step right and down turn the 6-line font into a shadowed title.
 
 ## 8.12 The high scores and the name entry
 
@@ -1474,7 +1544,7 @@ What to watch:
 
 ![A name in progress](img/play/warp-016589-name-abc.png)
 
-*Figure 8.9: `warp` frame 16 589: the name so far, the cursor on C. A screen kept by `tools/record.py warp`
+*Figure 8.10: `warp` frame 16 589: the name so far, the cursor on C. A screen kept by `tools/record.py warp`
 (WALKTHROUGH 6.0).*
 
 Worked example: the score 33350 against the table 20000, 15000, 10000, 05000, 03000. On the first row `2` is less

@@ -128,8 +128,10 @@ way at `$FFEC`, and block 7 loads to `$6338-$FF77`. The game ends at `$FF77`, be
 loader is not overwritten while it runs.
 
 **Witness.** `c1`: the BASIC listing at frame 582 (`docs/img/play/c1-000582-basic.png`), the loading screen complete
-at 3 282 (`c1-003282-screen-loading.png`), the jump to `$D6B0` at 14 100 T 17 980. The header fields (6912 at 50000,
-40000 at 25400) are what a header-reading loader would want; the copies without these headers load the same (3.7).
+at 3 282 (`c1-003282-screen-loading.png`), the jump to `$D6B0` at 14 100 T 17 980. Only header 6 names the game's
+real address (40000 bytes at 25400 = `$6338`). Header 4 says 6912 bytes at 50000 (`$C350`), not the screen's 16384:
+a loader that obeyed it would put the picture in the middle of the game's space. The copies without these headers
+load the same (3.7).
 
 **The point.** The two headers are decoys or leftovers of a standard save: the loader never reads them, and the
 ROM's own flag test is what skips them.
@@ -156,6 +158,30 @@ flowchart LR
     E --> F["14 100 T 17 980: JP D6B0"]
     F --> G["14 182: the tape stops"]
 ```
+
+| Stage | Frame of `c1` | What runs | Seen as |
+| --- | --- | --- | --- |
+| power-on, `LOAD ""` | 0 | the ROM | |
+| blocks 0-1: the BASIC | to about 515 | the ROM's loader | the listing at 582 |
+| blocks 2-3: the loader | to 1 017 | the BASIC's `LOAD ""CODE`, `RANDOMIZE USR 65500` | Loader `$FFDC` runs at 1 017 (`rs.py stages`) |
+| block 4: an unread header | about 1 018 | LD-BYTES fails the flag, `JR NC` | nothing |
+| block 5: the screen | about 1 320-3 200 | LD-BYTES to `$4000` | the picture line by line |
+| block 6: an unread header | about 3 314 | the same | nothing |
+| block 7: the game | about 3 620-14 100 | LD-BYTES to `$6338` | memory filling upwards |
+| the entry | 14 100 T 17 980 | `JP $D6B0`, GameEntry `$D7D6` | the first Interrupt at 14 114 |
+| the tape stops | 14 182 | the emulator, after the last edge | |
+
+*The stages of the load; [2.3 of doc 02](02-architecture.md#23-the-stages-from-the-tape-to-play) goes on to play.*
+
+The static decode of the tape against the recording:
+
+| Decoded from the TZX and the code | Predicted | Recorded in `c1` |
+| --- | --- | --- |
+| the loader's address (header 2, `RANDOMIZE USR 65500`) | `$FFDC` | the code arrives at `$FFDC`, frame 1 017 |
+| block 7's start, counted back from its 209.62 s | about frame 3 619 | the memory starts filling at about 3 620 (the animation) |
+| the screen block, 37.63 s | about 1 323-3 205 | the picture from about 1 320 to 3 200 |
+| the entry | `JP $D6B0` (`$FFFB`) | frame 14 100 T 17 980 |
+| the image at the entry | the TZX's bytes at `$4000-$5AFF` and `$6338-$FF77` | equal (`work/stage1/images/entry.bin`) |
 
 **Worked example.** Block 7 starts at 72.29 s of the tape and takes 209.62 s, 10 481 frames, for 40 002 bytes. Counted
 back from the loader's `JP $D6B0` at frame 14 100 T 17 980, it starts at about frame 3 619, so the tape started at
@@ -235,7 +261,7 @@ lists hold addresses in `$60AC-$6335`, so its data only works after the copy. Th
 the loader is no longer needed.
 
 **Witness.** The L1 of `c1` lists both copies (`LDIR` at `$D7E0` and `$D7EB`); `c1`'s trace of 14 100-14 101 shows SP
-`$6323` at `$D7D6`; `python3 work/review/rvA/ldir.py work/docs/atA/c1/traces/14100_17900-14101_69000.uatr` times the
+`$6323` at `$D7D6`; `python3 work/docs/atA/ldir.py work/docs/atA/c1/traces/14100_17900-14101_69000.uatr` times the
 two `LDIR`s (44 571 T and 13 645 T).
 
 **The point.** The game uses the BASIC area for code and data. The CLEAR 25400 protects the image from BASIC's
@@ -247,10 +273,14 @@ The sprites in GameGfx `$8F5C` are re-shifted in place as the scroll moves them 
 So the image in memory during play is not the tape's image: the shifted sprites' bytes differ. A snapshot of play
 holds the sprites at whatever offsets they had last. The source holds them as loaded.
 
-Stage 1 compared three images: as loaded, at the entry (`c1` frame 14 100 T 17 980) and in play (`c1`'s `play.szx`,
-frame 14 821). The entry image equals the loaded one at `$4000-$5AFF` and `$6338-$FF77`. The play image differs in the
-copies, the variables, the buffers and the tables, and in three ranges of the sprite bank: `$9DD0-$9F4C`,
-`$C04A-$C184` and `$CA20-$CBEC`.
+Stage 1 compared three images: as loaded, at the entry (`c1` frame 14 100 T 17 980) and after the trail intro was
+drawn (`c1`'s `play.szx`, frame 14 821, before the first pass at 15 055). The entry image equals the loaded one at
+`$4000-$5AFF` and `$6338-$FF77`. The play image differs in the copies, the variables, the buffers and the tables, and
+in three ranges of the sprite bank: `$9DD0-$9F4C`, `$C04A-$C184` and `$CA20-$CBEC`. Mapped through
+`src/res/sprites/game.csv`, the first and last are glyphs: the letters (sprites 30-53) and the big and small digits
+(141-158), which the text printer shifts to each character's x ([doc 08](08-hud-and-text.md)) while the title, the
+menu, the trail intro and the score panels are printed. The middle range is sprites 125-126; which front-end routine
+shifted them was not traced.
 
 **How it works.**
 
@@ -305,7 +335,7 @@ flowchart TD
 
 ```text
 tools/build.sh:
-    res_formats.py build --out build/res        ; 16 resources to their original bytes
+    res_formats.py build --out build/res        ; 24 resources to their original bytes
     sjasmplus game.asm, basic.asm, loader.asm   ; with listings
     mktape.py tape.txt                          ; headers, data blocks, pauses
     cmp with the original TZX
@@ -325,11 +355,29 @@ rom 0 game.bin
 
 *`src/tape/tape.txt` without its comments: one line a block, the pause in ms first.*
 
+The build's inputs:
+
+| Input | Files | Tool | Becomes |
+| --- | --- | --- | --- |
+| the annotated disassembly | `src/game/game.ann` | `kit/mkgame.py --install` | `src/game/*.asm`, 8 modules, then `game.bin` (`$6338-$FF77`) by sjasmplus |
+| the BASIC | `src/tape/basic.asm` | sjasmplus | `basic.bin`, block 2 |
+| the loader | `src/loader/loader.asm` (from `loader.ann`) | sjasmplus | `loader.bin`, block 3 (`$FFDC`) |
+| the loading screen | `src/res/screens/loading.scr` (`loading.png` to view) | `tools/res_formats.py` (screen) | block 5 |
+| two sprite banks | `src/res/sprites/game.png` + `game.csv`, `menu.png` + `menu.csv` | `res_formats.py` (sprites) | GameGfx `$8F5C`, MenuGfx `$6338` |
+| three trail files | `src/res/trails/trails14.txt`, `trail5.txt`, `trail6.txt` | `res_formats.py` (trail) | TrailRecords `$7C9C` and the lists, Trail5 `$EE84`, Trail6Image `$F230` |
+| eleven tables | `src/res/tables/*.csv`, `*.txt` | `res_formats.py` (lists, menus, table) | the panels' and intros' boxes, the menus, the frame, jump, slope, tumble and ink tables |
+| six texts | `src/res/texts/*.txt` | `res_formats.py` (text) | every text the game prints |
+| the tunes | `src/res/sound/tunes.txt` | `res_formats.py` (tunes) | NoteTable `$FB72` to `$FDFA` |
+| the tape's layout | `src/tape/tape.txt` | `tools/mktape.py` | the eight blocks, headers and pauses |
+
+*24 resources in all (1 screen, 2 banks, 3 trail files, 11 tables, 6 texts, 1 tune file), listed by
+`res_formats.resources()`; [src/res/README.md](../src/res/README.md) gives each folder's entries.*
+
 **Worked example.** `sh tools/build.sh $SJASMPLUS` (after `. work/env.sh`) prints "build: ATV Simulator.tzx
 identical to orig/ATVSimulator.tzx.zip's ATV Simulator.tzx". Change one byte of a sprite in
 `src/res/sprites/game.png` and the build's `cmp` names the first differing byte in block 7.
 
-**Witness.** WALKTHROUGH, stage 2: the build line and `res: 16 resources, 0 bad`.
+**Witness.** WALKTHROUGH, stage 2: the build line; `python3 tools/res_formats.py check` prints `res: 24 resources, 0 bad`.
 
 **The point.** Everything on the tape comes from the sources: the code, the graphics, the trails, the texts, the
 tunes and even the two unread headers.
@@ -347,7 +395,7 @@ Quattro Racers, The CD Games Pack, Christmas Megapack, Mega-Hot and Poke City, a
 | `ATV Simulator (1987)(Code Masters).tzx` | TOSEC 2023-09 | the same BASIC, loader, screen and code; no headers before the screen and the code; other pauses |
 | `[a2].tzx` and its `.tap` | TOSEC 2023-09 | the BASIC header says LINE 0; the same data; no headers before the screen and the code |
 | `[h Raf].tap` | TOSEC 2023-09 | a 2 148-byte BASIC ("RAF'90") in place of the loader; the same screen and code |
-| `(EN)[p].tap` | zxart | a 103-byte BASIC, a 4 039-byte block at 40000, and the code with 6 bytes changed: the ZXDB POKEs at `$DFE6` and `$EB5A` patched in, a text at `$696B-$696E` |
+| `(EN)[p].tap` | zxart | a 103-byte BASIC, a 4 039-byte block at 40000, and the code with 6 bytes changed: `$6338`, three bytes of the text at `$696B-$696E`, and two ZXDB POKEs, 57318 (`$DFE6`) and 60250 (`$EB5A`) |
 
 *From the README's "Other releases and copies" (`tools/media_compare.py` against the original); the TR-DOS
 conversions, the snapshots and the +3 disk are not standard tapes and are not used.*

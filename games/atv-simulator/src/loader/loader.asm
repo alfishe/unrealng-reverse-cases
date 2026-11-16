@@ -7,7 +7,7 @@
 LdBytes        EQU $0556  ; the ROM's LD-BYTES: IX the address, DE the length, A the flag, carry set to load; carry clear on return when the block failed
 Screen         EQU $4000  ; the screen
 GameStart      EQU $6338  ; the game's first byte (src/game)
-GameEntry      EQU $D6B0  ; the game's entry (src/game/entry.asm)
+EntryJumps     EQU $D6B0  ; the game's entry jump (src/game/entry.asm: EntryJumps, JP GameEntry $D7D6)
   ORG $FFDC
   INCLUDE "loader-module.asm"  ; The machine-code loader: the screen and the game by LD-BYTES, the headers before them skipped
 

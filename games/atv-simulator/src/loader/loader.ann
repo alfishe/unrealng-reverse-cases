@@ -9,8 +9,8 @@ $FFDC c Loader ; Drop USR's return, load the screen and the game, enter the game
 > Witness: L1 1 (c1).
 $FFDD LoadScreen ; IX = $4000, DE = 6912, A = $FF (a data block), carry set (load): LD-BYTES
 $FFEC LoadGame ; IX = $6338, DE = 40000: LD-BYTES again, again until it succeeds
-$FFFB EnterGame ; JP $D6B0: the game's entry (GameEntry)
+$FFFB EnterGame ; JP $D6B0: the game's entry (EntryJumps)
 @equ $0556 LdBytes ; the ROM's LD-BYTES: IX the address, DE the length, A the flag, carry set to load; carry clear on return when the block failed
-@equ $D6B0 GameEntry ; the game's entry (src/game/entry.asm)
+@equ $D6B0 EntryJumps ; the game's entry jump (src/game/entry.asm: EntryJumps, JP GameEntry $D7D6)
 @equ $4000 Screen 6912 at $FFDD ; the screen
 @equ $6338 GameStart at $FFEC ; the game's first byte (src/game)

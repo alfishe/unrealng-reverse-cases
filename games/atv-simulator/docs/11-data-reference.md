@@ -32,8 +32,8 @@ Written by `kit/refdocs.py`.
 | `$6954` | `NameScorePtr` (`PlayerVars`+13) | 2 | the row's score | `NameScreen` (`stage1/rec/kb`) | `CheckHiScore` (`stage1/rec/kb`), `NameEntry` (`stage1/rec/warp`) |
 | `$6956` | `NameTextPtr` (`PlayerVars`+15) | 2 | the row's name | `CheckHiScore` (`stage1/rec/kb`), `NameEntry` (`stage1/rec/warp`), `NameScreen` (`stage1/rec/kb`), `ReadControl` (`stage1/rec/warp`), `l_7BE9` (code) | `CheckHiScore` (`stage1/rec/kb`), `NameEntry` (`stage1/rec/warp`) |
 | `$6958` | `BigScaleX` (`PlayerVars`+17) | 1 | the big print's horizontal scale | `BigByte`, `BigPrint` | `TrailIntro`, `NameScreen` (`stage1/rec/kb`) |
-| `$6959` | `BigScaleY` (`PlayerVars`+18) | 1 | its vertical scale (lines a pixel) | `BigPrint` | `TrailIntro`, `NameScreen` (`stage1/rec/kb`) |
-| `$695A` | `BigRepeat` (`PlayerVars`+19) | 1 | its repeat | `BigByte` | `TrailIntro`, `NameScreen` (`stage1/rec/kb`) |
+| `$6959` | `BigScaleY` (`PlayerVars`+18) | 1 | its row pitch: the lines from one source row to the next (BigRepeat of them drawn) | `BigPrint` | `TrailIntro`, `NameScreen` (`stage1/rec/kb`) |
+| `$695A` | `BigRepeat` (`PlayerVars`+19) | 1 | the lines BigPlot draws for each set source pixel (set with BigScaleY as one word: `$0205` is pitch 5, repeat 2) | `BigByte` | `TrailIntro`, `NameScreen` (`stage1/rec/kb`) |
 | `$695B` | `BigClear` (`PlayerVars`+20) | 1 | 0 OR the pixels, 1 clear them (the shadow) | `BigPlot` | `TrailIntro` |
 | `$695C` | `CursorPos` (`PlayerVars`+21) | 2 | the name entry's cursor (y, x) | `NameCursor` (`stage1/rec/kb`), `NameEntry` (`stage1/rec/warp`), `ReadControl` (`stage1/rec/warp`), `NameSelect` (code) | `CheckHiScore` (`stage1/rec/kb`), `NameEntry` (`stage1/rec/warp`) |
 | `$695E` | `BigMask` (`PlayerVars`+23) | 1 | the big print's current bit | `BigByte`, `BigPlot` | `BigByte`, `BigPrint` |
@@ -177,7 +177,7 @@ Written by `kit/refdocs.py`.
 | `$D6C0` | `FinishDistance` (`LoopVars`+10) | 2 | the trail's length - `$48`: a player whose distance reaches it has finished | `CopyTrailName`, `ShowMaxTime`, `TrailAttrs`, `Update` | `SelectTrail`, `RotateSpriteLeft` (`stage1/rec/warp`) |
 | `$D6C2` | `HudY` (`LoopVars`+12) | 1 | the half's HUD line (`$BE` top, 6 bottom) | `ShowBars`, `SpeedBar`, `Stop`, `UseFuel` | `PanelP1`, `PassP1`, `PanelP2` (`stage1/rec/kb`), `PassP2` (`stage1/rec/kb`), `RotateSpriteLeft` (`stage1/rec/warp`) |
 | `$D6C3` | `PassControls` (`LoopVars`+13) | 1 | the current player's controls this pass | `AtvPhysics`, `ControlLeft`, `ControlRight`, `ControlUp`, `JumpControl` +3 | `PassP1`, `PassP2` (`stage1/rec/kb`), `ReadControl` (`stage1/rec/kb`), `RotateSpriteLeft` (`stage1/rec/warp`) |
-| `$D6C4` | `GroundY` (`LoopVars`+14) | 5 | the ground under the ATV's wheels (GroundUnder): the higher of `$D6C5` (rear) and `$D6C6` (front); `$D6C7` under the nose, `$D6C8` the nose's line | `AtvPhysics`, `OnGround`, `Tumble` | `AtvPhysics`, `RotateSpriteLeft` (`stage1/rec/warp`) |
+| `$D6C4` | `GroundY` (`LoopVars`+14) | 5 | the ground under the ATV's wheels (GroundUnder): the higher of `$D6C5` (AtvX + 7) and `$D6C6` (6 pixels ahead), both under the rear wheel; `$D6C7` under the nose, `$D6C8` the nose's line | `AtvPhysics`, `OnGround`, `Tumble` | `AtvPhysics`, `RotateSpriteLeft` (`stage1/rec/warp`) |
 | `$D6C9` | `Clock` (`LoopVars`+19) | 1 | the clock: three ASCII digits; the last one counts passes (ClockTick), not seconds | `ClockTick`, `NewGame`, `ShowClock`, `DigitsValue` (`stage1/rec/kb`), `Update` (`stage1/rec/kb`) +1 | `ClockTick`, `ShowHud`, `RotateSpriteLeft` (`stage1/rec/warp`) |
 | `$D6CA` | `ClockTens` (`LoopVars`+20) | 1 | - | `ClockTick`, `ShowClock`, `DigitsValue` (`stage1/rec/kb`), `Update` (`stage1/rec/kb`) | `ClockTick`, `ShowHud`, `RotateSpriteLeft` (`stage1/rec/warp`) |
 | `$D6CB` | `ClockUnits` (`LoopVars`+21) | 1 | - | `ClockTick`, `ShowClock`, `DigitsValue` (`stage1/rec/kb`), `Update` (`stage1/rec/kb`) | `ClockTick`, `ShowHud`, `RotateSpriteLeft` (`stage1/rec/warp`) |

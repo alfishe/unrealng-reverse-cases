@@ -49,9 +49,10 @@ Recording c1 (`python3 tools/record.py c1 --work work/stage1/rec/c1`): a 48K fro
 `LOAD ""` typed, PLAY once at signal speed (fast and turbo tape off). The ROM loads the BASIC and the loader
 (frame 1 017: the loader at `$FFDC` runs, `kit/rs.py stages`), the loader reads the screen and the game by LD-BYTES;
 the game's entry `$D6B0` runs at frame 14 100 T 17 980. The title and credits, the menu (frame 14 657), START with
-the power-on controls (one player, Kempston), trail 1 from frame 14 821 with a jump every 66 frames: the ATV
-crashed and tumbled at distance 381 (frame 15 580) and stood at 373 (`$0175`, speed 0, frames 15 600-19 300) until
-TIME OUT (clock 60, near frame 20 897), then the menu. 22 397 frames;
+the power-on controls (one player, Kempston), the trail intro from frame 14 821, the first pass of trail 1 at 15 055, a jump every 66 frames: the
+ATV crashed at distance 381 (the pass of frame 15 574; tumbling at 15 580) and stood at 373 (`$0175`, speed 0, frames
+15 600-19 300) until TIME OUT (clock 60.0, at about frame 19 255: 600 passes of 7 frames), 250 HALTs, the menu again
+(about 19 700) and the title tune again from 20 898. 22 397 frames;
 the L1 replay checked 896 frames, diverged 0.
 
 `kit/rs.py stages` on c1 (code arrivals): `$FFDC` (the loader, frame 1 017), `$8080` (the IM 2 vector `JP $D9D2`,
@@ -111,7 +112,7 @@ state. 48K; the original TZX; the L1 of each built (`kit/rs.py` through record.p
 
 | Name | Start | Frames | How | What it reached |
 | --- | --- | ---: | --- | --- |
-| c1 | power-on | 22 397 | `LOAD ""`, the tape at signal speed; START; right with a jump every 66 frames | the BASIC (582), the loading screen, the entry (14 100), the title tune and credits, the menu (14 657), trail 1 (14 821), mounting (14 897), a crash at distance 381 (frame 15 580), standing at 373 to TIME OUT, the menu |
+| c1 | power-on | 22 397 | `LOAD ""`, the tape at signal speed; START; right with a jump every 66 frames | the BASIC (582), the loading screen, the entry (14 100), the title tune and credits, the menu (14 657), the trail intro (14 821), the first pass (15 055), a crash at distance 381 (frame 15 574), standing at 373 to TIME OUT, the menu |
 | menu | c1 `menu.szx` (14 657) | 3 340 | ENTER moves, SPACE picks: TWO PLAYERS; CHOOSE CONTROL, PLAYER ONE, KEYBOARD, the key table redefined Q A O P M, EXIT; PLAYER TWO, KEYBOARD, H J K M B, EXIT (state `menu-two-kb.szx`); then player 1 KEMPSTON, player 2 SINCLAIR; 2 500 frames idle | every menu screen and control method; the key tables of both players; the idle menu stays (no attract mode) |
 | kb | menu `menu-two-kb.szx` | 9 160 | two players on the keyboard; both right, jump on, the wheel keys and jumps | the split screen of two players, both through trail 1 into trail 2; TIME OUT; player 2's high-score name entry (3 260) |
 | trail1 | c1 `menu.szx` | 9 970 | `ride_smart` (record.py): the pattern right / wheelie / wheel down / jump; on foot back to the ATV | a crash, the rider thrown and walking back; stuck behind a dune (on foot, the walk-back rule fails, 6.2); TIME OUT; the title |
@@ -128,9 +129,12 @@ state. 48K; the original TZX; the L1 of each built (`kit/rs.py` through record.p
 | itemlow | c1 `menu.szx` | 714 | `python3 tools/rec_crashes.py itemlow --work work/stage1/rec/itemlow --start work/stage1/rec/c1/menu.szx --port-base 37790` (review round 1): POKE at the menu, trail 1's list A item 2 (`$C9`, 7 lines) y 23 to 1; START | ItemTooLow `$8EB2` in the first pass (frame 398): the red border, Restart `$D7ED`, the credits again |
 | overhang | c1 `menu.szx` | 1 060 | `python3 tools/rec_crashes.py overhang --work work/stage1/rec/overhang --start work/stage1/rec/c1/menu.szx --port-base 37790` (review round 1): POKE at the menu, trail 1's list A item 3 (the dune `$67`, 12 lines) y 0 to 30, a floating piece; START, mount, right held, no wheel key | RiderMounted's overhang test: ThrowOff `$E2E2` at frame 756, speed 21, AtvFrame `$38`; FallPhase 1 |
 | dropout | menu `menu-two-kb.szx` | 7 830 | `python3 tools/rec_crashes.py dropout --work work/stage1/rec/dropout --start work/stage1/rec/menu/menu-two-kb.szx --port-base 37790` (review round 1): two players on the keyboard; player 1 mounts, his distance POKEd to the finish less 40 (`$D726`), crosses the line and stops; player 2 stands | TIME OUT at 6 783 with player 1 finished: TrailEnd at once, Riding 3 to 1, trail 2 for player 1 alone (PassP2's last call 6 783) |
+| anim | c1 `menu.szx` | 4 361 | `python3 tools/record.py anim --work work/stage1/rec/anim --start work/stage1/rec/c1/menu.szx --port-base 37790` (review round 2): trails 1 and 2 as in warp (6 POKEs in `record.json`), then trail 3's distance POKEd to 700 at frame 3 043; ride_smart to distance 1 200 | trail 3's moving objects: the seal and its ball (Anim8053, Anim8065) in view from about 3 060, AnimObject 800 times in its L1 (doc 7, 7.7) |
 
 Each folder holds `session.ttd`, `l1.json`, `record.json`, `screens/` (and `log.json` for turn, throwoff, speedcrash,
-wallcrash, overhang, dropout); every recording of this table is in case.json's `read_builds`. CrashIfAir needed no recording of its own:
+wallcrash, overhang, dropout); every recording of this table but `anim` is in case.json's `read_builds` (`anim` came
+last, in review round 2: adding it would change every witness count the documents quote; its own L1 is in its
+folder). CrashIfAir needed no recording of its own:
 `c1`'s tumble at 15 574 is a CrashIfAir crash (doc 10, 10.6). Integration's traces of `c1` (the heaviest pass, doc 4 4.7)
 are in `work/docs/integrate/c1/traces/`, opened with `python3 ../../kit/rs.py open --work work/docs/integrate/c1
 --ttd work/stage1/rec/c1/session.ttd --port-base 37780`.
@@ -148,7 +152,7 @@ From the recordings above, named `<recording>-<frame>-<moment>.png` in `docs/img
 | | |
 | --- | --- |
 | ![the BASIC loader, frame 582](docs/img/play/c1-000582-basic.png) | ![the loading screen, 3 282](docs/img/play/c1-003282-screen-loading.png) |
-| ![the menu, 14 657](docs/img/play/c1-014657-menu.png) | ![trail 1, the start line, 14 821](docs/img/play/c1-014821-start-line.png) |
+| ![the menu, 14 657](docs/img/play/c1-014657-menu.png) | ![the trail intro, 14 821](docs/img/play/c1-014821-start-line.png) |
 | ![trail 1 riding, 15 419](docs/img/play/c1-015419-c1.png) | ![after TIME OUT, the menu, 20 897](docs/img/play/c1-020897-c1.png) |
 
 **The menu and the controls (menu).**

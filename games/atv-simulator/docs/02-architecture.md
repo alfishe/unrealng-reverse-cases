@@ -12,7 +12,11 @@ What this covers:
 - the leftovers, among them the assembler source text in trail 6's tail (2.7).
 
 The machine is a 48K Spectrum. The game uses no 128K memory or sound: the image, the buffers and the stack fit in
-the 48K, and the beeper makes every sound ([doc 09](09-sound.md)).
+the 48K, and the beeper makes every sound ([doc 09](09-sound.md)). The check: `build/game.lst` has 15 `OUT ($FE),A`
+and no other output instruction (no `OUT (C)`, so no `$7FFD` paging and no AY write to `$FFFD` / `$BFFD`); the L1s
+of the fifteen recordings in `work/stage1/rec/` list only ports with the low byte `$FE` (`$00FE` to `$1FFE`, the
+border and speaker byte in the high half) among the ports written. The game therefore runs the same on a 128K in
+48K mode.
 
 The recordings it rests on ([WALKTHROUGH](../WALKTHROUGH.md), 6.0): `c1` (power-on, the load, trail 1, TIME OUT),
 `menu`, `kb` (two players), `trail1`, `trails`, `warp` (all six trails), `fuel` and `empty`. The L1 builds of these
@@ -115,7 +119,7 @@ almost all pictures. Drawn by `python3 tools/sprite_sheet.py work/stage1/media/t
 docs/img/sprites/sprites-stage1.png work/stage1/rec/{warp,kb,trail1,trails,menu,fuel}/l1.json` (stage 1); the whole
 bank of 203 is `src/res/sprites/game.png`.*
 
-The code lies in two blocks: `$69A6-$8F25` (the front end and the renderer, 7 956 bytes of code in a 9 600-byte span,
+The code lies in two blocks: `$69A6-$8F25` (the front end and the renderer, 7 955 bytes of code in a 9 600-byte span,
 with the trails 1-4 between them) and `$D6B0-$EE4B` (the game, 6 044 bytes). The sprite bank fills the 18 K between them.
 
 **How it works.** The copies are the whole of the relocation:
@@ -219,7 +223,8 @@ The eight recordings' L1 builds are merged into one count of execution, reads an
 *How to read: four maps of `$4000-$FFFF`, 256 bytes a row: executed, read, written, and the three together (red
 write, green read, blue execute); the brighter, the more. Under each, the screen `$4000-$57FF` is laid out as the
 screen and its attributes as cells. The labels on the right name the regions of 2.2. The point: the code runs in two
-bands (the front end and renderer at `$6A00-$8F00`, the game at `$D6B0-$EE4B`); the sprite bank between them is read
+bands (the front end and renderer at `$6A00-$8F00`, the game at `$D6B0-$EE4B`), and the tune player at `$F850-$FB71`
+while a tune plays (with the loader at `$FFDC` during the load); the sprite bank between them is read
 all over and written in places (the in-place shifts); the buffers at `$F03C-$FDFB` are written hardest after the
 screen; the screen's two halves are the two players. Drawn with `python3 ../../kit/merge_l1.py
 work/docs/atA/l1-all.json work/stage1/rec/{c1,menu,kb,trail1,trails,warp,fuel}/l1.json work/stage1/rec/empty/l1.json
@@ -305,8 +310,10 @@ flowchart LR
 ```
 
 **Worked example.** At `c1` frame 15 580 the ATV tumbles. Sampled at T 0: TrackPos `$D78A` = `$017D` (381), Speed
-`$D77B` = 17 (`$11`), down from 21 after the landing slowed it, and TumbleCount `$D797` counts up to 24. Then the
-rider is thrown (ThrowSpeed `$F7` up) and lies with RiderFrame `$77` at 15 727.
+`$D77B` = 17 (`$11`), down from 21 after the landing slowed it, and TumbleCount `$D797` is counting: the crash in the
+pass of 15 574 set it to 1 and called Throw at once, so the record holds both at the same time, the ATV tumbling on to
+24 and the rider in the air with ThrowSpeed `$D799` = `$F8` − 17 / 8 = `$F6` (up; `$F7` a pass later). The rider lies
+with RiderFrame `$77` at 15 727.
 
 **Witness.** `work/docs/atA/sample.py` over `c1` (`time_travel memory_at` at T 0 of each frame; the commands in
 `work/docs/atA-NOTES.md`).

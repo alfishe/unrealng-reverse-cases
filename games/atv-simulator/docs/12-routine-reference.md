@@ -364,7 +364,7 @@ Witness: L1 14 (c1, dropout, empty, fuel, itemlow, kb, overhang, speedcrash, thr
 
 **The trail's intro: "TRAIL NO." and the trail's number in big print, the name, the panels**
 
-Clears the screen's attributes and pixels, prints TrailNoText twice (shadow and face) at scale 2 x 5, the trail's number (Trail + "b", a big digit) at scale 2 x 4, dissolves the buffer onto the screen, waits 50 frames, copies the trail's name (CopyTrailName) and prints it and the intro picture (TrailIntroBoxes), waits 150 frames, then draws one or two players' panels (PanelP1, PanelP2), each coloured by TrailAttrs. Called through JpTrailIntro before each trail (c1 frame 15 800).
+Clears the screen's attributes and pixels, prints TrailTexts three times at pitch 5: ORed with repeat 2 at (0, `$4F`) (stripes), cleared at (2, `$4E`) and ORed at (3, `$4E`) with repeat 5 (the face; what is left of the stripes is a hatched shadow), the trail's number (Trail + "b", a big digit) the same way at pitch 4 (repeat 2, then 4) at (`$40`, `$4F`), (`$42`, `$4F`), (`$43`, `$4F`), dissolves the buffer onto the screen, waits 50 frames, copies the trail's name (CopyTrailName) and prints it at pitch 3, repeat 2 (striped), and the intro picture (TrailIntroBoxes), waits 150 frames, then draws one or two players' panels (PanelP1, PanelP2), each coloured by TrailAttrs. Called through JpTrailIntro before each trail (c1 frame 15 800).
 
 Witness: L1 25 (c1, dropout, empty, fuel, itemlow, kb, overhang, speedcrash, throwoff, trail1, trails, turn, wallcrash, warp).
 
@@ -974,7 +974,7 @@ Witness: L1 33 (c1, kb, menu, trail1, turn, warp).
 
 **The title tune's interrupt hook: count TuneTimer, run the menu**
 
-TuneHook calls it every frame while the title tune plays (c1: 1517 runs; 5388 over the seven recordings); it counts TuneTimer (MenuTimer), checks the keys (any Kempston direction or fire when KempstonOn: port `$1F` AND `$1F`) and returns to the tune player. When TuneTimer's low byte wraps with the high byte's low nibble `$0A` it shows the high scores and stops the tune: first at `$0A00` (Title starts the timer at `$04C8`: 1 336 interrupts, 26.7 s), then every `$1000`.
+TuneHook calls it every frame while the title tune plays (c1: 1517 runs; 5388 over the seven recordings); it counts TuneTimer (MenuTimer), checks the keys (any Kempston direction or fire when KempstonOn: port `$1F` AND `$1F`) and returns to the tune player. When TuneTimer's low byte wraps with the high byte's low nibble `$0A` it shows the high scores and stops the tune: first at `$0A00` (Title starts the timer at `$04C8`: 1 336 interrupts, 26.7 s). The menu then stays silent in MenuLoop's HALT loop until a key or TuneTimer `$8000` (back to Title); a menu action that re-enters MenuLoop plays the tune again until the next of `$1A00`, `$2A00` ... (the high byte's low nibble `$0A`), at most `$1000` later.
 
 Witness: L1 5424 (c1, dropout, empty, fuel, itemlow, kb, menu, overhang, speedcrash, throwoff, trail1, trails, turn, wallcrash, warp).
 
@@ -1620,7 +1620,7 @@ Witness: L1 50 (c1, dropout, empty, fuel, itemlow, kb, overhang, speedcrash, thr
 
 ### `BigPrint` (`$78E3`)
 
-**Draw mode 8: a sprite scaled by BigScaleX / BigScaleY, ORed or cleared**
+**Draw mode 8: each source pixel BigScaleX pixels wide, BigRepeat lines of a BigScaleY-line pitch, ORed or cleared**
 
 Witness: L1 972 (c1, dropout, empty, fuel, itemlow, kb, overhang, speedcrash, throwoff, trail1, trails, turn, wallcrash, warp).
 
@@ -2822,6 +2822,8 @@ IY the item, IX its record: +0 sprite, +1 flags, +2 id, then up to three motions
 
 Witness: L1 7506 (c1, dropout, empty, fuel, itemlow, kb, overhang, speedcrash, throwoff, trail1, trails, turn, wallcrash, warp).
 
+[Animation: `AnimObject` at work](img/routines/AnimObject.gif)
+
 | | |
 | --- | --- |
 | Runs (c1: a 48K from power-on, the original TZX at signal speed, the title, the menu, trail 1 to TIME OUT) | 108 calls, 30,764 t-states own (0.00 %) |
@@ -3130,7 +3132,7 @@ Witness: L1 8037 (c1, dropout, empty, fuel, kb, overhang, speedcrash, throwoff, 
 
 **The ATV: body and wheels, mirrored when it faces left**
 
-Facing left, LD A,E drops the XOR 7 that DrawRider keeps (OR E at `$DDF3`): the left-facing ATV is drawn at x AND `$F8`.
+Facing left, LD A,E drops the XOR 7 that DrawRider keeps (OR E at `$DDF3`): the left-facing ATV is drawn at x AND `$F8` with shift 0, 7 - (AtvX AND 7) pixels right of where the rider's rule would put it once mirrored (7 at AtvX `$48`: turn frame 1 405).
 
 Witness: L1 8037 (c1, dropout, empty, fuel, kb, overhang, speedcrash, throwoff, trail1, trails, turn, wallcrash, warp).
 
@@ -3148,8 +3150,6 @@ Witness: L1 8037 (c1, dropout, empty, fuel, kb, overhang, speedcrash, throwoff, 
 ### `AtvMirrorReturn` (`$DD45`)
 
 **MaskMirror's return when DrawAtv faces left (DrawAtv pushes it before JP (HL)): x + 8, sprite `$79`, JP Wheels**
-
-Known only from the code.
 
 Witness: L1 45 (turn).
 
@@ -3847,7 +3847,7 @@ Witness: L1 18 (c1, dropout, empty, fuel, itemlow, kb, menu, overhang, speedcras
 
 Trail = 0, SecondRound = 0, Riding = 1 or 3 (PlayerCount); LoadIntro; then for each trail SelectTrail, FrameCount = `$FF`, InitListWidths, InitRecords, TrailIntro, ShowHud, ClearKeys, EI, and the passes. TrailEnd jumps back to NextTrail (`$D82F`).
 
-FrameCount = 0, ReadP1Controls, ReadP2Controls, ClearKeys, ClockTick, Players; then the wait loop on FrameCount (30 269 229 runs of `$D86B` over the 5081 passes of the seven recordings; c1 has 600). Both players' Finished bits set (as Riding) end the trail (TrailEnd); the clock's first digit equal to MaxTime's: TIME OUT for both (TimeOut), then TrailEnd when someone finished, else 250 frames and the game ends. With two players a pass is often longer: 8 to 13 frames in kb (640 of 811 passes 7). The TIME OUT test (`$D89E`) compares only the hundreds digit with MaxTime's first: a limit is a multiple of 100 passes.
+FrameCount = 0, ReadP1Controls, ReadP2Controls, ClearKeys, ClockTick, Players; then the wait loop on FrameCount (30 269 229 runs of `$D86B` over the 5081 passes of the seven recordings; c1 has 600). Both players' Finished bits set (as Riding) end the trail (TrailEnd); the clock's first digit equal to MaxTime's: TIME OUT for both (TimeOut), then TrailEnd when someone finished, else 250 frames and the game ends. With two players a pass is often longer: 8 to 15 frames in kb (640 of 811 passes 7). The TIME OUT test (`$D89E`) compares only the hundreds digit with MaxTime's first: a limit is a multiple of 100 passes.
 
 Witness: L1 14 (c1, dropout, empty, fuel, itemlow, kb, overhang, speedcrash, throwoff, trail1, trails, turn, wallcrash, warp).
 
@@ -4817,7 +4817,7 @@ Witness: L1 171 (c1, dropout, empty, fuel, kb, overhang, speedcrash, throwoff, t
 
 **The ATV each pass: rise or fall, the ground under the wheels, landing, the slope, crash tests**
 
-Not while turning round (AtvFrame `$5C`). Rise; GroundUnder at the rear and the front wheel (GroundY the higher); above the ground Fall, else land (Landing when VSpeed was nonzero); a drop of 7 or more after a climb: Crash. Then the nose: the ground under the nose against the wheels gives the frame by SlopeFrames; a step of `$15` or more: Crash; WheelieDown when the timer ran out or Down is held.
+Not while turning round (AtvFrame `$5C`). Rise; GroundUnder at two points under the rear wheel, AtvX + 7 and 6 pixels ahead (GroundY the higher); above the ground Fall, else land (Landing when VSpeed was nonzero); a drop of 7 or more after a climb: Crash. Then the nose: the ground under the nose against the wheels gives the frame by SlopeFrames; a step of `$15` or more: Crash; WheelieDown when the timer ran out or Down is held.
 
 Witness: L1 8039 (c1, dropout, empty, fuel, kb, overhang, speedcrash, throwoff, trail1, trails, turn, wallcrash, warp).
 
@@ -5012,8 +5012,6 @@ Witness: L1 21 (c1, fuel, kb, speedcrash, trail1, trails, wallcrash, warp).
 ### `FallRider` (`$E991`)
 
 **The rider falling after ThrowOff (FallPhase 1-5; recording throwoff: 35 runs)**
-
-Known only from the code.
 
 Witness: L1 78 (overhang, throwoff).
 

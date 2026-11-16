@@ -387,6 +387,38 @@ def plan_warp(r):
         r.shot('after')
 
 
+def plan_anim(r):
+    """anim: from c1's menu.szx, START (one player, Kempston); trails 1 and 2 as in warp (mounted, 150 frames, the
+    distance POKEd to 40 before the finish, ridden to the next trail); on trail 3 (ICEBERGS), once mounted, the
+    distance POKEd to 700 (`$D78A`, `$D726`), 260 pixels before its moving objects (list A `$0361-$0467`: Anim8065,
+    Anim8053, Anim804A, Anim8070, Anim805C), then ride_smart until the distance passes 1 200 or 2 000 frames"""
+    to_menu(r)
+    start_game(r)
+    r.wait(150)
+    for n in range(3):
+        trail = r.rd(0xD6BF)[0]
+        if n:
+            r.wait(400)
+        r.shot(f'trail{trail + 1}-start')
+        ride_smart(r, 600, f'trail{trail + 1}', stop=lambda: r.rd(0xD783)[0] >= 0x40)
+        if n < 2:
+            ride_smart(r, 150, f'trail{trail + 1}')
+            fin = int.from_bytes(r.rd(0xD6C0, 2), 'little')
+            to = max(0, fin - 40)
+            why = f'trail {trail + 1}: distance to {to} (finish {fin} - 40)'
+        else:
+            to = 700
+            why = f'trail {trail + 1}: distance to {to}, before the moving objects'
+        for addr in (0xD78A, 0xD726):
+            r.lab.write(addr, to.to_bytes(2, 'little'))
+            r.pokes.append({'frame': r.lab.frame, 'address': f'${addr:04X}', 'bytes': list(to.to_bytes(2, 'little')),
+                            'why': why})
+        if n < 2:
+            ride_smart(r, 2500, f'trail{trail + 1}-end', every=50, stop=lambda: r.rd(0xD6BF)[0] != trail)
+    ride_smart(r, 2000, 'objects', every=50, stop=lambda: int.from_bytes(r.rd(0xD78A, 2), 'little') > 1200)
+    r.shot('end')
+
+
 def name_entry(r):
     """The high-score name entry (a letter grid, the cursor on A): fire on A, right and fire on B, right and fire on
     C, then down three rows and right to the arrow, fire; a shot after each step"""
@@ -481,7 +513,7 @@ def plan_empty(r):
     r.shot('end')
 
 
-PLANS = {'c1': plan_c1, 'menu': plan_menu, 'kb': plan_kb, 'trails': plan_trails, 'trail1': plan_trail1, 'warp': plan_warp, 'fuel': plan_fuel, 'pokes': plan_pokes, 'empty': plan_empty}
+PLANS = {'c1': plan_c1, 'menu': plan_menu, 'kb': plan_kb, 'trails': plan_trails, 'trail1': plan_trail1, 'warp': plan_warp, 'anim': plan_anim, 'fuel': plan_fuel, 'pokes': plan_pokes, 'empty': plan_empty}
 
 def main():
     ap = argparse.ArgumentParser()

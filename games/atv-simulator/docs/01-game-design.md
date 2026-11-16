@@ -24,7 +24,8 @@ The recordings it rests on ([WALKTHROUGH](../WALKTHROUGH.md), 6.0), each started
 - `warp`: all six trails, the finishes, EXTENDED PLAY, LAP TIME, the second round, name entry; 14 distance POKEs put
   the ATV near each finish (said where it matters);
 - `empty`: the clock stopped by POKE 60250,0 at frame 14 and the fuel's high byte POKEd to 5 at frame 567, the
-  tank empty at frame 732.
+  tank empty at frame 732;
+- `dropout`: two players, player 1's distance POKEd near the finish; player 2 drops out at TIME OUT (frame 6 783).
 
 A value sampled with `time_travel memory_at` is the state at T 0 of the frame named. A screenshot named
 `<recording>-<frame>` is the screen at the end of that frame.
@@ -193,6 +194,33 @@ bot, trail 6 the most items (58), then trail 2 (48). Drawn by `python3 tools/fig
 *The lengths and counts from `tools/trail_map.py`'s reading of `src/res/trails`; the maximums from MaxTimes `$D6CF`.
 [Doc 07](07-objects.md) decodes the format.*
 
+**The obstacles as the player sees them.** Every item of the six trails is drawn in its place in the figure above
+(list A blue, list B green). How each acts depends only on how it is drawn ([doc 07, 7.3](07-objects.md#73-an-item-and-its-kinds)) and on the crash rules of
+[doc 10, 10.6](10-gameplay-logic.md#106-the-crash):
+
+| What the player sees | Trails | How it is drawn | What it does | What ends the ride |
+| --- | --- | --- | --- | --- |
+| dunes, piles of sand, humps, pyramids | 1, 2, 4, 5, 6 | list A, at once: solid ground | the wheels follow its top line; its crest can launch the ATV | a landing nose-high (CrashIfAir) or onto a step (the step test) |
+| ramps and jumps | 1, 2, 3, 5 | list A, solid | lifts the nose and throws the ATV into the air | the landing, as above |
+| walls: stones, ice blocks, fences, hay bales, log stacks | 1, 2, 3, 5, 6 | list A, solid | a face to climb | a step of 7 or more beyond the last pass's rise, or a face 21 or more above the wheels at the nose (Crash) |
+| a low overhang over the track | any item whose underside is 12-30 above the rider | list A, solid | nothing below speed 4 | at speed 4 or more the rider is thrown off the back (ThrowOff, `overhang`) |
+| moving things: birds, balls, the animated items | 3, 5, 6 | animated records ([doc 07, 7.7](07-objects.md#77-animated-objects)) | move a step a pass while on screen | only the solid ones (drawn at once), as ground |
+| the START and FINISH banners | all | deferred, in front of the ATV | nothing: drawn over the ATV | nothing |
+| trees, camels, palms, grass | all | list B, scenery | nothing: drawn behind | nothing |
+
+**The published maps.** ZXDB keeps three maps of the trails. Ladderman's of 2005
+([ATVSimulator_2.png](https://spectrumcomputing.co.uk/pub/sinclair/games-maps/a/ATVSimulator_2.png)) is built from the
+game's screens: the six trails in the same order and with the same items as the figure above, START to FINISH. Its
+lengths agree with `src/res/trails`: trail 2 is 0.84 of trail 1's width there and 1 384 / 1 680 = 0.82 here, trail 3
+0.87 against 0.89. Two magazine maps are drawings, not to scale: a reader's map by Mark O'Leary
+([ATVSimulator.jpg](https://spectrumcomputing.co.uk/pub/sinclair/games-maps/a/ATVSimulator.jpg), six levels) and
+Sinclair User issue 69's
+([ATVSimulator_3.jpg](https://spectrumcomputing.co.uk/pub/sinclair/games-maps/a/ATVSimulator_3.jpg), levels 1-5).
+They name the obstacles as players saw them (piles of dirt or sand, a jump and stones on level 1; fences and hay
+bales on 2; sea lions with balls on 3; pyramids, a jug and a pharaoh's head on 4; pools, logs, crocodiles and birds
+on 5; whirlwinds on 6), in the same order as the lists, but they leave items out and do not keep the distances.
+Copies are in `work/candidates/zxdb/`.
+
 **Worked example.** Trail 1's finish is at 1 608. The distance is a 24-bit number whose whole part is TrackPos; the
 ATV adds speed × 128 to it each pass, half a unit a pass for each speed level. At the top speed of 21 that is 10.5
 units a pass, so the finish is at least 154 passes, 15.4 on the clock, from the start; the bot's 19.8 includes its
@@ -211,7 +239,8 @@ digit reaches the maximum's: "60" ends at 60.0, 600 passes, 84 s with one player
 longer, so the same 60.0 takes longer in real time.
 
 **The score.** A point shows as 10: the score's tens digit counts the points. A rider gains a point for every 16
-units of distance forward and loses one for every 16 back, and stops scoring once past the finish. Trail 1's finish at
+units of distance forward and loses one for every 16 back. Past the finish it gains no more points (ScoreStep `$E0CB`
+returns for a finished rider), but riding back still loses them (ScoreDown `$E072` has no such test). Trail 1's finish at
 1 608 is worth about 100 points, 1 000 on the screen.
 
 **The finish.** When a rider's TrackPos passes the finish, the game stores the clock as the lap time and computes the
@@ -221,6 +250,14 @@ rider still in has finished and stopped, or at the maximum.
 **The bonus.** Bonus = ((max − lap) / 2 + 1) × trail + 1, with the times in tenths and the trail counted from 1. The
 game multiplies 8 bits by 8 bits, so only the low byte of the first part counts. At the trail's end the bonus is
 counted into the score one point at a time, each with a tone.
+
+| Score event | Rule | On the screen |
+| --- | --- | --- |
+| riding forward | + 1 point for every 16 units of distance (ScoreStep `$E0CB`) | + 10 |
+| riding back | − 1 point for every 16 units (ScoreDown `$E072`), also after the finish | − 10 |
+| past the finish | no more points for distance | |
+| the finish | bonus ((max − lap) / 2 + 1) × trail + 1, the middle step 8-bit | counted in at the trail's end, one point a tone |
+| a crash, a walk, OUT OF FUEL | no penalty: only the time lost | |
 
 **The second round.** After trail 6 the trails start again from 1 with every maximum 30, and the bonus goes on
 multiplying by the trail number, 1-6.
@@ -304,8 +341,9 @@ very fast lap, but no ridden lap is fast enough to meet it.
 ## 1.7 A crash and the walk back
 
 A landing or a step that is too hard ends in a crash. What happens depends on the speed: under 10 the ATV stops; from
-10 to 14 it stops and the rider is thrown; from 15 up it tumbles for 24 passes and then throws the rider. Thrown, the
-rider flies, lies on the ground, gets up and walks, 3 units a pass, with a jump of his own. He must walk back to the
+10 to 14 it stops and the rider is thrown; from 15 up the rider is thrown at once and the empty ATV tumbles on for 24
+passes. Thrown, the rider flies, lies on the ground, gets up and walks, 3 pixels a pass (RiderX; the distance does not
+move on foot), with a jump of his own. He must walk back to the
 ATV, face the right way and press jump to mount. The clock runs all the time.
 
 ```mermaid
@@ -313,10 +351,10 @@ flowchart TD
     A["a hard landing or a step"] --> B{"speed?"}
     B -- "under 10" --> C["the ATV stops"]
     B -- "10 to 14" --> D["stop, the rider thrown"]
-    B -- "15 and up" --> E["tumble, 24 passes"]
-    E --> D
+    B -- "15 and up" --> E["thrown at once; the ATV tumbles 24 passes"]
+    E --> F
     D --> F["the rider flies, lies, gets up"]
-    F --> G["walk back, 3 a pass; jump on foot"]
+    F --> G["walk back, 3 pixels a pass; jump on foot"]
     G --> H{"at the ATV, facing right, jump?"}
     H -- "no" --> G
     H -- "yes" --> I["mounted: ride on"]
@@ -325,14 +363,17 @@ flowchart TD
 ![c1: the crash at trail 1's first dune, the tumble, the throw and the walk back](img/play/c1-crash.gif)
 
 *`c1`, frames 15 480-15 830, one picture every 7 frames (a pass), 51 pictures. How to read: the whole screen at the
-end of each pass; the top half is player 1. The ATV jumps a dune at about 15 475, lands, tumbles from 15 580, throws
-the rider (15 620-15 700), and the rider lies, stands and walks (15 800). The point: a crash costs about 30 passes, 3
+end of each pass; the top half is player 1. The ATV jumps a dune at about 15 475 and lands hard in the pass of 15 574
+(CrashIfAir); the rider is thrown in that pass, so at 15 580 rider and ATV are already apart. The empty ATV tumbles
+while the rider flies up and falls (15 580-15 700), then the rider lies, stands and walks (15 800). The point: a crash costs about 30 passes, 3
 seconds on the clock, before the walk back even starts. Drawn with `python3 ../../kit/screen_anim.py --work
 work/docs/atA/c1 --from 15480 --to 15830 --step 7 --width 1050 --delay 140 --hold 1500 docs/img/play/c1-crash.gif`.*
 
 **Worked example.** Sampled at T 0 of the frames of `c1`: at 15 580 TrackPos is 381 (`$017D`) and Speed 17 (`$11`),
-down from 21 after the landing. 17 is over 15, so the ATV tumbles; TumbleCount counts up to 24. Then the rider is
-thrown (ThrowSpeed `$F7`, up), lands, and lies with RiderFrame `$77` at 15 727. He walks and jumps (`$18`). In `c1` he
+down from 21 after the landing. 17 is over 15, so Crash `$E974` sets TumbleCount to 1 and calls Throw in the same
+pass: the rider is thrown with ThrowSpeed `$F8` − 17 / 8 = `$F6` (up; Thrown `$EA64` adds 1 a pass while it is
+negative, so the samples a pass later read `$F7`), while the empty ATV tumbles on to TumbleCount 24. The rider lands
+and lies with RiderFrame `$77` at 15 727. He walks and jumps (`$18`). In `c1` he
 never rides again: sampled every 100 frames from 15 600 to 19 300, TrackPos stays at 373 (`$0175`) and Speed
 at 0 until TIME OUT at 60.0.
 
@@ -346,7 +387,7 @@ lasts.
 
 Each trail starts with a full tank, the word `$2000`. Each pass that moves takes speed × 2 from it, and the FUEL bar
 loses 4 pixels for each `$400` used. When the high byte falls under 4, the tank is empty: the game prints OUT OF FUEL
-in the half and brakes the ATV twice a pass. The rider can still crawl forward with the throttle held, but only the
+in the half and brakes the ATV twice in every pass that moves (speed 2 or more: Advance calls UseFuel only then). The rider can still crawl forward with the throttle held, but only the
 clock can end the run.
 
 ```mermaid
@@ -366,7 +407,8 @@ frame 2 269 while the throttle is held. A full tank of `$2000` at speed 21 lasts
 empty under `$400` (FuelEmptyTest `$DFBC`, the high byte AND `$FC`). That is still more than a trail's finish needs
 at that speed (about 154 passes, 1.5).
 
-**Witness.** `work/stage1/rec/empty`: OutOfFuel ran 83 times (its L1), first in frame 732 (the trace
+**Witness.** `work/stage1/rec/empty`: OutOfFuel `$DFE6` ran 83 times, first in frame 732, last in 2 257 (its L1
+routine, a jump entry from UseFuel's `JP Z` at `$DFC0`: 83 entries, the block `$DFE6-$DFF0` executed 83 times) (the trace
 `work/docs/atC/empty/traces/732_0-733_0.uatr`); `docs/img/play/empty-000939-out-of-fuel.png`.
 
 **The point.** Fuel is a soft limit: a rider who keeps moving finishes before it runs out; a rider who wastes it
@@ -399,7 +441,19 @@ when both have stopped, with the clock at 21.3 (frame 2 150): 213 passes since 0
 = 8.2 frames each on average instead of 7. Both ride trail 2. At the end player 2's score enters the table, and
 the name entry says PLAYER TWO (`kb` frame 8 260).
 
-**Witness.** `docs/img/play/kb-000834-split-screen.png`, `kb-002418-both-finished.png`; the clock samples in
+The drop-out is in `dropout` (two players; player 1's distance POKEd to just short of the finish, player 2 stands):
+player 1 crosses the line and stops, TIME OUT comes at frame 6 783 with player 2 unfinished, TrailEnd runs at 6 784
+and Riding goes from 3 to 1; PassP2 is last called at 6 783, and player 1 rides trail 2 alone, the bottom half
+empty (`dropout-007830-trail2-alone.png`).
+
+![dropout frame 7 830: trail 2 with player 1 alone](img/play/dropout-007830-trail2-alone.png)
+
+*`dropout`, frame 7 830, the end of the frame. How to read: the top half is player 1 on GRASSTRAKIN; the bottom half
+holds only the trail's name, player 2's score stays 00000. The point: a player who has not finished at TIME OUT is
+out for the rest of the game. Taken by the recording script (WALKTHROUGH 6.0).*
+
+**Witness.** `docs/img/play/kb-000834-split-screen.png`, `kb-002418-both-finished.png`; `work/stage1/rec/dropout`
+(WALKTHROUGH 6.0); the clock samples in
 `work/docs/atA-kb-clock.txt`; [doc 04, 4.6](04-game-loop.md#46-the-fixed-7-frame-pass-and-the-wait-on-d6bc).
 
 **The point.** A race of two on one clock. The rules are the same for both; the machine's speed is what changes.

@@ -11,7 +11,8 @@ What this covers:
 - the heaviest pass: the START sign's sprites shifted in place (4.7);
 - a pass against the beam: when the copy to the screen tears (4.8);
 - the end of a pass: the finish, TIME OUT, the end of the game (4.9);
-- the timers and every delay (4.10).
+- the timers and every delay (4.10);
+- where the code runs with interrupts disabled, and why (4.11).
 
 The recordings it rests on ([WALKTHROUGH](../WALKTHROUGH.md), 6.0):
 
@@ -219,7 +220,7 @@ the last 512 bytes above the second play buffer. Drawn from game.ann's entries b
 docs/img/arch/memmap.png`; the stages are `c1` frames 14 100, 14 101 and 15 055 on.*
 
 **Witness.** `c1/traces/15055_0-15062_0.uatr`: 7 interrupts in 7 frames, each entering `$D9D2` at T 1 841-1 856.
-game.ann counts SetupIm2 20 times over all recordings; the L1 of `c1` counts Interrupt 6 766 times (58 177 over
+game.ann counts SetupIm2 31 times over the fifteen recordings; the L1 of `c1` counts Interrupt 6 766 times (58 177 over
 the seven recordings).
 
 **The point.** A table of one repeated byte makes the vector independent of the bus. The `$80` table points into the
@@ -469,8 +470,9 @@ of Update `$DACC` serves both. Update works in this order:
 5. FlushDeferredB, DrawAtvAndRider `$DC82` and FlushDeferredA draw the sprites around the ATV.
 6. FinishCheck `$DB34` tests the finish.
 
-PassP1 then calls Advance `$E011`, copies the buffer to its half of the screen (CopyBufferP1 `$8CDA`) and flushes the
-attributes.
+PassP1 then calls ClearKeys (the second of the pass, so only the scans after it reach the next pass: the key latch of
+[doc 05, 5.3](05-controls.md#53-the-key-latch)) and Advance `$E011`, copies the buffer to its half of the screen (CopyBufferP1 `$8CDA`)
+and flushes the attributes. PassP2 is the same without the ClearKeys.
 
 **How it works.**
 
@@ -485,7 +487,9 @@ Pass:
         Record = player's record
         if the player finished: SlowDown
         PassControls = the player's controls
-        EngineTimer; Update; Advance
+        EngineTimer; Update
+        if player 1: ClearKeys               ; PassP1 $DA80 only
+        Advance
         CopyBuffer to the screen; FlushAttrs
         player's record = Record
     WaitFrames
@@ -517,6 +521,17 @@ Players:                    ; $EC7F
   AND $02
   CALL NZ,PassP2
   RET
+
+PassP1:                     ; $DA4F, from the record's load on
+  CALL LoadRecordP1
+  ...
+  CALL EngineTimer
+  CALL Update
+  CALL JpClearKeys          ; $DA80: not in PassP2 ($DABD-$DAC0)
+  CALL Advance
+  CALL JpCopyBufferP1
+  CALL JpFlushAttrs
+  JP SaveRecordP1
 ```
 
 ```mermaid
@@ -524,7 +539,7 @@ flowchart TD
     A["Pass D851: FrameCount 0"] --> B["ReadP1Controls, ReadP2Controls, ClearKeys"]
     B --> C["ClockTick: tenths plus 1"]
     C --> D{"Riding bit 0?"}
-    D -- "yes" --> E["PassP1: top half, BufferP1 F03C"]
+    D -- "yes" --> E["PassP1: top half, BufferP1 F03C; Update, ClearKeys, Advance"]
     D -- "no" --> F{"Riding bit 1?"}
     E --> F
     F -- "yes" --> G["PassP2: bottom half, BufferP2 F71C"]
@@ -702,7 +717,8 @@ flowchart TD
 ![The heaviest pass of c1: the START sign's sprite and mask re-shifted in place](img/play/c1-heaviest-pass.gif)
 
 *The heaviest pass of `c1` (frames 15 412-15 418, T 0 to T 0), 32 pictures of 15 288 T each; a picture is taken only
-in the instructions of `$86C4-$8798`, the shifters. How to read: the top left is `$BE00-$BFFF`; the bottom left shows
+in the instructions of `$86C4-$8798`, the shifters, except the first (15 412 T 15 288) and the last (15 418 T 69 878),
+which frame the pass in WaitFrames (PC `$D86E`). How to read: the top left is `$BE00-$BFFF`; the bottom left shows
 the bytes from `$BE15`, 9 a row: the START sign's pixels on top and its mask below. Yellow is written in the current
 slice. The point: each change of the sign's pixel offset rewrites all 558 bytes of the sign and its mask, one bit a
 call. Drawn with `python3 ../../kit/routine_anim.py --trace work/docs/integrate/c1/traces/15412_0-15419_0.uatr
@@ -718,7 +734,7 @@ ShiftRightBy the shifters take 233 324 T, 52 % of the work: more than the drawin
 
 **Witness.** `work/docs/integrate/c1/traces/15412_0-15419_0.uatr` and `15150_0-15450_0.uatr` (`tools/pass_trace.py`:
 42 passes, 6 over 400 000 T, from 15 251 to 15 412); `c1/traces/15356_0-15363_0.uatr`. `work/docs/atA/rotw.py` lists
-the write ranges of `$86C4-$8798` (`python3 work/review/rvA/rotw.py <trace>`): at 15 412 `9B33-9B53 9B57-9B67
+the write ranges of `$86C4-$8798` (`python3 work/docs/atA/shiftwrites.py <trace>`): at 15 412 `9B33-9B53 9B57-9B67
 9C5B-9D43 B6FE-B776 BE14-BF2B BF2F-C046 CB84-CB92 CB96-CBA4 D171-D1AD D62F-D652` and `650B-6513`, besides the stack.
 `work/stage2/pass/passes.json` holds the replay's 600 passes.
 
@@ -728,8 +744,8 @@ moves a big sprite, the shift costs more than the drawing. One player still fits
 ## 4.8 A pass against the beam
 
 The beam draws the paper from T 16 152 of a frame, 224 T a line. CopyLines `$8CF2` copies the buffer, 22 bytes a
-line, at about 436-560 T a line: slower than the beam. Whether a frame shows a torn half depends on where in the frame
-the copy starts.
+line, at about 436-560 T a line: slower than the beam. A frame shows a torn half only when the beam crosses the line
+being copied while the copy runs: then the lines above the crossing show the new pass and the lines below the old.
 
 **How it works.**
 
@@ -742,19 +758,20 @@ CopyBufferP1:
 
 ```mermaid
 flowchart LR
-    A["the copy starts"] --> B{"before the beam reaches the half's first line?"}
-    B -- "yes" --> C["the beam overtakes the copy: a torn frame"]
-    B -- "no" --> D["behind the beam: the old frame whole, then the new"]
+    A["the copy runs"] --> B{"does the beam cross the line being copied while the copy runs?"}
+    B -- "yes" --> C["new lines above the crossing, old below: a torn frame"]
+    B -- "no" --> D["whole frames: the old picture, then the new"]
 ```
 
 ![c1 frames 15412-15418: the heaviest pass of the recording (91.3 %) against the beam](img/loop/beam-heaviest-c1.png)
 
 *How to read: one panel a frame, T across (0-69 888), screen lines down (0-191). The coloured band on top is the
 routine running at each moment; the white diagonal is the beam; each dot is a screen write at its line and moment.
-The point: CopyLines (red) starts at frame 15 417 T 59 591, below the paper's end, and runs into frame 15 418, where
-the beam overtakes it. 1 243 of its 1 760 writes land before the beam reaches their line and 517 after, so frame
-15 418 shows the new top of the half and the old rest: a tear. In the pass at 15 356 (81.1 %) the copy starts at
-15 361 T 12 189 and the split is 474 before, 1 286 after. Drawn with `python3 ../../kit/beam_timeline.py --work
+The point: CopyLines (red) starts at frame 15 417 T 59 591, after the paper, and writes lines 8-31 there (517
+writes, behind that frame's beam); it writes lines 32-87 in frame 15 418 from T 0, all 1 243 before the beam reaches
+their line (line 87 at T 16 152 + 87 × 224 = 35 640). The beam never crosses the copy: 15 417 shows the old half
+whole, 15 418 the new half whole, no tear. The tear is in the pass at 15 356 (81.1 %): its copy starts at 15 361
+T 12 189, the beam crosses it at line 29, and the split is 474 before, 1 286 after (the worked example). Drawn with `python3 ../../kit/beam_timeline.py --work
 work/docs/integrate/c1 --window 15412:0-15419:0 --listing build/game.lst --auto-labels owner --frames 15412-15418
 --title "c1 frames 15412-15418: the heaviest pass of the recording (91.3 %) against the beam" --out
 docs/img/loop/beam-heaviest-c1.png`; recording `c1`, frames 15 412-15 418, T 0 to T 0.*
@@ -772,12 +789,14 @@ against the beam" --out docs/img/loop/beam-light-c1.png`; recording `c1`, frames
 250 T a line and catches the copy at T 22 684, on screen line 29 (buffer line 21): 474 writes land before it, 1 286
 after. The lines above it show the new pass; the lines below show the old one until the next frame.
 
-**Witness.** The two traces. `python3 work/review/rvA/beam.py work/docs/atA/c1/traces/15356_0-15363_0.uatr 15361`
+**Witness.** The two traces. `python3 work/docs/atA/beam.py work/docs/atA/c1/traces/15356_0-15363_0.uatr 15361`
 prints the first write after the beam at 15 361 T 22 684, line 29. beam_timeline prints "CopyLines: 1760 screen writes: 474 before the beam, 1286 after
 it" for the heavy pass and no write before the beam for the light one.
 
 **The point.** The game does not synchronise its copy with the beam. A tear shows only when a pass's work ends early
-in a frame, so it depends on the pass's length, not on a plan.
+in a frame, so that the copy starts just before the paper and the beam crosses it; a copy that starts in the lower
+border, even the heaviest pass's, finishes ahead of the next frame's beam. It depends on the pass's length, not on a
+plan.
 
 ## 4.9 The end of a pass: the finish, TIME OUT, game over
 
@@ -915,3 +934,83 @@ and Interrupt 4 200 times. The fall-back to the title at TuneTimer
 
 **The point.** One frame counter makes the game's time; everything else counts its passes or HALTs. Only the title
 tune's timer runs on the tune's interrupts while the tune plays, and on MenuLoop's HALTs after it.
+
+## 4.11 Where interrupts are disabled and why
+
+The game runs with interrupts enabled almost everywhere: the pass's wait, the HALT loops and the tune player's loop
+all need them. They are off in six places, each for a reason:
+
+| Where | Address | Off from, on again at | Why |
+| --- | --- | --- | --- |
+| the ROM's LD-BYTES, called by the loader | `$0556` (from `$FFE7`, `$FFF6`) | its own `DI`; `EI` in SA/LD-RET before it returns | the edge timing of the tape signal must not be broken by the 50 Hz interrupt |
+| GameEntry and Restart | `$D7D6`, `$D7ED` | `DI` at entry; `EI` in ClearScreen `$6DD1`, first called by the intro at `$6A09` | the two `LDIR`s move the tune player and trail 6, and SP, `I` and the IM 2 table are set up: no interrupt may arrive half way |
+| SetupIm2 | `$D8ED` | `DI` at entry; the caller's `EI` (ClearScreen, `$7397`, `$ED06`) | it rewrites the table `$FE00-$FF00` and `JP Interrupt` at `$8080` that an interrupt would read |
+| Interrupt | `$D9D2` | the CPU's own disable on acceptance; `EI` before `RET` at `$DA1C` | the `DI` at `$D9D2` is redundant: the CPU has already disabled them. AbortKey's path leaves by `JP NewGame` with its own `EI` at `$DA10` (that path is never taken, [doc 05, 5.13](05-controls.md#513-the-key-no-path-reads)) |
+| TunePlay | `$F859` | `DI`; `EI` at TuneLoop `$F8B8`, and TuneInterrupt's `EI` at `$F975` before each `RET` | TunePlay saves SP and HL', fills the table with `$FD` and writes `JP TuneInterrupt` at `$FDFD`; an interrupt in the middle would jump through a half-written vector |
+| TuneStop | `$F97E` | `DI`; on again only when the caller runs SetupIm2 and `EI` (`$7394-$7397` in the menu, `$ED03-$ED06` after the finish tune) | it puts the ROM's `$0038` in TuneVector and restores TunePlay's SP; until the game's own table is back, an interrupt would land in the tune's vector |
+
+```text
+GameEntry / Restart:  DI; copies; SP = $FFDC; Init; SetupIm2   ; off
+ClearScreen:          EI                                       ; on: the title, the menu, play
+Interrupt:            (off by the CPU) DI; save; FrameCount + 1; engines; restore; EI; RET
+TunePlay:             DI; save SP, HL'; table := $FD; $FDFD := JP TuneInterrupt
+TuneLoop:             EI; HALT; the channels ...                ; on while the tune plays
+TuneInterrupt:        timers, drums, hook; EI; RET
+TuneStop:             DI; TuneVector := $0038; SP := saved; RET  ; off
+caller:               SetupIm2; EI                              ; on: the game's own vector again
+```
+
+```asm
+Interrupt:                  ; $D9D2
+  DI                        ; redundant: already disabled
+  PUSH AF
+  ...
+InterruptEnd:               ; $DA14
+  POP IY
+  ...
+  POP AF
+  EI                        ; $DA1C
+  RET
+
+  CALL TunePlay             ; $7391, the menu
+  CALL JpSetupIm2           ; $7394
+  EI                        ; $7397
+
+TuneStop:                   ; $F97E
+  DI
+  LD HL,$0038
+  LD (TuneVector+$0001),HL
+  LD SP,$F838               ; TunePlay's saved SP (patched)
+  LD HL,$2758
+  EXX
+  NOP
+  RET
+```
+
+```mermaid
+flowchart LR
+    A["LD-BYTES: off"] --> B["GameEntry D7D6: DI"]
+    B --> C["SetupIm2 D8ED: DI"]
+    C --> D["ClearScreen 6DD1: EI"]
+    D --> E["play: on; each Interrupt off inside, EI at DA1C"]
+    D --> F["TunePlay F859: DI"]
+    F --> G["TuneLoop F8B8: EI, the tune plays"]
+    G --> H["TuneStop F97E: DI"]
+    H --> I["SetupIm2, EI at 7397 or ED06"]
+    I --> E
+```
+
+**Worked example.** In `c1` the loader jumps to `$D6B0` at frame 14 100. GameEntry's `DI` and the two `LDIR`s, Init
+and SetupIm2 run with interrupts off until ClearScreen's `EI` in frame 14 113; the first Interrupt is in frame
+14 114. At 14 639 the menu's TunePlay disables them again for its set-up; TuneLoop's `EI` turns them on and the tune's
+handler runs from 14 640. When the tune stops, TuneStop disables them and the menu's `$7394-$7397` (SetupIm2, `EI`)
+gives the vector back to the game.
+
+**Witness.** The L1 of `c1`: GameEntry `$D7D6` once (frames 14 100-14 112), ClearScreen `$6DD1` first at 14 113,
+Interrupt `$D9D2` first at 14 114 (6 766 entries), TunePlay `$F852` 2 entries from 14 639, TuneInterrupt `$F961` 1 517
+from 14 640, the block at `$7397` once; in `warp` the block at `$ED06` 7 times (one a finish tune) and the
+block at `$DA10` in no recording.
+
+**The point.** Interrupts go off only where a vector, the stack or the tape timing is being changed. The longest
+stretch is the entry's 13 frames; the tune's switches last a fraction of a frame. The handler's own `DI` costs 4 T
+and does nothing.

@@ -81,7 +81,9 @@ def main():
         d.rectangle([x + 8, by0 + bh - h, x + colw - 8, by0 + bh], fill=(120, 170, 250) if v <= 7 else (250, 120, 60))
         d.text((x + colw // 2 - 12, by0 + bh - h - 16), str(cnt), fill=(230, 230, 230), font=small)
         d.text((x + colw // 2 - 6, by0 + bh + 4), str(v), fill=(200, 200, 200), font=small)
-    d.text((bx0, by0 + bh + 22), 'frames a pass (orange: the work ran past the 7th frame and the wait loop exits at once; four of the 8s pair with the 6s, a sampling jitter)',
+    d.text((bx0, by0 + bh + 22), 'frames a pass (orange: the work ran past the 7th frame and the wait loop exits at once;',
+           fill=(200, 200, 200), font=small)
+    d.text((bx0, by0 + bh + 40), 'four of the 8s pair with the 6s, a sampling jitter)',
            fill=(200, 200, 200), font=small)
     im.save(out)
     print(out, im.size, sorted(c.items()))

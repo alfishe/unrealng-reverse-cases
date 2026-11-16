@@ -2365,7 +2365,9 @@ DrawAtvAndRider:
 ; The ATV: body and wheels, mirrored when it faces left
 ;
 ; Facing left, LD A,E drops the XOR 7 that DrawRider keeps (OR E at $DDF3): the
-; left-facing ATV is drawn at x AND $F8.
+; left-facing ATV is drawn at x AND $F8 with shift 0, 7 - (AtvX AND 7) pixels
+; right of where the rider's rule would put it once mirrored (7 at AtvX $48:
+; turn frame 1 405).
 ;
 ; Witness: L1 8037 (c1, dropout, empty, fuel, kb, overhang, speedcrash,
 ; throwoff, trail1, trails, turn, wallcrash, warp).
@@ -2447,8 +2449,6 @@ l_DCEC:
 
 ; MaskMirror's return when DrawAtv faces left (DrawAtv pushes it before JP
 ; (HL)): x + 8, sprite $79, JP Wheels
-;
-; Known only from the code.
 ;
 ; Witness: L1 45 (turn).
 AtvMirrorReturn:

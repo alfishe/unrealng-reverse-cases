@@ -780,7 +780,8 @@ DrawAtv():
         mask = sprite AtvFrame + 1 (ModeNone); body = sprite AtvFrame (ModeNone); AtvY()
         body from its second line; MaskBuffer; then x + 5, sprite $7A, Wheels
     else:
-        SpriteX = AtvX AND F8            # the XOR 7 of the mirrored offset is computed, then dropped
+        SpriteX = AtvX AND F8            # the XOR 7 of the mirrored offset is computed, then dropped:
+                                         # ends 7 - (AtvX AND 7) pixels right of the rider's rule
         the same; DestAddr + 2; MaskMirror; then (AtvMirrorReturn) x + 8, sprite $79, Wheels
 Wheels():
     if AtvFrame in $38..$4F and EngineNote bit 7 clear:
@@ -834,8 +835,12 @@ AtvMirrorReturn:
   DD52  JP Wheels
 ```
 
-DrawRider's left path keeps the offset (`OR E` at `$DDF3`); DrawAtv's drops it (`LD A,E` at `$DCFF`). A left-facing
-ATV is drawn on a byte boundary, up to 7 pixels left of AtvX, while its rider is not.
+DrawRider's left path keeps the offset (`OR E` at `$DDF3`); DrawAtv's drops it (`LD A,E` at `$DCFF`). Both paths
+start at DestAddr + 2 and use MaskMirror, which writes the bytes mirrored: a sprite shifted by s ends 24 - s pixels
+right of x AND `$F8`. With the rider's rule, s = 7 - (x AND 7), the mirrored sprite ends at x + 17 and moves pixel
+by pixel with x. The ATV keeps s = 0: it ends at (x AND `$F8`) + 24, 7 - (AtvX AND 7) pixels right of where the
+rider's rule puts it. That is 7 pixels at AtvX `$48` and 0 when AtvX AND 7 = 7; a left-facing ATV moves in steps of
+8 pixels while its rider does not.
 
 AtvMirrorReturn (once named DrawAtvUnused) is not dead code: it is the return address DrawAtv pushes before it jumps
 into MaskMirror.
@@ -885,13 +890,18 @@ What to watch:
 - the wheels XORed in.
 
 Worked example (`turn` 1 304): Facing 1, MaskMirror at 1 304:14 766, AtvMirrorReturn at 1 304:65 933, Wheels at
-1 304:65 996, DrawRider at 1 305:8 655. With AtvX = `$48` the offset is 0 and nothing is lost; at another x the body
-would sit up to 7 pixels left.
+1 304:65 996, DrawRider at 1 305:8 655. AtvX is `$48` (72), so the dropped offset is 7 - 0 = 7: the body ends at
+72 + 24 = 96 (its last ink at buffer x 91, the sprite's 4 blank columns now on its right), where the rider's rule
+would end it at 72 + 17 = 89 (last ink at 84). The frame agrees: on `turn`'s screen at frame 1 405 (Facing 1, AtvX
+72, RiderX 73) the ATV's ink spans buffer x 54-91, 7 pixels right of the rule. The pair still looks right there:
+the rider's last ink is at 89 (RiderX 73 + 17 - 1), the ATV's 2 pixels further, and facing right at frame 1 090
+(AtvX 72, RiderX 77) the helmet starts 7 pixels in from the ATV's first ink, as it ends 7 pixels in from its last
+here. At another AtvX the body would sit 0 to 6 pixels right of the rule.
 
 Witness: `turn` L1: AtvMirrorReturn 45 entries (the left-facing passes); `c1` L1 (always facing right): none.
 
-The point: the vehicle is two masked sprites and two XORed wheels. The left-facing ATV snaps to bytes because one
-instruction keeps the wrong register.
+The point: the vehicle is two masked sprites and two XORed wheels. The left-facing ATV snaps to bytes, up to 7 pixels right
+of the rider's rule, because one instruction keeps the wrong register.
 
 ## 6.9 The copy to the screen and the beam
 

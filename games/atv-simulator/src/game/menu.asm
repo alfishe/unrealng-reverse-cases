@@ -99,9 +99,12 @@ NameTextPtr:
 BigScaleX:
   DEFB $00                ; the big print's horizontal scale
 BigScaleY:
-  DEFB $00                ; its vertical scale (lines a pixel)
+  DEFB $00                ; its row pitch: the lines from one source row to the
+                          ; next (BigRepeat of them drawn)
 BigRepeat:
-  DEFB $00                ; its repeat
+  DEFB $00                ; the lines BigPlot draws for each set source pixel
+                          ; (set with BigScaleY as one word: $0205 is pitch 5,
+                          ; repeat 2)
 BigClear:
   DEFB $00                ; 0 OR the pixels, 1 clear them (the shadow)
 CursorPos:
@@ -333,13 +336,16 @@ LoadIntro:
 ; The trail's intro: "TRAIL NO." and the trail's number in big print, the name,
 ; the panels
 ;
-; Clears the screen's attributes and pixels, prints TrailNoText twice (shadow
-; and face) at scale 2 x 5, the trail's number (Trail + "b", a big digit) at
-; scale 2 x 4, dissolves the buffer onto the screen, waits 50 frames, copies
-; the trail's name (CopyTrailName) and prints it and the intro picture
-; (TrailIntroBoxes), waits 150 frames, then draws one or two players' panels
-; (PanelP1, PanelP2), each coloured by TrailAttrs. Called through JpTrailIntro
-; before each trail (c1 frame 15 800).
+; Clears the screen's attributes and pixels, prints TrailTexts three times at
+; pitch 5: ORed with repeat 2 at (0, $4F) (stripes), cleared at (2, $4E) and
+; ORed at (3, $4E) with repeat 5 (the face; what is left of the stripes is a
+; hatched shadow), the trail's number (Trail + "b", a big digit) the same way
+; at pitch 4 (repeat 2, then 4) at ($40, $4F), ($42, $4F), ($43, $4F),
+; dissolves the buffer onto the screen, waits 50 frames, copies the trail's
+; name (CopyTrailName) and prints it at pitch 3, repeat 2 (striped), and the
+; intro picture (TrailIntroBoxes), waits 150 frames, then draws one or two
+; players' panels (PanelP1, PanelP2), each coloured by TrailAttrs. Called
+; through JpTrailIntro before each trail (c1 frame 15 800).
 ;
 ; Witness: L1 25 (c1, dropout, empty, fuel, itemlow, kb, overhang, speedcrash,
 ; throwoff, trail1, trails, turn, wallcrash, warp).
@@ -1393,8 +1399,11 @@ MenuDraw:
 ; (any Kempston direction or fire when KempstonOn: port $1F AND $1F) and
 ; returns to the tune player. When TuneTimer's low byte wraps with the high
 ; byte's low nibble $0A it shows the high scores and stops the tune: first at
-; $0A00 (Title starts the timer at $04C8: 1 336 interrupts, 26.7 s), then every
-; $1000.
+; $0A00 (Title starts the timer at $04C8: 1 336 interrupts, 26.7 s). The menu
+; then stays silent in MenuLoop's HALT loop until a key or TuneTimer $8000
+; (back to Title); a menu action that re-enters MenuLoop plays the tune again
+; until the next of $1A00, $2A00 ... (the high byte's low nibble $0A), at most
+; $1000 later.
 ;
 ; Witness: L1 5424 (c1, dropout, empty, fuel, itemlow, kb, menu, overhang,
 ; speedcrash, throwoff, trail1, trails, turn, wallcrash, warp).
@@ -2431,7 +2440,8 @@ l_78D0:
   JR NZ,l_7885
   RET
 
-; Draw mode 8: a sprite scaled by BigScaleX / BigScaleY, ORed or cleared
+; Draw mode 8: each source pixel BigScaleX pixels wide, BigRepeat lines of a
+; BigScaleY-line pitch, ORed or cleared
 ;
 ; Witness: L1 972 (c1, dropout, empty, fuel, itemlow, kb, overhang, speedcrash,
 ; throwoff, trail1, trails, turn, wallcrash, warp).

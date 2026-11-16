@@ -485,7 +485,7 @@ Worked example: in `trails`, trail 1's bonus is 203 points ([doc 10](10-gameplay
 
 1. The sample of frame 4 710 shows Bonus 201 and score `01020`.
 2. The sample of frame 4 832 shows Bonus 0 and score `03030`.
-3. 203 points took about 122 frames: 1.66 a frame, about 42 000 T a point.
+3. 201 points (of 203) took about 122 frames: 1.66 a frame, about 42 000 T a point.
 4. The simulator counts 25 points in 991 789 T (39 672 T a point, uncontended) and leaves the score at `00250`.
 
 Each point is 10 on the screen: the score's last digit never moves.
@@ -605,9 +605,12 @@ The hook is the menu's or the finish's:
 
 - the title: MenuLoop puts MenuTick `$7340` in the hook. MenuTick counts TuneTimer once an interrupt and stops the
   tune for the high score screen when TuneTimer's low byte wraps to 0 with the high byte's low nibble `$0A`: Title
-  `$6E06` starts it at `$04C8`, so the first stop is at `$0A00`, 1 336 interrupts (26.7 s); after the high score
-  screen the stops come every `$1000` interrupts (81.9 s). A key (TuneKeyCheck `$F977`) or any
-  Kempston input stops it at once;
+  `$6E06` starts it at `$04C8`, so the first stop is at `$0A00`, 1 336 interrupts (26.7 s). After the high score
+  screen the menu stays silent: MenuLoop's HALT loop (`$73B5`) waits for a key, or until TuneTimer reaches `$8000`
+  (`$73CD`, 31 544 counts from `$04C8`, about 10.5 minutes), which restarts the title and its tune. The tune plays
+  again only when a menu action re-enters MenuLoop (Title `$6E47`, MenuMain `$74A1`); it then stops at the next
+  `$xA00`, at most `$1000` counts (81.9 s) later. A key (TuneKeyCheck `$F977`) or any Kempston input stops it at
+  once;
 - the finish: TrailEnd puts three NOPs over the hook. Nothing stops the finish tune but its own `$85`.
 
 ### Pseudocode
@@ -810,8 +813,10 @@ note. Command: `python3 tools/fig_sound.py fig-tunes docs/img/sound/tunes.png`.*
 
 A's 24 patterns and B's 14 take the same 2 304 interrupts (46.0 s): the two lists start again together (the
 simulator: both restart at interrupt 2 305). The lists repeat until the hook stops the tune. MenuTick stops it after
-26.7 s for the high score screen, before the lists end once (TuneTimer starts at `$04C8`, the stop is at `$0A00`). Channel B's PatFDF7 and PatFDF4 set the transposition to 2 and back to 0. There is only one
-transposition (9.10), so they shift channel A as well.
+26.7 s for the high score screen, before the lists end once (TuneTimer starts at `$04C8`, the stop is at `$0A00`).
+Only a tune restarted by a menu action (9.7) can play up to `$1000` counts and so repeat the lists. Channel B's
+PatFDF7 and PatFDF4 set the transposition to 2 and back to 0. There is only one transposition (9.10), so they shift
+channel A as well.
 
 **Tune 1, the finish.** Its lists:
 

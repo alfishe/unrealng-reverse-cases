@@ -33,4 +33,4 @@ LoadGame:
   CALL LdBytes
   JR NC,LoadGame
 EnterGame:
-  JP GameEntry                ; JP $D6B0: the game's entry (GameEntry)
+  JP EntryJumps                ; JP $D6B0: the game's entry (EntryJumps)

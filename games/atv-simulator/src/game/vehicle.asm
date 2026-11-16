@@ -1656,12 +1656,12 @@ Landing:
 ; The ATV each pass: rise or fall, the ground under the wheels, landing, the
 ; slope, crash tests
 ;
-; Not while turning round (AtvFrame $5C). Rise; GroundUnder at the rear and the
-; front wheel (GroundY the higher); above the ground Fall, else land (Landing
-; when VSpeed was nonzero); a drop of 7 or more after a climb: Crash. Then the
-; nose: the ground under the nose against the wheels gives the frame by
-; SlopeFrames; a step of $15 or more: Crash; WheelieDown when the timer ran out
-; or Down is held.
+; Not while turning round (AtvFrame $5C). Rise; GroundUnder at two points under
+; the rear wheel, AtvX + 7 and 6 pixels ahead (GroundY the higher); above the
+; ground Fall, else land (Landing when VSpeed was nonzero); a drop of 7 or more
+; after a climb: Crash. Then the nose: the ground under the nose against the
+; wheels gives the frame by SlopeFrames; a step of $15 or more: Crash;
+; WheelieDown when the timer ran out or Down is held.
 ;
 ; Witness: L1 8039 (c1, dropout, empty, fuel, kb, overhang, speedcrash,
 ; throwoff, trail1, trails, turn, wallcrash, warp).
@@ -2119,8 +2119,6 @@ l_E974:
   RET
 
 ; The rider falling after ThrowOff (FallPhase 1-5; recording throwoff: 35 runs)
-;
-; Known only from the code.
 ;
 ; Witness: L1 78 (overhang, throwoff).
 FallRider:

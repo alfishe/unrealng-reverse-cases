@@ -156,8 +156,9 @@ the game, and nothing runs between the passes but the interrupt's engine sound a
 
 The ATV has no map of the ground. The ground is whatever list A has drawn in the player's buffer when AtvPhysics
 runs: the dunes, the ramps, the rocks. GroundUnder looks straight down a pixel column for the first set pixel, from 8
-lines above the ATV's height. It does it under both rear wheels (x 79 and 85 with the ATV at AtvX 72 facing right)
-and takes the higher; that is GroundY `$D6C4`. A third scan, under the nose, gives the slope (10.5).
+lines above the ATV's height. It does it at two points 6 pixels apart, both under the rear wheel (x 79 and 85 with
+the ATV at AtvX 72 facing right, where the wheel's ink spans 77-86; the front wheel is near 105), and takes the
+higher; that is GroundY `$D6C4`. A third scan, under the nose, gives the slope (10.5).
 
 ### Pseudocode
 
@@ -173,8 +174,8 @@ GroundScan(x, y):                     # $E821
 
 AtvPhysics, the ground part:          # $E68B-$E6AC
     rear  = GroundUnder(RearX)        # AtvX + 7 (facing left: AtvX + 9)
-    front = GroundUnder(RearX + 6)
-    GroundY = max(rear, front)        # $D6C5 = rear, $D6C6 = front
+    ahead = GroundUnder(RearX + 6)    # still under the rear wheel
+    GroundY = max(rear, ahead)        # $D6C5 = rear, $D6C6 = ahead
 ```
 
 ### Assembly
@@ -191,7 +192,7 @@ AtvPhysics, the ground part:          # $E68B-$E6AC
   E69E  CALL GroundUnder
   E6A1  LD A,B
   E6A2  LD (GroundY),A
-  E6A5  LD (GroundY+$0002),A     ; the second wheel's ground
+  E6A5  LD (GroundY+$0002),A     ; the ground 6 pixels ahead
   E6A8  POP AF
   E6A9  CP B
   E6AA  JR C,l_E6AF
@@ -220,8 +221,8 @@ l_E830:
 flowchart TD
     A["AtvPhysics"] --> B["scan x = AtvX + 7 from AtvHeight + 8 down"]
     A --> C["scan x = AtvX + 13 from AtvHeight + 8 down"]
-    B --> D["GroundRear D6C5"]
-    C --> E["GroundFront D6C6"]
+    B --> D["rear point D6C5"]
+    C --> E["6 ahead, the same wheel: D6C6"]
     D --> F["GroundY = the higher"]
     E --> F
     F --> G["rise, fall, climb or crash: 10.3, 10.6"]
@@ -238,7 +239,7 @@ docs/img/gameplay/profile.png`.*
 
 **Worked example.** The staircase of trail 1 (the dune at frames 1 285-1 341 of `trails`), from `tab.py 1278 1341 7`:
 
-| Frame | TrackPos | GroundRear | GroundFront | GroundY | AtvHeight |
+| Frame | TrackPos | `$D6C5` (x + 7) | `$D6C6` (x + 13) | GroundY | AtvHeight |
 | --- | --- | --- | --- | --- | --- |
 | 1 285 | 1 038 | 0 | 0 | 0 | 0 |
 | 1 292 | 1 049 | 0 | 6 | 6 | 6 |
@@ -247,15 +248,16 @@ docs/img/gameplay/profile.png`.*
 | 1 320 | 1 091 | 16 | 16 | 16 | 16 |
 | 1 341 | 1 122 | 20 | 20 | 20 | 20 |
 
-The front wheel meets each step first (1 292: front 6, rear 0) and GroundY takes it, so the ATV climbs as soon as one
-wheel is on the step. Each step is 6 or less (0 → 6, 8 → 14), under the crash limit of 7 (10.6).
+The point 6 pixels ahead meets each step first (1 292: 6 there, 0 at the back) and GroundY takes it, so the ATV
+climbs as soon as the front half of its rear wheel is on the step. Each step is 6 or less (0 → 6, 8 → 14), under
+the crash limit of 7 (10.6).
 
 **Witness.** `work/docs/atC/trails-vars.jsonl`, the rows above; the dune in
 [trails-jump-dune.gif](img/play/trails-jump-dune.gif) (10.4).
 
 **The point.** The physics reads the picture. Anything list A draws before AtvPhysics is ground, at its exact pixel
 shape; list B, drawn later, never is ([doc 7, 7.5](07-objects.md#75-the-draw-order-what-the-wheels-can-touch)). The
-scan starts only 8 lines above the wheels, so the rear wheels never see anything higher; the nose scan (10.5) is what
+scan starts only 8 lines above the wheels, so the ground scans never see anything higher; the nose scan (10.5) is what
 meets a wall.
 
 ## 10.3 Rise, fall and landing
@@ -869,7 +871,7 @@ l_E8E8:
   E8F8  LD HL,TumbleHeights
   E8FB  ADD HL,DE
   E8FC  LD E,(HL)
-  E8FD  SLA E                    ; twice
+  E8FD  SLA E                    ; × 2
   E8FF  LD A,(AtvHeight)
   E902  ADD A,E
   E903  CP $A0
@@ -1078,8 +1080,8 @@ rider lies behind the ATV at x 35. Witness: its L1 (ThrowOff 1, FallRider 35, Co
 menu, trail 1's list A item 3 (distance `$0148`, the dune `$67`, 12 lines high, y 0) gets y 30 (POKE at its +2 byte,
 in `record.json`), so the dune floats with its top at 30 and its bottom at 19, above the wheels' scan (AtvHeight + 8)
 and the nose's. The rider rides right with no wheel key: at frame 756, speed 21, AtvFrame `$38` (level), RiderMounted
-finds the dune's top 21 above the rider (RiderHeight 9) and jumps to ThrowOff (`$DE76`, its only caller): Mounted 0,
-FallPhase 1, RiderX 77 to 61 (+`$10` - `$20`), RiderHeight 9 to 19. Witness: its L1 (ThrowOff 1 at frame 756, no
+finds the dune's top 21 above the rider (RiderHeight 9) and jumps to ThrowOff (`$DE76`, its only jump; ControlUp
+also falls through into it at full nose-up): Mounted 0, FallPhase 1, RiderX 77 to 61 (+`$10` - `$20`), RiderHeight 9 to 19. Witness: its L1 (ThrowOff 1 at frame 756, no
 Crash, no Throw) and log.json.
 
 ![The overhang throws the rider off the back](img/play/overhang-000759-thrown.png)
@@ -1226,8 +1228,9 @@ after a throw has to cross the same dunes the ATV rode over, and a rise of 3 or 
 
 ### In short
 
-The speed (Speed `$D77B`, 0-21) is changed in nine places. The throttle adds 1 a pass; the brake and every landing,
-jump and crash take 2. A finished rider loses 2 a pass, an empty tank 4, a tumble 4 or 8. The distance moves Speed/2
+The speed (Speed `$D77B`, 0-21) is changed in eleven places. The throttle adds 1 a pass; the brake and every
+landing, jump and crash take 2. A finished rider loses 2 a pass, an empty tank 4, a tumble 4 or 8, a thrown rider's
+fall 4; riding back past the start stops the ATV. The distance moves Speed/2
 pixels a pass, but only from speed 2. [Doc 5, 5.9](05-controls.md#59-throttle-brake-and-the-turn-round) has the
 controls in full; this section is the speed's ledger.
 
@@ -1241,6 +1244,8 @@ controls in full; this section is the speed's ledger.
 | -2 a pass | PassP1 `$DA71`, PassP2 `$DAB1` | after this player's finish |
 | -4 a moving pass | OutOfFuel `$DFF1` | with the tank empty |
 | -4 or -8 a pass | Tumble `$E8A6`, `$E8E1` | from count 10, and on the ground |
+| -4 a pass | FallRider `$E991` (SlowDown twice, `$E998`, `$E99B`) | the rider falling after ThrowOff |
+| to 0 | BackList `$E06D` (Stop) | riding back past the start: TrackPos below 0; Distance, TrackPos and the scroll reset, ScoreStep `$E05A` |
 | to 0 | Stop `$E511`, WaitFrames `$D8AB` | a crash under 15, the tumble's end; TIME OUT |
 
 ### Pseudocode
@@ -1256,6 +1261,14 @@ Advance():                               # $E011, the end of each pass
     if Speed < 2: return
     Distance += Speed * 128              # in 1/256 pixel: Speed / 2 pixels
     UseFuel(); the scenery; the score
+
+FallRider():                             # $E991, FallPhase 1-5 after ThrowOff
+    SlowDown(); SlowDown()               # -4 a pass, not below 0
+
+BackList():                              # $E030, riding back
+    Distance -= Speed * 128
+    if TrackPos goes below 0:            # past the start
+        ScoreStep(); Distance = TrackPos = Scenery = SceneryPos = 0; Stop()
 ```
 
 ### Assembly
@@ -1282,6 +1295,22 @@ Advance:
   E011  LD A,(Speed)
   E014  CP $02
   E016  RET C                    ; speed 0 or 1: no move, no fuel
+FallRider:
+  E998  CALL SlowDown
+  E99B  CALL SlowDown            ; -4 a pass
+BackList:
+  E051  LD A,(TrackPos+$0001)
+  E054  SUB $01
+  E056  LD (TrackPos+$0001),A
+  E059  RET NC
+  E05A  CALL ScoreStep           ; below the start
+  E05D  PUSH DE
+  E05E  LD HL,$0000
+  E061  LD (Distance),HL
+  E064  LD (TrackPos),HL
+  E067  LD (Scenery),HL
+  E06A  LD (SceneryPos),HL
+  E06D  CALL Stop                ; Speed 0
 ```
 
 ```mermaid
@@ -1292,6 +1321,8 @@ flowchart LR
     S --> F["finished -2 a pass"]
     S --> O["out of fuel -4 a moving pass"]
     S --> U["tumble -4 or -8"]
+    S --> R["thrown rider's fall -4 a pass"]
+    S --> Z["back past the start: Stop, to 0"]
     S --> A["Advance: Speed/2 px, from 2"]
 ```
 
@@ -1300,7 +1331,8 @@ throttle adds 1: 21 at 1 680, then down 1 a pass (7 at 1 780, 6 at 1 787, 5 at 1
 floors at 0 and Accelerate gives 1 again. At speed 1 Advance does not move: TrackPos stays 1 727 from frame 1 815 to
 the trail's end.
 
-**Witness.** `tab.py 1780 1830 7`; the Speed panel of Figure 10.4 (10.13).
+**Witness.** `tab.py 1780 1830 7`; the Speed panel of Figure 10.4 (10.13). FallRider: L1 78 runs in `overhang` and
+`throwoff`.
 
 **The point.** Speed is a budget: each bump, jump and landing costs 2 of 21, and one pass of throttle wins back only
 1. Holding the throttle after the finish keeps the speed at 1 for ever, which matters at the end of the trail (10.15).
@@ -1453,7 +1485,7 @@ flowchart LR
 
 **Witness.** The Score panel of Figure 10.4.
 
-**The point.** The distance is worth about 100 points a trail; the bonus, from the lap time, is worth 150 to 1 000.
+**The point.** The distance is worth about 100 points a trail; the bonus, from the lap time, is worth from a few points to about 1 000.
 The score rewards speed more than distance.
 
 ## 10.13 The clock and the course of the bot game
@@ -1954,7 +1986,7 @@ speed of 11 or less would have kept the rider on.
 | --- | --- | --- |
 | a finished rider who holds the throttle never stops | PassP1 SlowDown -2, Accelerate +1, Advance from 2 | the trail ends only at TIME OUT (10.15) |
 | Fall goes into the ground | Fall clamps at 0, not at GroundY | up to 5 lines; the next pass's climb pulls it out |
-| the rear wheels see 8 lines up at most | GroundUnder starts at AtvHeight + 8 | a wall is met by the nose scan only |
+| the ground scans see 8 lines up at most | GroundUnder starts at AtvHeight + 8 | a wall is met by the nose scan only |
 | full nose-up is blind to walls | AtvPhysics `$E762` | `$44` skips the wall test |
 | the bonus's first factor is 8 bits | FinishCheck `$DB74` (INC L, LD E,L) | wraps for a lap 51 s under the maximum; unreachable |
 | PassP2 does not call ClearKeys | PassP2 `$DA8F` (PassP1 has `$DA80`) | no effect found |

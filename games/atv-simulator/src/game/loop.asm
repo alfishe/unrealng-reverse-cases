@@ -49,8 +49,9 @@ PassControls:
   DEFB $00                ; the current player's controls this pass
 GroundY:
   DEFB $00,$00,$00,$00,$00 ; the ground under the ATV's wheels (GroundUnder):
-                           ; the higher of $D6C5 (rear) and $D6C6 (front);
-                           ; $D6C7 under the nose, $D6C8 the nose's line
+                           ; the higher of $D6C5 (AtvX + 7) and $D6C6 (6 pixels
+                           ; ahead), both under the rear wheel; $D6C7 under the
+                           ; nose, $D6C8 the nose's line
 Clock:
   DEFB $30                ; the clock: three ASCII digits; the last one counts
                           ; passes (ClockTick), not seconds
@@ -193,7 +194,7 @@ JpSetupIm2:
 ; set (as Riding) end the trail (TrailEnd); the clock's first digit equal to
 ; MaxTime's: TIME OUT for both (TimeOut), then TrailEnd when someone finished,
 ; else 250 frames and the game ends. With two players a pass is often longer: 8
-; to 13 frames in kb (640 of 811 passes 7). The TIME OUT test ($D89E) compares
+; to 15 frames in kb (640 of 811 passes 7). The TIME OUT test ($D89E) compares
 ; only the hundreds digit with MaxTime's first: a limit is a multiple of 100
 ; passes.
 ;

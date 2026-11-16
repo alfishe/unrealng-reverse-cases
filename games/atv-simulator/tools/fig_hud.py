@@ -14,6 +14,10 @@ fields.png   recording c1, frame 15419 (one player, trail 1): the HUD's fields a
 bonus.png    FinishCheck `$DB34`: Bonus = ((MaxTime - clock) / 2 + 1, low byte only) x (Trail + 1) + 1, against the
              value without the lost high byte, for a 600-pass trail (trails 1-3) and trail 1; the warp recording's
              finish (clock 062, Bonus 15) marked.
+bigprint.png TrailIntro `$6A38` for trail 2, simulated from the code and the sprites: BigPrint `$78E3` draws each
+             source pixel as BigRepeat `$695A` lines out of a BigScaleY `$6959`-line pitch, 2 pixels wide; "TRAIL NO."
+             ORed at (0, `$4F`) with repeat 2 of pitch 5, cleared at (2, `$4E`) with 5 of 5, ORed at (3, `$4E`) with 5
+             of 5; the digit at ($40, `$4F`), ($42, `$4F`), ($43, `$4F`) with 2, 4, 4 of pitch 4.
 """
 import csv
 import os
@@ -175,6 +179,72 @@ def bonus(path):
     im.save(path)
 
 
+def big_pass(canvas, im, rows, text, x, y, pitch, repeat, clear):
+    """One PrintAt through BigPrint: SpriteX moves in source pixels (advance + 2), a source pixel is 2 buffer
+    pixels wide (2 x SpriteX: bytes from SpriteX / 8 x BigScaleX, the bit offset from the shifted sprite), its row
+    BigRepeat lines from its top in a pitch of BigScaleY lines; y `$4F` is buffer line 0, a smaller y lower."""
+    px = im.load()
+    for ch in text:
+        c = ord(ch)
+        if c == 0x20:
+            x += 6
+            continue
+        n = 0x6F if ch == '.' else (c + 0x2C if 0x61 <= c < 0x6B else c - 0x23)
+        r = rows[n]
+        sx, sy, w, h = int(r['x']), int(r['y']), int(r['width']) * 8, int(r['height'])
+        for j in range(h):
+            for i in range(w):
+                if px[sx + i, sy + j] == 1:
+                    for line in range(repeat):
+                        for b in range(2):
+                            canvas[(0x4F - y) + j * pitch + line, 2 * (x + i) + b] = 0 if clear else 1
+        x += int(r['advance']) + 2
+
+
+def bigprint(path, im, rows):
+    BW, BH = 162, 58
+    digit = chr(1 + 0x62)
+    passes = [('TRAIL NO.', 0, 0x4F, 5, 2, False), ('TRAIL NO.', 2, 0x4E, 5, 5, True), ('TRAIL NO.', 3, 0x4E, 5, 5, False),
+              (digit, 0x40, 0x4F, 4, 2, False), (digit, 0x42, 0x4F, 4, 4, True), (digit, 0x43, 0x4F, 4, 4, False)]
+    titles = ['1. OR, repeat 2 of pitch 5 (the digit: 2 of 4): stripes', '2. clear, 2 right, 1 line down (digit: same '
+              'line), repeat 5 (4)', '3. OR at 3 right, the same line as 2: the solid face',
+              'the result: face (yellow), what is left of print 1 (orange)']
+    stages, face = [], {}
+    canvas = {}
+    for k in range(3):
+        for t in (passes[k], passes[k + 3]):
+            big_pass(canvas, im, rows, *t)
+        stages.append(dict(canvas))
+    faceonly = {}
+    for t in (passes[2], passes[5]):
+        big_pass(faceonly, im, rows, *t)
+    s = 3
+    pw, ph = BW * s + 4, BH * s + 30
+    H = 2 * ph + 110
+    out = Image.new('RGB', (W, H), K.BACKGROUND)
+    d = ImageDraw.Draw(out)
+    big, mid = K.font(15), K.font(12)
+    d.text((14, 10), 'The trail intro\'s big print: three prints of the same text make the face and its hatched shadow',
+           fill=K.TEXT, font=big)
+    for n in range(4):
+        ox, oy = 14 + (n % 2) * (pw + 30), 40 + (n // 2) * (ph + 10)
+        d.text((ox, oy), titles[n], fill=YEL if n < 3 else K.TEXT, font=mid)
+        d.rectangle((ox, oy + 20, ox + BW * s + 3, oy + 20 + BH * s + 3), outline=(70, 70, 85))
+        st = stages[min(n, 2)]
+        for (yy, xx), v in st.items():
+            if not v or yy >= BH or xx >= BW:
+                continue
+            col = YEL if n < 3 or faceonly.get((yy, xx)) else (240, 140, 50)
+            d.rectangle((ox + 2 + xx * s, oy + 22 + yy * s, ox + 2 + xx * s + s - 1, oy + 22 + yy * s + s - 1), fill=col)
+    d.text((14, H - 64), 'A source pixel is 2 buffer pixels wide (x in source pixels: 2 right = 4 buffer pixels) and '
+           'BigRepeat lines high in a BigScaleY-line pitch.', fill=K.TEXT, font=mid)
+    d.text((14, H - 44), 'Left of print 1: 2-line dashes before each left edge, and for the text a 1-line edge above '
+           'each top row. Buffer pixels, 3 x.', fill=K.TEXT, font=mid)
+    d.text((14, H - 24), 'Simulated from TrailIntro $6A38 and src/res/sprites/game.png (trail 2). Command: python3 '
+           'tools/fig_hud.py docs/img/hud', fill=K.DIM, font=mid)
+    out.save(path)
+
+
 def main():
     out = sys.argv[1] if len(sys.argv) > 1 else os.path.join(CASE, 'docs', 'img', 'hud')
     os.makedirs(out, exist_ok=True)
@@ -182,6 +252,7 @@ def main():
     font(os.path.join(out, 'font.png'), im, rows)
     fields(os.path.join(out, 'fields.png'))
     bonus(os.path.join(out, 'bonus.png'))
+    bigprint(os.path.join(out, 'bigprint.png'), im, rows)
 
 
 if __name__ == '__main__':

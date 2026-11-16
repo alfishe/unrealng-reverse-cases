@@ -44,7 +44,7 @@ window's bottom line.
 | a trail record | TrailRecords `$7C9C` (trails 1-4), Trail5 `$EE84`, Trail6 `$60AC` | 6 | nothing | nothing: SelectTrail copies its words |
 | a list A item: the ground, the bumps, the signs | list A of the trail | 21-40 a trail | TrackPos (the ATV's distance) | WalkList `$8DA3` and PlaceItem `$8E3C` |
 | a list B item: the scenery | list B of the trail | 5-18 a trail | SceneryPos, a quarter of TrackPos | the same walk |
-| an animation record | after the lists | 2-26 a trail | AnimObject `$8A49`, once a pass | the item that points at it |
+| an animation record | after the lists | 1-25 a trail (2-26 items use them) | AnimObject `$8A49`, once a pass | the item that points at it |
 | a player record | RecordP1 `$D70E`, RecordP2 `$D740`, the working copy Record `$D772` | 2 | the player's controls and the physics | DrawAtvAndRider `$DC82` |
 
 *The objects. The point: everything on the trail is data in two sorted lists; only the ATV and its rider have state
@@ -89,10 +89,10 @@ sprite at the start of each trail. Command: `python3 tools/fig_objects.py fig-sh
 | --- | --- | --- | --- | --- | --- | --- | --- |
 | 1 SAND DUNING | `$7C9C` | `$0690` | 1 608 | 21 | 3 | 8 | the START banner and the sign |
 | 2 GRASSTRAKIN | `$7CA2` | `$0568` | 1 312 | 39 | 2 | 9 | the START banner |
-| 3 ICEBERGS | `$7CA8` | `$05D4` | 1 420 | 37 | 7 | 5 | 5 with motion |
+| 3 ICEBERGS | `$7CA8` | `$05D4` | 1 420 | 37 | 7 | 5 | 6: the START banner, 5 with motion |
 | 4 PYRAMIDS | `$7CAE` | `$0685` | 1 597 | 21 | 2 | 9 | the START banner |
-| 5 TROPICANA | `$EE84` | `$06B5` | 1 645 | 33 | 26 | 6 | 13 still, 10 with motion |
-| 6 SWAMP | `$60AC` | `$069B` | 1 619 | 40 | 16 | 18 | 13 with motion |
+| 5 TROPICANA | `$EE84` | `$06B5` | 1 645 | 33 | 26 | 6 | 25: 15 still, 10 with motion |
+| 6 SWAMP | `$60AC` | `$069B` | 1 619 | 40 | 16 | 18 | 15: 2 still, 13 with motion |
 
 *The six trails (from `src/res/trails/trails14.txt`, `trail5.txt`, `trail6.txt`). The point: the trails grow
 busier, and trails 5 and 6 are made mostly of animation records.*
@@ -140,8 +140,8 @@ four places. Bit 0 picks the menu sprite bank, whose sprites carry attributes.
 *The kinds of item. The point: an item is solid only if it is in list A and drawn at once; "solid" is not a flag but a
 consequence of the draw order (7.5).*
 
-Bit 0 is not a mirror: it selects MenuSprite `$863D` (PlaceItem `$8E66`). Bit 1 becomes ItemFlags bit 5, DeferB's test (`$8DE8`), so
-draw mode 1 goes to DeferredB and 2 to DeferredA.
+Bit 0 is not a mirror: it selects MenuSprite `$863D` (PlaceItem `$8E66`). Bit 1 becomes ItemFlags bit 5, DeferB's
+test (`$8DE8`), so flags bit 1 (2) goes to DeferredB and bit 2 (4) to DeferredA.
 
 ### InitListWidths: the y and the advance
 
@@ -379,7 +379,9 @@ looked at.*
 
 1. The list A walk runs from 1 263 T 27 502 to 1 264 T 13 497: 55 883 T.
 2. PlaceItem for the sign takes 29 316 T of that, most of it the measuring call shifting the sprite `$A5` to the previous
-   item's offset (-127 AND 7 = 1, the same as its own 25 AND 7 here; [doc 6, 6.7](06-rendering.md#67-the-measuring-call-rotations-twice)).
+   item's offset: for clip code 2 PlaceItemX stores the magnitude (`$8EEE` negates x), so SpriteX holds 127 and the
+   measuring call shifts by 127 AND 7 = 7; the real draw then shifts it back to its own 25 AND 7 = 1
+   ([doc 6, 6.7](06-rendering.md#67-the-measuring-call-rotations-twice)).
 3. The list B walk runs from 1 264 T 26 764 to 1 265 T 9 910.
 
 ![Trail 1 at TrackPos 1007: the buffer with each item's box](img/objects/stretch.png)
@@ -696,9 +698,42 @@ Player 1's walk does not check the list before appending. When the walk steps th
 goes through PlaceItem twice in one walk; an animated item there moves twice and takes two places in SeenIds.
 
 Witness: in the sample of frame 1 277 of `trails` SeenCount is 1 and SeenIds starts `$65` (Anim8046, the sign), the
-only animated item in view; the trace of the pass at 1 263 runs AnimObject once. No recording rides past a moving
-object: `trails` and `trail1` stop in trail 2, and `warp` jumps each trail to 40 pixels before its finish. The motions
-above are known only from the code.
+only animated item in view; the trace of the pass at 1 263 runs AnimObject once. `trails` and `trail1` stop in trail
+2, and `warp` jumps each trail to 40 pixels before its finish, so none of them rides past a moving object. The
+recording `anim` does (WALKTHROUGH 6.0): trails 1 and 2 as in `warp`, then trail 3 with its distance POKEd to 700 at
+frame 3 043, before the seal and its ball (list A3 `$0363` Anim8053, sprite `$BC`, and `$0361` Anim8065, sprites
+`$BD` / `$BE`, y 34). Its L1 has AnimObject 800 times (frames 398-4 360).
+
+![The seal and its ball on trail 3](img/play/anim-seal.gif)
+
+*The seal and its ball, `anim` frames 3 060 to 3 240, every 3rd frame: trail 3 ICEBERGS at distance 700 onwards. Command:
+`python3 ../../kit/screen_anim.py --work work/review/fixB/anim --from 3060 --to 3240 --step 3 --width 1050 --delay 80
+docs/img/play/anim-seal.gif`.*
+
+What to watch:
+
+- the ball rising and falling over the seal, a step a pass, its sprite changing every pass (Anim8065's `$11`);
+- the pair drifting left only with the scroll: neither record has an x motion (period 0);
+- the ATV meeting the ball: the ball is drawn at once (flags `$02`), so it is ground for the wheels (7.5).
+
+![AnimObject at work](img/routines/AnimObject.gif)
+
+*AnimObject at work: `$8A49` in one pass of `anim`, frames 3 120-3 126, 60 pictures. How to read: the top left
+is the memory `$8000-$81FF`, the animation records of trails 1-4 at `$8042-$807A` lit as they are read and written,
+SeenIds at `$8124`; the bottom left is BufferP1, where the seal and the ball are drawn; the right is the listing at the
+current PC. Command: `python3 ../../kit/routine_anim.py --work work/review/fixB/anim --listing build/game.lst --window
+3120:0-3127:0 --pc 8A49-8BA0 --view buffer:F03C:22x80 --range 8000-81FF --pictures 60 --title "AnimObject moves trail
+3's seal and ball: anim frames 3120-3126" --out docs/img/routines/AnimObject.gif`.*
+
+What to watch:
+
+- the records' bytes written in place each pass (the record is its own state): over this pass `$8059`, `$8065`,
+  `$806B` and `$806E` change (Anim8053's y counter; Anim8065's sprite, y counter and frame counter), and below the
+  range the two items' own bytes in list A3, `$7E76` and `$7E7C`;
+- SeenIds `$8124` holding the two ids, `$29` and `$1F` (SeenCount 2 at the samples of 3 121 and 3 126);
+- the two sprites ORed into the buffer after AnimObject has chosen their frame and offset.
+
+The motions of the other records are known only from the code.
 
 ## 7.8 The player record
 
@@ -747,7 +782,7 @@ Mounted 1, RiderX 77, Fuel `$1044`, Distance `$03EF00`, DistanceIndex 48 and Sce
 - **Objects that freeze.** An animated item moves only while walked; one left behind keeps its place. Nothing in the
   code puts the distances back, so a second round of trails (after trail 6) finds the objects where the first round
   left them.
-- **Item flags.** Bit 0 is the menu bank, not a mirror; draw mode 1 (bit 1) defers to DeferredB, drawn before the
-  ATV, and 2 (bit 2) to DeferredA, drawn after it; list B scrolls at a quarter of list A.
-- Known only from the code: AnimObject's motions, SeenIds' effect in a two-player game, ListOverflow and the double
-  step. ItemTooLow only with the POKE above.
+- **Item flags.** Bit 0 is the menu bank, not a mirror; flags bit 1 (2) defers to DeferredB, drawn before the
+  ATV, and bit 2 (4) to DeferredA, drawn after it; list B scrolls at a quarter of list A.
+- Known only from the code: AnimObject's motions other than trail 3's seal and ball (recording `anim`), SeenIds'
+  effect in a two-player game, ListOverflow and the double step. ItemTooLow only with the POKE above.

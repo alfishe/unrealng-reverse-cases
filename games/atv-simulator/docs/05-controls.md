@@ -15,7 +15,7 @@ What this covers:
 - wheel up, wheel down and the jump; getting on the ATV (5.10);
 - on foot: the walk and the walk back (5.11);
 - two players: both controls read on one pass (5.12);
-- the key no path reads: AbortKey `$DA01` (5.13).
+- the key no path reads: AbortKey `$DA01`, and no pause (5.13).
 
 The recordings it rests on ([WALKTHROUGH](../WALKTHROUGH.md) 6.0):
 
@@ -862,7 +862,9 @@ dune in the way stops the walk back to the ATV for good.
 
 ```text
 ControlLeft (on foot, left held):
-    if RiderJump: if TurnLeft: RiderX -= 3; return        # in the air: keep drifting
+    if RiderJump:                                         # in the air ($E15B)
+        if TurnRight == 1 or RiderFacing == 0: return     # no turning in the air
+        TurnLeft = 1; if RiderX >= 3: RiderX -= 3; return # drift left with the jump
     if RiderFacing == 0: RiderFacing = 1; return          # turn on the spot
     RiderFrame = RiderFrame + 1, 1..7
     if RiderX >= 3: RiderX -= 3
@@ -1007,8 +1009,13 @@ flowchart LR
 
 Witness: none. Known only from the code: AbortKey is in no recording's L1.
 
+There is no pause either. The only keys play reads are the five of each player's controls byte (bits 0-4, built
+from the KeyIndexes tables), and the code reads a fixed key of KeyStates in only three places: SelectKey's SPACE
+(`$741F`, KeyStates + `$23`) and 0 (`$7425`, + `$14`) in the menu, and AbortKey's 1 above. In play a key that is
+not one of the controls does nothing, and the pass loop ([doc 04, 4.5](04-game-loop.md#45-one-pass-the-order-of-work)) has no branch that holds the clock.
+
 The point: the game once had a quit key, 1. The release cut the jump to it; the only way out of a trail is the
-clock.
+clock, and there is no pause.
 
 ## 5.14 Summary
 
@@ -1024,5 +1031,6 @@ clock.
 | throttle / brake / turn round in three passes | `$E120`, `$E1F0` | `turn` |
 | jump a press; mount by landing on the seat | `$E34B`, `$E46E` | `turn` |
 | on foot: 3 px a pass, blocked by a 3-px step | `$DF37` | `trail1` |
+| no pause; key 1's abort unreachable | `$DA01` | none (known only from the code) |
 | both players' bytes read at the pass start | `$D851` | `kb` |
 | AbortKey on key 1, unreachable | `$DA01` | known only from the code |
