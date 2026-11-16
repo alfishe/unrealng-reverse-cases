@@ -1,0 +1,10 @@
+4000 5AFF screen
+5B00 642F work area, track copy
+643C 690E interrupt, sound
+690F 7FFF sprites, tables
+8000 B1FF code
+B200 B300 IM 2 table
+B306 E2BF sprites
+E2C0 EAFF horizons
+EB00 FDFF back buffer
+FE00 FFFF RowTable, stack
