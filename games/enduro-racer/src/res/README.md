@@ -11,6 +11,6 @@ the sources INCBIN (tools/build.sh runs it), `tools/res_formats.py check` proves
 | `screens/` | the loading screen (tape block 6) | SCREEN$ (`loading.png` a view) |
 | `sound/` | the AY note periods and the two tunes | CSV, text |
 | `sprites/` | every sprite the descriptors name (`$6BE8-$75AF`, `$B306-$E2BF`) | PNG sheet + CSV layout |
-| `tables/` | the game's tables (controls, scores, perspective, edges, hills, objects, riders, stages) | CSV, PNG for the countdown glyphs |
+| `tables/` | the game's tables (controls, scores, perspective, edges, bends, crests, objects, riders, stages) | CSV, PNG for the countdown glyphs |
 | `texts/` | the menu, credits, HUD, lap table, name grid, key names, EXTENDED PLAY, DEMO | UTF-8 text |
 | `track/` | the five stages, the track's patterns, a drawing of each course | text, PNG views |

@@ -30,7 +30,7 @@
 ; Recorded: c1: the credits from frame 11646; the demo from the attract in m128
 ; and c1 before the menu key.
 ;
-; Witness: L1 4 (c1, m128, stages).
+; Witness: L1 5 (c1, m128, names, stages).
 Attract:
   CALL ClearScreen
   LD A,$01
@@ -196,7 +196,8 @@ MenuControl:
   CALL MenuSelect
   JP C,MenuDraw
   LD (ControlMethod),A
-  LD DE,RowTable+$0020
+  LD DE,$FE20             ; not RowTable: PatchControls' D and E, port $FE and
+                          ; JR NZ
   CP $01
   JR NZ,l_8237
   LD DE,$1F28
@@ -290,7 +291,7 @@ l_82C1:
   XOR $1F
   LD B,A
   LD A,E
-  LD DE,RowTable+$0020
+  LD DE,$FE20
   CP $06
   JR C,l_82E1
 
@@ -378,8 +379,7 @@ Keys:
 ; $F7, masks 8 4 1 2 $10 (4 3 1 2 5); 4 CURSOR: $EF $EF $F7 $EF $EF, masks 8
 ; $10 $10 4 1 (keys 7 6 5 8 0). The last three masks ($8352-$8354) are also the
 ; three bytes PrintKeyName's base KeyNamesBase (KeyNames - 3) points at; it
-; never reads them (codes 1-4), masks 8 $10 $10 4 1 (7 6 5 8 0).
-; src/res/tables/controls.csv.
+; never reads them (codes 1-4). src/res/tables/controls.csv.
 ControlTable:
   INCBIN "res/tables/controls.bin",$0000,50
 
@@ -402,7 +402,9 @@ l_8364:
 
 ; Print D characters from HL (B column, C line, E attribute); HL and B move on
 ;
-; Witness: L1 34502 (c1, crash, ctl, m128, stages, twoplayer).
+; Witness: L1 41186 (c1, crash, ctl, fall5, m128, names, stages,
+; tech-brake-bend, tech-cheat, tech-land-wheelie, tech-ramp-wheelie, truck,
+; twoplayer).
 PrintString:
   LD A,(HL)
   CALL PrintChar
@@ -427,13 +429,17 @@ PrintKey:
 ;
 ; Recorded: c1: the menu, the HUD.
 ;
-; Witness: L1 48535 (c1, crash, ctl, m128, stages, twoplayer).
+; Witness: L1 57774 (c1, crash, ctl, fall5, m128, names, stages,
+; tech-brake-bend, tech-cheat, tech-land-wheelie, tech-ramp-wheelie, truck,
+; twoplayer).
 PrintChar:
   CALL SetAttr
 
 ; the glyph without the attribute (DrawScore's digits, the lap table's numbers)
 ;
-; Witness: L1 53373 (c1, crash, ctl, m128, stages, twoplayer).
+; Witness: L1 63405 (c1, crash, ctl, fall5, m128, names, stages,
+; tech-brake-bend, tech-cheat, tech-land-wheelie, tech-ramp-wheelie, truck,
+; twoplayer).
 PrintGlyph:
   PUSH AF
   PUSH BC
@@ -482,7 +488,9 @@ l_8398:
 ; Print A (0-255) in decimal, no leading zeros, ending at column B (it prints
 ; the high digits first, recursively)
 ;
-; Witness: L1 10473 (c1, crash, ctl, m128, stages, twoplayer).
+; Witness: L1 12418 (c1, crash, ctl, fall5, m128, names, stages,
+; tech-brake-bend, tech-cheat, tech-land-wheelie, tech-ramp-wheelie, truck,
+; twoplayer).
 PrintNumber:
   CP $0A
   JR C,l_83C1
@@ -533,7 +541,7 @@ l_83D1:
 ; The name entry's 1 x 1 frame (IX's eight characters) round the cell at
 ; DrawCursor's BC operand, attribute $46
 ;
-; Witness: L1 42 (stages).
+; Witness: L1 105 (names, stages).
 DrawCursor:
   LD BC,$0000
   DEC B
@@ -546,7 +554,8 @@ DrawCursor:
 ; A frame of IX's eight characters (corners, edges) round an H x L area at
 ; column B, line C, attribute E
 ;
-; Witness: L1 116 (c1, crash, ctl, m128, stages, twoplayer).
+; Witness: L1 183 (c1, crash, ctl, fall5, m128, names, stages, truck,
+; twoplayer).
 DrawFrame:
   LD A,(IX+$00)
   PUSH BC
@@ -590,7 +599,9 @@ l_8434:
 
 ; The attribute of column B, pixel line C (plus PrintOrigin) = E
 ;
-; Witness: L1 50478 (c1, crash, ctl, m128, stages, twoplayer).
+; Witness: L1 59717 (c1, crash, ctl, fall5, m128, names, stages,
+; tech-brake-bend, tech-cheat, tech-land-wheelie, tech-ramp-wheelie, truck,
+; twoplayer).
 SetAttr:
   PUSH HL
   PUSH BC
@@ -616,7 +627,8 @@ SetAttr:
 ; The timer (Timer, BCD) in big digits at column 13, line 24: tens (blank when
 ; 0) and units
 ;
-; Witness: L1 419 (c1, crash, ctl, m128, stages, twoplayer).
+; Witness: L1 502 (c1, crash, ctl, fall5, m128, names, stages, tech-brake-bend,
+; tech-cheat, tech-land-wheelie, tech-ramp-wheelie, truck, twoplayer).
 PrintTimer:
   LD DE,$0D18
   LD A,(Timer)
@@ -649,7 +661,9 @@ l_847E:
 ; address. An interrupt during it is repaired by Interrupt (the pops read
 ; RowTable).
 ;
-; Witness: L1 846 (c1, crash, ctl, m128, stages, twoplayer).
+; Witness: L1 1013 (c1, crash, ctl, fall5, m128, names, stages,
+; tech-brake-bend, tech-cheat, tech-land-wheelie, tech-ramp-wheelie, truck,
+; twoplayer).
 BigDigit:
   LD B,A
   INC B
@@ -687,7 +701,7 @@ l_84A0:
 ; The credits' scroll: every pixel line one line up (through RowTable); every
 ; eighth call the attributes one row up
 ;
-; Witness: L1 656 (c1, m128, stages).
+; Witness: L1 820 (c1, m128, names, stages).
 ScrollUp:
   LD HL,RowTable+$0001
   LD DE,$4000
@@ -721,7 +735,7 @@ ScrollPhase:
 
 ; NZ when a key is pressed (or, for the Kempston, fire)
 ;
-; Witness: L1 665369 (c1, ctl, m128, stages).
+; Witness: L1 665534 (c1, ctl, m128, names, stages).
 KeyOrFire:
   CALL ScanKeys
   INC A
@@ -749,7 +763,8 @@ l_84F1:
 ; The eight half rows from port $FEFE up, five bits each; the character is
 ; KeyMap's (5 * row + bit), the code's base $851A = KeyMap - 6.
 ;
-; Witness: L1 688901 (c1, ctl, m128, stages, twoplayer).
+; Witness: L1 690526 (c1, ctl, m128, names, stages, tech-brake-bend,
+; tech-cheat, tech-land-wheelie, tech-ramp-wheelie, twoplayer).
 ScanKeys:
   LD BC,$08FE
 l_84F6:
@@ -801,7 +816,8 @@ KeyMap:
 
 ; WaitKey with no timeout (B = $FF)
 ;
-; Witness: L1 4 (c1, ctl, twoplayer).
+; Witness: L1 8 (c1, ctl, tech-brake-bend, tech-cheat, tech-land-wheelie,
+; tech-ramp-wheelie, twoplayer).
 GetKey:
   LD B,$FF
 
@@ -812,7 +828,8 @@ GetKey:
 ; scan; the count is WaitCount. Used by the menus, the credits, the lap table,
 ; between turns.
 ;
-; Witness: L1 301 (c1, ctl, m128, stages, twoplayer).
+; Witness: L1 307 (c1, ctl, m128, names, stages, tech-brake-bend, tech-cheat,
+; tech-land-wheelie, tech-ramp-wheelie, twoplayer).
 WaitKey:
   LD (WaitCount),BC
 l_854E:
@@ -874,7 +891,7 @@ l_858F:
 
 ; About 2 s: 5 x 53 846 turns of DEC BC / LD A,B / OR C / JR NZ
 ;
-; Witness: L1 4 (c1, stages, twoplayer).
+; Witness: L1 5 (c1, names, stages, twoplayer).
 Delay:
   LD D,$05
 l_85A4:
@@ -893,11 +910,13 @@ l_85A7:
 ;
 ; Seven tests: LD A,half row / IN A,(port) / AND mask / JR NZ (JR Z for the
 ; Kempston) / SET n,D. The first five are patched by PatchControls (the image
-; holds method 0's Q A O P SPACE).
+; holds method 3's SINCLAIR LEFT tests, half row $F7).
 ;
 ; Recorded: c1, ctl: every method; ctl's Kempston run sets DE = $1F28.
 ;
-; Witness: L1 7756 (c1, crash, ctl, m128, stages, twoplayer).
+; Witness: L1 10165 (c1, crash, ctl, fall5, m128, names, stages,
+; tech-brake-bend, tech-cheat, tech-land-wheelie, tech-ramp-wheelie, truck,
+; twoplayer).
 ReadControls:
   LD D,$00
   LD A,$F7
@@ -1046,7 +1065,7 @@ PaintAttrs:
 ; Border black; a wipe: 32 times every pixel line and attribute row one byte to
 ; the left
 ;
-; Witness: L1 26 (c1, ctl, m128, stages, twoplayer).
+; Witness: L1 28 (c1, ctl, m128, names, stages, twoplayer).
 ClearScreen:
   XOR A
   OUT ($FE),A
@@ -1092,7 +1111,8 @@ l_867D:
 
 ; DJNZ / DEC C: B x C turns
 ;
-; Witness: L1 112052384 (c1, ctl, m128, stages, twoplayer).
+; Witness: L1 119007349 (c1, ctl, m128, names, stages, tech-brake-bend,
+; tech-cheat, tech-land-wheelie, tech-ramp-wheelie, twoplayer).
 DelayBC:
   DJNZ DelayBC
   DEC C
@@ -1102,7 +1122,7 @@ DelayBC:
 ; Print IX's list of texts from HL: the count, then (line, column, attribute,
 ; length) each
 ;
-; Witness: L1 70 (c1, crash, ctl, m128, stages, twoplayer).
+; Witness: L1 72 (c1, crash, ctl, fall5, m128, stages, truck, twoplayer).
 PrintList:
   LD B,(IX+$00)
   INC IX
@@ -1125,7 +1145,9 @@ l_86B0:
 ; The digits are 0-9 values (ScoreAdd's, $7C3D-$7C41, and the time bonus); the
 ; score's leading zeros (up to six) become blanks.
 ;
-; Witness: L1 4086 (c1, crash, ctl, m128, stages, twoplayer).
+; Witness: L1 4850 (c1, crash, ctl, fall5, m128, names, stages,
+; tech-brake-bend, tech-cheat, tech-land-wheelie, tech-ramp-wheelie, truck,
+; twoplayer).
 AddScore:
   LD A,(DemoMode)
   AND A
@@ -1162,7 +1184,9 @@ l_86F2:
 
 ; Score's 7 characters at column 25, line 8, attribute $69
 ;
-; Witness: L1 3806 (c1, crash, ctl, m128, stages, twoplayer).
+; Witness: L1 4572 (c1, crash, ctl, fall5, m128, names, stages,
+; tech-brake-bend, tech-cheat, tech-land-wheelie, tech-ramp-wheelie, truck,
+; twoplayer).
 DrawScore:
   LD HL,Score
   LD BC,$1908
@@ -1172,7 +1196,7 @@ DrawScore:
 ; The time at HL (seconds BCD with $60 a minute, hundredths BCD) into
 ; TimeText's digits
 ;
-; Witness: L1 24 (c1, stages).
+; Witness: L1 31 (c1, names, stages).
 FormatTime:
   LD D,(HL)
   INC HL
@@ -1195,7 +1219,7 @@ l_8718:
 
 ; A (BCD) to two digit characters: L the tens, H the units
 ;
-; Witness: L1 48 (c1, stages).
+; Witness: L1 62 (c1, names, stages).
 BcdToText:
   LD H,A
   RRA

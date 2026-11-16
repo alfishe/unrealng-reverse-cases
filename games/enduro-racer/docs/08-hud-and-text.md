@@ -405,16 +405,17 @@ each pass (after the countdown's first half):
     if Tenths == 0 and Timer == 0 and SPEED == 0: the game is over
 ```
 
-A TIME second is 10 passes, not a real second. Its length depends on the pass.
+A timer second is 10 passes, not a real second. Its length depends on the pass.
 
 Worked example, `c1`: Timer turns from `$60` to `$59` between frames 14 112 and 14 116 and reaches 0 near 19 255.
-Sixty TIME seconds took about 5 140 frames, 103 s: 1.7 s per TIME second on average. In the traced pass the tick ran
+Sixty timer seconds took about 5 140 frames, 103 s: 1.7 s per timer second on average, the 382 frames of the five
+falls included (the timer is held while the rider gets up); without them about 80 frames, 1.6 s ([doc 1](01-game-design.md)). In the traced pass the tick ran
 at 15215:42813, and the two big digits took 1 516 and 1 577 T.
 
 Witness: `work/docs/erB/mem.py work/docs/erB/c1 14100 14140 4 5E1F:2 5E24:1` and the same at 19 000-19 300; the
 trace `15206_43000-15216_0.uatr`.
 
-The point: the race's clock is the pass count. A busy screen makes every TIME second longer in real time, so the
+The point: the race's clock is the pass count. A busy screen makes every timer second longer in real time, so the
 48K's slow passes give the player more real time, not more road.
 
 ## 8.7 The speed
@@ -648,9 +649,16 @@ What to watch:
 - `?` closing the entry.
 
 Witness: [the table](img/play/stages-022308-hiscore.png) at 22 308 and
-[the name entered](img/play/stages-022708-name-entered.png) at 22 708: 5220362, EHD, 4'53"64 in the first row.
+[the name entered](img/play/stages-022708-name-entered.png) at 22 708: 5220362, EHD, 4'59"64 in the first row.
 
-Known only from the code: NameDelete, NameLeftWrap and NameRightWrap.
+The recording `names` (WALKTHROUGH 6.0; c1's play with the score POKEd to 300 000 and the timer to 1) runs the
+rest: NameLeftWrap `$8A66` (LEFT at the first column, frame 2 283), NameRightWrap `$8A7B` (2 335), NameSpace `$8A46`,
+NameDelete `$8A2C` (= at 2 526) and NameDone `$8A4F` (END at 2 948), each once; the name entered is "ER".
+
+| | |
+| --- | --- |
+| ![after the delete, names 2 558](img/play/names-002558-deleted.png) | ![ER typed, names 2 795](img/play/names-002795-name-er.png) |
+| `names` 2 558: the first letter deleted, the cursor on the arrow | 2 795: "ER" typed, the cursor on R |
 
 The point: the name entry is driven by the race controls, so joystick players can enter names; the grid is printed
 text and the cursor a frame of font characters.
@@ -685,7 +693,7 @@ The point: windows are the printer with an origin. One `LD HL,nn` operand moves 
 - The HUD is printed once a turn; only the score and the speed (every pass) and the timer (every tenth pass) are
   reprinted.
 - The score is 7 ASCII characters; each pass adds the whole km/h, ten times that in the air.
-- A TIME second is 10 passes: about 1.7 real seconds on c1's 48K.
+- A timer second is 10 passes: about 1.6 real seconds on c1's 48K (1.7 with the falls' held timer).
 - The countdown is drawn in attributes; DEMO, 1UP/2UP, EXTENDED PLAY and LAPTIME are printed into the back buffer
   and flash by not being printed.
 - The lap table and the high scores live in RAM; the name entry uses the race controls on a printed grid.
@@ -693,4 +701,3 @@ The point: windows are the printer with an origin. One `LD HL,nn` operand moves 
 Known only from the code in this document:
 
 - RecordTie (8.10);
-- NameDelete, NameLeftWrap, NameRightWrap (8.11).

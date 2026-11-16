@@ -1,0 +1,65 @@
+# tech-land-wheelie: c1's play start and keys, but THROTTLE + WHEELIE from c1 frame 15600 to 15640: a wheelie at the
+# landing (doc 10's run land-wheelie); to c1 frame 15700
+# Start: work/stage1/rec/c1/play.szx
+0 Q
+300 Q O
+320 Q P
+340 Q A
+380 Q
+440 SPACE
+480 H
+486 -
+546 H
+552 -
+582 Q
+622 Q O
+634 Q
+664 Q P
+676 Q
+706 Q P
+716 Q O
+726 Q
+766 Q O
+778 Q
+808 Q P
+820 Q
+850 Q P
+860 Q O
+870 Q
+910 Q O
+922 Q
+952 Q P
+964 Q
+994 Q P
+1004 Q O
+1014 Q
+1054 Q O
+1066 Q
+1096 Q P
+1108 Q
+1138 Q P
+1148 Q O
+1158 Q
+1198 Q O
+1210 Q
+1240 Q P
+1252 Q
+1282 Q P
+1292 Q O
+1302 Q
+1342 Q O
+1354 Q
+1384 Q P
+1396 Q
+1426 Q P
+1436 Q O
+1446 Q
+1486 Q O
+1498 Q
+1525 Q A
+1565 Q
+1570 Q P
+1580 Q O
+1590 Q
+1625 -
+1625 END

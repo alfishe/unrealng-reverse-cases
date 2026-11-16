@@ -19,9 +19,9 @@ $5B11 b MoverTail ; The 47 bytes after Mover in tape block 15: the ROM font's le
 @alias RowList Mover ; the road's row list $5B00-$5B7F, written over Mover in play
 $5B40 s RowListTail ; $5B40-$5B7F: zeros no tape block loads; the rest of RowList (RoadRowsMake writes it)
 > RowList ($5B00-$5B7F, over Mover) is the list of the road's rows, each the RoadLines index of a drawn line, $FE a gap (GapRows), $FF the end; RoadRowsMake ($9DF1) writes it, DrawRoad reads it.
-$5B80 b HillRows ; The hill row table, 128 bytes: each road row's height offset, built by ScrollHills / BlendHill
-> In the image $5B80-$5BC7 are zeros (no block loads them) and $5BC8-$5BFF the start of the LDDR's leftover: an LDDR moving a block up leaves its first $5E0 bytes where they were, so $5BC8-$61A3 still hold what is now at $61A8-$6783 (entry.cpu.bin byte for byte; tools/parts.py rebuilds it so). ClearHillRows and the game overwrite all of $5B80-$642F before reading it.
-$5C00 b RoadLines ; The screen line of each road row, 128 bytes ($70 + depth / 2): RoadRowsFlat, RoadRowsCurve, RoadRowsJump write it
+$5B80 b BendRows ; The bend row table, 128 bytes: each road row's x centre (the bend's sideways shift), built by ScrollBends / BlendBend
+> In the image $5B80-$5BC7 are zeros (no block loads them) and $5BC8-$5BFF the start of the LDDR's leftover: an LDDR moving a block up leaves its first $5E0 bytes where they were, so $5BC8-$61A3 still hold what is now at $61A8-$6783 (entry.cpu.bin byte for byte; tools/parts.py rebuilds it so). ClearBendRows and the game overwrite all of $5B80-$642F before reading it.
+$5C00 b RoadLines ; The screen line of each road row, 128 bytes ($70 + depth / 2): RoadRowsFlat, RoadRowsCrest, RoadRowsJump write it
 > RoadLines' last entry ($5C7F) gives RoadTopRow = ($5C7F) - $71; all entries $70 (the road flat under a high jump) make RoadTopRow $FF (the stage 3 reset, leftovers section of NOTES).
 $5C80 b Riders 15 ; The six riders, 15 bytes each: flags, x, distance, speed, pose, jump
 > +0 flags (bit 7 not in the race, bit 0 the second kind: the wider sprite set and the hard collision), +2 x, +3/+4 distance (the high byte is the road row; 0-$4F on screen), +5/+6 speed, +7 acceleration, +8 top speed, +9 pose (0-3, 4 for the second kind), +$0A the lowest pose on a hill, +$0B/+$0C jump height, +$0D/+$0E jump speed. StartRace fills it from RiderStarts; MoveRiders and DrawRiders use it.
@@ -53,11 +53,11 @@ $5E25 SegmentLeft ; the segment's progress, 8.8: counts down by ScrollStep
 $5E27 TrackPtr ; the track position (Track's elements)
 $5E29 TrackDistance ; the distance into the track, 8.8
 $5E2B StageListPtr ; the segment in StageList
-$5E2D CurveDir ; the curve's direction: 1 one way, 0 the other
-$5E2E HillPrev ; the previous segment's hill (0-3)
-$5E2F Hill ; the segment's hill
-$5E30 CurvePrev ; the previous segment's curve (0-3)
-$5E31 Curve ; the segment's curve
+$5E2D BendDir ; the bend's side (segment bit 4): 1 one way, 0 the other
+$5E2E BendPrev ; the previous segment's bend (bits 0-1: 0 straight, 1-3 a bend profile)
+$5E2F Bend ; the segment's bend (bits 0-1)
+$5E30 CrestPrev ; the previous segment's crest (bits 2-3: 0 level, 1-3 a rise or dip)
+$5E31 Crest ; the segment's crest (bits 2-3)
 $5E32 FallX ; x at a fall (the restart's x)
 $5E33 GapMarks ; the rows of the two $F0 marks (the gap ends); $7F none
 $5E35 Segments ; segments driven in the stage (the lap table's %)
@@ -66,7 +66,7 @@ $5E37 TrackStack ; the track interpreter's stack: depth, two frames of 6 bytes (
 $5E45 b OtherPlayer ; The other player's block, 56 bytes, swapped in by TurnLoop
 $5E7D b PlayerPad ; 3 bytes after the blocks, never used ($66, $64, $00 in the image: LDDR leftovers)
 $5E80 b StageList ; The stage list, one byte a segment (Init copies it from $EB00; the image's own bytes here are leftovers)
-> bits 0-1 the hill (HillProfiles 1-3), bits 2-3 the curve (0 straight, 1-3), bit 4 the direction, bit 5 the stage's last segment, bits 6-7 added to the segment's progress at its start (SegmentLen, $AF81). Five stages end at $5E9F, $5EB6, $5ED0, $5EEB, $5F0B: 32, 23, 26, 27 and 32 segments. src/res/track/stage1.txt ... stage5.txt (tools/course.py).
+> bits 0-1 the bend (0 straight, BendProfiles 1-3), bits 2-3 the crest (0 level, CrestTable 1-3), bit 4 the direction, bit 5 the stage's last segment, bits 6-7 added to the segment's progress at its start (SegmentLen, $AF81). Five stages end at $5E9F, $5EB6, $5ED0, $5EEB, $5F0B: 32, 23, 26, 27 and 32 segments. src/res/track/stage1.txt ... stage5.txt (tools/course.py).
 $5F0C TrackPatterns ; the patterns the $E0 commands run
 $60D0 Track ; the track's elements, from the start of stage 1 (TrackPtr)
 $6430 b AySilence ; AY register 7 = $3F: every tone and noise off (written when the tune stops)
@@ -83,7 +83,7 @@ $643B TunePlaying ; the tune the channels play: 0 none, 1 or 2 (compared with Tu
 $643C c Interrupt ; Save SP, take IntStack, read the return address into IntReturn's JP, push the registers
 > Entered through IntVector ($6464, JR here) on every interrupt in play and the menus. IntSavedSp = SP; SP = $6584; AF, BC, DE, HL, IX, IY pushed on IntStack. HL = the interrupted SP: the return address is read from (HL) into the operand of IntReturn's JP ($6524), IntSavedSp += 2 (the SP to restore), HL = the address of the two bytes the push wrote; A = H, and on at IntRepair.
 > Recorded: c1, m128 and every play recording; 1.00 entries a frame in c1's play.
-> Witness: L1 68919 (c1, crash, ctl, m128, stages, twoplayer).
+> Witness: L1 79550 (c1, crash, ctl, fall5, m128, names, stages, tech-brake-bend, tech-cheat, tech-land-wheelie, tech-ramp-wheelie, truck, twoplayer).
 $645F b SkidLevel ; The AY skid noise: 0 none, else EngineSound's noise period (set by OffRoad, the dust on stage 3)
 $6460 TuneMark ; 1 after a tune's $CA mark: the tune may change now (PlayChannel sets it, Interrupt clears it)
 $6461 TuneRequest ; the tune the game wants: 0 silence, 1 (odd stages) or 2 (even), set by SetTune; also gates EngineSound
@@ -101,30 +101,30 @@ $6523 IntReturn ; JP nn: nn is the interrupted return address, written by Interr
 $6526 IntZeroBytes ; outside RowTable: the two bytes the push wrote become 0
 $652E RowEntry ; inside RowTable: entry n = (address - $FE00) / 2 gets its row address again
 > n < $28: the screen line n's address (LineAddress); n < $40: $EB00 + 32 (n - $28), a back buffer row; n >= $40: the screen line n's address + $A600, a back buffer row. What SetRowTable left there in play.
-> Witness: L1 68919 (c1, crash, ctl, m128, stages, twoplayer).
+> Witness: L1 79550 (c1, crash, ctl, fall5, m128, names, stages, tech-brake-bend, tech-cheat, tech-land-wheelie, tech-ramp-wheelie, truck, twoplayer).
 $6566 b IntStack ; The handler's stack, $6566-$6585 (SP = $6584 at the entry): six pushes and its calls; zeros in the image
 > WALKTHROUGH 1 (the stack-flagged bytes of c1's L1) gives $6574-$6583 as the bytes the handler writes.
 $6586 IntSavedSp ; the interrupted SP + 2 (the SP the handler restores); the image holds $B0ED, an old value
 
 @module sound ; Sound: the AY tunes, the effects, the engine on the beeper or the AY
 @about The AY plays a two-channel tune in play, tune 1 on odd stages and tune 2 on even ones (SetTune), switched only at a $CA mark of the tune (TuneMark). The code writes the AY ports on the 48K too, where nothing answers (c1: the writes; m128: the AY's registers move). PlayChannel reads a channel's byte stream: a note is a length byte below $C8 then the note byte (low nibble 1-12 a semitone of NoteTable, 0 a rest; high nibble plus the channel's transpose: how many times the period is halved); commands: $C9 restart, $CA the mark, $FE n repeat n times, $FD the repeat's end, $FC addr a call, $FB return, any other byte a count of AY pairs inline (no tune uses that).
-@about The engine (EngineSound, every second interrupt while a tune is requested): on the 48K a burst of 11 beeper edges whose spacing falls as the speed rises (plus a ROM byte AND $3F as jitter); on the 128K a tone on AY channel C from the speed, or the skid noise (SkidLevel). The speed is folded before use (below 60 as is, 60-129 minus 60, from 130 minus 120): the note drops twice as the bike speeds up, a gear change heard. The effects and beeps are in the game's modules: PlayEffect ($AC88, the AY sweep of a crash), BeepTone ($AB95), the name entry's sweep NameEntrySound ($8AF0).
+@about The engine (EngineSound, every second interrupt while a tune is requested): on the 48K a burst of 11 beeper edges whose spacing falls as the speed rises (plus a ROM byte AND $3F as jitter); on the 128K a tone on AY channel C from the speed, or the skid noise (SkidLevel). The speed is folded before use (below 60 as is, 60-129 minus 60, from 130 minus 120): the note drops twice as the bike speeds up, a gear change heard. The effects and beeps are in the game's modules: PlayEffect ($A179) and AyEffectTick ($ACA5), the AY noise of a fall or a bounce; CrashSound ($AC88), the 48K's beeper noise, BeepTone ($AB95), the name entry's sweep NameEntrySound ($8AF0).
 $6588 c PlayChannel ; Step one tune channel (IX): count its note down, then read the next note or command
 > In: IX = ChannelA or ChannelB. The count (IX+0) minus 1: reaching 0 sets the channel's mixer bit (IX+$0E) in AyMixer's value (the note stops for one interrupt) and writes the mixer; going past 0 ($FF) toggles the bit back and reads the stream at (IX+1,2): a length byte below $C8 (the new count, minus 1), then the note byte: low nibble 0 sets the bit (a rest); 1-11 reads NoteTable's word n ($66AA + 2n), halved (high nibble + transpose IX+3) times, into the channel's tone registers (IX+$0D and +1). Bytes from $C8: ChannelCommands.
 > Recorded: c1, m128: two calls each interrupt in play.
-> Witness: L1 51862 (c1, crash, ctl, m128, stages, twoplayer).
+> Witness: L1 65445 (c1, crash, ctl, fall5, m128, names, stages, tech-brake-bend, tech-cheat, tech-land-wheelie, tech-ramp-wheelie, truck, twoplayer).
 $65B1 ChannelRead ; the next byte of the stream
 $65DA ; NoteTable ($66AA) + 2n never crosses $66FF, so the INC H below is never needed
 $65DC c NoteCarry ; INC H for a note table that crosses a page: not reached with this table
 > Known only from the code.
 $65DD c ChannelPeriod ; The period from (HL), halved (high nibble + transpose) times, out to the channel's tone registers
 > In: HL = the word in NoteTable, C = the note byte, IX the channel. Writes the low then the high register (IX+$0D, IX+$0D+1) through ports $FFFD / $BFFD.
-> Witness: L1 5104 (c1, crash, ctl, m128, stages, twoplayer).
+> Witness: L1 6397 (c1, crash, ctl, fall5, m128, names, stages, tech-brake-bend, tech-cheat, tech-land-wheelie, tech-ramp-wheelie, truck, twoplayer).
 $660E ChannelCommands ; $C9 restart at (IX+4,5) and clear TuneMark; $CA set TuneMark; $FE n repeat; $FD repeat end; $FB return; $FC call
 $668B c ChannelAyPairs ; Any other command byte: the next byte E is a count of AY pairs, written by AyWrite, then on
 > Known only from the code: no stream of the two tunes holds such a byte (src/res/sound/tunes.txt lists every command they use).
 $6694 c ChannelLoop ; IY = the channel's repeat record: IX + 7 + 3 * depth (count, address)
-> Witness: L1 2347 (c1, crash, ctl, m128, stages, twoplayer).
+> Witness: L1 2936 (c1, crash, ctl, fall5, m128, names, stages, tech-brake-bend, tech-cheat, tech-land-wheelie, tech-ramp-wheelie, truck, twoplayer).
 $66AA w NoteTable 12 ; The AY tone periods of one octave ($0EEE ... $07E9), halved per octave by ChannelPeriod
 > A note n reads word n ($66AA + 2n): word 0 ($0EEE) is never read, and a note 12 would read TuneTable; the tunes use the notes 2, 4, 6, 7, 9 and 11 (src/res/sound/tunes.txt).
 @res sound/notes.bin
@@ -141,20 +141,20 @@ $67FB b AyMixer ; AY register 7 and its value: the channels' mixer (PlayChannel 
 $67FD AyVolumeC ; register 10 (channel C's volume), set by EngineSkid from SkidLevel
 $67FF AyNoise ; register 6 (the noise period), set by EngineSkid from the speed
 $6801 c WriteMixer ; AY register 7 = AyMixer's value
-> Witness: L1 13197 (c1, crash, ctl, m128, stages, twoplayer).
+> Witness: L1 16090 (c1, crash, ctl, fall5, m128, names, stages, tech-brake-bend, tech-cheat, tech-land-wheelie, tech-ramp-wheelie, truck, twoplayer).
 $6806 c AyWrite ; Write E pairs (register, value) from HL to the AY: OUT ($FFFD) the register, OUT ($BFFD) the value
 > Out: HL past the pairs. On the 48K the ports reach nothing (the game writes them on both machines).
-> Witness: L1 15123 (c1, crash, ctl, m128, stages, twoplayer).
-$6817 b ChannelA ; Tune channel A: count, stream, transpose, restart, repeat depth and records, tone register 0, mixer bit 1
+> Witness: L1 18027 (c1, crash, ctl, fall5, m128, names, stages, tech-brake-bend, tech-cheat, tech-land-wheelie, tech-ramp-wheelie, truck, twoplayer).
+$6817 b ChannelA ; Tune channel A: count, stream, transpose, restart, repeat depth and records, tone register 2 (AY channel B), mixer bit 1 (value $02)
 > 17 bytes: +0 the note's count, +1/+2 the stream pointer, +3 the transpose, +4/+5 the restart, +6 the repeat depth ($FF none), +7 two records of 3 bytes (count, address), +$0D the tone register, +$0E the mixer bit, +$0F/+$10 the call's return.
-$6828 ChannelB ; tune channel B: tone register 2, mixer bit 2
+$6828 ChannelB ; tune channel B: tone register 0 (AY channel A), mixer bit 0 (value $01)
 $6839 c LineAddress ; DE = the screen address of pixel line A (L = the same line): the ROM's PIXEL-ADD layout, column 0
 > In: A = L = the line (0-191). D = $40 + (line AND 7) + 8 * (line >> 6), E = (line AND $38) * 4. RowEntry's helper.
-> Witness: L1 11245 (c1, crash, ctl, m128, stages, twoplayer).
+> Witness: L1 13451 (c1, crash, ctl, fall5, m128, names, stages, tech-brake-bend, tech-cheat, tech-land-wheelie, tech-ramp-wheelie, truck, twoplayer).
 $6851 c EngineSound ; Every second interrupt: the engine's note from SPEED, on the beeper (48K) or AY channel C (128K)
 > EngineToggle (the LD A operand at $6852) flips each call and the call with it 0 returns. A = SPEED ($7C34), +9 in the air (JumpHeight), folded (below 60 as is, 60-129 minus 60, then minus 60 more), C = $63 - A. 48K (Beeper nonzero): 11 edges on port $FE, the n-th after $14 + C + (a ROM byte at $02xx AND $3F) DJNZ turns: a buzz whose pitch rises with the speed. 128K: an effect playing (EffectTime): nothing; SkidLevel nonzero: EngineSkid; else EngineTone.
 > Recorded: c1: the OUT ($FE) at $687F in play; m128: the AY path $68D1.
-> Witness: L1 23083 (c1, crash, ctl, m128, stages, twoplayer).
+> Witness: L1 28577 (c1, crash, ctl, fall5, m128, names, stages, tech-brake-bend, tech-cheat, tech-land-wheelie, tech-ramp-wheelie, truck, twoplayer).
 $6852 EngineToggle ; flips 0 / $FF each call
 $687F EngineEdges ; 48K: the burst
 $689E c EngineSkid ; 128K: channel C's volume from SkidLevel, the noise period from SPEED, noise on C and tone off
@@ -164,7 +164,7 @@ $68D1 c EngineTone ; 128K: AY channel C's period from C and SPEED's low byte, vo
 > Period = (C + $1C) * 32 with the top bits of -SPEED's low byte ($7C33) shifted in. Mixer AND $3B OR $20.
 > Witness: L1 1768 (m128).
 
-@module graphics ; The graphics and tables: sprites, the font, the perspective and edge tables, the big digits, the hill profiles, the horizons, the track tables
+@module graphics ; The graphics and tables: sprites, the font, the perspective and edge tables, the big digits, the bend profiles, the horizons, the track tables
 @about Everything here is read through the descriptors and routines named in each entry; the editable forms are in src/res (each folder's README). Bytes no routine reads are kept as documented leftovers.
 $690F b Leftover690F ; $690F-$6BE7: 729 bytes no instruction reads in any recording (a repeated word pattern, an older table)
 > L1's byte use has no read here in the seven recordings; no instruction's operand points into it.
@@ -172,7 +172,8 @@ $6BE8 b ObjectSprites ; The roadside objects' sprites (ObjectTypes' lists point 
 > src/res/sprites/objects.png and .csv (tools/res_formats.py: every descriptor's sprite on a sheet).
 @res sprites/objects.bin
 $75B0 b RoadRowsOldData ; 39 bytes RoadRowsOld points IX at: read by no recording
-$75D7 b HillBlend ; BlendHill's steps: 16 rows of slowly rising values (49 bytes to $7607)
+$75D7 b BendBlend ; BlendBend's steps: 16 rows of slowly rising values (49 bytes to $7607)
+@res tables/bendblend.bin
 $7608 b Font 8 ; The 8x8 font, characters $20-$5E (PrintChar's base $7508 = Font - $100: code - $20 rows of 8)
 > 63 characters; a $5F would read Perspective's first bytes. The frame pieces, the arrows, km/h and UP are among them (src/res/font/font.png, the order of the codes).
 @res font/font.bin
@@ -180,8 +181,8 @@ $7800 b Perspective 16 ; Each of the 128 road rows' depth (the far row first: $9
 @res tables/perspective.bin
 $7880 b EdgePatterns 24 ; The road edge's 3-byte patterns, 8 pixel shifts for each of 16 widths (DrawRoad, near rows)
 @res tables/edges.bin
-$7A00 b CurveTable 16 ; The curve's bend of each row (RoadRowsCurve: perspective * curve / 512)
-@res tables/curve.bin
+$7A00 b CrestTable 16 ; The crest's change of each row's screen line (RoadRowsCrest: perspective * crest table / 512)
+@res tables/crest.bin
 $7A80 b EdgePatterns2 24 ; The second set of edge patterns (DrawRoad, chosen by bit 2 of the row)
 @res tables/edges2.bin
 $7C00 b CountGlyphs 8 ; The countdown's glyphs: G, O (8 lines each), then 1, 2, 3 (10 lines each) for CountGlyph
@@ -203,8 +204,8 @@ $7C46 RunLines ; DrawRoadRun's work: lines, x positions and slopes ($7C46-$7C52)
 $7C53 ExtendedTime ; EXTENDED PLAY's flashing passes
 $7C54 b BigDigits 2 ; The ten big digits, 15 lines of 2 bytes (16 x 15 pixels) each (BigDigit)
 @res font/bigdigits.bin
-$7D80 b HillProfiles 16 ; The three hills' profiles, 128 rows each (ScrollHills: $7D80 + 128 * (hill - 1))
-@res tables/hills.bin
+$7D80 b BendProfiles 16 ; The three bends' profiles, each row's sideways shift, 128 rows each (ScrollBends: $7D80 + 128 * (bend - 1))
+@res tables/bends.bin
 $7F00 b RowScale 16 ; Two tables of 128 a road row: $7F00 + row the row's scale (edge pattern, sideways scale), $7F80 + row its half width
 @res tables/rowscale.bin
 
@@ -235,7 +236,7 @@ $80FE ; Beeper = $FF on the 48K ROM
 $810C c Attract ; Wipe, scroll the credits up, wait for a key; none: a demo race; a key: Menu
 > ClearScreen; ScrollPhase = 1; for each of the four CreditList records: the line printed centred at the bottom (pixel line 183), then ScrollUp the record's count of times, KeyOrFire stopping it into Menu. Then WaitKey with 250 units: a key gives Menu; none: DemoMode = 8 + (the distance AND 7) and NewGame plays a demo race.
 > Recorded: c1: the credits from frame 11646; the demo from the attract in m128 and c1 before the menu key.
-> Witness: L1 4 (c1, m128, stages).
+> Witness: L1 5 (c1, m128, names, stages).
 $8160 ; the demo race (NewGame with DemoMode set)
 $8163 c AttractScores ; After a demo: wait 200 units, show the high scores (ShowScores), wait 750 units, Attract again
 > A key at either wait gives Menu. Known only from the code: no recording let a demo end (each pressed a key during it or before it).
@@ -248,6 +249,8 @@ $8178 c Menu ; The main menu: draw it, MenuSelect, then the item's action
 @isub $824F LD (KeyItem),A
 @isub $8280 LD A,(KeyItem)
 @isub $8293 LD (KeyItem),A
+@isub $822D LD DE,$FE20 ; not RowTable: PatchControls' D and E, port $FE and JR NZ
+@isub $82CD LD DE,$FE20
 $818C MenuDraw ; redraw the menu (the actions come back here)
 $81E3 MenuChoose ; MenuSelect over the four items
 $8206 MenuControl ; CHANGE CONTROL MODE
@@ -272,7 +275,7 @@ $831C t Keys 7 ; The keys of method 0: THROTTLE Q, WHEELIE A, LEFT O, RIGHT P, B
 > Character codes as KeyMap gives them; 1-4 stand for SYMBOL SHIFT, ENTER, SPACE and CAPS SHIFT (KeyNames).
 @res texts/keys.bin
 $8323 b ControlTable 10 ; Five methods, 10 bytes each: the half-row bytes of THROTTLE, WHEELIE, LEFT, RIGHT, BRAKES, then their masks
-> Row 0 is KEYBOARD (DEFINE KEYS writes it): $FB $FD $DF $DF $7F, masks 1 1 2 1 1 (Q A O P SPACE); 1 KEMPSTON: all 0 (the port is $1F), masks 8 4 2 1 $10; 2 SINCLAIR RIGHT: $EF, masks 2 4 $10 8 1 (keys 9 8 7 6 0); 3 SINCLAIR LEFT: $F7, masks 8 4 1 2 $10 (4 3 1 2 5); 4 CURSOR: $EF $EF $F7 $EF $EF, masks 8 $10 $10 4 1 (keys 7 6 5 8 0). The last three masks ($8352-$8354) are also the three bytes PrintKeyName's base KeyNamesBase (KeyNames - 3) points at; it never reads them (codes 1-4), masks 8 $10 $10 4 1 (7 6 5 8 0). src/res/tables/controls.csv.
+> Row 0 is KEYBOARD (DEFINE KEYS writes it): $FB $FD $DF $DF $7F, masks 1 1 2 1 1 (Q A O P SPACE); 1 KEMPSTON: all 0 (the port is $1F), masks 8 4 2 1 $10; 2 SINCLAIR RIGHT: $EF, masks 2 4 $10 8 1 (keys 9 8 7 6 0); 3 SINCLAIR LEFT: $F7, masks 8 4 1 2 $10 (4 3 1 2 5); 4 CURSOR: $EF $EF $F7 $EF $EF, masks 8 $10 $10 4 1 (keys 7 6 5 8 0). The last three masks ($8352-$8354) are also the three bytes PrintKeyName's base KeyNamesBase (KeyNames - 3) points at; it never reads them (codes 1-4). src/res/tables/controls.csv.
 @res tables/controls.bin
 $8355 t KeyNames ; SYM, ENT, SPC, CPS: the names of the keys 1-4, three letters each
 @res texts/keynames.bin
@@ -282,45 +285,45 @@ $8361 c PrintKeyName ; Print key code A (1-4) as its three-letter name
 @isub $8361 LD HL,KeyNamesBase
 $836A ; three characters
 $836C c PrintString ; Print D characters from HL (B column, C line, E attribute); HL and B move on
-> Witness: L1 34502 (c1, crash, ctl, m128, stages, twoplayer).
+> Witness: L1 41186 (c1, crash, ctl, fall5, m128, names, stages, tech-brake-bend, tech-cheat, tech-land-wheelie, tech-ramp-wheelie, truck, twoplayer).
 $8375 c PrintKey ; A below 5: PrintKeyName; else PrintChar
 > Witness: L1 21 (c1, ctl).
 $8379 c PrintChar ; Print character A at column B, pixel line C, attribute E (SetAttr), then B + 1
 > The glyph is Font + 8 * (A - $20) (the code's base $7508 = Font - $100); each of its 8 rows goes to RowTable's line C + n, column B + PrintOrigin's column. Registers kept but B.
 > Recorded: c1: the menu, the HUD.
-> Witness: L1 48535 (c1, crash, ctl, m128, stages, twoplayer).
+> Witness: L1 57774 (c1, crash, ctl, fall5, m128, names, stages, tech-brake-bend, tech-cheat, tech-land-wheelie, tech-ramp-wheelie, truck, twoplayer).
 $837C c PrintGlyph ; the glyph without the attribute (DrawScore's digits, the lap table's numbers)
-> Witness: L1 53373 (c1, crash, ctl, m128, stages, twoplayer).
+> Witness: L1 63405 (c1, crash, ctl, fall5, m128, names, stages, tech-brake-bend, tech-cheat, tech-land-wheelie, tech-ramp-wheelie, truck, twoplayer).
 @isub $838C LD DE,Font-$100
 $8380 PrintOrigin ; LD HL,nn: nn = the origin (column, line) added to BC by SetAttr and PrintGlyph; set by DrawWindow, cleared by Menu
 $83AB c PrintNumber ; Print A (0-255) in decimal, no leading zeros, ending at column B (it prints the high digits first, recursively)
-> Witness: L1 10473 (c1, crash, ctl, m128, stages, twoplayer).
+> Witness: L1 12418 (c1, crash, ctl, fall5, m128, names, stages, tech-brake-bend, tech-cheat, tech-land-wheelie, tech-ramp-wheelie, truck, twoplayer).
 $83C5 c DrawWindow ; Clear an H x L character area at PrintOrigin = BC, attribute $4F, and draw a frame round it (FrameChars2)
 > Witness: L1 9 (c1, ctl, m128).
 $83EA c DrawCursor ; The name entry's 1 x 1 frame (IX's eight characters) round the cell at DrawCursor's BC operand, attribute $46
-> Witness: L1 42 (stages).
+> Witness: L1 105 (names, stages).
 $83EB NameCell ; LD BC,nn: nn = the name entry's cursor cell (column, line)
 $83F7 c DrawFrame ; A frame of IX's eight characters (corners, edges) round an H x L area at column B, line C, attribute E
-> Witness: L1 116 (c1, crash, ctl, m128, stages, twoplayer).
+> Witness: L1 183 (c1, crash, ctl, fall5, m128, names, stages, truck, twoplayer).
 $8440 c SetAttr ; The attribute of column B, pixel line C (plus PrintOrigin) = E
-> Witness: L1 50478 (c1, crash, ctl, m128, stages, twoplayer).
+> Witness: L1 59717 (c1, crash, ctl, fall5, m128, names, stages, tech-brake-bend, tech-cheat, tech-land-wheelie, tech-ramp-wheelie, truck, twoplayer).
 $8458 c PrintTimer ; The timer (Timer, BCD) in big digits at column 13, line 24: tens (blank when 0) and units
-> Witness: L1 419 (c1, crash, ctl, m128, stages, twoplayer).
+> Witness: L1 502 (c1, crash, ctl, fall5, m128, names, stages, tech-brake-bend, tech-cheat, tech-land-wheelie, tech-ramp-wheelie, truck, twoplayer).
 $847E ; units
 $8486 c BigDigit ; Digit A (0-9) of BigDigits at column D, line E: 15 rows of two bytes through RowTable, SP as the pointer
 > SavedSp ($7C38) keeps SP; SP = RowTable + 2 * line; each POP gives a line's address. An interrupt during it is repaired by Interrupt (the pops read RowTable).
-> Witness: L1 846 (c1, crash, ctl, m128, stages, twoplayer).
+> Witness: L1 1013 (c1, crash, ctl, fall5, m128, names, stages, tech-brake-bend, tech-cheat, tech-land-wheelie, tech-ramp-wheelie, truck, twoplayer).
 $84B2 c ScrollUp ; The credits' scroll: every pixel line one line up (through RowTable); every eighth call the attributes one row up
-> Witness: L1 656 (c1, m128, stages).
+> Witness: L1 820 (c1, m128, names, stages).
 $84CD ScrollPhase ; LD A,n: n counts 1-7, 0 moves the attributes
 $84E1 c KeyOrFire ; NZ when a key is pressed (or, for the Kempston, fire)
-> Witness: L1 665369 (c1, ctl, m128, stages).
+> Witness: L1 665534 (c1, ctl, m128, names, stages).
 $84EC c KempstonFire ; Kempston: A = port $1F AND $1F (NZ: a direction or fire)
 > Known only from the code: the attract and the menus were left by keys in every recording.
 $84F1 ; no key: Z
 $84F3 c ScanKeys ; A = the character of the first key down (KeyMap), $FF none; B, D: its half row and bit
 > The eight half rows from port $FEFE up, five bits each; the character is KeyMap's (5 * row + bit), the code's base $851A = KeyMap - 6.
-> Witness: L1 688901 (c1, ctl, m128, stages, twoplayer).
+> Witness: L1 690526 (c1, ctl, m128, names, stages, tech-brake-bend, tech-cheat, tech-land-wheelie, tech-ramp-wheelie, twoplayer).
 @isub $8515 LD HL,KeyMap-6
 $850F ScanFound ; the character
 $851C c KeyMapCarry ; INC H: not reached (KeyMap does not cross a page)
@@ -330,10 +333,10 @@ $8520 t KeyMap ; The key at each half row and bit as ScanKeys finds it: B N M 1 
 > 40 characters, the half rows $7F, $BF, $DF, $EF, $F7, $FB, $FD, $FE, bit 4 to bit 0. Codes 1 SYMBOL SHIFT, 2 ENTER, 3 SPACE, 4 CAPS SHIFT.
 @res texts/keymap.bin
 $8548 c GetKey ; WaitKey with no timeout (B = $FF)
-> Witness: L1 4 (c1, ctl, twoplayer).
+> Witness: L1 8 (c1, ctl, tech-brake-bend, tech-cheat, tech-land-wheelie, tech-ramp-wheelie, twoplayer).
 $854A c WaitKey ; Wait for every key up, then for a key: NC and A = its character ($40 Kempston fire), or C after BC units
 > In: BC = the timeout (B = $FF: none). Each unit is a DelayBC($9A13) and a scan; the count is WaitCount. Used by the menus, the credits, the lap table, between turns.
-> Witness: L1 301 (c1, ctl, m128, stages, twoplayer).
+> Witness: L1 307 (c1, ctl, m128, names, stages, tech-brake-bend, tech-cheat, tech-land-wheelie, tech-ramp-wheelie, twoplayer).
 @isub $854A LD (WaitCount),BC
 @isub $8566 LD BC,(WaitCount)
 $8573 c WaitKeyTimeout ; The keys stayed down for the whole timeout: C
@@ -342,11 +345,11 @@ $8573 c WaitKeyTimeout ; The keys stayed down for the whole timeout: C
 @isub $859A LD (WaitCount),BC
 $8575 WaitPress ; wait for a key
 $85A2 c Delay ; About 2 s: 5 x 53 846 turns of DEC BC / LD A,B / OR C / JR NZ
-> Witness: L1 4 (c1, stages, twoplayer).
+> Witness: L1 5 (c1, names, stages, twoplayer).
 $85B0 c ReadControls ; D = the controls: 0 throttle, 1 wheelie, 2 left, 3 right, 4 brakes, 5 pause (H), 6 reset (R)
-> Seven tests: LD A,half row / IN A,(port) / AND mask / JR NZ (JR Z for the Kempston) / SET n,D. The first five are patched by PatchControls (the image holds method 0's Q A O P SPACE).
+> Seven tests: LD A,half row / IN A,(port) / AND mask / JR NZ (JR Z for the Kempston) / SET n,D. The first five are patched by PatchControls (the image holds method 3's SINCLAIR LEFT tests, half row $F7).
 > Recorded: c1, ctl: every method; ctl's Kempston run sets DE = $1F28.
-> Witness: L1 7756 (c1, crash, ctl, m128, stages, twoplayer).
+> Witness: L1 10165 (c1, crash, ctl, fall5, m128, names, stages, tech-brake-bend, tech-cheat, tech-land-wheelie, tech-ramp-wheelie, truck, twoplayer).
 $85E4 TestPause ; H
 $85EE TestReset ; R
 $85F9 c MenuSelect ; Highlight item A of menu HL, colour E, until SPACE or fire picks it (NC, A) or about 22 s pass (C)
@@ -366,20 +369,20 @@ $8658 c RestoreBar ; PaintAttrs with the bar's saved BC and DE (the operands at 
 $865E c PaintAttrs ; D attributes E from column B on pixel line C
 > Witness: L1 1943 (c1, ctl, m128, twoplayer).
 $8666 c ClearScreen ; Border black; a wipe: 32 times every pixel line and attribute row one byte to the left
-> Witness: L1 26 (c1, ctl, m128, stages, twoplayer).
+> Witness: L1 28 (c1, ctl, m128, names, stages, twoplayer).
 $86A5 c DelayBC ; DJNZ / DEC C: B x C turns
-> Witness: L1 112052384 (c1, ctl, m128, stages, twoplayer).
+> Witness: L1 119007349 (c1, ctl, m128, names, stages, tech-brake-bend, tech-cheat, tech-land-wheelie, tech-ramp-wheelie, twoplayer).
 $86AB c PrintList ; Print IX's list of texts from HL: the count, then (line, column, attribute, length) each
-> Witness: L1 70 (c1, crash, ctl, m128, stages, twoplayer).
+> Witness: L1 72 (c1, crash, ctl, fall5, m128, stages, truck, twoplayer).
 $86C9 c AddScore ; Add the 7 digits ending at HL to Score (ASCII, leading blanks), then DrawScore; not in a demo
 > The digits are 0-9 values (ScoreAdd's, $7C3D-$7C41, and the time bonus); the score's leading zeros (up to six) become blanks.
-> Witness: L1 4086 (c1, crash, ctl, m128, stages, twoplayer).
+> Witness: L1 4850 (c1, crash, ctl, fall5, m128, names, stages, tech-brake-bend, tech-cheat, tech-land-wheelie, tech-ramp-wheelie, truck, twoplayer).
 $86FA c DrawScore ; Score's 7 characters at column 25, line 8, attribute $69
-> Witness: L1 3806 (c1, crash, ctl, m128, stages, twoplayer).
+> Witness: L1 4572 (c1, crash, ctl, fall5, m128, names, stages, tech-brake-bend, tech-cheat, tech-land-wheelie, tech-ramp-wheelie, truck, twoplayer).
 $8706 c FormatTime ; The time at HL (seconds BCD with $60 a minute, hundredths BCD) into TimeText's digits
-> Witness: L1 24 (c1, stages).
+> Witness: L1 31 (c1, names, stages).
 $8724 c BcdToText ; A (BCD) to two digit characters: L the tens, H the units
-> Witness: L1 48 (c1, stages).
+> Witness: L1 62 (c1, names, stages).
 $8735 t LapTexts ; TOTAL, RECORD, PLAYER (the lap table), LAPTIME (the stage end's line) and the time text that FormatTime fills
 $874E TimeText ; the time: minutes, ', seconds, ", hundredths
 @res texts/lap.bin
@@ -399,7 +402,7 @@ $87EB TurnNext ; one player: on; two: Delay and GetKey first
 $87FC c PlayTurn ; A turn: the HUD (frames, TOP, the best score, STAGE, TIME, SPEED, SCORE), JP StartRace; at game over the tables
 > The pixel lines 0-63 cleared, their attributes $69; HudLayout's texts; two frames (FrameChars); DrawScore; the best score (HiScores' first row) at column 5; the stage in big digits; PrintTimer; SPEED 0; CALL GameEntry (JP StartRace). Back with Timer nonzero: RET (the next turn). Timer 0: the game is over: RecordStages, the totals (TotalTime = the player's finished stages, Records' total), the lap table (LapTable), then the high scores (ScoreCheck).
 > Recorded: c1, m128: game over by the timer in stage 1; stages: game over after the finish; twoplayer: turns.
-> Witness: L1 23 (c1, crash, ctl, m128, stages, twoplayer).
+> Witness: L1 25 (c1, crash, ctl, fall5, m128, stages, truck, twoplayer).
 $885D ; the race
 $8865 RecordStages ; for each finished stage: a time below the record replaces it
 $887F c RecordTie ; Equal seconds: compare the hundredths
@@ -411,44 +414,47 @@ $895C ScoreCheck ; the first HiScores row the score beats: insert there, enter t
 $89CC NameEntry ; the grid (NameGrid, 15 characters a row, three rows), the cursor (DrawCursor) moved by the controls
 $8A12 ; fire: the character under the cursor; ? ends, = deletes, else it is written
 $8A2C c NameDelete ; =: one character back, blanked (not before the first)
-> Known only from the code: the stages recording's name entry used no =.
+> The recording names (c1's play, the score POKEd to 300 000) types = after its first letter (frame 2 526).
+> Witness: L1 1 (names).
+$8A16 NamePtr ; LD HL,nn: nn = the name's next place (written by ScoreCheck and after each character)
+$8A19 NamePlace ; LD BC,nn: C the pixel line, B the column of the name's next character (ScoreCheck; the column after each character)
 $8A38 ; write the character
-$8A46 c NameSpace ; A blank picked: DEC B (the column moves on as for a letter)
-> Known only from the code.
+$8A46 c NameSpace ; After a delete's blank: DEC B, the column steps back
+> Witness: L1 1 (names).
 $8A47 ; eight characters: done
 $8A4F NameDone ; Timer + the other's Timer nonzero: ClearScreen and back; else RET
 $8A5A NameMove ; LEFT, RIGHT: two columns (the grid's step), UP, DOWN: 16 lines; IY follows the character
 $8A66 c NameLeftWrap ; LEFT at the first column: wrap to column 29
-> Known only from the code.
+> Witness: L1 1 (names).
 $8A6D ; the column
 $8A7B c NameRightWrap ; RIGHT at the last column: wrap to column 1
-> Known only from the code.
+> Witness: L1 1 (names).
 $8A82 ; the column
 $8AB3 t FrameChars 8 ; The frame's eight characters: corners and edges ([ % \ + / ] ) ^ in the font's own shapes)
 > Order: top left, top, top right, left, right, bottom left, bottom, bottom right (DrawFrame). The font draws them as frame pieces (src/res/font/font.png).
-$8ABB FrameChars2 ; DrawWindow's frame: ( ) * / + & % $
+$8ABB FrameChars2 ; DrawWindow's frame: the characters `( ) * / + & % $`
 @res texts/namegrid.bin
 $8AC3 t NameGrid 15 ; The name entry's letters, three rows of 15: QWERTYUIOP=?789 ASDFGHJKL:;'456 ZXCVBNM,.!@0123
 > = deletes, ? ends; : ; ' ! @ are the font's own glyphs there.
 @res texts/namegrid.bin
-$8AF0 c NameEntrySound ; One step of the name entry: a beeper blip falling in pitch for a few calls after a pick, then a pause
+$8AF0 c NameEntrySound ; One step of the name entry: a beeper blip rising in pitch for a few calls after a pick (NameSound counts down, the period is NameSound + 8), then a pause
 > NameSound (the LD A operand) is set to $28 by a pick and counts down: 191 edges of period NameSound + 8, then a quiet wait of 191 x ($32 - NameSound) turns. At 0 only the wait: the entry's pace.
 > Recorded: stages: the name entry; the OUT ($FE) at $8AFF.
-> Witness: L1 194 (stages).
+> Witness: L1 1092 (names, stages).
 $8AF1 NameSound ; the blip's countdown
 $8B19 c ShowScores ; Wipe and draw HiScores from pixel line C: SCORE, NAME, TIME, then five rows of score, name, time
-> Witness: L1 1 (stages).
+> Witness: L1 2 (names, stages).
 $8B5E c PrintTime ; Print the time at HL (minutes, then FormatTime's pair) as 0'00"00, 7 characters
-> Witness: L1 3 (c1, stages).
+> Witness: L1 4 (c1, names, stages).
 $8B70 c SumTimes ; (HL) = minutes, seconds, hundredths: the sum of B times from IX (BCD, $60 seconds a minute)
-> Witness: L1 3 (c1, stages).
+> Witness: L1 4 (c1, names, stages).
 $8B98 c Divide ; HL = D * 256 / E (8.8 fixed point; C the remainder)
 > The lap table's %, the road's slopes (BuildRoadRows).
-> Witness: L1 112457 (c1, crash, ctl, m128, stages, twoplayer).
+> Witness: L1 138289 (c1, crash, ctl, fall5, m128, names, stages, tech-brake-bend, tech-cheat, tech-land-wheelie, tech-ramp-wheelie, truck, twoplayer).
 $8BAE c Multiply ; DE = A x L (8 x 8 bits, unrolled)
 > Its last byte (MultiplyEnd) is a RET that RoadPatch turns into JP $93B1 (DrawRoad) and RoadRows ($9A96) back into RET.
 > Recorded: c1: called by the road and the objects every pass.
-> Witness: L1 490168 (c1, crash, ctl, m128, stages, twoplayer).
+> Witness: L1 582990 (c1, crash, ctl, fall5, m128, names, stages, tech-brake-bend, tech-cheat, tech-land-wheelie, tech-ramp-wheelie, truck, twoplayer).
 $8BEA MultiplyEnd ; RET, or JP DrawRoadRow while DrawRoad's patch is in
 $8BEB b MultiplyJump ; The operand of MultiplyEnd's JP: $93B1 once patched (zeros in the image)
 $8BED b MenuLayout ; The menu's texts as PrintList draws them: count 4, then (line, column, attribute, length) each
@@ -475,12 +481,14 @@ $8DE2 t HiScores 22 ; The high score table: five rows of score (7), name (8), to
 > 1000000 ENDURO 3'00"00, 800000 RACER 2'30"00, 600000 SEGA 2'00"00, 400000 A'VISION 1'30"00, 200000 GIGA1987 1'00"00. src/res/tables/hiscores.csv. A recording's run in the stages recording entered a row (WALKTHROUGH 6.2).
 @res tables/hiscores.bin
 $8E50 c GameEntry ; JP StartRace (PlayTurn's CALL)
-> Witness: L1 23 (c1, crash, ctl, m128, stages, twoplayer).
+> Witness: L1 25 (c1, crash, ctl, fall5, m128, stages, truck, twoplayer).
 $8E53 c Copy32 ; JP CopyRows
-> Witness: L1 283575 (c1, ctl, m128, stages, twoplayer).
+> Witness: L1 327207 (c1, ctl, m128, names, stages, twoplayer).
 $8E56 b LeanTable ; The steering force of each lean (-3 to 3): $AD $50 $28 $00 $28 $50 $AD (BikeControl, sign from the lean)
+@res tables/lean.bin
 $8E5D b SteerTable ; The steering force at each speed: index ScrollStep's high byte * 2 (0-20), 21 bytes
 > BikeControl reads $8E5D + 2 * (ScrollStep >> 8); the speed is at most 200, the step at most $AF0, so the index stays at or below 20 and only every second byte is read.
+@res tables/steer.bin
 $8E72 SteerTail ; 11 bytes past the reachable index: the descending series goes on ($2A ... $1B); reset3's crash ran through them as code
 
 @module render ; The back buffer, RowTable, the sprite blitters, the copy to the screen
@@ -490,19 +498,20 @@ $8E72 SteerTail ; 11 bytes past the reachable index: the descending series goes 
 $8E7D c SetRowTable ; RowTable's lines 64-191 += DE; lines 40-63: the screen's (DE = $5A00) or the back buffer's rows
 > In: DE = $A600 (to the back buffer) or $5A00 (back to the screen: $A600 + $5A00 = $10000). Lines 40-63 get lines 168-191's addresses minus $1000 (the screen's rows 40-63), and with DE not $5A00 then $EB00 + 32 n.
 > Recorded: c1: StartRace $A466 and RaceEnd $AAA8 each stage.
-> Witness: L1 43 (c1, crash, ctl, m128, stages, twoplayer).
-$8ED8 c ClearHillRows ; HillRows = 0 ($5B80-$5C00, 129 bytes through CopyRows)
-> Witness: L1 149 (c1, crash, ctl, m128, stages, twoplayer).
+> Witness: L1 48 (c1, crash, ctl, fall5, m128, names, stages, truck, twoplayer).
+@isub $8EA1 LD DE,-$1000
+$8ED8 c ClearBendRows ; BendRows = 0 ($5B80-$5C00, 129 bytes through CopyRows)
+> Witness: L1 175 (c1, crash, ctl, fall5, m128, stages, tech-brake-bend, tech-cheat, tech-land-wheelie, tech-ramp-wheelie, truck, twoplayer).
 $8EE4 c CopyRows ; Copy A x 32 bytes HL -> DE (32 unrolled LDI a turn)
-> Witness: L1 854052 (c1, crash, ctl, m128, stages, twoplayer).
-$8EE6 CopyRows31 ; the first turn one LDI shorter (ClearHillRows' fill)
+> Witness: L1 1004349 (c1, crash, ctl, fall5, m128, names, stages, tech-brake-bend, tech-cheat, tech-land-wheelie, tech-ramp-wheelie, truck, twoplayer).
+$8EE6 CopyRows31 ; the first turn one LDI shorter (ClearBendRows' fill)
 $8F29 c DrawSprite ; A byte-aligned sprite: C bytes wide, B rows from DE, at x H (carry: x < 0), bottom line L
 > Sets the core's skip (BlitSkip, $9104) and first column ($906A, $90FE) from x, clipping at the left edge (RET when wholly off), then BlitRows.
-> Witness: L1 11580 (c1, crash, ctl, m128, stages, twoplayer).
+> Witness: L1 13978 (c1, crash, ctl, fall5, m128, names, stages, tech-brake-bend, tech-cheat, tech-land-wheelie, tech-ramp-wheelie, truck, twoplayer).
 $8F53 c DrawShifted ; A sprite at any x: its rows shifted by x AND 7 into the line buffer at $8000, then BlitRows
 > In as DrawSprite. Row by row: the bytes copied (the unrolled LDI chain entered by the patched DJNZ at $8FE7), then RR (HL) or RL (HL) chains shift the row (x AND 7 below 4: right; else left by 8 - n). Byte-aligned x goes straight to BlitRows.
 > Recorded: c1: the bike, the riders and the objects every pass.
-> Witness: L1 42620 (c1, crash, ctl, m128, stages, twoplayer).
+> Witness: L1 50169 (c1, crash, ctl, fall5, m128, names, stages, tech-brake-bend, tech-cheat, tech-land-wheelie, tech-ramp-wheelie, truck, twoplayer).
 @isub $8F93 LD HL,LineBuffer+1
 @isub $8FA3 LD DE,LineBuffer
 $8FCB c ShiftCopyHead ; The first three LDI of the row copy: entered only for rows of 12 bytes or more
@@ -525,18 +534,18 @@ $910C ; SP back (SavedSp)
 
 @module objects ; The roadside objects, the riders, the splash and the dust
 @about Each pass the track is walked a second time from the bike's place for the drawing (RaceLoop's object walk, $A70F): every element ahead within the visible rows is drawn by DrawObject with its type's descriptor list (ObjectTypes), the list entry picked by the row (the farther, the smaller sprite). Type 0 is a ramp: its rows go to JumpRows for the riders. The near elements are tested against the bike (CollisionSizes).
-@about Six riders (Riders) run their own race: MoveRiders gives each a speed toward its top speed, moves it against the bike's ScrollStep, tilts its pose on hills and makes it jump at the ramps; DrawRiders draws those on the visible rows with RiderSprites, mirrored on the curve's far side. Riders 4 and 5 are in the race from stage 2 and 3 on (StartRace), the others are not used (flags bit 7).
-$9111 b RiderStarts 4 ; The six riders' starts: x, acceleration, top speed, the lowest pose on hills (the sixth's last two bytes are BikePoses' first)
+@about Six riders (Riders) run their own race: MoveRiders gives each a speed toward its top speed, moves it against the bike's ScrollStep, leans its pose in bends and makes it jump at the ramps; DrawRiders draws those on the visible rows with RiderSprites, mirrored by the bend's side unless the sprite is symmetric. Riders 4 and 5 are the trucks (flags bit 0, pose 4): rider 4 in the race from stage 2, rider 5 from stage 4; both in a demo; flags bit 7 out (StartRace).
+$9111 b RiderStarts 4 ; The six riders' starts: x, acceleration, top speed, the lowest pose in a bend (the sixth's last two bytes are BikePoses' first)
 > StartRace copies 4 bytes a rider; the sixth reads $9127-$9128 (6, $3A), shared with BikePoses' first entry.
 @res tables/riderstarts.bin
 
 @module bike ; The bike: the controls, the lean and the steering, wheelies, jumps, falls and getting up, the collisions, off the road
-@about SPEED ($7C33-$7C34, 8.8 km/h) rises with THROTTLE (fast at low speed, then by a fixed $220, slower from 160 toward 200: $C800 is the top) and falls with BRAKES ($580 a pass); RaceLoop applies them. ScrollStep = SPEED * 14 moves the track. The lean (-3 to 3) follows LEFT and RIGHT one step a pass and returns toward 0 every second pass without them; the sideways speed is SteerTable[speed] * LeanTable[lean] / 8 (at most 5), added to the lateral position LateralX with the curve's push (BikeLateral). WHEELIE held lifts the front (pose 0) and counts passes (Wheelies); at a ramp the speed is kept in proportion to the wheelie (8 passes: all of it; none: 3/4) and the jump's height comes from the ramp's place and the speed. Hitting an object or a truck at 35 km/h or more is a fall (Crash): the bike flies (JumpSpeed from the speed), lies for FallTime, the turn ends (the turn loop: the other player's turn, or a restart of this one at the fall's x); slower, and side-on hits, are a bounce (BounceTime: 3 passes of random steering). Off the road the speed is capped by the distance (OffRoad); stage 3's sand also makes the skid noise and dust, and its gap (the water) slows hard.
+@about SPEED ($7C33-$7C34, 8.8 km/h) rises with THROTTLE (fast at low speed, then by a fixed $220, slower from 160 toward 200: $C800 is the top) and falls with BRAKES ($580 a pass); RaceLoop applies them. ScrollStep = SPEED * 14 moves the track. The lean (-3 to 3) follows LEFT and RIGHT one step a pass and returns toward 0 every second pass without them; the sideways speed is SteerTable[speed] * LeanTable[lean] / 8 (at most 5), added to the lateral position LateralX with the bend's push (BikeLateral). WHEELIE held lifts the front (pose 0) and counts passes (Wheelies); at a ramp the speed is kept in proportion to the wheelie (8 passes: all of it; none: 3/4) and the jump's height comes from the ramp's place and the speed. Hitting an object or a truck at 35 km/h or more is a fall (Crash): the bike flies (JumpSpeed from the speed), lies for FallTime, the turn ends (the turn loop: the other player's turn, or a restart of this one at the fall's x); slower, and side-on hits, are a bounce (BounceTime: 3 passes of random steering). Off the road the speed is capped by the distance (OffRoad); stage 3's sand also makes the skid noise and dust, and its gap (the water) slows hard.
 @about Poses (Pose, $9175): 0 wheelie, 1 and 2 in the air, 3 riding (the lean picks the sprite), 7 thrown, 8 and 9 down; BikePoses has the sprite of each (entries 3-6 the leans, mirrored for the other side).
 $9127 b BikePoses 9 ; The bike's sprites: rows, width (bit 7 aligned), address, then the wheel animation (count, width, offset, source; count bit 7: none)
 > DrawBike reads BikePoses + 9 * n + 1 ... + 9 (the code's base $9127). Entries with no animation leave their last four bytes free, and the game keeps variables in them: ScrollStep, $9138, LateralX, TopClip, DrawnTop, FallTime, Wheelies, Pose, Lean, RoadTopRow, BikeX.
 $9136 ScrollStep ; SPEED * 14: the track's distance a pass (8.8)
-$9138 HillPtr ; ScrollHills' profile pointer
+$9138 BendPtr ; ScrollBends' profile pointer
 $913F LateralX ; the bike's sideways place, 8.8 ($9140 the whole part, $5C-$A4 on the road's scale)
 $916C TopClip ; the highest line drawn this pass (CopyBuffer starts there)
 $916D DrawnTop ; last pass's TopClip
@@ -548,37 +557,37 @@ $9177 RoadTopRow ; RoadLines[127] - $71 (RowTable's first road line - $70); $FF 
 $9178 BikeX ; the bike's screen x ($80 the centre)
 
 @module objects
-$917E b RiderSprites 21 ; Seven distance bands: the row threshold, then five poses' descriptors (rows | bit 7 mirror, width | bit 7 aligned, address)
+$917E b RiderSprites 21 ; Seven distance bands: the row threshold, then five poses' descriptors (rows | bit 7: never mirrored, width | bit 7 aligned, address)
 > src/res/tables/riders.csv; the sprites in src/res/sprites/.
 @res tables/riders.bin
 
-@module horizon ; The horizons: the stage's picture above the road, rotated sideways on the curves
+@module horizon ; The horizons: the stage's picture above the road, rotated sideways in the bends
 @about Three pictures, 32 bytes a line: Dunes ($E2C0, 25 lines, stage 3), Mountains ($E5E0, 32 lines, stages 1 and 4), Clouds ($E9E0, 9 lines, stages 2 and 5) (StageTable). DrawHorizon copies the stage's picture into the back buffer above the road and clears the lines between it and the top of what was drawn (ClearLines pushes zeros with SP as the pointer). On a curve the picture itself is rotated: HorizonScrollStep adds the curve's speed to HorizonScroll and rotates the picture in place by the whole pixels gained, through RotateTable: by 4 pixels (RRD / RLD) and by 1 (RR / RL), right or left; whole bytes (RotateBytesRight / Left) would serve steps of 8 and more, which never come.
 $9211 c RotateRight1 ; Rotate C lines of the picture at HL right by one pixel (32 bytes a line, the last bit wraps to the first)
-> Recorded: c1, stages: on every curve.
-> Witness: L1 34323 (c1, crash, m128, stages, twoplayer).
+> Recorded: c1, stages: in every bend.
+> Witness: L1 42826 (c1, crash, m128, stages, tech-brake-bend, tech-cheat, tech-land-wheelie, tech-ramp-wheelie, truck, twoplayer).
 $923B c RotateLeft1 ; Rotate C lines left by one pixel (HL at a line's last byte; the next line 64 bytes on)
-> Witness: L1 23988 (c1, crash, stages).
+> Witness: L1 25206 (c1, crash, fall5, stages, truck).
 $9268 c RotateRight4 ; Rotate C lines right by four pixels (RRD along the line, the last nibble wraps)
 > Witness: L1 3033 (stages).
 $9294 c RotateLeft4 ; Rotate C lines left by four pixels (RLD)
 > Witness: L1 2100 (stages).
 $92C0 c RotateBytesRight ; Rotate C lines right by whole bytes
-> Known only from the code: a step of 8 pixels in one pass never happened (the curve speed stays below it).
+> Known only from the code: a step of 8 pixels in one pass never happened (the bend's push stays below it).
 $92ED c RotateBytesLeft ; Rotate C lines left by whole bytes
 > Known only from the code.
 
 $9316 b MaskTable ; Eight left-edge masks ($00, $80, $C0 ... $FE), read by no instruction
 > Known only from the code: no operand points here and L1 has no read after the load; DotMasks ($9CAF) is the table the game uses.
 
-@module road ; The road: its rows from the hills and curves, the drawing of the edges, the ground's dots, the hill table
-@about A segment of StageList gives a hill (0-3) and a curve (0-3, with a direction). Each pass a row builder (StageParams' second word, called at $A68B) makes RoadLines, the screen line of each of the 128 road rows: RoadRowsCurve (stages 1, 2, 4, 5) bends the perspective table ($7800) by the curve tables ($7A00) as the segment goes by; RoadRowsJump (stage 3) lifts every row by the bike's height in the air; RoadRowsFlat is the straight. RoadRowsMake turns RoadLines into RowList (the rows to draw, top down) and RoadTopRow. HillRows (ScrollHills, BlendHill) shift each row sideways with the hill profiles ($7D80, $7E00, $7E80).
-@about DrawRoad (StageParams' first word, called at $A68E) draws each row of RowList into the back buffer: the left and the right edge as 3-byte patterns (EdgePatterns: $7880 or $7A80 by the row's depth, 8 shifts each) at x = the row's centre (HillRows, the lateral position) minus and plus its half width (the RowScale tables at $7F00/$7F80), the road between left blank. It walks RowList with SP = RowTable + 2 * line, and Multiply's last byte is patched to a JP (MultiplyEnd) so that the multiply in each row returns without a RET, which would pop a line address. Stage 5 has no edges (RoadNone): its ground is GroundTexture's dots.
+@module road ; The road: its rows from the bends and crests, the drawing of the edges, the ground's dots, the bend table
+@about A segment of StageList gives a bend (0-3, with a side) and a crest (0-3). Each pass a row builder (StageParams' second word, called at $A68B) makes RoadLines, the screen line of each of the 128 road rows: RoadRowsCrest (stages 1, 2, 4, 5) moves each row's screen line by the crest tables ($7A00) over the perspective table ($7800) as the segment goes by; RoadRowsJump (stage 3) lifts every row by the bike's height in the air; RoadRowsFlat is the straight. RoadRowsMake turns RoadLines into RowList (the rows to draw, top down) and RoadTopRow. BendRows (ScrollBends, BlendBend) shift each row sideways with the bend profiles ($7D80, $7E00, $7E80).
+@about DrawRoad (StageParams' first word, called at $A68E) draws each row of RowList into the back buffer: the left and the right edge as 3-byte patterns (EdgePatterns: $7880 or $7A80 by the row's depth, 8 shifts each) at x = the row's centre (BendRows, the lateral position) minus and plus its half width (the RowScale tables at $7F00/$7F80), the road between left blank. It walks RowList with SP = RowTable + 2 * line, and Multiply's last byte is patched to a JP (MultiplyEnd) so that the multiply in each row returns without a RET, which would pop a line address. Stage 5 has no edges (RoadNone): its ground is GroundTexture's dots.
 @about The bug of the stage 3 reset is here: RoadTopRow = RoadLines' last entry - $71, and with every row at line $70 (a jump so high that RoadRowsJump scales every row to 0) it is $FF; DrawRoad then sets SP = $FEE0 + 2 * $FF = $00DE, inside the ROM (NOTES, leftovers).
 $931E c DrawRoad ; Draw the rows of RowList: both edges of each row into the back buffer, SP walking RowTable
 > GapRowsJump first (GapRows: stage 3's gap rows become $FE in RowList); Multiply's RET patched to JP DrawRoadRow; SP = $FEE0 + 2 * RoadTopRow (RowTable from line $70 + RoadTopRow). Per entry: $FF ends, $FE skips a line (the gap), else the row's depth picks the edge pattern set and the width (RowScale), Multiply gives the hill's and the curve's shift, the left edge's 3 bytes are written (LDI, or LDDR clipped at the left), then the right edge's. Runs of equal entries (a row stretched over several lines) go to DrawRoadRun. At the end MultiplyEnd is RET again and SP restored.
 > Recorded: c1: every pass; the heaviest passes' largest cost.
-> Witness: L1 3968 (c1, crash, ctl, m128, stages, twoplayer).
+> Witness: L1 4740 (c1, crash, ctl, m128, names, stages, tech-brake-bend, tech-cheat, tech-land-wheelie, tech-ramp-wheelie, truck, twoplayer).
 @isub $9321 LD IX,RowList
 $9330 ; SP = RowTable + 2 * ($70 + RoadTopRow)
 $9347 DrawRoadLoop ; the next RowList entry
@@ -592,22 +601,22 @@ $9446 DrawRoadRun ; a run of lines of one row: the edges interpolated line by li
 $9562 b RoadRunOp ; One opcode the run writes per line: $BF (CP A) or $23 (INC HL), executed after POP DE
 > DrawRoadRun writes it at $94B2 and $95F1. L1 has the byte executed in every recording; the kit keeps it as a byte because its instruction changes.
 $9563 c DrawRoadRunLine ; One line of a run: the left edge, the right edge at the interpolated x, then the slopes added
-> Witness: L1 119870 (c1, crash, ctl, m128, stages, twoplayer).
+> Witness: L1 142770 (c1, crash, ctl, m128, names, stages, tech-brake-bend, tech-cheat, tech-land-wheelie, tech-ramp-wheelie, truck, twoplayer).
 $9601 c DrawRoadRunOff ; A run whose row is off the table: SP past its lines, MultiplyEnd = JP again, on to DrawRoadNext
 > Known only from the code.
 
 @module objects
-$9615 c DrawRiders ; Draw each rider on a visible row: x from its lateral place, the curve and the row's scale; sprite by distance and pose
-> RiderSprites' row is the first whose threshold is above the rider's row; the pose (4 for the second kind) picks the descriptor (rows, width, address; bit 7 of the width: byte-aligned, of the rows: mirrored on the other side). TopClip is raised to the sprite's top. DrawSprite or DrawShifted (DrawMirrored first when needed).
+$9615 c DrawRiders ; Draw each rider on a visible row: x from its lateral place, the row's centre (the bend) and the row's scale; sprite by distance and pose
+> RiderSprites' row is the first whose threshold is above the rider's row; the pose (4 for the second kind) picks the descriptor (rows, width, address; bit 7 of the width: byte-aligned, of the rows: never mirrored; without it the sprite is mirrored (DrawMirrored) when BendDir is 1). TopClip is raised to the sprite's top. DrawSprite or DrawShifted (DrawMirrored first when needed).
 > Recorded: c1, stages, twoplayer: riders on screen.
-> Witness: L1 4375 (c1, crash, ctl, m128, stages, twoplayer).
+> Witness: L1 5195 (c1, crash, ctl, fall5, m128, names, stages, tech-brake-bend, tech-cheat, tech-land-wheelie, tech-ramp-wheelie, truck, twoplayer).
 $9701 ; next rider
 
 @module render
 $970C c DrawMirrored ; Copy sprite DE's rows into the line buffer at $8000 mirrored (bytes reversed, bits through ReverseTable)
-> In: IX = a descriptor (rows, width; width bit 7: byte-aligned, 3 more bytes room). Out: DE = $8000, the sprite in the buffer. Used for the bike leaning the other way and for riders and objects on the curve's other side.
+> In: IX = a descriptor (rows, width; width bit 7: byte-aligned, 3 more bytes room). Out: DE = $8000, the sprite in the buffer. Used for the bike leaning the other way and for riders and objects on the bend's other side.
 > Recorded: c1.
-> Witness: L1 1926 (c1, crash, ctl, m128, stages, twoplayer).
+> Witness: L1 2275 (c1, crash, ctl, fall5, m128, stages, tech-brake-bend, tech-cheat, tech-land-wheelie, tech-ramp-wheelie, truck, twoplayer).
 $9722 c MirrorCarry ; INC D: a sprite crossing a page boundary at its end (not met)
 > Known only from the code.
 @isub $972F LD BC,LineBuffer
@@ -616,7 +625,7 @@ $9723 ; the copy
 
 @module objects
 $975B w ObjectTypes 8 ; The eight object types' descriptor lists (type * 2 indexes it)
-> Each list: the farthest row drawn, the row from which the sprite is byte-aligned (DrawSprite), then 6-byte entries: the row threshold, the y offset, rows, width, the address. src/res/tables/objects.csv; src/res/sprites/ draws each.
+> Each list: the farthest row drawn, the row below which the sprite is byte-aligned (DrawSprite), then 6-byte entries: the row threshold, the y offset, rows, width, the address. src/res/tables/objects.csv; src/res/sprites/ draws each.
 $976B b ObjectList4 ; Type 4's list
 > The lists follow each other ($976B type 4, $9791 type 5, $97C9 type 1, $97F5 type 6, $9821 type 2, $9859 type 0, $988B type 3, $98BD type 7).
 $9791 ObjectList5 ; type 5
@@ -630,13 +639,16 @@ $98BD ObjectList7 ; type 7
 
 @module render
 $98EF c GameEntryJump ; JP StartRace (GameEntry's target)
-> Witness: L1 23 (c1, crash, ctl, m128, stages, twoplayer).
+> Witness: L1 25 (c1, crash, ctl, fall5, m128, stages, truck, twoplayer).
 $98F2 c GapRowsJump ; JP GapRows
-> Witness: L1 3968 (c1, crash, ctl, m128, stages, twoplayer).
+> Witness: L1 4740 (c1, crash, ctl, m128, names, stages, tech-brake-bend, tech-cheat, tech-land-wheelie, tech-ramp-wheelie, truck, twoplayer).
 $98F5 c CopyBuffer ; The back buffer to the screen: lines DrawnTop (the highest of TopClip and the last pass's) to 63 one by one, then $EE00 to $4800
 > TopClip ($916C) is the highest line drawn this pass; DrawnTop ($916D) last pass's. Lines below 64 are copied through CopyRows a line at a time (screen order); then BlitMode's JR (byte 7 of the stage's StageParams, at $9944) is 0 on every stage: CopyLower copies lines 64-191 ($EE00-$FDFF to $4800-$57FF) in one CopyRows of 128.
 > Recorded: c1: every pass; the heaviest pass's largest single cost with the road.
-> Witness: L1 4332 (c1, crash, ctl, m128, stages, twoplayer).
+> Witness: L1 5138 (c1, crash, ctl, fall5, m128, names, stages, tech-brake-bend, tech-cheat, tech-land-wheelie, tech-ramp-wheelie, truck, twoplayer).
+@alias BackLine64 TrackTables+$0300 ; $EE00: the back buffer's lines 64-191 ($4800-$57FF + $A600), over the track tables in play
+@isub $9925 LD HL,BackLine64
+@isub $994A LD HL,BackLine64
 $9943 BlitMode ; JR d: d = byte 7 of StageParams (0 on all stages: CopyLower)
 $9945 CopyLower ; lines 64-191 in one block
 $9950 c BlitCopyPop ; A POP copy of B lines through RowTable (each line from back buffer - $A600), then JP (IY)
@@ -646,28 +658,28 @@ $9950 c BlitCopyPop ; A POP copy of B lines through RowTable (each line from bac
 $999A c RoadRowsJump ; Stage 3's row builder: in the air every row's line is $70 + depth * ($80 - JumpHeight) / 256; on the ground RoadRowsFlat
 > In a fall (FallTime) nothing changes. Out: RoadLines, then RoadRowsMake. With JumpHeight near $80 every row is $70 (RoadTopRow $FF: the reset).
 > Recorded: stages, reset3: stage 3's jumps; reset3 frame 6758: JumpHeight $76, RoadLines all $70, RoadTopRow $FF.
-> Witness: L1 305 (stages).
+> Witness: L1 503 (stages, truck).
 $99C2 c RoadJumpGround ; JumpHeight 0 inside the jump path: lines from $79 down
 > Known only from the code: the path is entered only with JumpHeight nonzero, so it is unreachable.
 $99D8 c RoadJumpRows ; Each row: perspective * n >> 8, + $70 (n the LD A operand, $80 - JumpHeight)
-> Witness: L1 10112 (stages).
+> Witness: L1 14080 (stages, truck).
 
 @module horizon
 $99F0 c HorizonScrollStep ; HorizonScroll += HorizonSpeed / 2; rotate the picture by the whole pixels gained, right or left
-> HorizonSpeed is the LD DE operand ($99F1) BikeLateral writes (the curve and the speed). The pixels: 8 at a time (RotateBytes, never), then 4 (RotateRight4 / RotateLeft4), then 1, through RotateTable's entries (offset, routine).
-> Recorded: c1: each pass on a curve.
-> Witness: L1 4364 (c1, crash, ctl, m128, stages, twoplayer).
+> HorizonSpeed is the LD DE operand ($99F1) BikeLateral writes (the bend and the speed). The pixels: 8 at a time (RotateBytes, never), then 4 (RotateRight4 / RotateLeft4), then 1, through RotateTable's entries (offset, routine).
+> Recorded: c1: each pass in a bend.
+> Witness: L1 5182 (c1, crash, ctl, fall5, m128, names, stages, tech-brake-bend, tech-cheat, tech-land-wheelie, tech-ramp-wheelie, truck, twoplayer).
 $9A18 c HorizonBytes ; Steps of 8 pixels: RotateBytes for C lines (C * 31 bytes)
 > Known only from the code.
 $9A3A ; steps of 4
 $9A74 c HorizonRotate ; JP to the routine of RotateTable's entry IY (HL = HorizonAddr + the entry's offset)
-> Witness: L1 2856 (c1, crash, m128, stages, twoplayer).
+> Witness: L1 3230 (c1, crash, fall5, m128, stages, tech-brake-bend, tech-cheat, tech-land-wheelie, tech-ramp-wheelie, truck, twoplayer).
 $9A7F b RotateTable 3 ; Six entries (offset, routine): right 8, 4, 1 (RotateBytesRight $1F, RotateRight4, RotateRight1); left 8, 4, 1
 
 @module road
 $9A91 c RoadNone ; Stage 5's road routine: IX = RowList, no drawing
 > Recorded: stages: stage 5.
-> Witness: L1 408 (stages).
+> Witness: L1 456 (fall5, stages).
 @isub $9A91 LD IX,RowList
 @code $9A96-$9CAE ; the reads are the tape load's (Mover's LDDR); L1's last_frame also counts BikeRoadPlace's later writes to $9ADA/$9B59, so load_end does not drop them
 $9A96 c RoadRowsOld ; A row builder no stage uses: rows into the line buffer at $8000, edges from $75B0
@@ -675,42 +687,43 @@ $9A96 c RoadRowsOld ; A row builder no stage uses: rows into the line buffer at 
 @isub $9A96 LD HL,LineBuffer
 @isub $9C33 LD IY,LineBuffer
 $9CAF b DotMasks ; Eight pixel masks for GroundTexture's dots ($FF $7F $3F $1F $0F $07 $03 $01: a dot of width 8 - n)
-$9CB7 c RoadRowsCurve ; Stages 1, 2, 4 and 5's row builder: RoadLines from the perspective and the curve, as the segment goes by
-> Curve 0 with CurvePrev 0: RoadRowsMake on the last lines; otherwise, for curves 1-3, entering (CurvePrev 0) or leaving, the rows over the segment's progress (SegmentLeft) get $70 + (perspective * curve table) / 512, the rest the plain perspective.
+@res tables/dotmasks.bin
+$9CB7 c RoadRowsCrest ; Stages 1, 2, 4 and 5's row builder: RoadLines from the perspective and the crest, as the segment goes by
+> Crest 0 with CrestPrev 0: RoadRowsMake on the last lines; otherwise, for crests 1-3, entering (CrestPrev 0) or leaving, the rows over the segment's progress (SegmentLeft) get $70 + (perspective * crest table) / 512, the rest the plain perspective.
 > Recorded: c1: every pass.
-> Witness: L1 4072 (c1, crash, ctl, m128, stages, twoplayer).
+> Witness: L1 4695 (c1, crash, ctl, fall5, m128, names, stages, tech-brake-bend, tech-cheat, tech-land-wheelie, tech-ramp-wheelie, twoplayer).
 $9DDF c RoadRowsFlat ; RoadLines = $70 + perspective / 2 for all 128 rows
-> Witness: L1 396 (c1, crash, ctl, m128, stages, twoplayer).
+> Witness: L1 568 (c1, crash, ctl, fall5, m128, stages, tech-brake-bend, tech-cheat, tech-land-wheelie, tech-ramp-wheelie, truck, twoplayer).
 @isub $9DF1 LD IX,RowList
 $9DF1 RoadRowsMake ; RowList from RoadLines (each line once, rows that share a line skipped), $FF end; RoadTopRow = RoadLines[127] - $71
 $9DFC ; RoadTopRow: $FF when the last row is at line $70
 
 @module horizon
 $9E3A c SetHorizon ; HorizonAddr, HorizonRows, HorizonBottom from StageTable[Stage]; the clear count $C0 - rows - bottom
-> Witness: L1 50 (c1, crash, ctl, m128, stages, twoplayer).
+> Witness: L1 54 (c1, crash, ctl, fall5, m128, stages, truck, twoplayer).
 $9E67 b StageTable 4 ; The five stages' horizons: the picture's address (a word), its lines, the line under it (5 x 4 bytes)
 > Mountains/32/$50, Clouds/9/$53, Dunes/25/$57, Mountains/32/$50, Clouds/9/$5A. src/res/tables/stages.csv.
 @res tables/stages.bin
 $9E7B c DrawHorizon ; From TopClip: draw the horizon's lines into the back buffer and clear the lines above it
-> Witness: L1 4332 (c1, crash, ctl, m128, stages, twoplayer).
+> Witness: L1 5137 (c1, crash, ctl, fall5, m128, names, stages, tech-brake-bend, tech-cheat, tech-land-wheelie, tech-ramp-wheelie, truck, twoplayer).
 $9E7E c DrawHorizonAt ; from line A (StartRace: 40)
-> Witness: L1 4355 (c1, crash, ctl, m128, stages, twoplayer).
+> Witness: L1 5162 (c1, crash, ctl, fall5, m128, names, stages, tech-brake-bend, tech-cheat, tech-land-wheelie, tech-ramp-wheelie, truck, twoplayer).
 $9E86 c HorizonHidden ; The top line below the horizon's bottom: no picture lines (B = 0 path)
 > Known only from the code: TopClip never went below the horizon.
 $9E88 ; B = the picture's lines to draw
 $9EF1 ClearLines ; clear B lines: SP = each line's end, 16 PUSH of zeros, then JP (IY)
 
 @module objects
-$9F18 c DrawObject ; Draw the object on row A with descriptor list IX at lateral B: the list's entry for the row, x from the curve and the scale
-> RET when the row is beyond the list's farthest. Entries scanned until the row's threshold; the screen line is RoadLines[row] (the LD A at $9F80); x = the row's centre (HillRows) +/- B scaled (RowScale) +/- the curve; the part above line 40 is cut off; TopClip raised. JP (IY): DrawShifted, or DrawSprite from the list's aligned row on.
+$9F18 c DrawObject ; Draw the object on row A with descriptor list IX at lateral B: the list's entry for the row, x from the row's centre (the bend) and the scale
+> RET when the row is beyond the list's farthest. Entries scanned until the row's threshold; the screen line is RoadLines[row] (the LD A at $9F80); x = the row's centre (BendRows) +/- B scaled (RowScale); the part above line 40 is cut off; TopClip raised. JP (IY): DrawSprite (byte-aligned) for rows below the list's aligned row, the near ones; DrawShifted beyond.
 > Recorded: c1: every pass.
-> Witness: L1 67242 (c1, crash, ctl, m128, stages, twoplayer).
+> Witness: L1 78179 (c1, crash, ctl, fall5, m128, names, stages, tech-brake-bend, tech-cheat, tech-land-wheelie, tech-ramp-wheelie, truck, twoplayer).
 $9F86 ; JP Z,$0000: a sprite whose y offset equals its line would reset the machine; never taken (lines are $70 and below the offsets)
 
 @module bike
 $9FBE c DrawBike ; Draw the bike: its pose's sprite (mirrored when leaning the other way), the wheels' animation, at BikeX, on the road or in the air
 > Not during the countdown's first part or while getting up. Pose 3: entry Lean + 6 (3-6, mirrored for 7-9); others: entry Pose. The wheel patch is XORed in every pass above 64 km/h, every second above 32, every fourth below, never stopped. y: RoadLines[0] or $C0 in the air, minus JumpHeight; TopClip raised.
-> Witness: L1 4333 (c1, crash, ctl, m128, stages, twoplayer).
+> Witness: L1 5151 (c1, crash, ctl, fall5, m128, names, stages, tech-brake-bend, tech-cheat, tech-land-wheelie, tech-ramp-wheelie, truck, twoplayer).
 $A048 ; mirror, then place
 
 @module objects
@@ -718,36 +731,40 @@ $A09A c DrawSplash ; Stages 2 and 4 (SplashOn): the splash under the bike, two f
 > Recorded: stages and reset3 (stage 2).
 > Witness: L1 586 (stages).
 $A0AE c DrawDust ; SkidLevel: the dust beside the bike, two frames ($DF64 12 x 4, $DF94 14 x 4)
-> Witness: L1 352 (stages).
+> Witness: L1 448 (stages, truck).
 $A0BF ; not in the air or stopped; x from the pose's offset (DustOffsets)
-$A0DC c DustCarry ; INC H: DustOffsets crossing a page (not met)
+$A0DC c DustCarry ; INC H: DustOffsets crossing a page (not met: $A0F3 + at most 9 stays in the page)
+> Known only from the code. DrawDust and DrawSplash run on from $A0DD (DustPlace).
+$A0DD DustPlace ; the offset: x = BikeX + offset - 4 * C
 > Known only from the code.
 $A0DD ; the offset
 $A0F3 b DustOffsets ; The splash's and dust's x offset per pose and lean (10 bytes, signed)
+@res tables/dust.bin
 $A0FD c GapRows ; Stage 3: the rows between the two gap marks become $FE in RowList (not drawn); the bike over them sets InGap
 > GapMarks are the rows of the track's two $F0 commands seen this pass ($7F none). InGap ($7C3A) is read by OffRoadSand: the bike slowed hard and the skid noise.
 > Recorded: stages, reset3: stage 3.
-> Witness: L1 3968 (c1, crash, ctl, m128, stages, twoplayer).
+> Witness: L1 4740 (c1, crash, ctl, m128, names, stages, tech-brake-bend, tech-cheat, tech-land-wheelie, tech-ramp-wheelie, truck, twoplayer).
 
 $A142 c GapRowsRet ; A lone RET after GapRows' loop, which no branch reaches
 > Known only from the code.
 
 @module race ; A stage: the start, the pass loop, the countdown, the collisions, the HUD, the timer, the stage's end and the finish
 @about StartRace (from PlayTurn, and again at each stage start) switches RowTable to the back buffer, sets the horizon and the stage's routines (StageParams patches the calls of RaceLoop and the off-road jump), colours the ground, places the riders (a new turn) and decodes the first segment; with Countdown bit 7 (after a fall) the bike resumes at FallX through GetUp.
-@about RaceLoop is one pass: the countdown (16 passes of digits 3, 2, 1, GO in attribute blocks, beeps), PassCount + 1, ScrollStep = SPEED * 14, the AY effect, AdvanceTrack, ScrollHills, the row builder, the road, the ground's dots, MoveRiders (after the countdown), DrawRiders, BikeControl and DrawBike, the dust and the splash, the horizon's rotation, the object walk (draw and collide), the rider collisions, the HUD's flashing words, the copy to the screen and the horizon, the finish run, the score (the speed's digits each pass), the controls (pause, reset), the speed, the timer every 10 passes. c1's passes take 2 to 3 frames; the heaviest (12 frames in c1 at 17143, 18151, 18911) are passes with many rows and objects on screen (NOTES, leftovers).
-@about The timer (Timer, BCD seconds) counts down once every 10 passes, so a "second" is 10 passes (20-30 frames); a stage's end adds 50 (at most 99) and shows EXTENDED PLAY; the time bonus adds the timer's digits to the score. The stage's time (StageTime) is kept for the lap table. Game over is the timer at 0 with the bike stopped.
+@about RaceLoop is one pass: the countdown (16 passes of digits 3, 2, 1, GO in attribute blocks, beeps), PassCount + 1, ScrollStep = SPEED * 14, the AY effect, AdvanceTrack, ScrollBends, the row builder, the road, the ground's dots, MoveRiders (after the countdown), DrawRiders, BikeControl and DrawBike, the dust and the splash, the horizon's rotation, the object walk (draw and collide), the rider collisions, the HUD's flashing words, the copy to the screen and the horizon, the finish run, the score (the speed's digits each pass), the controls (pause, reset), the speed, the timer every 10 passes. c1's passes take 8.0 frames on average (6-12; 648 passes over frames 14075-19265); the heaviest (12 frames at 17143, 18151, 18911, 13 at 15169 with the crash noise) are passes with many rows and objects on screen or a sound effect (doc 04 4.6, 4.7).
+@about The timer (Timer, BCD seconds) counts down once every 10 passes, so a "second" is 10 passes (about 80 frames); a stage's end adds 50 (at most 99) and shows EXTENDED PLAY; the time bonus puts the timer's tens and units as the 100 000s and 10 000s digits of the score: 10 000 points a second left. The stage's time (StageTime) is kept for the lap table. Game over is the timer at 0 with the bike stopped.
 $A143 c CountGlyph ; Draw an 8-line glyph at HL as attribute blocks ($52) at DE (C lines: CountGlyphC)
-> Witness: L1 22 (c1, crash, ctl, m128, stages, twoplayer).
+> Witness: L1 32 (c1, crash, ctl, m128, names, stages, tech-brake-bend, tech-cheat, tech-land-wheelie, tech-ramp-wheelie, twoplayer).
 $A145 c CountGlyphC ; The same with C preset (the digits' 10 lines)
-> Witness: L1 486 (c1, crash, ctl, m128, stages, twoplayer).
+> Witness: L1 616 (c1, crash, ctl, m128, names, stages, tech-brake-bend, tech-cheat, tech-land-wheelie, tech-ramp-wheelie, twoplayer).
 $A15D b AyEffect ; The AY effect's five pairs: 7 = $07 (noise on A, B, C), 6 = $1F, volumes 8, 9, 10 = 15
+@res tables/ayeffect.bin
 $A167 c AyPairs ; Write E AY pairs from HL (as AyWrite, ports loaded each time)
-> Witness: L1 1330 (c1, crash, m128, stages, twoplayer).
+> Witness: L1 1580 (c1, crash, fall5, m128, stages, tech-land-wheelie, tech-ramp-wheelie, truck, twoplayer).
 $A179 c PlayEffect ; EffectTime = A (1 a fall, 2 a bounce or a landing), and the AY's noise on through AyEffect
 > On the 48K the AY writes reach nothing; the 48K hears CrashSound instead.
-> Witness: L1 266 (c1, crash, m128, stages, twoplayer).
+> Witness: L1 316 (c1, crash, fall5, m128, stages, tech-land-wheelie, tech-ramp-wheelie, truck, twoplayer).
 $A187 b StageParams 10 ; The five stages' routines: road, row builder, off-road, the ground's attribute, the copy mode, 2 bytes unused
-> Stage 1: DrawRoad, RoadRowsCurve, OffRoad, $20; 2: the same, $30; 3: DrawRoad, RoadRowsJump, OffRoadSand, $28; 4: as 1, $70; 5: RoadNone, RoadRowsCurve, OffRoadStage5, $30. Byte 7 (BlitMode's JR) is 0 on all. src/res/tables/stageparams.csv.
+> Stage 1: DrawRoad, RoadRowsCrest, OffRoad, $20; 2: the same, $30; 3: DrawRoad, RoadRowsJump, OffRoadSand, $28; 4: as 1, $70; 5: RoadNone, RoadRowsCrest, OffRoadStage5, $30. Byte 7 (BlitMode's JR) is 0 on all. src/res/tables/stageparams.csv.
 @res tables/stageparams.bin
 $A1B9 b CollisionSizes 2 ; Each object type's half width and height for the bike's collision (8 types): the ramp $20 x 1 ...
 > Type 0 (ramp) 32 x 1, 1: 5 x 6, 2: 10 x 32, 3: 8 x 32, 4: 14 x 8, 5: 8 x 24, 6: 11 x 12, 7: 11 x 30. A hit within half the width is head-on (a fall at 35 km/h or more), else side-on (a bounce).
@@ -765,49 +782,51 @@ $A1CC t ExtendedText ; EXTENDED PLAY (13 characters, flashed after a stage's end
 @module bike
 $A1D9 c OffRoad ; Stages 1, 2 and 4: beyond $24 off the road's middle, SPEED capped at SPEED * (256 - ((d - $24) / 2 + 1)) / 256 + 1
 > POKE: the Keep Speed Off Road POKE turns its LD ($7C34),A at $A1F1 into LD A,(nn) (WALKTHROUGH 6.0).
-> Witness: L1 3371 (c1, crash, ctl, m128, stages, twoplayer).
+> Witness: L1 3917 (c1, crash, ctl, m128, names, stages, tech-brake-bend, tech-cheat, tech-land-wheelie, tech-ramp-wheelie, twoplayer).
 $A1F5 c OffRoadStage5 ; Stage 5: no test on one side (RET NC), else OffRoadSand
-> Witness: L1 352 (stages).
+> Witness: L1 376 (fall5, stages).
 $A1F6 OffRoadSand ; Stage 3: the sand: SkidLevel = (d - $24) / 4 and the cap; on the road InGap gives SkidLevel 3 and a cap of $0C
 
 @module objects
-$A21A c MoveRiders ; Each rider in the race: jump (height, speed - $02F0), start a jump at a ramp row, speed toward its top, distance - ScrollStep, pose on hills
+$A21A c MoveRiders ; Each rider in the race: jump (height, speed - $02F0), start a jump at a ramp row, speed toward its top, distance - ScrollStep, pose in bends
 > Recorded: c1: from the countdown's end; stages: jumps at stage 3's ramps.
-> Witness: L1 4292 (c1, crash, ctl, m128, stages, twoplayer).
+> Witness: L1 5097 (c1, crash, ctl, fall5, m128, names, stages, tech-brake-bend, tech-cheat, tech-land-wheelie, tech-ramp-wheelie, truck, twoplayer).
+@isub $A24D LD HL,-$02F0 ; the gravity, as the bike's
 $A21F b MoveRidersIx ; The $DD prefix of LD IX,$5C80 (run once); the loop re-enters at $A220, where the same bytes read LD HL,$5C80
 > L1 has $A21F executed in every recording; the kit keeps it as a byte because two instructions share $A220.
 $A220 c MoveRidersLoop ; One rider (IX; HL's load is harmless in the other register set)
-> Witness: L1 21460 (c1, crash, ctl, m128, stages, twoplayer).
+> Witness: L1 25485 (c1, crash, ctl, fall5, m128, names, stages, tech-brake-bend, tech-cheat, tech-land-wheelie, tech-ramp-wheelie, truck, twoplayer).
 $A271 c RiderNoRamp ; No ramp row ahead of the rider: on to the speed
 > Known only from the code: JumpRows always held an end mark within four.
 $A273 ; the ramp's distance
 
 @module road
-$A301 c GroundTexture ; Stages 3 and 5: the ground's dots, a ROM byte XOR the column as the random x, masks from DotMasks
+$A301 c GroundTexture ; Stages 3 and 5: the ground's dots, a ROM byte XOR the column as the random x, masks from DotMasks; many tries per row; on stage 5 8-pixel dashes; about 140 000 T (2 frames) a pass
 > RandomPtr ($A45B) walks the ROM $0000-$1FFF by 4 * ScrollStep's high byte each pass; for each line of RowList, a dot left of the left edge or right of the right edge (stage 3), or between them (stage 5).
 > Recorded: stages: stages 3 and 5.
-> Witness: L1 4375 (c1, crash, ctl, m128, stages, twoplayer).
+> Witness: L1 5195 (c1, crash, ctl, fall5, m128, names, stages, tech-brake-bend, tech-cheat, tech-land-wheelie, tech-ramp-wheelie, truck, twoplayer).
 @isub $A315 LD IX,RowList
 $A45B b RandomPtr ; GroundTexture's ROM pointer ($0000-$1FFF)
 
 @module race
 $A45D c StartRace ; A stage's start: RowTable to the back buffer, the horizon, the riders (a new turn), StageParams, the ground, the first segment
-> EffectTime 0 / EffectStep 15; flags cleared; pose 3; SetHorizon, DrawHorizonAt 40. A demo or a new turn (Countdown nonzero): the riders cleared and set from RiderStarts (riders 4 and 5 from stage 2 and 3 on, both in the demo); StageStart: TimerAtStart. Then StageParams patch the row builder's and the road's CALLs and the off-road JP, the HUD row's attributes $68 and the ground's (not stage 5); SplashOn and CurveOp on stages 2 and 4; ClearHillRows, RoadRowsFlat, the first segment (SetCurveDir, then SegmentDecode or, resuming, LateralX from FallX); the hills of a segment begun mid-hill.
-> Witness: L1 23 (c1, crash, ctl, m128, stages, twoplayer).
+> EffectTime 0 / EffectStep 15; flags cleared; pose 3; SetHorizon, DrawHorizonAt 40. A demo or a new turn (Countdown nonzero): the riders cleared and set from RiderStarts (rider 4 from stage 2, rider 5 from stage 4, both in the demo); StageStart: TimerAtStart. Then StageParams patch the row builder's and the road's CALLs and the off-road JP, the HUD row's attributes $68 and the ground's (not stage 5); SplashOn and BendOp on stages 2 and 4; ClearBendRows, RoadRowsFlat, the first segment (SetBendDir, then SegmentDecode or, resuming, LateralX from FallX); the bend rows of a segment begun mid-bend.
+> Witness: L1 25 (c1, crash, ctl, fall5, m128, stages, truck, twoplayer).
 @isub $A463 LD DE,$A600
 $A4DA StageStart ; each stage (StageEnd comes back here)
 $A5FE RaceLoop ; one pass
 $A610 ; the countdown's display: the attribute rows cleared, then GO or the digit
 $A64E RaceCount ; PassCount + 1; CAPS SHIFT held: CheatKey
 $A659 c CheatKey ; CAPS SHIFT and Q: toggle CheatStep (a fixed ScrollStep of $1000 on stages 1-3)
-> Known only from the code: no recording held CAPS SHIFT. A step of $1000 is SPEED 293, faster than the throttle gives.
+> A step of $1000 is SPEED 293, faster than the throttle gives. The recording tech-cheat holds CAPS SHIFT + Q at frame 126.
+> Witness: L1 1 (tech-cheat).
 $A667 c RaceStep ; ScrollStep = SPEED * 14 (CheatStep: $1000)
-> Witness: L1 4382 (c1, crash, ctl, m128, stages, twoplayer).
+> Witness: L1 5203 (c1, crash, ctl, fall5, m128, names, stages, tech-brake-bend, tech-cheat, tech-land-wheelie, tech-ramp-wheelie, truck, twoplayer).
 $A66F CheatStep ; LD A,n: n = 0 or $FF (CheatKey)
 $A674 c CheatFixedStep ; Stages 1-3 with CheatStep: DE = $1000
-> Known only from the code.
-$A67E c RacePass ; ScrollStep stored; AyEffectTick, AdvanceTrack, ScrollHills, the row builder, the road, GroundTexture, MoveRiders, DrawRiders, the bike, dust, splash, horizon, BikeHitX
-> Witness: L1 4382 (c1, crash, ctl, m128, stages, twoplayer).
+> Witness: L1 51 (tech-cheat).
+$A67E c RacePass ; ScrollStep stored; AyEffectTick, AdvanceTrack, ScrollBends, the row builder, the road, GroundTexture, MoveRiders, DrawRiders, the bike, dust, splash, horizon, BikeHitX
+> Witness: L1 5203 (c1, crash, ctl, fall5, m128, names, stages, tech-brake-bend, tech-cheat, tech-land-wheelie, tech-ramp-wheelie, truck, twoplayer).
 $A68B RowBuilderCall ; CALL nn: StageParams' row builder
 $A68E RoadCall ; CALL nn: StageParams' road routine
 $A6D9 ObjectWalk ; the drawing walk of the track from the bike: DrawTrackPtr, DrawStack, JumpRows reset, GapMarks $7F
@@ -818,26 +837,28 @@ $A7BE Bounce ; side-on or slow: BounceTime 3, BounceDir, PlayEffect 2, CrashSoun
 $A7CF ; head-on: 35 km/h or more is a fall
 $A7E1 Ramp ; a ramp: JumpHeight from RoadLines[0], pose 1 (3 or more wheelie passes) or 2, SPEED kept by the wheelie, JumpSpeed = SPEED / 32 + $10
 $A808 c RampCap ; Wheelies capped at 8
-> Known only from the code: no recording held WHEELIE 8 passes before a ramp.
+> The recording tech-ramp-wheelie holds WHEELIE 13 passes before the ramp at its frame 1 412.
+> Witness: L1 1 (tech-ramp-wheelie).
 $A80A c RampSpeed ; SPEED * (8 * Wheelies - $40 + 256) / 256 (8 or more: unchanged), JumpSpeed, PrintSpeed, PlayEffect 2, CrashSound
-> Witness: L1 15 (c1, crash, m128, stages).
+> Witness: L1 19 (c1, crash, m128, stages, tech-land-wheelie, tech-ramp-wheelie, truck).
 $A839 RiderHits ; the riders on the bike's row (not in the air, not getting up, not in a demo): a truck within 9 is a fall, a rider within 5 a bounce and SPEED - SPEED / 4
 $A88F c TruckCrash ; A truck head-on: Crash
-> Known only from the code: the trucks met in stages and reset3 were under the Immune To Trucks POKE, which turns this CALL into LD BC,nn (POKE 43151,1).
-> Witness: L1 4 (stages).
+> The trucks met in stages and reset3 were under the Immune To Trucks POKE, which turns this CALL into LD BC,nn (POKE 43151,1); the recording truck puts the byte back and meets a truck head-on at its frame 1 240.
+> Witness: L1 5 (stages, truck).
 $A892 c RiderBounce ; JR to the HUD
-> Witness: L1 4 (stages).
+> Witness: L1 5 (stages, truck).
 $A8BB HudFlash ; every 8 passes: DEMO, or nUP with two players, at column 28
 $A8D6 t DemoText ; DEMO
 @res texts/demo.bin
 $A8DA c HudPlayer ; Two players: PlayerChar, U, P (the font's own glyphs for "UP")
-> Witness: L1 2031 (c1, crash, ctl, m128, stages, twoplayer).
+> Witness: L1 2433 (c1, crash, ctl, fall5, m128, names, stages, tech-brake-bend, tech-cheat, tech-land-wheelie, tech-ramp-wheelie, truck, twoplayer).
 $A8F0 ExtendedPlay ; ExtendedTime: EXTENDED PLAY flashing and LAPTIME, with a beep
+@isub $A905 LD DE,$6080 ; the beep: D = $60 edges, E = $80 turns (not an address)
 $A92B CountdownBeeps ; Countdown AND 3 = 2: a beep (64 x $E0 for 3-2-1, 256 x $70 for GO)
 $A948 ; CopyBuffer and DrawHorizon; DrawnTop, TopClip = HorizonBottom
 $A95A FinishCheck ; Stage 5 (after the finish): the leading rider's distance below $40 ends the game
-$A961 FinishRider ; LD IX,nn: nn = the leading rider (StageEnd at the finish)
-$A974 ScoreAdd ; not falling: ScoreDigits = the speed's digits (hundreds, tens, units; doubled place in the air), AddScore
+$A961 FinishRider ; LD IX,nn: nn = the rider with the largest row byte (StageEnd at the finish)
+$A974 ScoreAdd ; not falling: ScoreDigits = the speed's digits (hundreds, tens, units; one place higher in the air: SPEED x 10), AddScore
 $A9A8 RaceControls ; the demo: a key ends it (Menu); else ReadControls into HeldKeys; RESET: RaceEnd, Menu
 $A9C2 b PauseJump ; The $28 of JR Z,Pause; its operand $08 is EX AF,AF' at $A9C3, where a demo's key jumps
 > L1 has $A9C2 executed in every recording and $A9C3 in c1, ctl and m128 (the demo ended by a key); the kit keeps $A9C2 as a byte because two instructions share $A9C3.
@@ -852,95 +873,97 @@ $AA73 TimerTick ; Tenths down; at 0: Timer - 1 (BCD), PrintTimer, Tenths 10
 $AA90 ; Timer 0 and SPEED 0: the game is over
 $AA9E RaceOver ; StageTime, then RaceEnd
 $AAA1 c RaceEnd ; TuneRequest 0, RowTable back to the screen (SetRowTable $5A00)
-> Witness: L1 20 (c1, crash, ctl, m128, stages, twoplayer).
+> Witness: L1 23 (c1, crash, ctl, fall5, m128, names, stages, truck, twoplayer).
 $AAAB c PrintSpeed ; SPEED in decimal at column 27, line 24 (a blank before 2 and 1 digits)
-> Witness: L1 4162 (c1, crash, ctl, m128, stages, twoplayer).
+> Witness: L1 4950 (c1, crash, ctl, fall5, m128, names, stages, tech-brake-bend, tech-cheat, tech-land-wheelie, tech-ramp-wheelie, truck, twoplayer).
 $AAC9 c SetTune ; TuneRequest = (Stage AND 1) + 1: tune 1 on stages 1, 3, 5, tune 2 on 2 and 4
-> Witness: L1 28 (c1, crash, ctl, m128, stages, twoplayer).
+> Witness: L1 34 (c1, crash, ctl, fall5, m128, stages, tech-brake-bend, tech-cheat, tech-land-wheelie, tech-ramp-wheelie, truck, twoplayer).
 $AAD3 c StageTime ; The stage's time into StageTimes: TimerAtStart - Timer seconds, and the tenths with PassCount's last digit as hundredths
 > The seconds are the timer's (10 passes each), so a "time" is in timer seconds; the hundredths digit is PassCount's units (BCD), a filler.
-> Witness: L1 16 (c1, crash, m128, stages, twoplayer).
-$AB0A c StageEnd ; The stage's last segment passed: the time bonus (the timer's digits to the score), StageTime, Stage + 1; the finish after stage 5
-> Reached by NextSegment's JP NZ with its return address on the stack (POP HL). Stages 1-4: the big stage digit, ExtendedTime 32, Timer + 50 (at most 99), StageStart. After stage 5: SPEED 0, the leading rider of 0-3 is put in front of the bike (FinishRider) and the run goes on to FinishCheck.
+> Witness: L1 19 (c1, crash, fall5, m128, names, stages, truck, twoplayer).
+$AB0A c StageEnd ; The stage's last segment passed: the time bonus (the timer's tens and units as the 100 000s and 10 000s digits: 10 000 points a second left), StageTime, Stage + 1; the finish after stage 5
+> Reached by NextSegment's JP NZ with its return address on the stack (POP HL). Stages 1-4: the big stage digit, ExtendedTime 32, Timer + 50 (at most 99), StageStart. After stage 5: SPEED 0, the rider of 0-3 with the largest row byte (unsigned: a rider just behind the bike, row $FF, beats one ahead) is put on row 0 at the bike's x with speed and top 2 (FinishRider) and the run goes on to FinishCheck.
 > Recorded: stages (frames 3422, 5340, 7806, 10272, the finish 13012), reset3 (stages 2 and 3).
 > Witness: L1 5 (stages).
 $AB76 ; stages 1-4
 $AB95 c BeepTone ; D edges on the beeper, E loop turns apart (the countdown, EXTENDED PLAY)
-> Witness: L1 55 (c1, crash, ctl, m128, stages, twoplayer).
+> Witness: L1 73 (c1, crash, ctl, m128, names, stages, tech-brake-bend, tech-cheat, tech-land-wheelie, tech-ramp-wheelie, truck, twoplayer).
 $AC88 c CrashSound ; 48K only: 248 (or D) noise edges, the ROM's bytes at $03xx as bit 4 and the spacing; C set on return
 > On the 128K (Beeper 0) it returns at once (NC): RampSpeed's CALL NC,AyEffectTick then steps the AY effect.
-> Witness: L1 194 (c1, crash, m128, stages, twoplayer).
+> Witness: L1 220 (c1, crash, fall5, m128, stages, tech-land-wheelie, tech-ramp-wheelie, truck, twoplayer).
 $AC8A c CrashSoundD ; D edges
-> Witness: L1 209 (c1, crash, m128, stages, twoplayer).
+> Witness: L1 239 (c1, crash, fall5, m128, stages, tech-land-wheelie, tech-ramp-wheelie, truck, twoplayer).
 $ACA5 c AyEffectTick ; The AY effect each pass: EffectStep - 1 into the volumes of channels C, B, A (registers 10-8)
 > EffectTime 2 (a bounce, a landing): two steps, then EffectTime 0 and EffectStep 15. EffectTime 1 (a fall): down to 0, then TuneRequest 0 and TuneMark 1: the tune stops until SetTune (the next StartRace or a pause's end).
-> Witness: L1 4383 (c1, crash, ctl, m128, stages, twoplayer).
+> Witness: L1 5204 (c1, crash, ctl, fall5, m128, names, stages, tech-brake-bend, tech-cheat, tech-land-wheelie, tech-ramp-wheelie, truck, twoplayer).
 
 @module bike
 $ACDF c BikeControl ; The bike each pass: a fall's count (and its end: the turn ends), getting up, the demo's steering, the controls, bounce, wheelie, lean, sideways speed
 > Falling: SPEED * $D0 / 256 a pass; pose 8 or 9; on stages 3 and 5 the sand adds skid noise (FallSand). The fall's end: FallX = LateralX, Countdown = $80 (resume), the race ends (RaceEndFall, back to PlayTurn: the next turn). Getting up: GetUp ($7C31) slides LateralX toward 0 by 3 a pass. In the air: only BikeLateral. The demo steers back to the middle. Then HeldKeys (the OR operand at $AD8A, ReadControls' D of RaceLoop) gives the controls.
 > Recorded: crash (the falls, frames 3320-4580), twoplayer (the turn handed over at a fall).
-> Witness: L1 4343 (c1, crash, ctl, m128, stages, twoplayer).
+> Witness: L1 5163 (c1, crash, ctl, fall5, m128, names, stages, tech-brake-bend, tech-cheat, tech-land-wheelie, tech-ramp-wheelie, truck, twoplayer).
 $ACF7 RaceEndFall ; JP RaceOver: the fall ends this turn
 $AD29 FallSand ; stages 3 and 5: the skid noise while sliding on the sand
 $AD36 c FallStage5 ; Stage 5's fall on the sand: skid noise only off the right side
-> Known only from the code: no recording fell on stage 5.
+> The recording fall5 (from the stages state of stage 5, the obstacle and truck bytes put back) falls at frames 235-280.
+> Witness: L1 8 (fall5).
 $AD49 c GetUpSlide ; GetUp: LateralX toward 0 by 3 a pass
-> Witness: L1 4094 (c1, crash, ctl, m128, stages, twoplayer).
+> Witness: L1 4863 (c1, crash, ctl, fall5, m128, names, stages, tech-brake-bend, tech-cheat, tech-land-wheelie, tech-ramp-wheelie, truck, twoplayer).
 $AD63 ; riding
 $AD8A HeldKeys ; OR n: n = RaceLoop's ReadControls (the reset bit too)
 $AD8D ; BounceTime: random steering for its passes
 $ADB2 ; WHEELIE: Wheelies + 1, pose 0
 $ADC4 ; riding: the lean from LEFT and RIGHT, or back toward 0
 $AE15 ; the sideways speed: SteerTable * LeanTable / 8, at most 5
-$AE60 BikeLateral ; the curve's push (hill-dependent factor) and the sideways speed into LateralX, kept within the road's scale; the jump's height
-$AE63 b CurveOp ; ADD A,A on stages 2 and 4, NOP elsewhere (StartRace writes it): the curve's push doubled there
+$AE60 BikeLateral ; the bend's push (factor by the bend, bits 0-1) and the sideways speed into LateralX, kept within the road's scale; the jump's height
+$AE63 b BendOp ; ADD A,A on stages 2 and 4, NOP elsewhere (StartRace writes it): the bend's push doubled there
 > L1 has the byte executed in every recording; the kit keeps it as a byte because StartRace changes the instruction.
-$AE64 c BikeLateralPush ; The push: (ScrollStep's high byte, doubled on stages 2 and 4) * the hill's factor ($52, $8F, $A4), signed by CurveDir; HorizonSpeed too
+$AE64 c BikeLateralPush ; The push: (ScrollStep's high byte, doubled on stages 2 and 4) * the bend's factor ($52, $8F, $A4; BendPrev holds the bend), signed by BendDir; HorizonSpeed too
 > Then LateralX += the sideways speed (BounceSpeed added during a bounce) + the push, clamped to $A4-$5C. In the air: JumpHeight += JumpSpeed, JumpSpeed -= $02F0; the landing (below the road's line) ends the jump: pose 3, lean 0, Wheelies 0, and with WHEELIE not held a 6-pass bounce.
-> Witness: L1 4150 (c1, crash, ctl, m128, stages, twoplayer).
+> Witness: L1 4934 (c1, crash, ctl, fall5, m128, names, stages, tech-brake-bend, tech-cheat, tech-land-wheelie, tech-ramp-wheelie, truck, twoplayer).
+@isub $AEED LD HL,-$02F0 ; the gravity: JumpSpeed - $02F0 a pass
 $AE92 BounceSpeed ; LD BC,nn: the bounce's sideways push (BikeControl)
 $AF02 c Crash ; A fall: the bike thrown (JumpHeight from RoadLines[0], JumpSpeed = SPEED / 32 + $12), pose 7, FallTime 9 (bit 7 the side), the crash sound
 > Recorded: crash, c1, m128, twoplayer (no fall in stages and reset3: their POKEs make the bike immune).
-> Witness: L1 11 (c1, crash, m128, twoplayer).
+> Witness: L1 13 (c1, crash, fall5, m128, truck, twoplayer).
 
 @module race
 $ABA1 c TrackStep ; Step HL to the track's next element and run the commands before it: marks, pattern calls and returns, jumps, the variable object
-> HL is a track pointer, IX a track stack (TrackStack for the bike, the drawing walk's own), B the element's row for the marks. An element byte is a command (high nibble) and a length (low nibble * 2: the distance to the next element, in ScrollStep's high-byte units). $F0: a gap mark, its row into GapMarks (D, then E; 0 over the gap). $E0 ADDR, LEN: call the pattern at ADDR (a frame of 6 bytes: return, length, distance done) until LEN distance is driven. $D0: return from the pattern (the depth in IX+0). $C0 d: jump by d (signed) in the track. $B0+n: VarObject = 2n. Any other high nibble: an element (its type), and the distance is added to every open pattern's count; a pattern whose count reaches its length returns to its caller first.
-> Witness: L1 70712 (c1, crash, ctl, m128, stages, twoplayer).
+> HL is a track pointer, IX a track stack (TrackStack for the bike, the drawing walk's own), B the element's row for the marks. An element byte is a command (high nibble) and a gap (low nibble * 2: the distance from the previous element, in ScrollStep's high-byte units). $F0: a gap mark, its row into GapMarks (D, then E; 0 over the gap). $E0 ADDR, LEN: call the pattern at ADDR (a frame of 6 bytes: return, length, distance done) until LEN distance is driven. $D0: return from the pattern (the depth in IX+0). $C0 d: jump by d (signed) in the track. $B0+n: VarObject = 2n. Any other high nibble: an element (its type), and the distance is added to every open pattern's count; a pattern whose count reaches its length returns to its caller from that element, which is not placed: a call covers its elements below its length.
+> Witness: L1 82250 (c1, crash, ctl, fall5, m128, names, stages, tech-brake-bend, tech-cheat, tech-land-wheelie, tech-ramp-wheelie, truck, twoplayer).
 @isub $AE9E LD DE,$A55C
 $AC0D ; a return with more than one frame open (not met: the track nests one level)
 $AC3D ; an element: the distance into the open patterns
 $AF2E c AdvanceTrack ; Each pass: BikeRoadPlace, then TrackDistance += ScrollStep; the elements passed (TrackStep); the segment's progress, and the next segment when it ends
-> SegmentLeft counts down by ScrollStep; its high byte's change is RowsScrolled (ScrollHills). At the segment's end: SegmentLeft = the segment's length ($AF81: the segment byte's bits 6-7 + $80, in 256 units), and in a demo DemoMode - 1 (at 0 the demo ends: DemoEnd).
-> Witness: L1 4382 (c1, crash, ctl, m128, stages, twoplayer).
+> SegmentLeft counts down by ScrollStep; its high byte's change is RowsScrolled (ScrollBends). At the segment's end: SegmentLeft = the segment's length ($AF81: the segment byte's bits 6-7 + $80, in 256 units), and in a demo DemoMode - 1 (at 0 the demo ends: DemoEnd).
+> Witness: L1 5203 (c1, crash, ctl, fall5, m128, names, stages, tech-brake-bend, tech-cheat, tech-land-wheelie, tech-ramp-wheelie, truck, twoplayer).
 $AF81 SegmentLength ; ADD A,n: n = bits 6-7 of the segment (SegmentDecode)
 $AF91 c DemoEnd ; The demo's segments used up: drop three returns and end the race (RaceEnd), back to the attract loop
 > Known only from the code: every recorded demo was ended by a key first.
 $AF97 c NextSegment ; Segments + 1, StageListPtr to the next segment; bit 5 of the one passed: the stage's end (StageEnd)
-> Witness: L1 215 (c1, crash, m128, stages, twoplayer).
-$AFA7 c SegmentDecode ; The segment byte: Hill (bits 0-1), Curve (bits 2-3), CurveDir (bit 4), length (bits 6-7); RoadRowsFlat when the curve was 0, ClearHillRows when the hill was 0
-> Witness: L1 228 (c1, crash, ctl, m128, stages, twoplayer).
-$AFE0 c SetCurveDir ; The curve's direction into eight branch opcodes: JR NZ ($20) or JR Z ($28) at $9FAF, $93B7, $9680, $94A1, $94F5, $9AF5, $9B73, $9BB5
-> Witness: L1 54 (c1, crash, ctl, m128, stages, twoplayer).
+> Witness: L1 257 (c1, crash, fall5, m128, stages, tech-brake-bend, tech-cheat, tech-land-wheelie, tech-ramp-wheelie, truck, twoplayer).
+$AFA7 c SegmentDecode ; The segment byte: Bend (bits 0-1, the bend), Crest (bits 2-3, the crest), BendDir (bit 4, the bend's side), length (bits 6-7); RoadRowsFlat when the crest was 0, ClearBendRows when the bend was 0
+> Witness: L1 270 (c1, crash, ctl, fall5, m128, stages, tech-brake-bend, tech-cheat, tech-land-wheelie, tech-ramp-wheelie, truck, twoplayer).
+$AFE0 c SetBendDir ; The bend's side into eight branch opcodes: JR NZ ($20) or JR Z ($28) at $9FAF, $93B7, $9680, $94A1, $94F5, $9AF5, $9B73, $9BB5
+> Witness: L1 62 (c1, crash, ctl, fall5, m128, stages, tech-brake-bend, tech-cheat, tech-land-wheelie, tech-ramp-wheelie, truck, twoplayer).
 
 @module bike
-$AFFE c BikeRoadPlace ; From LateralX and the curve: patch the road's and the objects' centre into twelve operands, BikeX; OffRoad by stage
+$AFFE c BikeRoadPlace ; From LateralX and the bend: patch the road's and the objects' centre into twelve operands, BikeX; OffRoad by stage
 > The offset is clamped to +/-$21 (the rest goes to BikeX's offset); the operands at $93A0/$93A1, $9487/$9488, $94DA/$94DB, $9ADA/$9ADB, $9B59/$9B5A, $9B9D/$9B9E get ADD A,n or SUB n and the offset; $9F4F and $9643 the signed offset. In the air or falling no off-road test.
-> Witness: L1 4436 (c1, crash, ctl, m128, stages, twoplayer).
+> Witness: L1 5265 (c1, crash, ctl, fall5, m128, names, stages, tech-brake-bend, tech-cheat, tech-land-wheelie, tech-ramp-wheelie, truck, twoplayer).
 $B07A OffRoadJump ; JP nn: nn = StageParams' off-road routine (StartRace)
 
 @module road
-$B07D c ScrollHills ; As the segment moves (RowsScrolled), shift HillRows down and fill from the hill's profile (HillProfiles)
-> Witness: L1 4377 (c1, crash, ctl, m128, stages, twoplayer).
-$B0C9 c ScrollHillsTail ; The profile's end reached inside the copy: the rest from BlendHill's start
+$B07D c ScrollBends ; As the segment moves (RowsScrolled), shift BendRows down and fill from the bend's profile (BendProfiles)
+> Witness: L1 5198 (c1, crash, ctl, fall5, m128, names, stages, tech-brake-bend, tech-cheat, tech-land-wheelie, tech-ramp-wheelie, truck, twoplayer).
+$B0C9 c ScrollBendsTail ; The profile's end reached inside the copy: the rest from BlendBend's start
 > Known only from the code.
-$B0D1 c BlendHill ; Hill 0 after a hill: HillRows blended back to flat, the profile's step from HillBlend ($75D7)
-> Witness: L1 1541 (c1, crash, m128, stages, twoplayer).
-$B0FB c BlendCarry ; INC H: HillBlend's index crossing a page (not met)
+$B0D1 c BlendBend ; Bend 0 after a bend: BendRows blended back to straight, the profile's step from BendBlend ($75D7)
+> Witness: L1 1756 (c1, crash, fall5, m128, stages, tech-brake-bend, tech-cheat, tech-land-wheelie, tech-ramp-wheelie, truck, twoplayer).
+$B0FB c BlendCarry ; INC H: BendBlend's index crossing a page (not met)
 > Known only from the code.
 $B0FC ; the blend
-$B11C b RowsScrolled ; The road rows the segment moved this pass (AdvanceTrack), for ScrollHills
+$B11C b RowsScrolled ; The road rows the segment moved this pass (AdvanceTrack), for ScrollBends
 
 @module graphics
 $B11D b LeftoverCode ; $B11D-$B1FF: 227 bytes of an older build's code (LD ($B1BA),A ...), never run or read

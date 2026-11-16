@@ -1,6 +1,6 @@
 # horizons
 
-The picture above the road, drawn by DrawHorizon and rotated sideways on curves (HorizonRotate). 256 pixels wide,
+The picture above the road, drawn by DrawHorizon and rotated sideways in bends (HorizonRotate). 256 pixels wide,
 one pixel row per 32 bytes; index 0 paper, 1 ink. StageTable (`tables/stages.csv`) picks one per stage.
 
 | File | Entry | Lines | Stages |

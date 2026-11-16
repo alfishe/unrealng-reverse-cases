@@ -1,8 +1,9 @@
 # The track's patterns (Init copies $EB00-$F0AF to $5E80; the addresses here are the copy's).
 # Commands (TrackStep; distances in SegmentLeft's units, 128 a segment):
-#   obj TYPE LEN X  an object (type 0 ramp, 1-7 ObjectTypes, 10 the VarObject), LEN*2 units before the next,
-#                   at X (signed, the road's centre 0)
-#   call $ADDR LEN  run the pattern at ADDR for LEN units (forever: until its `ret`)
+#   obj TYPE LEN X  an object (type 0 ramp, 1-7 ObjectTypes, 10 the VarObject), LEN*2 units after the previous
+#                   element, at X (signed, the road's centre 0)
+#   call $ADDR LEN  run the pattern at ADDR for LEN units counted from the element before the call: its elements
+#                   less than LEN from there are placed, the one that reaches LEN is not (forever: until its `ret`)
 #   ret | jump $ADDR | mark N (a gap end, stage 3) | var N (VarObject = 2N)
 #   bytes XX ...    bytes past the track's end (leftovers)
 # `pattern $ADDR` starts a pattern; `#` starts a comment (the distances, the stage borders).

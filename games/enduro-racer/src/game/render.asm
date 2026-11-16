@@ -27,7 +27,8 @@
 ;
 ; Recorded: c1: StartRace $A466 and RaceEnd $AAA8 each stage.
 ;
-; Witness: L1 43 (c1, crash, ctl, m128, stages, twoplayer).
+; Witness: L1 48 (c1, crash, ctl, fall5, m128, names, stages, truck,
+; twoplayer).
 SetRowTable:
   LD B,$80
   LD IX,RowTable+$0080
@@ -44,7 +45,7 @@ l_8E83:
   LD IX,RowTable+$0050
   LD IY,RowTable+$0150
   LD B,$18
-  LD DE,TrackTables+$0500
+  LD DE,-$1000
 l_8EA4:
   LD L,(IY+$00)
   LD H,(IY+$01)
@@ -71,24 +72,27 @@ l_8ECA:
   DJNZ l_8ECA
   RET
 
-; HillRows = 0 ($5B80-$5C00, 129 bytes through CopyRows)
+; BendRows = 0 ($5B80-$5C00, 129 bytes through CopyRows)
 ;
-; Witness: L1 149 (c1, crash, ctl, m128, stages, twoplayer).
-ClearHillRows:
-  LD HL,HillRows
-  LD DE,HillRows+$0001
+; Witness: L1 175 (c1, crash, ctl, fall5, m128, stages, tech-brake-bend,
+; tech-cheat, tech-land-wheelie, tech-ramp-wheelie, truck, twoplayer).
+ClearBendRows:
+  LD HL,BendRows
+  LD DE,BendRows+$0001
   LD (HL),$00
   LD A,$04
   JR CopyRows31
 
 ; Copy A x 32 bytes HL -> DE (32 unrolled LDI a turn)
 ;
-; Witness: L1 854052 (c1, crash, ctl, m128, stages, twoplayer).
+; Witness: L1 1004349 (c1, crash, ctl, fall5, m128, names, stages,
+; tech-brake-bend, tech-cheat, tech-land-wheelie, tech-ramp-wheelie, truck,
+; twoplayer).
 CopyRows:
   LDI
-; This entry point is used by the routine at ClearHillRows.
+; This entry point is used by the routine at ClearBendRows.
 CopyRows31:
-  LDI                     ; the first turn one LDI shorter (ClearHillRows'
+  LDI                     ; the first turn one LDI shorter (ClearBendRows'
                           ; fill)
   LDI
   LDI
@@ -130,7 +134,9 @@ CopyRows31:
 ; Sets the core's skip (BlitSkip, $9104) and first column ($906A, $90FE) from
 ; x, clipping at the left edge (RET when wholly off), then BlitRows.
 ;
-; Witness: L1 11580 (c1, crash, ctl, m128, stages, twoplayer).
+; Witness: L1 13978 (c1, crash, ctl, fall5, m128, names, stages,
+; tech-brake-bend, tech-cheat, tech-land-wheelie, tech-ramp-wheelie, truck,
+; twoplayer).
 DrawSprite:
   LD C,A
   LD A,$00
@@ -169,7 +175,9 @@ l_8F4C:
 ;
 ; Recorded: c1: the bike, the riders and the objects every pass.
 ;
-; Witness: L1 42620 (c1, crash, ctl, m128, stages, twoplayer).
+; Witness: L1 50169 (c1, crash, ctl, fall5, m128, names, stages,
+; tech-brake-bend, tech-cheat, tech-land-wheelie, tech-ramp-wheelie, truck,
+; twoplayer).
 DrawShifted:
   LD C,A
   LD A,$00
@@ -532,11 +540,12 @@ l_910C:
 ;
 ; In: IX = a descriptor (rows, width; width bit 7: byte-aligned, 3 more bytes
 ; room). Out: DE = $8000, the sprite in the buffer. Used for the bike leaning
-; the other way and for riders and objects on the curve's other side.
+; the other way and for riders and objects on the bend's other side.
 ;
 ; Recorded: c1.
 ;
-; Witness: L1 1926 (c1, crash, ctl, m128, stages, twoplayer).
+; Witness: L1 2275 (c1, crash, ctl, fall5, m128, stages, tech-brake-bend,
+; tech-cheat, tech-land-wheelie, tech-ramp-wheelie, truck, twoplayer).
 DrawMirrored:
   XOR A
   BIT 7,(IX+$02)
@@ -605,13 +614,14 @@ l_9750:
 
 ; JP StartRace (GameEntry's target)
 ;
-; Witness: L1 23 (c1, crash, ctl, m128, stages, twoplayer).
+; Witness: L1 25 (c1, crash, ctl, fall5, m128, stages, truck, twoplayer).
 GameEntryJump:
   JP StartRace
 
 ; JP GapRows
 ;
-; Witness: L1 3968 (c1, crash, ctl, m128, stages, twoplayer).
+; Witness: L1 4740 (c1, crash, ctl, m128, names, stages, tech-brake-bend,
+; tech-cheat, tech-land-wheelie, tech-ramp-wheelie, truck, twoplayer).
 GapRowsJump:
   JP GapRows
 
@@ -627,7 +637,9 @@ GapRowsJump:
 ; Recorded: c1: every pass; the heaviest pass's largest single cost with the
 ; road.
 ;
-; Witness: L1 4332 (c1, crash, ctl, m128, stages, twoplayer).
+; Witness: L1 5138 (c1, crash, ctl, fall5, m128, names, stages,
+; tech-brake-bend, tech-cheat, tech-land-wheelie, tech-ramp-wheelie, truck,
+; twoplayer).
 CopyBuffer:
   LD A,(TopClip)
   LD (SavedSp),SP
@@ -660,7 +672,7 @@ l_9904:
   ADD A,A
   RL B
   LD C,A
-  LD HL,TrackTables+$0300
+  LD HL,BackLine64
   SBC HL,BC
 l_992A:
   LD A,$01
@@ -685,7 +697,7 @@ BlitMode:
 CopyLower:
   LD A,$80                ; lines 64-191 in one block
   LD DE,$4800
-  LD HL,TrackTables+$0300
+  LD HL,BackLine64
   JP CopyRows
 
 ; A POP copy of B lines through RowTable (each line from back buffer - $A600),

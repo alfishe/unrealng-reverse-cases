@@ -1,0 +1,79 @@
+# names: c1's play start (work/stage1/rec/c1/play.szx, c1 frame 14075, KEYBOARD, no POKE in the game), two POKEs on
+# this recording's machine: Score ($5E18) = " 300000" and Timer ($5E1F) = $01, so the race ends at once with a score
+# for the table; no key: the bike stays, the timer runs out, game over, the lap table (ENTER), the name entry: LEFT
+# at the first column (the wrap to the last), 9 taken, RIGHT at the last column (the wrap to the first), = (the
+# delete), E, R, ? (END); back to the menu
+# Start: work/stage1/rec/c1/play.szx
+0 POKE 24088 32 51 48 48 48 48 48
+0 POKE 24095 1
+2160 ENTER
+2164 -
+2264 O
+2267 -
+2283 SPACE
+2286 -
+2316 P
+2319 -
+2335 P
+2338 -
+2354 P
+2357 -
+2373 P
+2376 -
+2392 P
+2395 -
+2411 P
+2414 -
+2430 P
+2433 -
+2449 P
+2452 -
+2468 P
+2471 -
+2487 P
+2490 -
+2506 P
+2509 -
+2525 SPACE
+2528 -
+2558 O
+2561 -
+2577 O
+2580 -
+2596 O
+2599 -
+2615 O
+2618 -
+2634 O
+2637 -
+2653 O
+2656 -
+2672 O
+2675 -
+2691 O
+2694 -
+2710 SPACE
+2713 -
+2743 P
+2746 -
+2762 SPACE
+2765 -
+2795 P
+2798 -
+2814 P
+2817 -
+2833 P
+2836 -
+2852 P
+2855 -
+2871 P
+2874 -
+2890 P
+2893 -
+2909 P
+2912 -
+2928 P
+2931 -
+2947 SPACE
+2950 -
+3580 END

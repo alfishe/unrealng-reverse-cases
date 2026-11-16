@@ -12,8 +12,8 @@
 ; whose spacing falls as the speed rises (plus a ROM byte AND $3F as jitter); on the 128K a tone on AY channel C from
 ; the speed, or the skid noise (SkidLevel). The speed is folded before use (below 60 as is, 60-129 minus 60, from 130
 ; minus 120): the note drops twice as the bike speeds up, a gear change heard. The effects and beeps are in the game's
-; modules: PlayEffect ($AC88, the AY sweep of a crash), BeepTone ($AB95), the name entry's sweep NameEntrySound
-; ($8AF0).
+; modules: PlayEffect ($A179) and AyEffectTick ($ACA5), the AY noise of a fall or a bounce; CrashSound ($AC88), the
+; 48K's beeper noise, BeepTone ($AB95), the name entry's sweep NameEntrySound ($8AF0).
 ; --------------------------------------------------------------------------------------------------------------------
 
 ; Step one tune channel (IX): count its note down, then read the next note or
@@ -30,7 +30,9 @@
 ;
 ; Recorded: c1, m128: two calls each interrupt in play.
 ;
-; Witness: L1 51862 (c1, crash, ctl, m128, stages, twoplayer).
+; Witness: L1 65445 (c1, crash, ctl, fall5, m128, names, stages,
+; tech-brake-bend, tech-cheat, tech-land-wheelie, tech-ramp-wheelie, truck,
+; twoplayer).
 PlayChannel:
   LD A,(IX+$00)
   DEC A
@@ -88,7 +90,9 @@ NoteCarry:
 ; In: HL = the word in NoteTable, C = the note byte, IX the channel. Writes the
 ; low then the high register (IX+$0D, IX+$0D+1) through ports $FFFD / $BFFD.
 ;
-; Witness: L1 5104 (c1, crash, ctl, m128, stages, twoplayer).
+; Witness: L1 6397 (c1, crash, ctl, fall5, m128, names, stages,
+; tech-brake-bend, tech-cheat, tech-land-wheelie, tech-ramp-wheelie, truck,
+; twoplayer).
 ChannelPeriod:
   LD E,(HL)
   INC HL
@@ -205,7 +209,9 @@ ChannelAyPairs:
 
 ; IY = the channel's repeat record: IX + 7 + 3 * depth (count, address)
 ;
-; Witness: L1 2347 (c1, crash, ctl, m128, stages, twoplayer).
+; Witness: L1 2936 (c1, crash, ctl, fall5, m128, names, stages,
+; tech-brake-bend, tech-cheat, tech-land-wheelie, tech-ramp-wheelie, truck,
+; twoplayer).
 ChannelLoop:
   LD A,(IX+$06)
   LD E,IXL
@@ -268,7 +274,9 @@ AyNoise:
 
 ; AY register 7 = AyMixer's value
 ;
-; Witness: L1 13197 (c1, crash, ctl, m128, stages, twoplayer).
+; Witness: L1 16090 (c1, crash, ctl, fall5, m128, names, stages,
+; tech-brake-bend, tech-cheat, tech-land-wheelie, tech-ramp-wheelie, truck,
+; twoplayer).
 WriteMixer:
   LD E,$01
   LD HL,AyMixer
@@ -279,7 +287,9 @@ WriteMixer:
 ; Out: HL past the pairs. On the 48K the ports reach nothing (the game writes
 ; them on both machines).
 ;
-; Witness: L1 15123 (c1, crash, ctl, m128, stages, twoplayer).
+; Witness: L1 18027 (c1, crash, ctl, fall5, m128, names, stages,
+; tech-brake-bend, tech-cheat, tech-land-wheelie, tech-ramp-wheelie, truck,
+; twoplayer).
 AyWrite:
   LD A,(HL)
   LD BC,$FFFD
@@ -294,7 +304,7 @@ AyWrite:
   RET
 
 ; Tune channel A: count, stream, transpose, restart, repeat depth and records,
-; tone register 0, mixer bit 1
+; tone register 2 (AY channel B), mixer bit 1 (value $02)
 ;
 ; 17 bytes: +0 the note's count, +1/+2 the stream pointer, +3 the transpose,
 ; +4/+5 the restart, +6 the repeat depth ($FF none), +7 two records of 3 bytes
@@ -305,8 +315,8 @@ ChannelA:
   DEFB $00,$00,$00,$00,$00,$02,$02,$00
   DEFB $00
 ChannelB:
-  DEFB $00,$00,$00,$30,$90,$67,$00,$00 ; tune channel B: tone register 2, mixer
-  DEFB $00,$00,$00,$00,$00,$00,$01,$00 ; bit 2
+  DEFB $00,$00,$00,$30,$90,$67,$00,$00 ; tune channel B: tone register 0 (AY
+  DEFB $00,$00,$00,$00,$00,$00,$01,$00 ; channel A), mixer bit 0 (value $01)
   DEFB $00
 
 ; DE = the screen address of pixel line A (L = the same line): the ROM's
@@ -315,7 +325,9 @@ ChannelB:
 ; In: A = L = the line (0-191). D = $40 + (line AND 7) + 8 * (line >> 6), E =
 ; (line AND $38) * 4. RowEntry's helper.
 ;
-; Witness: L1 11245 (c1, crash, ctl, m128, stages, twoplayer).
+; Witness: L1 13451 (c1, crash, ctl, fall5, m128, names, stages,
+; tech-brake-bend, tech-cheat, tech-land-wheelie, tech-ramp-wheelie, truck,
+; twoplayer).
 LineAddress:
   AND $07
   ADD A,$40
@@ -347,7 +359,9 @@ l_6849:
 ;
 ; Recorded: c1: the OUT ($FE) at $687F in play; m128: the AY path $68D1.
 ;
-; Witness: L1 23083 (c1, crash, ctl, m128, stages, twoplayer).
+; Witness: L1 28577 (c1, crash, ctl, fall5, m128, names, stages,
+; tech-brake-bend, tech-cheat, tech-land-wheelie, tech-ramp-wheelie, truck,
+; twoplayer).
 EngineSound:
   LD A,$00
   XOR $FF

@@ -12,7 +12,6 @@ What this covers:
 - the throttle and the brakes, checked against a recording (5.8);
 - the wheelie (5.9);
 - pause, reset and the demo's key: one byte shared by two instructions (5.10);
-- the cheat key (5.11);
 - two players (5.12).
 
 The recordings it rests on ([WALKTHROUGH](../WALKTHROUGH.md)):
@@ -137,8 +136,7 @@ flowchart LR
 ```
 
 The source's header of ReadControls says the image holds "method 0's Q A O P SPACE". The bytes are `$F7` rows with
-masks `08 04 01 02 10`: method 3, SINCLAIR LEFT, as ControlMethod says. The fix is in
-`work/docs/erB-src-changes.md`.
+masks `08 04 01 02 10`: method 3, SINCLAIR LEFT, as ControlMethod says. The source's header now says so.
 
 The point: the reader has no loop and no table lookup at run time. The method's choice is paid once, in the menu.
 
@@ -670,7 +668,8 @@ With CheatStep on, stages 1-3 run with ScrollStep `$1000`: the track moves as at
 can give. SPEED itself, the score and the steering do not change. The toggle flips each pass the two keys are held,
 so a press must last about one pass.
 
-Known only from the code: no recording holds CAPS SHIFT.
+Witness: the recording `tech-cheat` (WALKTHROUGH 6.0) holds CAPS SHIFT + Q at c1's play: CheatKey `$A659`
+once at its frame 126, CheatFixedStep `$A674` 51 times.
 
 The point: the cheat is a track speed, not a bike speed. The HUD still shows the real SPEED.
 
@@ -709,7 +708,6 @@ The point: two players are two saved states of one player, swapped at the turn.
 
 Known only from the code in this document:
 
-- the cheat key (5.11);
 - MenuUp: no recording moves up the menu (5.5);
 - DefineTaken and DefinePauseKey: ctl gave five different keys and left PAUSE and RESET (5.6);
 - WaitKeyTimeout: every wait saw the keys released in time (5.6).

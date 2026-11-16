@@ -1,6 +1,15 @@
 # Enduro Racer (Activision, 1987)
 
-State: in progress (stage 1: the capture).
+State: docs written, in review (2026-11-16): docs 01-10 by three writers, docs 11 and 12 generated, integrated; the
+tape builds identical from the sources. 12 documents, 86 figures (PNG), 47 animations (GIF), 67 mermaid diagrams and
+12 audio files (7 short WAV, the longest 3.5 s; 5 MP3 over 5 s: the two tunes, the two engines and the 128K race;
+3.0 MB), 14 recordings (WALKTHROUGH 6.0; three tries kept out), counted on 2026-11-16 with:
+
+```sh
+ls docs/[0-9][0-9]-*.md | wc -l; find docs/img -name '*.png' | wc -l; find docs/img -name '*.gif' | wc -l
+cat docs/[0-9][0-9]-*.md | grep -c '^```mermaid'
+find docs -name '*.mp3' | wc -l; find docs -name '*.wav' | wc -l; du -sh docs/audio
+```
 
 | | |
 | --- | --- |
@@ -15,19 +24,19 @@ The documents: [docs/README.md](docs/README.md). How the reverse was done: [WALK
 
 ## Profile
 
-Stage 1's first picture of the game; each row is to be confirmed by the documents.
+From the documents ([docs/README.md](docs/README.md)); each row names the document that holds the detail.
 
 | Row (AGENTS.md 4.0) | Enduro Racer |
 | --- | --- |
-| Genre | racing, driving (a behind-the-bike pseudo-3D motorbike race, as it plays in c1 and stages): five stages one after the other, each against a timer that counts down from 60 (stage 1); a stage ends when its course is driven ("EXTENDED PLAY", the lap time), then the next; time out ends the race. After stage 5 a lap-time table (RECORD and PLAYER, each stage and the TOTAL), then the score table with a name entry on a letter grid. One or two players |
-| The track and the stages | five courses (the WoS info: country road, desert, swamp causeway, arctic, seaside; on screen: green grass and trees, yellow sand with rock spires, cyan sand with dunes, yellow with cacti and trucks, yellow with palms): the curves, the logs and rocks, the jumps; each to be drawn from the game's data as a map with its curves, hills and hazards |
-| The bike and its handling | throttle, wheelie, left, right, brakes; the speed in km/h on the HUD (199 the most seen); speed lost off the road, by obstacles, in turns and in bike collisions (the four stores the ZXDB POKEs name); the wheelie to jump; the crash and the restart |
-| Rivals and obstacles | other riders on the road and trucks (stage 4); rocks, logs, trees, cacti and palms at the roadside; the ZXDB POKEs separate "obstacles" and "trucks" |
-| Timer and score | TIME (BCD at `$5E1F`) counts down; SCORE grows with distance and speed; TOP 1 000 000; no lives: a fall costs time (the rider gets up, recording crash), with two players a fall hands the turn over (recording twoplayer); the score table holds five entries with a name and a total time ("ENDURO 3'00"00 800000") |
-| Rendering | a pseudo-3D road: a road table, the curve and hill model, the roadside objects and the riders scaled, the horizon scenery (mountains, dunes) shifted with the curves; a HUD of two text rows on top |
-| Engine | IM 2 (one `IM 2`, at `$8109`): the handler `$643C` (vector `$6464`) has its own stack and returns by a patched `JP`; no `HALT`, a game pass takes 6-12 frames (mean 8.0, [WALKTHROUGH 1](WALKTHROUGH.md#interrupts-and-timing-first-look)); SpeedLock 2 on the tape; one load, no multiload |
-| Sound | the engine from the interrupt (`$6851`): the beeper on a 48K, the AY on a 128K, picked by a checksum of the ROM (`$7C2F`); beeper tones and noise (`$AB95`, `$AC8A`, `$8AF0`) and AY effects (`$6588`, `$6806`, `$A167`, `$ACA5`); which event each serves, and any tune, to be listed |
-| Controls | five methods on the menu: KEYBOARD (redefinable: THROTTLE Q, WHEELIE A, LEFT O, RIGHT P, BRAKES SPACE, PAUSE H, RESET R), KEMPSTON, SINCLAIR RIGHT, SINCLAIR LEFT (the method at power-on), CURSOR; on the menu SPACE or fire executes, any other key advances |
+| Genre | a behind-the-bike pseudo-3D motorbike race: five stages one after the other against a timer (60 at stage 1, EXTENDED PLAY adds 50 at each stage's end, at most 99); time out ends the race; after stage 5 the lap table, then the high scores with a name entry on a letter grid; one or two players taking turns at each fall ([doc 1](docs/01-game-design.md)) |
+| The track and the stages | five courses of 128-unit segments (4 096, 2 944, 3 328, 3 456 and 4 096 units; the finish at 17 920): each segment byte a bend (bits 0-1), a crest (bits 2-3) and the bend's side; the track a list of elements and pattern calls (type and gap), counted as TrackStep counts them; stage 3 alone has gap marks; maps in [doc 1](docs/01-game-design.md) and [doc 7](docs/07-objects.md), the data in `src/res/track` |
+| The bike and its handling | THROTTLE, WHEELIE, LEFT, RIGHT, BRAKES; SPEED an 8.8 word in three bands (199 km/h the top); the lean a sideways speed against the bend's push; ramps tax SPEED by 3/4 unless the wheelie was held 8 passes; WHEELIE held at a landing saves the bounce; a fall and the walk back (GetUp) hold the timer ([doc 5](docs/05-controls.md), [doc 10](docs/10-gameplay-logic.md)) |
+| Rivals and obstacles | six rider records on a ring of 256 rows: riders 0-3 and two trucks (rider 4 from stage 2, rider 5 from stage 4); a rider hit costs a quarter of SPEED and a bounce, a truck head-on a fall; eight object types (boulders, trees, conifers, rock spires, cacti, palms, bushes, ramps) with their collision sizes ([doc 7](docs/07-objects.md)) |
+| Timer and score | the timer counts passes, 10 a timer second (about 80 frames); the score adds the km/h each pass, ten times in the air; the time bonus puts the timer's digits into the 100 000s and 10 000s; TOP 1 000 000; five high scores with name and total time ([doc 8](docs/08-hud-and-text.md)) |
+| Rendering | a back buffer at `$EB00-$FDFF` drawn each pass and copied by CopyBuffer against the beam; 128 road rows mapped to lines (RoadLines, the crest) and shifted (BendRows, the bend); roadside objects and riders scaled, byte-aligned near and shifted far; a horizon per stage rotated in the bends; GroundTexture from the ROM's bytes ([doc 6](docs/06-rendering.md)) |
+| Engine | IM 2 with its own stack and a patched `JP` back; no `HALT`: a free-running pass of 8.0 frames on average; the stage 3 reset (two ramps close together throw the bike above the buffer's top and the row builder runs off its table); SpeedLock 2 on the tape, one load ([doc 2](docs/02-architecture.md), [doc 3](docs/03-build-and-load.md), [doc 4](docs/04-game-loop.md)) |
+| Sound | two tunes from the interrupt (tune 1 on stages 1, 3, 5, tune 2 on 2 and 4) on the AY of a 128K, silent on a 48K; the engine on the beeper (48K) or AY tone (128K), picked by a ROM checksum; AY noise for falls, bounces and the skid; beeper beeps, the crash noise and the name entry's blip ([doc 9](docs/09-sound.md)) |
+| Controls | five methods (KEYBOARD redefinable: Q A O P SPACE, H pause, R reset; KEMPSTON; SINCLAIR LEFT and RIGHT; CURSOR), patched into ReadControls; CAPS SHIFT + Q the cheat (a fixed track step on stages 1-3) ([doc 5](docs/05-controls.md)) |
 
 ## Other releases and copies
 
@@ -50,6 +59,22 @@ Each copy found is kept unchanged in `work/candidates/<source>/` (git-ignored). 
 
 Other platforms' versions exist (Sega's arcade game, the Master System, Amstrad CPC, C64); none is used here.
 
+## Sources and credits
+
+- The game: Enduro Racer, Activision 1987 (ZXDB 1628); programmed by Giga Games (Alan Laird, Ian Morrison), graphics
+  by Focus ("PROGRAMMED BY GIGA GAMES", "GRAPHICS BY FOCUS", "A SOFTWARE STUDIOS PRODUCTION" on its title screen); the
+  arcade game by Sega (1986).
+- The tape: the World of Spectrum mirror `games/e/EnduroRacer.tzx.zip`, the file in `orig/`; the TZX names no dumper.
+  The recordings load TOSEC's `[SpeedLock 2]` dump, "Created with Ramsoft MakeTZX" (its text block), dumper not named.
+- The POKE file: ZXDB, `work/candidates/`.
+
 ## Build
 
-Not yet: the source is stage 2's (`tools/build.sh`, `src/game/game.ann`, `src/res/`).
+```bash
+sh tools/build.sh [SJASMPLUS]          # builds the tape from src/ and compares it with orig/ byte for byte
+python3 tools/res_formats.py check     # every resource against the bytes it stands for
+```
+
+The sources are written by `kit/mkgame.py` from the `.ann` files: the game `src/game/*.asm` from `src/game/game.ann`,
+the loader `src/loader/` (`loader.json`, `tail.json`) and the BASIC `src/tape/` (`basic1.json`, `basic2.json`); the
+resources are in `src/res/` (a README in every folder). The commands: `work/stage2/NOTES.md`.

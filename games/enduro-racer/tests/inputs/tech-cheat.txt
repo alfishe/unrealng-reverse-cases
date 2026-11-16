@@ -1,0 +1,19 @@
+# tech-cheat: c1's play start and keys, CAPS SHIFT + Q held from c1 frame 14200 until CheatStep reads $FF, then
+# c1's keys (doc 10's run cheat); to c1 frame 14700
+# Start: work/stage1/rec/c1/play.szx
+0 Q
+125 CS Q
+127 Q
+300 Q O
+320 Q P
+340 Q A
+380 Q
+440 SPACE
+480 H
+486 -
+546 H
+552 -
+582 Q
+622 Q O
+625 -
+625 END

@@ -123,7 +123,7 @@ TurnNext:
 ; Recorded: c1, m128: game over by the timer in stage 1; stages: game over
 ; after the finish; twoplayer: turns.
 ;
-; Witness: L1 23 (c1, crash, ctl, m128, stages, twoplayer).
+; Witness: L1 25 (c1, crash, ctl, fall5, m128, stages, truck, twoplayer).
 PlayTurn:
   LD HL,$4000
   LD DE,$4001
@@ -341,7 +341,7 @@ l_897E:
   ADD A,A
   LD L,A
   LD H,$0C
-  LD (l_8A07+$0013),HL
+  LD (NamePlace+$0001),HL
   DEC B
   JR Z,l_899F
   LD HL,HiScores+$0057
@@ -358,7 +358,7 @@ l_899F:
   LD C,$07
   LDIR
   EX DE,HL
-  LD (l_8A07+$0010),HL
+  LD (NamePtr+$0001),HL
   LD B,$08
 l_89AD:
   LD (HL),$20
@@ -422,8 +422,13 @@ l_8A07:
   BIT 4,D                 ; fire: the character under the cursor; ? ends, =
                           ; deletes, else it is written
   JR Z,NameMove
-  LD HL,$0000
-  LD BC,$0000
+NamePtr:
+  LD HL,$0000             ; LD HL,nn: nn = the name's next place (written by
+                          ; ScoreCheck and after each character)
+NamePlace:
+  LD BC,$0000             ; LD BC,nn: C the pixel line, B the column of the
+                          ; name's next character (ScoreCheck; the column after
+                          ; each character)
   LD A,$28
   LD (NameEntrySound+$0001),A
   LD A,(IY+$00)
@@ -434,7 +439,10 @@ l_8A07:
 
 ; =: one character back, blanked (not before the first)
 ;
-; Known only from the code: the stages recording's name entry used no =.
+; The recording names (c1's play, the score POKEd to 300 000) types = after its
+; first letter (frame 2 526).
+;
+; Witness: L1 1 (names).
 NameDelete:
   LD A,B
   CP $0D
@@ -449,21 +457,21 @@ l_8A38:
   LD (HL),A               ; write the character
   INC HL
 l_8A3A:
-  LD (l_8A07+$0010),HL
+  LD (NamePtr+$0001),HL
   LD E,$42
   CALL PrintChar
   CP $20
   JR NZ,l_8A47
 
-; A blank picked: DEC B (the column moves on as for a letter)
+; After a delete's blank: DEC B, the column steps back
 ;
-; Known only from the code.
+; Witness: L1 1 (names).
 NameSpace:
   DEC B
 ; This entry point is used by the routine at NameDelete.
 l_8A47:
   LD A,B                  ; eight characters: done
-  LD (l_8A07+$0014),A
+  LD (NamePlace+$0002),A
   CP $14
   JR C,l_89F6
 ; This entry point is used by the routine at RecordTie.
@@ -486,7 +494,7 @@ NameMove:
 
 ; LEFT at the first column: wrap to column 29
 ;
-; Known only from the code.
+; Witness: L1 1 (names).
 NameLeftWrap:
   LD A,$1D
   LD BC,$000F
@@ -506,7 +514,7 @@ l_8A70:
 
 ; RIGHT at the last column: wrap to column 1
 ;
-; Known only from the code.
+; Witness: L1 1 (names).
 NameRightWrap:
   LD A,$01
   LD BC,$FFF1
@@ -561,8 +569,9 @@ FrameChars2:
 NameGrid:
   INCBIN "res/texts/namegrid.bin",$0010,45
 
-; One step of the name entry: a beeper blip falling in pitch for a few calls
-; after a pick, then a pause
+; One step of the name entry: a beeper blip rising in pitch for a few calls
+; after a pick (NameSound counts down, the period is NameSound + 8), then a
+; pause
 ;
 ; NameSound (the LD A operand) is set to $28 by a pick and counts down: 191
 ; edges of period NameSound + 8, then a quiet wait of 191 x ($32 - NameSound)
@@ -570,7 +579,7 @@ NameGrid:
 ;
 ; Recorded: stages: the name entry; the OUT ($FE) at $8AFF.
 ;
-; Witness: L1 194 (stages).
+; Witness: L1 1092 (names, stages).
 NameEntrySound:
   LD A,$00
   AND A
@@ -606,7 +615,7 @@ l_8B13:
 ; Wipe and draw HiScores from pixel line C: SCORE, NAME, TIME, then five rows
 ; of score, name, time
 ;
-; Witness: L1 1 (stages).
+; Witness: L1 2 (names, stages).
 ShowScores:
   PUSH BC
   CALL ClearScreen
@@ -646,7 +655,7 @@ l_8B3D:
 ; Print the time at HL (minutes, then FormatTime's pair) as 0'00"00, 7
 ; characters
 ;
-; Witness: L1 3 (c1, stages).
+; Witness: L1 4 (c1, names, stages).
 PrintTime:
   PUSH HL
   INC HL
@@ -662,7 +671,7 @@ PrintTime:
 ; (HL) = minutes, seconds, hundredths: the sum of B times from IX (BCD, $60
 ; seconds a minute)
 ;
-; Witness: L1 3 (c1, stages).
+; Witness: L1 4 (c1, names, stages).
 SumTimes:
   LD DE,$0000
   LD C,D
@@ -699,7 +708,9 @@ l_8B8C:
 ;
 ; The lap table's %, the road's slopes (BuildRoadRows).
 ;
-; Witness: L1 112457 (c1, crash, ctl, m128, stages, twoplayer).
+; Witness: L1 138289 (c1, crash, ctl, fall5, m128, names, stages,
+; tech-brake-bend, tech-cheat, tech-land-wheelie, tech-ramp-wheelie, truck,
+; twoplayer).
 Divide:
   LD A,E
   LD BC,$1000
@@ -724,7 +735,9 @@ l_8BA9:
 ;
 ; Recorded: c1: called by the road and the objects every pass.
 ;
-; Witness: L1 490168 (c1, crash, ctl, m128, stages, twoplayer).
+; Witness: L1 582990 (c1, crash, ctl, fall5, m128, names, stages,
+; tech-brake-bend, tech-cheat, tech-land-wheelie, tech-ramp-wheelie, truck,
+; twoplayer).
 Multiply:
   LD DE,$0000
   LD H,D
@@ -868,20 +881,20 @@ HiScores:
 
 ; JP StartRace (PlayTurn's CALL)
 ;
-; Witness: L1 23 (c1, crash, ctl, m128, stages, twoplayer).
+; Witness: L1 25 (c1, crash, ctl, fall5, m128, stages, truck, twoplayer).
 GameEntry:
   JP GameEntryJump
 
 ; JP CopyRows
 ;
-; Witness: L1 283575 (c1, ctl, m128, stages, twoplayer).
+; Witness: L1 327207 (c1, ctl, m128, names, stages, twoplayer).
 Copy32:
   JP CopyRows
 
 ; The steering force of each lean (-3 to 3): $AD $50 $28 $00 $28 $50 $AD
 ; (BikeControl, sign from the lean)
 LeanTable:
-  DEFB $AD,$50,$28,$00,$28,$50,$AD
+  INCBIN "res/tables/lean.bin",$0000,7
 
 ; The steering force at each speed: index ScrollStep's high byte * 2 (0-20), 21
 ; bytes
@@ -890,11 +903,6 @@ LeanTable:
 ; the step at most $AF0, so the index stays at or below 20 and only every
 ; second byte is read.
 SteerTable:
-  DEFB $FF,$FF,$FF,$DB,$AF,$92,$7D,$6D
-  DEFB $61,$58,$50,$49,$43,$3F,$3A,$37
-  DEFB $33,$31,$2E,$2C,$2A
+  INCBIN "res/tables/steer.bin",$0000,21
 SteerTail:
-  DEFB $28,$26,$24,$23,$22,$20,$1F,$1E ; 11 bytes past the reachable index: the
-  DEFB $1D,$1C,$1B                     ; descending series goes on ($2A ...
-                                       ; $1B); reset3's crash ran through them
-                                       ; as code
+  INCBIN "res/tables/steer.bin",$0015,11

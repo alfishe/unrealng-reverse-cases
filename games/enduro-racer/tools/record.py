@@ -496,7 +496,189 @@ def plan_m128(r):
     drive(r, 3000, WEAVE, name='m128', every=500)
 
 
-PLANS = {k[5:]: v for k, v in globals().items() if k.startswith('plan_')}
+# ---- the integration's recordings: each starts from a state an earlier recording saved and plays that recording's
+# own input script from the state's frame (the same machine, the same keys), with one change named in the plan.
+FALL_TIME = 0x916E     # nonzero while the bike lies after a fall
+CHEAT_STEP = 0xA670    # CheatStep: $FF while the cheat's fixed step is on
+
+
+def script_keys(name):
+    """[(frame, keys)] of tests/inputs/NAME.txt (frames from that recording's start)"""
+    ev = []
+    for line in open(os.path.join(CASE, 'tests', 'inputs', name + '.txt')):
+        w = line.split()
+        if not w or w[0] == '#' or w[1] in ('POKE', 'TAPE'):
+            continue
+        if w[1] == 'END':
+            break
+        ev.append((int(w[0]), [] if w[1] == '-' else w[1:]))
+    return ev
+
+
+def replay(r, name, f0, f1, change=None, stop=None):
+    """Play tests/inputs/NAME.txt's keys from its frame f0 (the start state's) to f1; change(f, keys) may replace the
+    keys of a frame; stop() ends early. Returns the script frame reached."""
+    ev = script_keys(name)
+    f = f0
+    while f < f1:
+        held = []
+        for e, k in ev:
+            if e > f:
+                break
+            held = k
+        if change:
+            held = change(f, held)
+        r.keys(held)
+        r.lab.run(1)
+        f += 1
+        if stop and stop():
+            break
+    return f
+
+
+def after_fall(r, more=300):
+    """a stop() that ends a replay MORE frames after the first fall"""
+    seen = {}
+
+    def stop():
+        if 'f' not in seen and r.rd(FALL_TIME)[0]:
+            seen['f'] = r.lab.frame
+            r.shot('fall')
+        return 'f' in seen and r.lab.frame - seen['f'] >= more
+    return stop
+
+
+def plan_truck(r):
+    """truck: stages' state at stage 3's start (work/stage1/rec/stages/stage-02.szx, stages frame 5340), the Immune To
+    Trucks POKE taken back (43151 = $CD, the image's CALL TruckCrash; the other POKEs stay, as in stages); stages' own
+    keys from frame 5340: the first head-on truck now calls Crash (TruckCrash); 300 frames after the fall"""
+    r.poke('trucks', on=False)
+    replay(r, 'stages', 5340, 7806, stop=after_fall(r))
+    r.shot('end')
+
+
+def plan_fall5(r):
+    """fall5: stages' state at stage 5's start (work/stage1/rec/stages/stage-04.szx, stages frame 10272), the Immune To
+    Obstacles and Immune To Trucks POKEs taken back (42971 and 43151 = $CD; the speed POKEs stay); stages' own keys
+    from frame 10272: the first object hit at speed is a fall on stage 5's sand; 300 frames after it"""
+    r.poke('obstacles', on=False)
+    r.poke('trucks', on=False)
+    replay(r, 'stages', 10272, 13012, stop=after_fall(r))
+    r.shot('end')
+
+
+def plan_names(r):
+    """names: c1's play start (work/stage1/rec/c1/play.szx, c1 frame 14075, KEYBOARD, no POKE in the game), two POKEs on
+    this recording's machine: Score ($5E18) = " 300000" and Timer ($5E1F) = $01, so the race ends at once with a score
+    for the table; no key: the bike stays, the timer runs out, game over, the lap table (ENTER), the name entry: LEFT
+    at the first column (the wrap to the last), 9 taken, RIGHT at the last column (the wrap to the first), = (the
+    delete), E, R, ? (END); back to the menu"""
+    r.lab.write(0x5E18, b' 300000')
+    r.pokes.append({'frame': r.lab.frame, 'address': '$5E18', 'bytes': list(b' 300000'), 'why': 'score 300 000'})
+    r.lab.write(TIME, bytes([1]))
+    r.pokes.append({'frame': r.lab.frame, 'address': '$5E1F', 'bytes': [1], 'why': 'timer 1'})
+    r.wait(10)
+    r.shot('start')
+    for _ in range(40):
+        r.wait(50)
+        if r.rd(0x5800 + 32 * 22, 32)[1] & 0x38 == 0x10:
+            break
+    r.shot('table')
+    r.wait(150)
+    r.tap('ENTER', 4, 100)
+    r.shot('hiscore')
+
+    def cursor():
+        line, col = r.rd(0x83EB, 2)          # DrawCursor's LD BC operand: C the line, B the column
+        return (col - 1) // 2, (line - 0x90) // 16
+
+    def move(key, want):
+        """tap KEY until the cursor's grid column is WANT (a tap at a time, the cursor read back)"""
+        for _ in range(40):
+            if cursor()[0] == want:
+                return
+            r.tap(key, 3, 16)
+        raise RuntimeError(f'cursor {cursor()} not at column {want}')
+
+    def pick():
+        before = r.rd(0x8A1B)[0]                # NamePlace's B: the name's column
+        for _ in range(4):
+            r.tap(BRK, 3, 30)
+            if r.rd(0x8A1B)[0] != before or r.rd(0x8A1B)[0] == 0:
+                return
+        raise RuntimeError('no pick')
+
+    move(LEFT, 14)                              # LEFT at column 0: NameLeftWrap
+    r.shot('left-wrap')
+    pick()                                      # 9
+    move(RIGHT, 0)                              # RIGHT at column 14: NameRightWrap
+    r.shot('right-wrap')
+    move(RIGHT, 10)
+    pick()                                      # = : NameDelete, NameSpace
+    r.shot('deleted')
+    move(LEFT, 2)
+    pick()                                      # E
+    move(RIGHT, 3)
+    pick()                                      # R
+    r.shot('name-er')
+    move(RIGHT, 11)
+    r.tap(BRK, 3, 30)                           # ? : END
+    r.shot('name-entered')
+    for k in range(3):
+        r.wait(200)
+        r.shot(f'after-{k}')
+
+
+TECH = {  # doc 10's technique runs (tools/play_techniques.py RUNS) as recordings: c1 frames
+    'ramp-wheelie': (15700, [(15380, 15500, ['Q', 'A'])], None),
+    'land-wheelie': (15700, [(15600, 15640, ['Q', 'A'])], None),
+    'brake-bend': (15320, [(15130, 15170, ['SPACE'])], None),
+    'cheat': (14700, [], 14200),
+}
+
+
+def tech(r, run):
+    end, change, cheat = TECH[run]
+    state = {'cheat': cheat}
+
+    def keys(f, held):
+        for c0, c1, k in change:
+            if c0 <= f < c1:
+                held = k
+        if state['cheat'] is not None and f >= state['cheat']:
+            if r.rd(CHEAT_STEP)[0] != 0xFF:
+                return ['CS', 'Q']
+            state['cheat'] = None
+        return held
+    replay(r, 'c1', 14075, end, change=keys)
+    r.shot('end')
+
+
+def plan_tech_ramp_wheelie(r):
+    """tech-ramp-wheelie: c1's play start (play.szx, c1 frame 14075) and c1's keys, but THROTTLE + WHEELIE held from c1
+    frame 15380 to 15500: a wheelie into the ramp at 15487 (doc 10's run ramp-wheelie); to c1 frame 15700"""
+    tech(r, 'ramp-wheelie')
+
+
+def plan_tech_land_wheelie(r):
+    """tech-land-wheelie: c1's play start and keys, but THROTTLE + WHEELIE from c1 frame 15600 to 15640: a wheelie at the
+    landing (doc 10's run land-wheelie); to c1 frame 15700"""
+    tech(r, 'land-wheelie')
+
+
+def plan_tech_brake_bend(r):
+    """tech-brake-bend: c1's play start and keys, but BRAKES instead of THROTTLE from c1 frame 15130 to 15170 (doc 10's
+    run brake-bend); to c1 frame 15320"""
+    tech(r, 'brake-bend')
+
+
+def plan_tech_cheat(r):
+    """tech-cheat: c1's play start and keys, CAPS SHIFT + Q held from c1 frame 14200 until CheatStep reads $FF, then
+    c1's keys (doc 10's run cheat); to c1 frame 14700"""
+    tech(r, 'cheat')
+
+
+PLANS = {k[5:].replace('_', '-'): v for k, v in globals().items() if k.startswith('plan_')}
 
 
 def main():

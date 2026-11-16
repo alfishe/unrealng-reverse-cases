@@ -25,7 +25,7 @@ TailStart:
 
 ; Border black; H (the XOR of the stream) 0: JP Mover ($5B00), else JP $0000
 ;
-; POP DE drops the return into ByteLoop; XOR A / OUT ($FE) black border; LD A,H
+; POP DE drops $FF7B (LoadBlock's push); XOR A / OUT ($FE) black border; LD A,H
 ; / CP 1 / JP C,$5B00 when H = 0, JP $0000 (a reset) otherwise.
 ;
 ; Witness: L1 2 (c1).

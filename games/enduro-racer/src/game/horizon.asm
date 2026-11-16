@@ -1,5 +1,5 @@
 ; --------------------------------------------------------------------------------------------------------------------
-; horizon.asm: The horizons: the stage's picture above the road, rotated sideways on the curves
+; horizon.asm: The horizons: the stage's picture above the road, rotated sideways in the bends
 ;
 ; Three pictures, 32 bytes a line: Dunes ($E2C0, 25 lines, stage 3), Mountains ($E5E0, 32 lines, stages 1 and 4),
 ; Clouds ($E9E0, 9 lines, stages 2 and 5) (StageTable). DrawHorizon copies the stage's picture into the back buffer
@@ -14,9 +14,10 @@
 ; Rotate C lines of the picture at HL right by one pixel (32 bytes a line, the
 ; last bit wraps to the first)
 ;
-; Recorded: c1, stages: on every curve.
+; Recorded: c1, stages: in every bend.
 ;
-; Witness: L1 34323 (c1, crash, m128, stages, twoplayer).
+; Witness: L1 42826 (c1, crash, m128, stages, tech-brake-bend, tech-cheat,
+; tech-land-wheelie, tech-ramp-wheelie, truck, twoplayer).
 RotateRight1:
   AND A
   LD E,L
@@ -52,7 +53,7 @@ l_9236:
 ; Rotate C lines left by one pixel (HL at a line's last byte; the next line 64
 ; bytes on)
 ;
-; Witness: L1 23988 (c1, crash, stages).
+; Witness: L1 25206 (c1, crash, fall5, stages, truck).
 RotateLeft1:
   AND A
   LD E,L
@@ -165,7 +166,7 @@ l_9299:
 ; Rotate C lines right by whole bytes
 ;
 ; Known only from the code: a step of 8 pixels in one pass never happened (the
-; curve speed stays below it).
+; bend's push stays below it).
 RotateBytesRight:
   LD E,L
   LD D,H
@@ -239,14 +240,16 @@ MaskTable:
 ; HorizonScroll += HorizonSpeed / 2; rotate the picture by the whole pixels
 ; gained, right or left
 ;
-; HorizonSpeed is the LD DE operand ($99F1) BikeLateral writes (the curve and
+; HorizonSpeed is the LD DE operand ($99F1) BikeLateral writes (the bend and
 ; the speed). The pixels: 8 at a time (RotateBytes, never), then 4
 ; (RotateRight4 / RotateLeft4), then 1, through RotateTable's entries (offset,
 ; routine).
 ;
-; Recorded: c1: each pass on a curve.
+; Recorded: c1: each pass in a bend.
 ;
-; Witness: L1 4364 (c1, crash, ctl, m128, stages, twoplayer).
+; Witness: L1 5182 (c1, crash, ctl, fall5, m128, names, stages,
+; tech-brake-bend, tech-cheat, tech-land-wheelie, tech-ramp-wheelie, truck,
+; twoplayer).
 HorizonScrollStep:
   LD DE,$0000
   SRA D
@@ -342,7 +345,8 @@ l_9A61:
 ; JP to the routine of RotateTable's entry IY (HL = HorizonAddr + the entry's
 ; offset)
 ;
-; Witness: L1 2856 (c1, crash, m128, stages, twoplayer).
+; Witness: L1 3230 (c1, crash, fall5, m128, stages, tech-brake-bend,
+; tech-cheat, tech-land-wheelie, tech-ramp-wheelie, truck, twoplayer).
 HorizonRotate:
   LD E,(IY+$01)
   LD D,(IY+$02)
@@ -365,7 +369,7 @@ RotateTable:
 ; HorizonAddr, HorizonRows, HorizonBottom from StageTable[Stage]; the clear
 ; count $C0 - rows - bottom
 ;
-; Witness: L1 50 (c1, crash, ctl, m128, stages, twoplayer).
+; Witness: L1 54 (c1, crash, ctl, fall5, m128, stages, truck, twoplayer).
 SetHorizon:
   LD L,$04
   LD A,(Stage)
@@ -398,13 +402,17 @@ StageTable:
 ; From TopClip: draw the horizon's lines into the back buffer and clear the
 ; lines above it
 ;
-; Witness: L1 4332 (c1, crash, ctl, m128, stages, twoplayer).
+; Witness: L1 5137 (c1, crash, ctl, fall5, m128, names, stages,
+; tech-brake-bend, tech-cheat, tech-land-wheelie, tech-ramp-wheelie, truck,
+; twoplayer).
 DrawHorizon:
   LD A,(TopClip)
 
 ; from line A (StartRace: 40)
 ;
-; Witness: L1 4355 (c1, crash, ctl, m128, stages, twoplayer).
+; Witness: L1 5162 (c1, crash, ctl, fall5, m128, names, stages,
+; tech-brake-bend, tech-cheat, tech-land-wheelie, tech-ramp-wheelie, truck,
+; twoplayer).
 DrawHorizonAt:
   LD L,A
   LD A,(HorizonBottom)

@@ -573,11 +573,15 @@ l_FF41:
   LD R,A
   JP $6000
 
-; The last block's end: border black; H (the running XOR) must be 0, else Crash
+; The end: drop $FF7B, border black; H (the XOR of the stream) 0: return to
+; LoaderStart's tail, else Crash
 ;
-; Reached by StoreLastJump after the check byte. POP DE drops the return
-; address; RET C returns into... the address LoadBlock pushed ($FF7B) when H =
-; 0. Block 14 rewrites $FF7A-$FF86 to JP $5B00 instead (src/loader/tail.asm).
+; LoadBlock pushes $FF7B first, so a timeout anywhere (RET NC) lands at $FF7B;
+; the last block's StoreLastJump lands at $FF7A, whose POP DE drops that $FF7B.
+; Either way H < 1 returns to the tail at $FF63, anything else is Crash. This
+; is the plain view's version, known only from the code: block 14 rewrites
+; $FF7A-$FF86 before the end (src/loader/tail.asm, TailEnd), and the 2 runs the
+; witness counts are TailEnd's bytes (c1 frame 11632).
 ;
 ; Witness: L1 2 (c1).
 LoadEnd:

@@ -1,0 +1,54 @@
+# truck: stages' state at stage 3's start (work/stage1/rec/stages/stage-02.szx, stages frame 5340), the Immune To
+# Trucks POKE taken back (43151 = $CD, the image's CALL TruckCrash; the other POKEs stay, as in stages); stages' own
+# keys from frame 5340: the first head-on truck now calls Crash (TruckCrash); 300 frames after the fall
+# Start: work/stage1/rec/stages/stage-02.szx
+0 Q
+0 POKE 43151 205
+50 Q O
+56 Q
+106 Q P
+112 Q
+162 Q O
+168 Q
+218 Q P
+224 Q
+324 Q O
+330 Q
+380 Q P
+386 Q
+436 Q O
+442 Q
+492 Q P
+498 Q
+598 Q O
+604 Q
+654 Q P
+660 Q
+710 Q O
+716 Q
+766 Q P
+772 Q
+872 Q O
+878 Q
+928 Q P
+934 Q
+984 Q O
+990 Q
+1040 Q P
+1046 Q
+1146 Q O
+1152 Q
+1202 Q P
+1208 Q
+1258 Q O
+1264 Q
+1314 Q P
+1320 Q
+1420 Q O
+1426 Q
+1476 Q P
+1482 Q
+1532 Q O
+1538 Q
+1541 -
+1541 END

@@ -738,7 +738,7 @@ Witness: `work/docs/erC/sound/sound.json` (`cost48K`, `cost128K`); the trace of 
 
 - **ChannelA plays on AY channel B.** The records' register and mixer bytes are crossed with their names: ChannelA
   (`$6817`) writes tone register 2 and mixer bit 1, ChannelB (`$6828`) tone register 0 and mixer bit 0. The `.ann`'s
-  comments give the other way round (reported in `work/docs/erC-src-changes.md`).
+  comments now say so (they had it the other way round).
 - **The immunity POKEs leave the fall's noise.** The ZXDB POKEs 42971,1 and 43151,1 turn `CALL Crash` into
   `LD BC,nn`, but the `PlayEffect 1` before each call still runs. Its noise ends with TuneRequest 0, and with no fall
   there is no new turn to call SetTune. So in `stages` the engine stops for the rest of the stage after the first
@@ -747,13 +747,14 @@ Witness: `work/docs/erC/sound/sound.json` (`cost48K`, `cost128K`); the trace of 
   fall's decay, below 13, never meets it, so the step runs on to 0 and the tune stops as after a fall. `stages` shows
   it at 3700-3746: EffectTime 2 with EffectStep 6 down to 1, then TuneRequest 0.
 - **The pause keeps the tune** (9.3).
-- **EXTENDED PLAY's constant** is listed as `LD DE,TrackPatterns+$0174` at `$A905`. It is the beep's D = `$60` edges
-  and E = `$80` turns, and the address is a coincidence (reported in `work/docs/erC-src-changes.md`).
-- **The name entry's pitch rises**, as NameSound counts down: the `.ann` calls it a falling blip (reported).
+- **EXTENDED PLAY's constant** at `$A905` (`LD DE,$6080`) is the beep's D = `$60` edges and E = `$80` turns. As a
+  word it falls inside TrackPatterns, a coincidence: the source writes it as a number.
+- **The name entry's pitch rises**, as NameSound counts down (the period is NameSound + 8).
 - **NoteCarry** `$65DC` (`INC H` for a table crossing a page) and **ChannelAyPairs** `$668B` (inline AY pairs) are
   never reached: the note table ends at `$66C1`, and no stream holds such a byte. Known only from the code.
 - **A halving count of 0** would make ChannelPeriod's loop run 256 times. The transposes `$20` and `$30` keep it at 2
   or more. Known only from the code.
-- **EngineSkid** and **FallStage5** are known only from the code: no 128K recording slid on sand.
+- **EngineSkid** is known only from the code: no 128K recording slid on sand. **FallStage5** ran in the 48K
+  recording `fall5` (WALKTHROUGH 6.0): 8 times at frames 235-280, the fall at the end.
 - **The engine's jitter** reads the ROM at `$0200-$02FF` (the keyboard tables), the crash at `$0300-$03FF`. The game
   has no random-number generator; the ROM is its noise.

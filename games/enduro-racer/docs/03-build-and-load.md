@@ -317,13 +317,13 @@ at `$36FE` (`tools/speedlock2.py check`).
 
 ![Chain1 at work: the 797 bytes XORed with R and copied to the top of RAM, then Chain2 over them](img/routines/Chain1.gif)
 
-*`c1` frames 1 574-1 577, a quarter frame a picture. How to read: the map at the top is `$FC00-$FFFF`, 32 bytes a
+*`c1` frames 1 574-1 577, a half frame a picture. How to read: the map at the top is `$FC00-$FFFF`, 32 bytes a
 row; the hex view under it is `$FCA0-$FF... ` as the bytes arrive; the code panel shows Chain1's filler, the `LDIR`
 that wipes `$63E0-$FF42` (the whole map turns red), then Chain1Loop, Chain2Loop and the start of Chain3. The point:
 the loader appears byte by byte at `$FCA3` already partly readable, and Chain2 rewrites it again in place. Command:
 `python3 ../../kit/routine_anim.py --work work/docs/erA/c1 --window 1574:0-1578:0 --listing build/basic2.lst
 --listing build/loader.lst --pc 5D00-62FF,FCA3-FFBF --range FC00-FFFF --row-bytes 32 --view buffer:FCA0:16x50:hex
---step 8736 --out docs/img/routines/Chain1.gif`.*
+--step 17472 --out docs/img/routines/Chain1.gif`; written through `kitlib.save_gif`.*
 
 ![Chain3 at work: 137 rounds of a running XOR over the loader](img/load/chain3-c1.gif)
 
@@ -542,7 +542,8 @@ decoders from the traces of 3.4. `m128` runs the same stages at other frames (it
 the bytes written since the last picture in yellow; right, the screen. The point: the screen arrives first (block 6),
 then the game in slices out of order (blocks 7, 8, 11, 13, 16, 17), and only at the very end does everything shift up
 by `$5E0`. Command: `python3 ../../kit/memanim.py --work work/docs/erA/c1 --from 600 --to 11700 --step 20966400
---from-address 4000 --to-address FFFF --screen --cell fit docs/img/load/load-c1.gif`.*
+--from-address 4000 --to-address FFFF --screen --cell fit docs/img/load/load-c1.gif`; re-encoded through
+`kitlib.save_gif` (the same pictures, 667 KB instead of 2.4 MB).*
 
 **Worked example.** From the `USR` at frame 648 to Start at frame 11 646 are 10 998 frames, 220 s. The loader alone,
 frames 1 622-11 632, is 10 010 of them. Everything before it takes 974 frames, mostly the ROM loading the second

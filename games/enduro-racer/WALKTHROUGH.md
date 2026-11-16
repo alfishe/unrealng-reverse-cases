@@ -128,19 +128,30 @@ stage 3 with another weave.
 
 ### 6.0 The recordings
 
-All on unreal-ng's TTD (`analysis start record=true`), each folder `work/stage1/rec/<name>/` with `session.ttd`,
-`l1.json`, `record.json` (the moments, the POKEs, the frames) and `screens/`; the input script is
-`tests/inputs/<name>.txt` (`tools/record.py <plan>` wrote both). 48K unless said; every replay diverged 0.
+All on unreal-ng's TTD (`analysis start record=true`), muted, port base 37780, each folder `work/stage1/rec/<name>/`
+with `session.ttd`, `l1.json`, `record.json` (the moments, the POKEs, the frames) and `screens/`; the input script is
+`tests/inputs/<name>.txt`. Each was made by `python3 tools/record.py <plan> --work work/stage1/rec/<name>
+--port-base 37780`, with `--start <Start>` where the start is a state (`--model 128K` for `m128`); the plan is the
+name (`reset3`'s plan is `gameover`). 48K unless said; every replay diverged 0. The writers opened these recordings
+(`kit/rs.py open --ttd work/stage1/rec/<name>/session.ttd`) and made none of their own; the last seven rows were
+made at the integration, for what the first draft knew only from the code.
 
 | Name | Start | Frames | How | What it reached |
 | --- | --- | ---: | --- | --- |
 | `c1` | power-on | 21 265 | section 1 | the load, the credits, the attract race, the menu tour (ONE / TWO PLAYERS, the methods popup, DEFINE KEYS), KEYBOARD, stage 1 with throttle, left, right, wheelie, brakes, pause and resume, the time out, the lap table, the credits |
 | `m128` | power-on, 128K | 16 685 | the 128 menu's Tape Loader, the tape at signal speed, KEYBOARD, the weave | the 128K load (doc 03 3.2), the AY path (`$6851` writes `$FFFD` / `$BFFD`), stage 1 |
 | `ctl` | `c1/loaded.szx` | 4 316 | each method picked in turn, its keys or the joystick held 200 frames each | all five methods (SINCLAIR LEFT, KEMPSTON, SINCLAIR RIGHT, CURSOR, KEYBOARD): throttle gives 25 km/h after 200 frames under each, brakes 17; DEFINE KEYS with THROTTLE redefined to W, then W drives |
-| `stages` | `c1/menu-kb.szx` | 23 908 | all seven ZXDB POKEs (infinite time, immune, keep speed: below), a weave of throttle with short left and right taps; `stage-XX.szx` saved at each change | stage 2 at frame 3 422, 3 at 5 340, 4 at 7 806, 5 at 10 272, the race's end (`$5E23` = 5) at 13 012, the lap table, the hiscore table, the name END entered (its first row: 5220362 END 4'59"64), TOP updated, the credits |
+| `stages` | `c1/menu-kb.szx` | 23 908 | all seven ZXDB POKEs (infinite time, immune, keep speed: below), a weave of throttle with short left and right taps; `stage-XX.szx` saved at each change | stage 2 at frame 3 422, 3 at 5 340, 4 at 7 806, 5 at 10 272, the race's end (`$5E23` = 5) at 13 012, the lap table, the hiscore table, the name EHD entered (the script meant END, the cursor sat on H; its first row: 5220362 EHD 4'59"64), TOP updated, the credits |
 | `twoplayer` | `c1/menu-kb.szx` | 21 272 | TWO PLAYERS, START GAME, the weave, no POKE | player 1 fell and lay with the timer stopped at 44 (frames 4 296-10 194); SPACE handed the turn to player 2 (2UP, from 52 s, 10 892), who fell too; then 1UP again with its own time and score (13 688 at 20 672): the turns alternate on a fall |
 | `crash` | `c1/play.szx` | 4 580 | throttle and hard steering into the roadside, then wheelies, no POKE | the falls at speed, the bike down at 0 km/h (3 320), the rider getting up beside it (4 580) with the timer running |
 | `reset3` | `c1/menu-kb.szx` | 9 298 | planned as a game over by the timer: the six POKEs without infinite time | stages 1-3; in stage 3 the reset of section 1 (frames 6 662-6 944); kept as the second witness of it |
+| `truck` | `stages/stage-02.szx` (stage 3, `stages` 5 340) | 1 541 | `stages`' keys from 5 340 replayed; the Immune To Trucks byte put back (43151 = `$CD`), the other six POKEs of that state still in place; stops 300 frames after the fall | a truck head-on at frame 1 240: TruckCrash `$A88F` L1 1, then Crash ([screen](docs/img/play/truck-001241-truck-crash.png)) |
+| `fall5` | `stages/stage-04.szx` (stage 5, `stages` 10 272) | 391 | `stages`' keys from 10 272; the obstacle and truck bytes put back (the other POKEs in place); stops 300 frames after the fall | stage 5 off the road: FallStage5 `$AD36` L1 8 (frames 235-280), Crash `$AF02` L1 1, OffRoadStage5's `RET NC` 24 times |
+| `names` | `c1/play.szx` | 3 580 | POKE Score `$5E18` = " 300000" and Timer `$5E1F` = 1 at frame 0 (said in record.json); ENTER on the lap table; the cursor steered by DrawCursor's operand (`$83EB` line, `$83EC` column) and each pick checked on NamePlace (`$8A1B`) | the name entry: LEFT wrap (2 283), RIGHT wrap (2 335), = deleting the first letter (2 526), "ER" typed, END (2 948); NameDelete, NameSpace, NameLeftWrap, NameRightWrap and NameDone L1 1 each |
+| `tech-ramp-wheelie` | `c1/play.szx` | 1 625 | c1's keys from its frame 14 075, with THROTTLE + WHEELIE at c1 frames 15 380-15 499 (doc 10, 10.11) | RampCap `$A808` L1 1 at frame 1 412 (c1 15 487): the ramp taken with the speed kept |
+| `tech-land-wheelie` | `c1/play.szx` | 1 625 | c1's keys, THROTTLE + WHEELIE at c1 15 600-15 639 | the landing with WHEELIE held at frame 1 552 (c1 15 627): the `JR NZ` at `$AEE5` taken, no BounceTime (c1 and `tech-ramp-wheelie` bounce there) |
+| `tech-brake-bend` | `c1/play.szx` | 1 245 | c1's keys, BRAKES alone at c1 15 130-15 169 | doc 10's `brake-bend` keys as a recording (its SPEED figures are the run's samples, 10.11) |
+| `tech-cheat` | `c1/play.szx` | 625 | c1's keys, CAPS SHIFT + Q from c1 14 200 until CheatStep reads `$FF` | CheatKey `$A659` L1 1 (frame 126), CheatFixedStep `$A674` L1 51 |
 
 The POKEs (ZXDB's `.pok` for Enduro Racer; each is written by the input script at frame 0 and lives only in the
 recording, never in an image): Infinite Time `43649,58` (the `LD ($5E1F),A` at `$AA81` becomes `LD A,($5E1F)`),
@@ -150,9 +161,9 @@ Immune To Obstacles `42971,1`, Immune To Trucks `43151,1`, Keep Speed Off Road `
 Kept out: `c1-try1`, `m128-try1` (the menu missed, NOTES) and `stages-try1` (the stage 3 reset at 6 714, analysed in
 section 1; superseded by `stages`).
 
-Not reached: a game over that puts a score on the table without POKEs (the timer ends stage 1 in c1 with 53 674,
-below the table; the table and the name entry are in `stages`), and the event each sound routine serves (NOTES,
-sounds: no audio is played in this case's capture).
+Not reached: a game over that puts a score on the table without any POKE (the timer ends stage 1 in c1 with 59 674,
+below the table; the table and the name entry are in `stages` and `names`, both with POKEs), and the event each sound
+routine serves (NOTES, sounds: no audio is played in this case's capture).
 
 ### 6.1 The screens
 
@@ -210,7 +221,7 @@ From the recordings above, named `<recording>-<frame>-<moment>.png` in `docs/img
 | ![the race over, stages 13 012](docs/img/play/stages-013012-stage-05.png) | ![the lap table, stages 22 204](docs/img/play/stages-022204-table-held.png) |
 | 13 012: the race over (`$5E23` = 5) | 22 204: the lap table of the five stages |
 | ![the hiscore table, stages 22 308](docs/img/play/stages-022308-hiscore.png) | ![the name entered, stages 22 708](docs/img/play/stages-022708-name-entered.png) |
-| 22 308: the hiscore table (SCORE, NAME, TIME) and the letter grid | 22 708: END entered first |
+| 22 308: the hiscore table (SCORE, NAME, TIME) and the letter grid | 22 708: EHD entered first |
 
 **128K and the stage 3 reset.**
 
@@ -222,5 +233,71 @@ From the recordings above, named `<recording>-<frame>-<moment>.png` in `docs/img
 | 14 689: stage 1 on the 128K (AY) | `reset3` 6 662: the bike high in the air, stage 3 |
 | ![black, reset3 6 794](docs/img/play/reset3-006794-time-up.png) | ![the ROM, reset3 6 944](docs/img/play/reset3-006944-over-0.png) |
 | 6 794: the reset | 6 944: the ROM's copyright |
+
+**The integration's recordings (truck, names; POKEs said in 6.0).**
+
+| | |
+| --- | --- |
+| ![a truck head-on, truck 1 241](docs/img/play/truck-001241-truck-crash.png) | ![after the delete, names 2 558](docs/img/play/names-002558-deleted.png) |
+| `truck` 1 241: stage 3, the truck head-on, the frame after TruckCrash | `names` 2 558: the first letter deleted by = |
+| ![ER typed, names 2 795](docs/img/play/names-002795-name-er.png) | |
+| 2 795: "ER" typed, the cursor on R | |
+
+### 6.2 The animations
+
+Every GIF the documents link, with the recording and the frames it was cut from (`frame:T` for a window inside a
+frame). The writers' work folders (`work/docs/erA`, `erB`, `erC`) hold the open sessions and samples; each caption
+gives the command. The `tools/play_techniques.py` runs replay `c1/play.szx` (c1 frame 14 075) with one change to the
+keys; their frames are c1's, and the same keys are recorded as `tech-*` (6.0).
+
+| File (`docs/img/`) | Document | Recording | Frames |
+| --- | --- | --- | --- |
+| `play/c1-time-out.gif` | [1](docs/01-game-design.md) | `c1` | 19 150-19 470, every 8th |
+| `routines/Chain1.gif` | [3](docs/03-build-and-load.md) | `c1` | 1 574-1 577, half a frame a picture |
+| `load/chain3-c1.gif` | 3 | `c1` | 1 576-1 626, half a frame a picture |
+| `load/load-c1.gif` | 3 | `c1` | 600-11 700, every 300th |
+| `routines/Interrupt.gif` | [4](docs/04-game-loop.md) | `c1` | 17 950:0-17 950:36 000 |
+| `routines/RaceLoop.gif` | 4 | `c1` | 17 945-17 952, half a frame a picture |
+| `play/reset3-jump-to-reset.gif` | 4 | `reset3` | 6 700-6 800, every 2nd |
+| `routines/Interrupt-reset.gif` | 4 | `reset3` | 6 758:60 000-6 759:30 000 |
+| `play/menu-tour.gif` | [5](docs/05-controls.md) | `c1` | 13 410-13 960, every 4th |
+| `play/bike-keys.gif` | 5 | `c1` | 14 364-14 564, every 2nd |
+| `routines/BikeControl.gif` | 5 | `c1` | 14 403:66 500-14 403:68 100 |
+| `play/road-crest-bend.gif` | [6](docs/06-rendering.md) | `c1` | 15 040-15 400, every 4th |
+| `routines/DrawRoad.gif` | 6 | `c1` | 15 199:23 100-15 200:47 950 |
+| `routines/GroundTexture.gif` | 6 | `stages` | 5 401-5 404 (stage 3) |
+| `routines/HorizonScrollStep.gif` | 6 | `c1` | 15 299:10 600-15 299:57 400 |
+| `routines/DrawShifted.gif` | 6 | `c1` | 15 200:61 790-15 201:8 430 |
+| `play/rider-nearer.gif` | 6 | `c1` | 15 080-15 380, every 3rd |
+| `routines/DrawObject.gif` | 6 | `c1` | 15 202:40 250-15 202:54 830 |
+| `routines/ObjectWalk.gif` | [7](docs/07-objects.md) | `c1` | 15 015:42 600-15 015:69 300 |
+| `routines/DrawBike.gif` | 6 | `c1` | 15 201:20 850-15 201:53 560 |
+| `routines/DrawDust.gif` | 6 | `stages` | 5 404:33 570-5 404:41 600 (stage 3) |
+| `routines/CopyBuffer.gif` | 6 | `c1` | 15 204:39 700-15 205:47 800 |
+| `routines/DrawHorizon.gif` | 6 | `c1` | 15 205:47 800-15 206:43 340 |
+| `play/stretch-decode.gif` | 7 | `c1` | 14 995-15 195, every 4th |
+| `routines/TrackStep.gif` | 7 | `c1` | 15 011 |
+| `routines/MoveRiders.gif` | 7 | `c1` | 15 014:38 000-15 014:40 900 |
+| `routines/PrintChar.gif` | [8](docs/08-hud-and-text.md) | `c1` | 15 206:44 700-15 206:47 045 |
+| `routines/AddScore.gif` | 8 | `c1` | 15 206:43 790-15 206:58 680 |
+| `play/hud-update.gif` | 8 | `c1` | 14 480-14 720, every 3rd |
+| `play/countdown.gif` | 8 | `c1` | 14 020-14 200, every 2nd |
+| `play/name-entry.gif` | 8 | `stages` | 22 296-22 720, every 4th |
+| `routines/PlayChannel.gif` | [9](docs/09-sound.md) | `c1` | 15 034:1 800-15 034:23 400 |
+| `routines/Throttle.gif` | [10](docs/10-gameplay-logic.md) | `c1` | 15 474-15 475 |
+| `routines/BikeLateralPush.gif` | 10 | `c1` | 15 250-15 253 |
+| `play/race-jump.gif` | 10 | `c1` | 15 460-15 690, every 5th |
+| `routines/Ramp.gif` | 10 | `c1` | 15 485 |
+| `play/race-overtake.gif` | 10 | `c1` | 15 160-15 320, every 4th |
+| `play/race-crash.gif` | 10 | `c1` | 15 830-16 115, every 6th |
+| `routines/Crash.gif` | 10 | `c1` | 15 841-15 842 |
+| `play/race-checkpoint.gif` | 10 | `stages` | 3 310-3 440, every 3rd |
+| `play/race-timeout.gif` | 10 | `c1` | 19 180-19 480, every 10th |
+| `play/race-ramp-wheelie.gif` | 10 | run `ramp-wheelie` (`tech-ramp-wheelie`) | c1 15 380-15 699, every 4th |
+| `play/race-land-wheelie.gif` | 10 | run `land-wheelie` (`tech-land-wheelie`) | c1 15 560-15 699, every 4th |
+| `play/race-brake-bend.gif` | 10 | run `brake-bend` (`tech-brake-bend`) | c1 15 100-15 319, every 4th |
+| `play/race-ramp-plain.gif` | 10 | run `ramp-plain` (c1's own keys) | c1 15 380-15 699, every 4th |
+| `play/race-cheat.gif` | 10 | run `cheat` (`tech-cheat`) | c1 14 180-14 699, every 4th |
+| `play/race-reset3.gif` | 10 | `reset3` | 6 600-6 800, every 5th |
 
 ## 7. Review

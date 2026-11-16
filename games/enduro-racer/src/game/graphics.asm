@@ -1,5 +1,5 @@
 ; --------------------------------------------------------------------------------------------------------------------
-; graphics.asm: The graphics and tables: sprites, the font, the perspective and edge tables, the big digits, the hill profiles, the horizons, the track tables
+; graphics.asm: The graphics and tables: sprites, the font, the perspective and edge tables, the big digits, the bend profiles, the horizons, the track tables
 ;
 ; Everything here is read through the descriptors and routines named in each entry; the editable forms are in src/res
 ; (each folder's README). Bytes no routine reads are kept as documented leftovers.
@@ -120,15 +120,9 @@ RoadRowsOldData:
   DEFB $7E,$C3,$99,$42,$99,$99,$C3,$7E
   DEFB $3C,$42,$B9,$B9,$C1,$79,$42
 
-; BlendHill's steps: 16 rows of slowly rising values (49 bytes to $7607)
-HillBlend:
-  DEFB $7C,$00,$00,$00,$01,$01,$01,$01
-  DEFB $02,$02,$02,$02,$03,$03,$03,$03
-  DEFB $04,$00,$00,$01,$01,$02,$02,$02
-  DEFB $03,$03,$04,$04,$05,$05,$05,$06
-  DEFB $06,$00,$00,$01,$01,$02,$02,$03
-  DEFB $03,$04,$04,$05,$05,$06,$06,$07
-  DEFB $07
+; BlendBend's steps: 16 rows of slowly rising values (49 bytes to $7607)
+BendBlend:
+  INCBIN "res/tables/bendblend.bin",$0000,49
 
 ; The 8x8 font, characters $20-$5E (PrintChar's base $7508 = Font - $100: code
 ; - $20 rows of 8)
@@ -149,9 +143,10 @@ Perspective:
 EdgePatterns:
   INCBIN "res/tables/edges.bin",$0000,384
 
-; The curve's bend of each row (RoadRowsCurve: perspective * curve / 512)
-CurveTable:
-  INCBIN "res/tables/curve.bin",$0000,128
+; The crest's change of each row's screen line (RoadRowsCrest: perspective *
+; crest table / 512)
+CrestTable:
+  INCBIN "res/tables/crest.bin",$0000,128
 
 ; The second set of edge patterns (DrawRoad, chosen by bit 2 of the row)
 EdgePatterns2:
@@ -200,10 +195,10 @@ ExtendedTime:
 BigDigits:
   INCBIN "res/font/bigdigits.bin",$0000,300
 
-; The three hills' profiles, 128 rows each (ScrollHills: $7D80 + 128 * (hill -
-; 1))
-HillProfiles:
-  INCBIN "res/tables/hills.bin",$0000,384
+; The three bends' profiles, each row's sideways shift, 128 rows each
+; (ScrollBends: $7D80 + 128 * (bend - 1))
+BendProfiles:
+  INCBIN "res/tables/bends.bin",$0000,384
 
 ; Two tables of 128 a road row: $7F00 + row the row's scale (edge pattern,
 ; sideways scale), $7F80 + row its half width

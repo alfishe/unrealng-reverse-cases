@@ -1,4 +1,4 @@
-x,acceleration,top_speed,hill_pose
+x,acceleration,top_speed,bend_pose
 15,20,10,2
 -15,24,7,2
 30,12,5,1

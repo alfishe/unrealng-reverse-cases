@@ -491,9 +491,9 @@ frames, 8.0 on average.
 2. RaceCount `$A64E`: PassCount `$7C2E` + 1; CAPS SHIFT and Q toggle CheatStep (4.8).
 3. RaceStep: ScrollStep = SPEED x 14.
 4. RacePass `$A67E`:
-   - AyEffectTick, AdvanceTrack (the track moves on by ScrollStep), ScrollHills;
+   - AyEffectTick, AdvanceTrack (the track moves on by ScrollStep), ScrollBends;
    - the stage's row builder and road routine, two `CALL nn` patched by StartRace from StageParams `$A187`: DrawRoad
-     with RoadRowsCurve on stages 1, 2 and 4, DrawRoad with RoadRowsJump on stage 3, RoadNone on stage 5;
+     with RoadRowsCrest on stages 1, 2 and 4, DrawRoad with RoadRowsJump on stage 3, RoadNone on stage 5;
    - GroundTexture (the ground's dots), MoveRiders (not during the countdown), DrawRiders;
    - BikeControl and DrawBike (not after the finish), DrawDust, DrawSplash, HorizonScrollStep, BikeHitX.
 5. ObjectWalk `$A6D9`: the track from the bike forward, each object drawn (DrawObject); the ones on the bike's row
@@ -511,7 +511,7 @@ RaceLoop:
     if Countdown: count down, show the digit
     PassCount += 1
     ScrollStep = SPEED * 14
-    move the track, the hills
+    move the track, the bends
     build the road rows; draw the road         ; per stage
     ground, riders, bike, dust, splash, horizon step
     walk the objects: draw, collide
@@ -546,7 +546,7 @@ RacePass:                   ; $A67E
   LD (ScrollStep),DE
   CALL AyEffectTick
   CALL AdvanceTrack
-  CALL ScrollHills
+  CALL ScrollBends
 RowBuilderCall:
   CALL RoadRowsJump       ; patched per stage
 RoadCall:
@@ -559,7 +559,7 @@ RoadCall:
 flowchart TD
     A["RaceLoop: countdown"] --> B["PassCount + 1, cheat key"]
     B --> C["ScrollStep = SPEED x 14"]
-    C --> D["track, hills"]
+    C --> D["track, bends"]
     D --> E["row builder, road: per stage"]
     E --> F["ground, riders, bike, dust, splash, horizon step"]
     F --> G["ObjectWalk: draw, collide"]
@@ -582,7 +582,7 @@ flowchart TD
   17 945 and 17 953, 8 frames apart.
 - ScrollStep = 138 x 14 = 1 932 = `$078C` in 8.8, 7.5 track units: a segment of 128 units takes 17 passes.
 - The trace of the 8 frames is 559 091 T. BlitHead takes 21.6 %, EngineSound 17.1 %, CopyRows 15.3 %, Multiply
-  8.6 %, ShiftLeftHead 7.9 %, DrawRoad 3.5 %, HorizonHidden 3.4 %, RoadRowsCurve 3.1 %.
+  8.6 %, ShiftLeftHead 7.9 %, DrawRoad 3.5 %, HorizonHidden 3.4 %, RoadRowsCrest 3.1 %.
 
 ![RaceLoop: one 8-frame pass, the back buffer filled, then copied to the screen](img/routines/RaceLoop.gif)
 

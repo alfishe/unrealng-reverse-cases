@@ -10,18 +10,19 @@ MenuItem       EQU Start+1  ; after the start: the main menu's item
 WaitCount      EQU Start+2  ; after the start: WaitKey's count (two bytes, over $8003)
 LineBuffer     EQU Start  ; after the start: the sprite routines' line buffer $8000-$80B7
 KeyNamesBase   EQU KeyNames-3  ; PrintKeyName's base: KeyNames + 3 * (code - 1)
+BackLine64     EQU TrackTables+$0300  ; $EE00: the back buffer's lines 64-191 ($4800-$57FF + $A600), over the track tables in play
   ORG $5B00
   INCLUDE "entry.asm"  ; Mover, the entry, the IM 2 table and the 128K test
   INCLUDE "interrupt.asm"  ; The IM 2 handler: its own stack, the repair of the two bytes its push wrote, the sound
   INCLUDE "sound.asm"  ; Sound: the AY tunes, the effects, the engine on the beeper or the AY
-  INCLUDE "graphics.asm"  ; The graphics and tables: sprites, the font, the perspective and edge tables, the big digits, the hill profiles, the horizons, the track tables
+  INCLUDE "graphics.asm"  ; The graphics and tables: sprites, the font, the perspective and edge tables, the big digits, the bend profiles, the horizons, the track tables
   INCLUDE "menu.asm"  ; The attract loop, the main menu, the control methods, DEFINE KEYS, the text printer, the keys
   INCLUDE "flow.asm"  ; A game: the players' blocks and turns, a turn's screen, game over, the records, the lap table, the high scores and the name entry
   INCLUDE "render.asm"  ; The back buffer, RowTable, the sprite blitters, the copy to the screen
   INCLUDE "objects.asm"  ; The roadside objects, the riders, the splash and the dust
   INCLUDE "bike.asm"  ; The bike: the controls, the lean and the steering, wheelies, jumps, falls and getting up, the collisions, off the road
-  INCLUDE "horizon.asm"  ; The horizons: the stage's picture above the road, rotated sideways on the curves
-  INCLUDE "road.asm"  ; The road: its rows from the hills and curves, the drawing of the edges, the ground's dots, the hill table
+  INCLUDE "horizon.asm"  ; The horizons: the stage's picture above the road, rotated sideways in the bends
+  INCLUDE "road.asm"  ; The road: its rows from the bends and crests, the drawing of the edges, the ground's dots, the bend table
   INCLUDE "race.asm"  ; A stage: the start, the pass loop, the countdown, the collisions, the HUD, the timer, the stage's end and the finish
 
   SAVEBIN "game.bin",$5B00,$A500

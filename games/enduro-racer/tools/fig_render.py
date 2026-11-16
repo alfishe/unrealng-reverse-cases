@@ -8,7 +8,7 @@
 layout: the back buffer as RowTable maps it (lines 40-63 linear from $EB00, lines 64-191 at the screen's address +
 $A600) at the moment just before CopyBuffer (--built F:T), beside the screen after the copy (--shown, T 0), with the
 address of each band. rows: for each --frame (memory at T 0), the screen's lines 64-191 beside the road's tables:
-RoadLines ($5C00, the screen line of each of the 128 rows), HillRows ($5B80, the sideways shift of each row) and the
+RoadLines ($5C00, the screen line of each of the 128 rows), BendRows ($5B80, the sideways shift of each row) and the
 lines RowList ($5B00) draws. edges: the edge patterns, EdgePatterns ($7880) and EdgePatterns2 ($7A80): 15 width
 classes, 8 shifts of 3 bytes each (build/game.bin). horizons: the three horizon pictures and StageTable ($9E67).
 """
@@ -125,7 +125,7 @@ def cmd_rows(args):
     block = 330
     pic = Image.new('RGB', (WIDTH, 40 + block * len(args.frame) + 56), K.BACKGROUND)
     d = ImageDraw.Draw(pic)
-    d.text((12, 8), 'The road\'s rows: RoadLines (row to screen line) for a crest, HillRows (row to shift) for a '
+    d.text((12, 8), 'The road\'s rows: RoadLines (row to screen line) for a crest, BendRows (row to shift) for a '
                     'bend', fill=K.TEXT, font=ft)
     for i, (frame, label) in enumerate(zip(args.frame, args.label)):
         y0 = 40 + i * block
@@ -136,8 +136,8 @@ def cmd_rows(args):
         rowlist = live.mem(frame, 0x5B00, 128)
         seg = live.mem(frame, 0x5E2D, 5)
         top = live.mem(frame, 0x9177, 1)[0]
-        d.text((12, y0), f'c1 {frame} (T 0): {label}.   CurveDir {seg[0]:02X}, HillPrev {seg[1]}, Hill {seg[2]}, '
-                         f'CurvePrev {seg[3]}, Curve {seg[4]}, RoadTopRow ${top:02X}', fill=K.TEXT, font=f)
+        d.text((12, y0), f'c1 {frame} (T 0): {label}.   BendDir {seg[0]:02X}, BendPrev {seg[1]}, Bend {seg[2]}, '
+                         f'CrestPrev {seg[3]}, Crest {seg[4]}, RoadTopRow ${top:02X}', fill=K.TEXT, font=f)
         shot = K.render_screen(scr).crop((0, 64, 256, 192)).resize((384, 192), Image.NEAREST)
         pic.paste(shot, (12, y0 + 24))
         d.text((12, y0 + 222), 'screen lines 64-191', fill=K.DIM, font=fs)
@@ -151,16 +151,15 @@ def cmd_rows(args):
         drawn = [v for v in rowlist if v < 0xFE]
         d.text((x0 + 6, py + h - 34), f'RowList: {len(drawn)} lines drawn,', fill=K.DIM, font=fs)
         d.text((x0 + 6, py + h - 18), f'{len(set(drawn))} distinct rows', fill=K.DIM, font=fs)
-        # HillRows: row (x) against the shift
+        # BendRows: row (x) against the shift
         x1 = 775
-        plot_axes(d, x1, py, w, h, 128, 0, 192, fs, 'road row', 'HillRows: sideways shift',
+        plot_axes(d, x1, py, w, h, 128, 0, 192, fs, 'road row', 'BendRows: sideways shift',
                   [0, 32, 64, 96, 128, 160, 192])
         pts = [(x1 + r * w / 128, py + v * h / 192) for r, v in enumerate(hills)]
         d.line(pts, fill=(240, 200, 70), width=2)
     wrap(d, 'RoadLines is the line each row lands on (row 0 the nearest, at $BF on the flat); on a crest the near '
-            'rows start higher ($9E) and the far ones crowd toward line $70. HillRows is added to each row\'s centre '
-            'before the scaling: a bend. The .ann names them the other way round (Hill for the bend, Curve for the '
-            'crest).', 12, pic.height - 50, WIDTH - 24, fs, K.DIM)
+            'rows start higher ($9E) and the far ones crowd toward line $70. BendRows is added to each row\'s centre '
+            'before the scaling: a bend. The .ann names them Crest (bits 2-3) and Bend (bits 0-1).', 12, pic.height - 50, WIDTH - 24, fs, K.DIM)
     pic.save(args.out)
     print(args.out, pic.size)
 

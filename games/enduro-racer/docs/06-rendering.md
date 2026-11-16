@@ -6,8 +6,7 @@ What this covers:
 - RowTable `$FE00` and SetRowTable `$8E7D`: one table of line addresses that every drawing routine reads with SP
   (6.2);
 - the road model: Perspective `$7800`, RoadLines `$5C00`, the row builders, RowList `$5B00`, RoadTopRow (6.3);
-- the bend and the crest: HillRows `$5B80` shifts the rows sideways, CurveTable `$7A00` bends RoadLines; the source
-  names them the other way round (6.4);
+- the bend and the crest: BendRows `$5B80` shifts the rows sideways, CrestTable `$7A00` moves RoadLines up or down (6.4);
 - DrawRoad `$931E`: the pre-shifted edges, SP walking RowTable, Multiply's patched return, the runs (6.5);
 - the ground's dots and dashes of stages 3 and 5, GroundTexture `$A301` (6.6);
 - the horizons and their rotation on a bend, HorizonScrollStep `$99F0` (6.7);
@@ -36,8 +35,8 @@ Conventions:
   a pass takes about 8 frames. The pass of the worked examples runs from 15199:0 to 15206:58685.
 - **Line** is a pixel line of the screen, 0-191 from the top. **Row** is a road row, 0-127, 0 the nearest.
 - **Stage 1-5** is the number the HUD shows. The variable Stage `$5E23` holds it minus 1.
-- The source calls the sideways shift "Hill" and the vertical bend "Curve". This document says **bend** and **crest**
-  and gives the source's name beside them (6.4).
+- A **bend** shifts the road's rows sideways, a **crest** moves their lines up or down (6.4). The source's names
+  say the same (Bend, Crest; the stage 2 source had them the other way round as Hill and Curve).
 
 ## 6.1 The screen and the back buffer
 
@@ -155,9 +154,9 @@ then, for each line, which row is drawn there (RowList).
 | Perspective | `$7800` | 128 | the depth of each row on the flat: `$9F` for row 0, falling toward 0 |
 | RowScale | `$7F00` | 128 | the scale of each row for the x multiply: `$FF` near, every 8th entry `ff a6 7b 62 51 46 3d 36 ...` |
 | half widths | `$7F80` | 128 | half the road's width at each row: `a7 6d 51 41 35 ...` |
-| CurveTable | `$7A00` | | the crest's profiles (6.4) |
+| CrestTable | `$7A00` | | the crest's profiles (6.4) |
 | RoadLines | `$5C00` | 128 | this pass: the screen line of each row |
-| HillRows | `$5B80` | 128 | this pass: the sideways shift of each row (6.4) |
+| BendRows | `$5B80` | 128 | this pass: the sideways shift of each row (6.4) |
 | RowList | `$5B00` | up to 80 | this pass: the row to draw on each line from the top, `$FF` the end |
 
 On the flat, RoadRowsFlat `$9DDF` gives each row the line `$70 + Perspective[row] / 2`:
@@ -224,8 +223,8 @@ l_9E0A: LD (IX+$00),L           ; the row, once for each new line
 
 ```mermaid
 flowchart LR
-    SEG["the segment: Hill, Curve, CurveDir"] --> B{"the stage's row builder (StageParams)"}
-    B -->|"stages 1, 2, 4, 5"| RC["RoadRowsCurve $9CB7"]
+    SEG["the segment: Bend, Crest, BendDir"] --> B{"the stage's row builder (StageParams)"}
+    B -->|"stages 1, 2, 4, 5"| RC["RoadRowsCrest $9CB7"]
     B -->|"stage 3"| RJ["RoadRowsJump $999A"]
     RC --> RL["RoadLines $5C00: row to line"]
     RJ --> RF["RoadRowsFlat $9DDF"]
@@ -233,7 +232,7 @@ flowchart LR
     RL --> RM["RoadRowsMake $9DF1"]
     RM --> LST["RowList $5B00: line to row"]
     RM --> TOP["RoadTopRow $9177"]
-    SH["ScrollHills $B07D"] --> HR["HillRows $5B80: row to shift"]
+    SH["ScrollBends $B07D"] --> HR["BendRows $5B80: row to shift"]
     LST --> DR["DrawRoad $931E"]
     HR --> DR
     TOP --> DR
@@ -246,7 +245,7 @@ Worked example, c1 at T 0 of frame 15 300:
 3. RowList starts `7c 74 6a 62 58 50 49 43`: the top lines show rows 124, 116, 106, 98, far apart.
 4. It ends `... 02 02 02 02 01 01 01 01 01 ff`: rows 2 and 1 cover four and five lines each.
 
-Witness: in the traced pass RoadRowsCurve ran 15199:15-15419 and RoadRowsMake 15199:15431-23107, 933 instructions
+Witness: in the traced pass RoadRowsCrest ran 15199:15-15419 and RoadRowsMake 15199:15431-23107, 933 instructions
 (`work/docs/erB/agg.py` over the trace).
 
 The point: the road is never scaled. A row's line comes from a table, and the list of lines to draw comes from one
@@ -255,75 +254,75 @@ walk of that table.
 ## 6.4 The bend and the crest
 
 A segment of the stage gives two numbers 0-3 and a direction ([7.3](07-objects.md#73-the-segment-byte-and-stagelist)).
-The source names them Hill and Curve. What they do on the screen is the other way round:
+The source names them after what they do on the screen:
 
-| Source name | Variables | Tables | What it changes | On the screen |
+| Field | Variables | Tables | What it changes | On the screen |
 | --- | --- | --- | --- | --- |
-| Hill | Hill `$5E2F`, HillPrev `$5E2E` | the hill profiles into HillRows `$5B80` | each row's x | a **bend** |
-| Curve | Curve `$5E31`, CurvePrev `$5E30` | CurveTable `$7A00` into RoadLines `$5C00` | each row's line | a **crest** |
-| CurveDir | `$5E2D` | | the sign of the bend | left or right |
+| Bend | Bend `$5E2F`, BendPrev `$5E2E` | the bend profiles (BendProfiles) into BendRows `$5B80` | each row's x | a **bend** |
+| Crest | Crest `$5E31`, CrestPrev `$5E30` | CrestTable `$7A00` into RoadLines `$5C00` | each row's line | a **crest** |
+| BendDir | `$5E2D` | | the sign of the bend | left or right |
 
-**The bend (the source's Hill).** ScrollHills `$B07D` moves HillRows on by one row each time the bike passes a row
-and fills the far end from the profile; BlendHill brings it back to 0 after the bend. DrawRoad adds HillRows[row]
+**The bend.** ScrollBends `$B07D` moves BendRows on by one row each time the bike passes a row
+and fills the far end from the profile; BlendBend brings it back to 0 after the bend. DrawRoad adds BendRows[row]
 to the row's centre before the scale (6.5). The far rows move sideways a lot, the near ones hardly: the road turns.
-Three more facts tie Hill to a bend:
+Three more facts tie Bend to a bend:
 
-- BikeLateralPush pushes the bike sideways by ScrollStep × `$52`, `$8F` or `$A4` for HillPrev 1, 2, 3, signed by
-  CurveDir: the pull of a bend ([5.7](05-controls.md#57-the-lean-and-the-steering)).
+- BikeLateralPush pushes the bike sideways by ScrollStep × `$52`, `$8F` or `$A4` for BendPrev 1, 2, 3, signed by
+  BendDir: the pull of a bend ([5.7](05-controls.md#57-the-lean-and-the-steering)).
 - The horizon rotates only while that push is not 0 (6.7).
 - RowList does not change: a bend moves no row up or down.
 
-**The crest (the source's Curve).** RoadRowsCurve `$9CB7` gives the rows over the segment's progress the line
-`$70 + Perspective × CurveTable / 512`, and the others the flat line. The near rows rise up the screen. Rows farther
+**The crest.** RoadRowsCrest `$9CB7` gives the rows over the segment's progress the line
+`$70 + Perspective × CrestTable / 512`, and the others the flat line. The near rows rise up the screen. Rows farther
 than the crest land above the top line and RoadRowsMake skips them: the road ends at the crest.
 
 ```text
-RoadRowsCurve:
-    if Curve == 0 and CurvePrev == 0: the flat lines
+RoadRowsCrest:
+    if Crest == 0 and CrestPrev == 0: the flat lines
     for each row:
         if the row is within the segment's progress (SegmentLeft):
-            RoadLines[row] = $70 + Perspective[row] * CurveTable[curve][row] / 512
+            RoadLines[row] = $70 + Perspective[row] * CrestTable[crest][row] / 512
         else:
             RoadLines[row] = $70 + Perspective[row] / 2
     RoadRowsMake
 ```
 
-![RoadLines on a crest, HillRows on a bend](img/render/rows.png)
+![RoadLines on a crest, BendRows on a bend](img/render/rows.png)
 
-*Figure 6.2: `c1` at T 0 of frames 15 100 (Curve 3) and 15 300 (Hill 1). For each frame: the screen's lines 64-191,
-RoadLines (row to line) and HillRows (row to shift). Command: `python3 tools/fig_render.py rows --work
-work/docs/erB/c1 --frame 15100 --label "a crest (the .ann's Curve 3)" --frame 15300 --label "a bend (the .ann's
-Hill 1)" --out docs/img/render/rows.png`.*
+*Figure 6.2: `c1` at T 0 of frames 15 100 (Crest 3) and 15 300 (Bend 1). For each frame: the screen's lines 64-191,
+RoadLines (row to line) and BendRows (row to shift). Command: `python3 tools/fig_render.py rows --work
+work/docs/integrate/c1 --frame 15100 --label "a crest (the .ann's Crest 3)" --frame 15300 --label "a bend (the .ann's
+Bend 1)" --out docs/img/render/rows.png`.*
 
 How to read:
 
 - RoadLines is drawn with line 112 at the top, as on the screen. The flat curve reaches line 191 at row 0.
 - At 15 100 row 0 lands on `$9E`, line 158, and the far rows stay near line `$76`. The lines below 158 are ground.
-- At 15 300 RoadLines is the flat curve, and HillRows rises from 0 at row 0 to `$BD` at row 127.
+- At 15 300 RoadLines is the flat curve, and BendRows rises from 0 at row 0 to `$BD` at row 127.
 
 Worked example, frame 15 100: RowList is `7c 2e 29 24 20 1d ... 01 01 01 01 ff`, 38 lines. After row 124 at the top
 it jumps to row 46: rows 47 to 123 land on lines already taken and are skipped. RoadTopRow is 5.
 
-Witness: c1 `memory_at` at 15 100 (CurveDir, HillPrev, Hill, CurvePrev, Curve = `01 00 00 03 03`) and at 15 300
-(Hill 1, HillPrev 1, Curve 1). The animation below shows the switch from one to the other.
+Witness: c1 `memory_at` at 15 100 (BendDir, BendPrev, Bend, CrestPrev, Crest = `01 00 00 03 03`) and at 15 300
+(Bend 1, BendPrev 1, Crest 1). The animation below shows the switch from one to the other.
 
 ![The road over a crest and a bend](img/play/road-crest-bend.gif)
 
 *Animation 6.1: `c1` frames 15 040-15 400, every 4th frame, lines 40-191, with the segment's five bytes,
-RoadLines[0], RoadLines[127], RoadTopRow, HillRows[127] and HorizonScroll at T 0. Command: `python3
-tools/fig_controls.py play --work work/docs/erB/c1 --from 15040 --to 15400 --step 4 --crop 0,40,256,192 --var
-'CurveDir HillPrev Hill CurvePrev Curve=5E2D:5:hex' --var 'RoadLines[0], nearest row=5C00:1:hex' --var
-'RoadLines[127], farthest=5C7F:1:hex' --var 'RoadTopRow=9177:1:hex' --var 'HillRows[127], far shift=5BFF:1:hex'
+RoadLines[0], RoadLines[127], RoadTopRow, BendRows[127] and HorizonScroll at T 0. Command: `python3
+tools/fig_controls.py play --work work/docs/integrate/c1 --from 15040 --to 15400 --step 4 --crop 0,40,256,192 --var
+'BendDir BendPrev Bend CrestPrev Crest=5E2D:5:hex' --var 'RoadLines[0], nearest row=5C00:1:hex' --var
+'RoadLines[127], farthest=5C7F:1:hex' --var 'RoadTopRow=9177:1:hex' --var 'BendRows[127], far shift=5BFF:1:hex'
 --var 'HorizonScroll=5CF3:2:word' --title "..." --out docs/img/play/road-crest-bend.gif`.*
 
 What to watch:
 
-- RoadLines[0] at `$9E` while Curve is 3: the near road is cut short, the road drops away behind a crest.
-- RoadLines[0] back at `$BF` and HillRows[127] climbing when Hill turns 1: the far road swings sideways.
+- RoadLines[0] at `$9E` while Crest is 3: the near road is cut short, the road drops away behind a crest.
+- RoadLines[0] back at `$BF` and BendRows[127] climbing when Bend turns 1: the far road swings sideways.
 - HorizonScroll moving only during the bend, the mountains turning with it.
 
-The point: a bend moves rows sideways; a crest moves them up and hides some. Both are table lookups. The names in
-the source are swapped; the rename is asked for in `work/docs/erB-src-changes.md`.
+The point: a bend moves rows sideways; a crest moves them up and hides some. Both are table lookups. The source names them
+so: Bend for bits 0-1, Crest for bits 2-3 (the stage 2 source had them swapped, as Hill and Curve).
 
 ## 6.5 DrawRoad: the edges
 
@@ -371,7 +370,7 @@ for each line, row = RowList[i]:
     set = EdgePatterns if bit 2 of (row + phase) else EdgePatterns2   # the stripes
     half = RowScale[$80 + row]                                 # half the road's width
     if RowList[i + 1] == row: DrawRoadRun; continue
-    centre = $80 +/- (HillRows[row] + the bike's offset) * RowScale[row] / 64   # Multiply
+    centre = $80 +/- (BendRows[row] + the bike's offset) * RowScale[row] / 64   # Multiply
     POP DE                                                     # this line's address
     write set[class][(centre - half) AND 7], 3 bytes, at DE + (centre - half) / 8
     write set[class][(centre + half) AND 7], 3 bytes, at DE + (centre + half) / 8
@@ -459,7 +458,7 @@ How to read:
 ![DrawRoad over one pass](img/routines/DrawRoad.gif)
 
 *Animation 6.2: DrawRoad in `c1` frames 15 199-15 200, window 15199:23100-15200:47950. The view is the back buffer's
-lines 64-191 (`$EE00`, screen order); the memory map is RowList and HillRows `$5B00-$5CFF`. Command: `python3
+lines 64-191 (`$EE00`, screen order); the memory map is RowList and BendRows `$5B00-$5CFF`. Command: `python3
 ../../kit/routine_anim.py --work work/docs/erB/c1 --window 15199:23100-15200:47950 --listing build/game.lst --view
 buffer:EE00:32x128:screen --range 5B00-5CFF --pc 931E-9614,8BAE-8BEC,8B98-8BAD --pictures 70 --title "..." --out
 docs/img/routines/DrawRoad.gif`.*
@@ -836,7 +835,7 @@ thresholds 5-80 put most of them near the bike, where a size step would show.
 
 | Step | Routine | From | T |
 | --- | --- | --- | ---: |
-| 1 | RoadRowsCurve, RoadRowsMake | 15199:15 | 23 100 |
+| 1 | RoadRowsCrest, RoadRowsMake | 15199:15 | 23 100 |
 | 2 | DrawRoad with DrawRoadRun | 15199:23135 | 94 670 with an interrupt |
 | 3 | GroundTexture (returns), MoveRiders | 15200:47944 | 2 900 |
 | 4 | DrawRiders: three riders | 15200:50853 | 38 350 |
@@ -1032,7 +1031,7 @@ The point: below the HUD the screen has one writer, the copy. Everything else ha
 - RowTable `$FE00` holds every line's address; SetRowTable points it at the buffer or the screen. Every drawing
   routine pops line addresses from it with SP.
 - The road is 128 rows. RoadLines maps rows to lines, RowList lines to rows; RoadTopRow places the list in RowTable.
-- The source's Hill is a bend (HillRows, a sideways shift); its Curve is a crest (RoadLines bent, far rows hidden).
+- Bend is a sideways shift (BendRows); Crest moves RoadLines (the far rows hidden behind the crest).
 - DrawRoad writes two pre-shifted 3-byte edges a line; Multiply returns by a patched `JP` because SP is in RowTable.
 - GroundTexture adds dots (stage 3) or dashes (stage 5) from the ROM's bytes, at two frames a pass.
 - The horizon rotates its own bytes, 1 or 4 pixels at a time, on a bend.

@@ -11,7 +11,7 @@ calls install(files) with the bytes of each @res entry.
 | --- | --- | --- |
 | `texts/NAME.bin` | `texts/NAME.txt` | UTF-8, one string a line, joined with nothing; `{XX}` a byte outside $20-$7E or a trailing space |
 | `tables/NAME.bin`, `sound/notes.bin` | `.csv` | a header of field names, one record a line (TABLES); a `tail` line holds bytes after the last whole record |
-| `tables/hills.bin`, `tables/rowscale.bin` | `.csv` | tables kept as consecutive columns (COLUMNS): one line a row, one field a column |
+| `tables/bends.bin`, `tables/rowscale.bin` | `.csv` | tables kept as consecutive columns (COLUMNS): one line a row, one field a column |
 | `font/font.bin`, `font/bigdigits.bin`, `tables/countglyphs.bin` | `.png` | glyphs side by side (GLYPHS): index 0 paper, 1 ink, 2 no glyph |
 | `horizons/NAME.bin` | `horizons/NAME.png` | 256 pixels wide, one line of 32 bytes a pixel row |
 | `sprites/objects.bin`, `sprites/sprites.bin` | `.png`, `.csv` | every sprite the descriptors name, placed on a sheet; the CSV a line a sprite (address, width in bytes, rows, place on the sheet, who uses it) and `bytes` lines for bytes no descriptor holds |
@@ -60,11 +60,11 @@ TABLES = {
     'hiscores': (22, [('score', 't7'), ('name', 't8'), ('time', 't7')]),
     'records': (2, [('seconds', 'b'), ('hundredths', 'b')]),
     'perspective': (1, [('depth', 'd')]),
-    'curve': (1, [('bend', 'd')]),
+    'crest': (1, [('line_shift', 'd')]),
     'edges': (3, [('byte1', 'x'), ('byte2', 'x'), ('byte3', 'x')]),
     'edges2': (3, [('byte1', 'x'), ('byte2', 'x'), ('byte3', 'x')]),
     'notes': (2, [('period', 'w')]),
-    'riderstarts': (4, [('x', 's'), ('acceleration', 'd'), ('top_speed', 'd'), ('hill_pose', 'd')]),
+    'riderstarts': (4, [('x', 's'), ('acceleration', 'd'), ('top_speed', 'd'), ('bend_pose', 'd')]),
     'riders': (21, [('threshold', 'd')] + [(f'{f}{p}', k) for p in range(5)
                                           for f, k in (('rows', 'd'), ('width', 'd'), ('address', 'w'))]),
     'objects': (6, []),  # objects_export: eight lists, a head (farthest row, aligned row) then 6-byte entries
@@ -72,9 +72,15 @@ TABLES = {
     'stageparams': (10, [('road', 'w'), ('rows', 'w'), ('offroad', 'w'), ('attribute', 'x'), ('copy_mode', 'd'),
                          ('unused1', 'x'), ('unused2', 'x')]),
     'collisions': (2, [('half_width', 'd'), ('height', 'd')]),
+    'lean': (1, [('force', 'x')]),
+    'steer': (1, [('force', 'd')]),
+    'dotmasks': (1, [('mask', 'x')]),
+    'dust': (1, [('x_offset', 's')]),
+    'ayeffect': (2, [('register', 'd'), ('value', 'x')]),
+    'bendblend': (1, [('step', 'd')]),
 }
 COLUMNS = {
-    'hills': ['hill1', 'hill2', 'hill3'],
+    'bends': ['bend1', 'bend2', 'bend3'],
     'rowscale': ['scale', 'half_width'],
 }
 # glyph sets: (glyph width in bytes, [rows of each glyph])
@@ -93,16 +99,17 @@ TUNE_HELP = """# The AY tune streams ($66CA-$67FA, PlayChannel). One command a l
 # `stream $ADDR NAME` lines mark where a stream or a phrase starts (checked by the build)."""
 TRACK_HELP = """# The track's patterns (Init copies $EB00-$F0AF to $5E80; the addresses here are the copy's).
 # Commands (TrackStep; distances in SegmentLeft's units, 128 a segment):
-#   obj TYPE LEN X  an object (type 0 ramp, 1-7 ObjectTypes, 10 the VarObject), LEN*2 units before the next,
-#                   at X (signed, the road's centre 0)
-#   call $ADDR LEN  run the pattern at ADDR for LEN units (forever: until its `ret`)
+#   obj TYPE LEN X  an object (type 0 ramp, 1-7 ObjectTypes, 10 the VarObject), LEN*2 units after the previous
+#                   element, at X (signed, the road's centre 0)
+#   call $ADDR LEN  run the pattern at ADDR for LEN units counted from the element before the call: its elements
+#                   less than LEN from there are placed, the one that reaches LEN is not (forever: until its `ret`)
 #   ret | jump $ADDR | mark N (a gap end, stage 3) | var N (VarObject = 2N)
 #   bytes XX ...    bytes past the track's end (leftovers)
 # `pattern $ADDR` starts a pattern; `#` starts a comment (the distances, the stage borders)."""
-STAGE_HELP = """# segments: one token a segment of 128 units, HILL.CURVE.DIR (hill 0 flat, 1-3 HillProfiles; curve 0
-#   straight, 1-3 the bend; DIR CurveDir 0 or 1); a suffix /XX keeps bits 6-7 other than $80 (none); the build
-#   sets bit 5 on the stage's last segment. track: the commands (patterns.txt has the format), the number after
-#   # the distance from the race's start."""
+STAGE_HELP = """# segments: one token a segment of 128 units, BEND.CREST.DIR (bend 0 straight, 1-3 BendProfiles; crest 0
+#   level, 1-3 CrestTable; DIR BendDir, the bend's side, 0 or 1); a suffix /XX keeps bits 6-7 other than $80
+#   (none); the build sets bit 5 on the stage's last segment. track: the commands (patterns.txt has the format),
+#   the number after # the distance from the race's start as TrackStep counts it (game_walk)."""
 SPRITE_EXTRA = [  # the descriptors in the code, not in a resource: BikePoses (sprite, wheel patch), splash, dust
     (0xDBED, 3, 58, 'bike pose 0'), (0xDEC9, 1, 10, 'bike pose 0 wheels'), (0xDC9B, 3, 60, 'bike pose 1'),
     (0xDAF4, 3, 83, 'bike pose 2'), (0xD9EC, 6, 44, 'bike pose 3'), (0xDEB5, 2, 10, 'bike pose 3 wheels'),
@@ -499,7 +506,8 @@ def track_stages(data):
 
 
 def pattern_length(data, a):
-    """the distance of a pattern that ends in ret (None for one that loops)"""
+    """the sum of the gaps of a pattern that ends in ret (None for one that loops); TrackStep does not count so
+    (game_walk), this is the pattern's own extent"""
     d = 0
     for _, w in track_parse(data, a - COPY_ORG, TRACK_START - COPY_ORG):
         if w[0] == 'obj':
@@ -511,16 +519,73 @@ def pattern_length(data, a):
     return None
 
 
+RACE_END = 128 * 140 + 512  # past the race's end (stage 5's last pattern loops for ever): the walk stops there
+
+
+def game_walk(data, limit=RACE_END):
+    """the track walked as AdvanceTrack and TrackStep walk it (copy addresses):
+    (elements [(position, address, type, x, VarObject)], marks [(position, address)], calls {address: position}).
+    An element's gap (low nibble x 2) is its distance from the previous element. TrackStep adds the gap to every open
+    call's count when it arrives at the element; the call whose count reaches its length returns to its caller from
+    that element, which is not placed: a call places only the elements less than its length from where it began,
+    and it counts from the last element before it (calls: that position). A mark or a call met while stepping from an
+    element gets that element's position."""
+    mem = bytearray(0x10000)
+    mem[COPY_ORG:COPY_ORG + len(data)] = data
+    frames, var, ptr, pos = [], 0, TRACK_START, 0
+    elements, marks, calls = [], [], {}
+
+    def step(hl):
+        nonlocal var
+        hl += 2
+        for _ in range(100000):
+            b = mem[hl]
+            h = b & 0xF0
+            if h == 0xF0:
+                marks.append((pos, hl))
+                hl += 1
+            elif h == 0xE0:
+                calls.setdefault(hl, pos)
+                frames.append([hl + 5, mem[hl + 3] | mem[hl + 4] << 8, 0])
+                hl = mem[hl + 1] | mem[hl + 2] << 8
+            elif h == 0xD0:
+                hl = frames.pop()[0]
+            elif h == 0xC0:
+                d = mem[hl + 1] - (256 if mem[hl + 1] > 127 else 0)
+                calls.setdefault(hl, pos)
+                hl += 2 + d
+            elif h == 0xB0:
+                calls.setdefault(hl, pos)
+                var = (b & 15) * 2
+                hl += 1
+            else:
+                gap, back = (b & 15) * 2, None
+                for k in range(len(frames) - 1, -1, -1):
+                    frames[k][2] += gap
+                    if frames[k][2] >= frames[k][1]:
+                        back = k
+                if back is None:
+                    return hl
+                hl = frames[back][0]
+                del frames[back:]
+        raise ValueError('track: no element after $%04X' % hl)
+
+    while pos < limit:
+        elements.append((pos, ptr, mem[ptr] >> 4, mem[ptr + 1] - (256 if mem[ptr + 1] > 127 else 0), var))
+        ptr = step(ptr)
+        pos += (mem[ptr] & 15) * 2
+    return elements, marks, calls
+
+
 def track_walk(data):
-    """the track's top-level commands with the distance at each: [(offset, words, distance)]"""
-    out, dist = [], 0
-    for o, w in track_parse(data, TRACK_START - COPY_ORG, TRACK_END - TRACK_ORG):
-        out.append((o, w, dist))
-        if w[0] == 'obj':
-            dist += 2 * int(w[2])
-        elif w[0] == 'call':
-            dist += (pattern_length(data, int(w[1].lstrip('$'), 16)) if w[2] == 'forever' else int(w[2])) or 0
-    return out
+    """the track's top-level commands with the distance at each, as the game counts it (game_walk): an element its
+    position, a call, jump, mark or var the position of the element before it; None for a command the walk never
+    reaches: [(offset, words, distance)]"""
+    elements, marks, calls = game_walk(data)
+    at = {a: p for p, a, _t, _x, _v in elements}
+    at.update({a: p for p, a in marks})
+    at.update(calls)
+    return [(o, w, at.get(COPY_ORG + o)) for o, w in track_parse(data, TRACK_START - COPY_ORG, TRACK_END - TRACK_ORG)]
 
 
 def track_export(data):
@@ -544,9 +609,9 @@ def track_export(data):
         borders.append(total)
     k, part = 0, [[] for _ in stages]
     for _o, w, dist in walk:
-        while k < 4 and dist >= borders[k]:
+        while k < 4 and dist is not None and dist >= borders[k]:
             k += 1
-        part[k].append('  %s  # %d' % (' '.join(w), dist))
+        part[k].append('  %s  # %s' % (' '.join(w), 'not reached' if dist is None else dist))
     part[4].append('  bytes %s  # leftovers after the track' % ' '.join('%02X' % b for b in data[TRACK_END - TRACK_ORG:]))
     for n, s in enumerate(stages):
         toks = ['%d.%d.%d' % (b & 3, (b >> 2) & 3, (b >> 4) & 1) + ('' if b & 0xC0 == 0x80 else '/%02X' % (b & 0xC0))

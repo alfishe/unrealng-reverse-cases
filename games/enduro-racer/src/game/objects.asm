@@ -7,14 +7,15 @@
 ; the riders. The near elements are tested against the bike (CollisionSizes).
 ;
 ; Six riders (Riders) run their own race: MoveRiders gives each a speed toward its top speed, moves it against the
-; bike's ScrollStep, tilts its pose on hills and makes it jump at the ramps; DrawRiders draws those on the visible
-; rows with RiderSprites, mirrored on the curve's far side. Riders 4 and 5 are in the race from stage 2 and 3 on
-; (StartRace), the others are not used (flags bit 7).
+; bike's ScrollStep, leans its pose in bends and makes it jump at the ramps; DrawRiders draws those on the visible
+; rows with RiderSprites, mirrored by the bend's side unless the sprite is symmetric. Riders 4 and 5 are the trucks
+; (flags bit 0, pose 4): rider 4 in the race from stage 2, rider 5 from stage 4; both in a demo; flags bit 7 out
+; (StartRace).
 ; --------------------------------------------------------------------------------------------------------------------
 
   ORG $9111
 
-; The six riders' starts: x, acceleration, top speed, the lowest pose on hills
+; The six riders' starts: x, acceleration, top speed, the lowest pose in a bend
 ; (the sixth's last two bytes are BikePoses' first)
 ;
 ; StartRace copies 4 bytes a rider; the sixth reads $9127-$9128 (6, $3A),
@@ -25,7 +26,7 @@ RiderStarts:
   ORG $917E
 
 ; Seven distance bands: the row threshold, then five poses' descriptors (rows |
-; bit 7 mirror, width | bit 7 aligned, address)
+; bit 7: never mirrored, width | bit 7 aligned, address)
 ;
 ; src/res/tables/riders.csv; the sprites in src/res/sprites/.
 RiderSprites:
@@ -33,18 +34,20 @@ RiderSprites:
 
   ORG $9615
 
-; Draw each rider on a visible row: x from its lateral place, the curve and the
-; row's scale; sprite by distance and pose
+; Draw each rider on a visible row: x from its lateral place, the row's centre
+; (the bend) and the row's scale; sprite by distance and pose
 ;
 ; RiderSprites' row is the first whose threshold is above the rider's row; the
 ; pose (4 for the second kind) picks the descriptor (rows, width, address; bit
-; 7 of the width: byte-aligned, of the rows: mirrored on the other side).
-; TopClip is raised to the sprite's top. DrawSprite or DrawShifted
-; (DrawMirrored first when needed).
+; 7 of the width: byte-aligned, of the rows: never mirrored; without it the
+; sprite is mirrored (DrawMirrored) when BendDir is 1). TopClip is raised to
+; the sprite's top. DrawSprite or DrawShifted (DrawMirrored first when needed).
 ;
 ; Recorded: c1, stages, twoplayer: riders on screen.
 ;
-; Witness: L1 4375 (c1, crash, ctl, m128, stages, twoplayer).
+; Witness: L1 5195 (c1, crash, ctl, fall5, m128, names, stages,
+; tech-brake-bend, tech-cheat, tech-land-wheelie, tech-ramp-wheelie, truck,
+; twoplayer).
 DrawRiders:
   LD IY,Riders
   LD B,$06
@@ -63,7 +66,7 @@ l_961B:
   LD E,A
   INC A
   JP Z,l_9701
-  LD A,(CurveDir)
+  LD A,(BendDir)
   RRCA
   LD A,(IY+$02)
   JR NC,l_9642
@@ -166,7 +169,7 @@ l_96CB:
   LD D,(IX+$04)
   BIT 7,(IX+$01)
   JR NZ,l_96EF
-  LD A,(CurveDir)
+  LD A,(BendDir)
   RRCA
   JR NC,l_96EF
   PUSH HL
@@ -196,7 +199,7 @@ l_9701:
 
 ; The eight object types' descriptor lists (type * 2 indexes it)
 ;
-; Each list: the farthest row drawn, the row from which the sprite is
+; Each list: the farthest row drawn, the row below which the sprite is
 ; byte-aligned (DrawSprite), then 6-byte entries: the row threshold, the y
 ; offset, rows, width, the address. src/res/tables/objects.csv;
 ; src/res/sprites/ draws each.
@@ -227,17 +230,19 @@ ObjectList7:
   ORG $9F18
 
 ; Draw the object on row A with descriptor list IX at lateral B: the list's
-; entry for the row, x from the curve and the scale
+; entry for the row, x from the row's centre (the bend) and the scale
 ;
 ; RET when the row is beyond the list's farthest. Entries scanned until the
 ; row's threshold; the screen line is RoadLines[row] (the LD A at $9F80); x =
-; the row's centre (HillRows) +/- B scaled (RowScale) +/- the curve; the part
-; above line 40 is cut off; TopClip raised. JP (IY): DrawShifted, or DrawSprite
-; from the list's aligned row on.
+; the row's centre (BendRows) +/- B scaled (RowScale); the part above line 40
+; is cut off; TopClip raised. JP (IY): DrawSprite (byte-aligned) for rows below
+; the list's aligned row, the near ones; DrawShifted beyond.
 ;
 ; Recorded: c1: every pass.
 ;
-; Witness: L1 67242 (c1, crash, ctl, m128, stages, twoplayer).
+; Witness: L1 78179 (c1, crash, ctl, fall5, m128, names, stages,
+; tech-brake-bend, tech-cheat, tech-land-wheelie, tech-ramp-wheelie, truck,
+; twoplayer).
 DrawObject:
   CP (IX+$00)
   RET NC
@@ -262,7 +267,7 @@ l_9F39:
   SET 7,L
   LD H,$5B
   LD E,(HL)
-  LD A,(CurveDir)
+  LD A,(BendDir)
   RRA
   LD A,B
   JR NC,l_9F4E
@@ -363,7 +368,7 @@ DrawSplash:
 
 ; SkidLevel: the dust beside the bike, two frames ($DF64 12 x 4, $DF94 14 x 4)
 ;
-; Witness: L1 352 (stages).
+; Witness: L1 448 (stages, truck).
 DrawDust:
   LD DE,Sprites+$2C5E
   LD BC,$0C04
@@ -390,15 +395,19 @@ l_A0D5:
   LD HL,DustOffsets
   ADD A,L
   LD L,A
-  JR NC,l_A0DD
+  JR NC,DustPlace
 
-; INC H: DustOffsets crossing a page (not met)
+; INC H: DustOffsets crossing a page (not met: $A0F3 + at most 9 stays in the
+; page)
+;
+; Known only from the code. DrawDust and DrawSplash run on from $A0DD
+; (DustPlace).
 ;
 ; Known only from the code.
 DustCarry:
   INC H
 ; This entry point is used by the routine at DrawDust.
-l_A0DD:
+DustPlace:
   LD H,(HL)               ; the offset
   LD A,C
   ADD A,A
@@ -418,8 +427,7 @@ l_A0DD:
 
 ; The splash's and dust's x offset per pose and lean (10 bytes, signed)
 DustOffsets:
-  DEFB $00,$00,$00,$F6,$F4,$FC,$00,$04
-  DEFB $0C,$0A
+  INCBIN "res/tables/dust.bin",$0000,10
 
 ; Stage 3: the rows between the two gap marks become $FE in RowList (not
 ; drawn); the bike over them sets InGap
@@ -430,7 +438,8 @@ DustOffsets:
 ;
 ; Recorded: stages, reset3: stage 3.
 ;
-; Witness: L1 3968 (c1, crash, ctl, m128, stages, twoplayer).
+; Witness: L1 4740 (c1, crash, ctl, m128, names, stages, tech-brake-bend,
+; tech-cheat, tech-land-wheelie, tech-ramp-wheelie, truck, twoplayer).
 GapRows:
   LD A,(Stage)
   CP $02
@@ -490,11 +499,13 @@ GapRowsRet:
   ORG $A21A
 
 ; Each rider in the race: jump (height, speed - $02F0), start a jump at a ramp
-; row, speed toward its top, distance - ScrollStep, pose on hills
+; row, speed toward its top, distance - ScrollStep, pose in bends
 ;
 ; Recorded: c1: from the countdown's end; stages: jumps at stage 3's ramps.
 ;
-; Witness: L1 4292 (c1, crash, ctl, m128, stages, twoplayer).
+; Witness: L1 5097 (c1, crash, ctl, fall5, m128, names, stages,
+; tech-brake-bend, tech-cheat, tech-land-wheelie, tech-ramp-wheelie, truck,
+; twoplayer).
 MoveRiders:
   LD B,$06
   LD DE,$000F
@@ -509,7 +520,9 @@ MoveRidersIx:
 
 ; One rider (IX; HL's load is harmless in the other register set)
 ;
-; Witness: L1 21460 (c1, crash, ctl, m128, stages, twoplayer).
+; Witness: L1 25485 (c1, crash, ctl, fall5, m128, names, stages,
+; tech-brake-bend, tech-cheat, tech-land-wheelie, tech-ramp-wheelie, truck,
+; twoplayer).
 MoveRidersLoop:
   LD HL,Riders
   EXX
@@ -531,7 +544,7 @@ MoveRidersLoop:
 l_A247:
   LD (IX+$0B),L
   LD (IX+$0C),H
-  LD HL,BackBuffer+$0750
+  LD HL,-$02F0            ; the gravity, as the bike's
   ADD HL,DE
   LD (IX+$0D),L
   LD (IX+$0E),H
@@ -604,9 +617,9 @@ l_A2AB:
   CP $80
   JR NC,l_A2F9
   CP C
-  LD A,(HillPrev)
+  LD A,(BendPrev)
   JR C,l_A2DC
-  LD A,(Hill)
+  LD A,(Bend)
 l_A2DC:
   AND A
   JR NZ,l_A2EE

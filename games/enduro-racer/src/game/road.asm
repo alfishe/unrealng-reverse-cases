@@ -1,16 +1,16 @@
 ; --------------------------------------------------------------------------------------------------------------------
-; road.asm: The road: its rows from the hills and curves, the drawing of the edges, the ground's dots, the hill table
+; road.asm: The road: its rows from the bends and crests, the drawing of the edges, the ground's dots, the bend table
 ;
-; A segment of StageList gives a hill (0-3) and a curve (0-3, with a direction). Each pass a row builder (StageParams'
-; second word, called at $A68B) makes RoadLines, the screen line of each of the 128 road rows: RoadRowsCurve (stages
-; 1, 2, 4, 5) bends the perspective table ($7800) by the curve tables ($7A00) as the segment goes by; RoadRowsJump
-; (stage 3) lifts every row by the bike's height in the air; RoadRowsFlat is the straight. RoadRowsMake turns
-; RoadLines into RowList (the rows to draw, top down) and RoadTopRow. HillRows (ScrollHills, BlendHill) shift each row
-; sideways with the hill profiles ($7D80, $7E00, $7E80).
+; A segment of StageList gives a bend (0-3, with a side) and a crest (0-3). Each pass a row builder (StageParams'
+; second word, called at $A68B) makes RoadLines, the screen line of each of the 128 road rows: RoadRowsCrest (stages
+; 1, 2, 4, 5) moves each row's screen line by the crest tables ($7A00) over the perspective table ($7800) as the
+; segment goes by; RoadRowsJump (stage 3) lifts every row by the bike's height in the air; RoadRowsFlat is the
+; straight. RoadRowsMake turns RoadLines into RowList (the rows to draw, top down) and RoadTopRow. BendRows
+; (ScrollBends, BlendBend) shift each row sideways with the bend profiles ($7D80, $7E00, $7E80).
 ;
 ; DrawRoad (StageParams' first word, called at $A68E) draws each row of RowList into the back buffer: the left and the
 ; right edge as 3-byte patterns (EdgePatterns: $7880 or $7A80 by the row's depth, 8 shifts each) at x = the row's
-; centre (HillRows, the lateral position) minus and plus its half width (the RowScale tables at $7F00/$7F80), the road
+; centre (BendRows, the lateral position) minus and plus its half width (the RowScale tables at $7F00/$7F80), the road
 ; between left blank. It walks RowList with SP = RowTable + 2 * line, and Multiply's last byte is patched to a JP
 ; (MultiplyEnd) so that the multiply in each row returns without a RET, which would pop a line address. Stage 5 has no
 ; edges (RoadNone): its ground is GroundTexture's dots.
@@ -36,7 +36,8 @@
 ;
 ; Recorded: c1: every pass; the heaviest passes' largest cost.
 ;
-; Witness: L1 3968 (c1, crash, ctl, m128, stages, twoplayer).
+; Witness: L1 4740 (c1, crash, ctl, m128, names, stages, tech-brake-bend,
+; tech-cheat, tech-land-wheelie, tech-ramp-wheelie, truck, twoplayer).
 DrawRoad:
   CALL GapRowsJump
   LD IX,RowList
@@ -402,7 +403,8 @@ RoadRunOp:
 ; One line of a run: the left edge, the right edge at the interpolated x, then
 ; the slopes added
 ;
-; Witness: L1 119870 (c1, crash, ctl, m128, stages, twoplayer).
+; Witness: L1 142770 (c1, crash, ctl, m128, names, stages, tech-brake-bend,
+; tech-cheat, tech-land-wheelie, tech-ramp-wheelie, truck, twoplayer).
 DrawRoadRunLine:
   LD B,A
   EX AF,AF'
@@ -532,7 +534,7 @@ DrawRoadRunOff:
 ; Recorded: stages, reset3: stage 3's jumps; reset3 frame 6758: JumpHeight $76,
 ; RoadLines all $70, RoadTopRow $FF.
 ;
-; Witness: L1 305 (stages).
+; Witness: L1 503 (stages, truck).
 RoadRowsJump:
   LD A,(JumpHeight+$0001)
   AND A
@@ -573,7 +575,7 @@ RoadJumpGround:
 
 ; Each row: perspective * n >> 8, + $70 (n the LD A operand, $80 - JumpHeight)
 ;
-; Witness: L1 10112 (stages).
+; Witness: L1 14080 (stages, truck).
 RoadJumpRows:
   LD A,$00
   LD L,(IX+$00)
@@ -593,7 +595,7 @@ RoadJumpRows:
 ;
 ; Recorded: stages: stage 5.
 ;
-; Witness: L1 408 (stages).
+; Witness: L1 456 (fall5, stages).
 RoadNone:
   LD IX,RowList
   RET
@@ -682,7 +684,7 @@ l_9B0E:
 l_9B13:
   JP l_9C2C
 l_9B16:
-  LD A,(CurveDir)
+  LD A,(BendDir)
   AND A
   LD A,$FF
   JR Z,l_9B1F
@@ -933,24 +935,26 @@ l_9C8D:
 ; Eight pixel masks for GroundTexture's dots ($FF $7F $3F $1F $0F $07 $03 $01:
 ; a dot of width 8 - n)
 DotMasks:
-  DEFB $FF,$7F,$3F,$1F,$0F,$07,$03,$01
+  INCBIN "res/tables/dotmasks.bin",$0000,8
 
 ; Stages 1, 2, 4 and 5's row builder: RoadLines from the perspective and the
-; curve, as the segment goes by
+; crest, as the segment goes by
 ;
-; Curve 0 with CurvePrev 0: RoadRowsMake on the last lines; otherwise, for
-; curves 1-3, entering (CurvePrev 0) or leaving, the rows over the segment's
-; progress (SegmentLeft) get $70 + (perspective * curve table) / 512, the rest
+; Crest 0 with CrestPrev 0: RoadRowsMake on the last lines; otherwise, for
+; crests 1-3, entering (CrestPrev 0) or leaving, the rows over the segment's
+; progress (SegmentLeft) get $70 + (perspective * crest table) / 512, the rest
 ; the plain perspective.
 ;
 ; Recorded: c1: every pass.
 ;
-; Witness: L1 4072 (c1, crash, ctl, m128, stages, twoplayer).
-RoadRowsCurve:
-  LD A,(CurvePrev)
+; Witness: L1 4695 (c1, crash, ctl, fall5, m128, names, stages,
+; tech-brake-bend, tech-cheat, tech-land-wheelie, tech-ramp-wheelie,
+; twoplayer).
+RoadRowsCrest:
+  LD A,(CrestPrev)
   AND A
   JR NZ,l_9CE1
-  LD IY,CurveTable
+  LD IY,CrestTable
   LD A,(SegmentLeft+$0001)
   LD IXH,$78
   LD IXL,A
@@ -958,7 +962,7 @@ RoadRowsCurve:
   SUB IXL
   JP Z,RoadRowsMake
   LD E,A
-  LD A,(Curve)
+  LD A,(Crest)
   AND A
   JP Z,RoadRowsMake
   CP $02
@@ -971,7 +975,7 @@ l_9CE1:
   JR NC,l_9CEA
   JP l_9D91
 l_9CEA:
-  LD A,(Curve)
+  LD A,(Crest)
   INC A
   LD D,A
   LD A,(SegmentLeft+$0001)
@@ -1058,7 +1062,7 @@ l_9D59:
   LD A,IXL
   AND $80
   JP NZ,RoadRowsMake
-  LD A,(Curve)
+  LD A,(Crest)
   AND A
   JR Z,l_9DCE
   LD A,(SegmentLeft+$0001)
@@ -1094,7 +1098,7 @@ l_9DBC:
   JR NZ,l_9DA0
   JR RoadRowsMake
 l_9DC6:
-  LD A,(Curve)
+  LD A,(Crest)
   AND A
   JR NZ,l_9DBC
 l_9DCC:
@@ -1112,7 +1116,8 @@ l_9DCE:
 
 ; RoadLines = $70 + perspective / 2 for all 128 rows
 ;
-; Witness: L1 396 (c1, crash, ctl, m128, stages, twoplayer).
+; Witness: L1 568 (c1, crash, ctl, fall5, m128, stages, tech-brake-bend,
+; tech-cheat, tech-land-wheelie, tech-ramp-wheelie, truck, twoplayer).
 RoadRowsFlat:
   LD HL,RoadLines+$007F
   LD DE,Perspective+$007F
@@ -1125,7 +1130,7 @@ l_9DE7:
   DEC E
   DEC L
   DJNZ l_9DE7
-; This entry point is used by the routines at RoadJumpRows and RoadRowsCurve.
+; This entry point is used by the routines at RoadJumpRows and RoadRowsCrest.
 RoadRowsMake:
   LD IX,RowList           ; RowList from RoadLines (each line once, rows that
                           ; share a line skipped), $FF end; RoadTopRow =
@@ -1158,7 +1163,7 @@ l_9E0A:
   LD A,(Stage)
   CP $04
   RET NZ
-  LD A,(CurvePrev)
+  LD A,(CrestPrev)
   AND A
   RET NZ
   INC L
@@ -1173,7 +1178,8 @@ l_9E0A:
   ORG $A301
 
 ; Stages 3 and 5: the ground's dots, a ROM byte XOR the column as the random x,
-; masks from DotMasks
+; masks from DotMasks; many tries per row; on stage 5 8-pixel dashes; about 140
+; 000 T (2 frames) a pass
 ;
 ; RandomPtr ($A45B) walks the ROM $0000-$1FFF by 4 * ScrollStep's high byte
 ; each pass; for each line of RowList, a dot left of the left edge or right of
@@ -1181,7 +1187,9 @@ l_9E0A:
 ;
 ; Recorded: stages: stages 3 and 5.
 ;
-; Witness: L1 4375 (c1, crash, ctl, m128, stages, twoplayer).
+; Witness: L1 5195 (c1, crash, ctl, fall5, m128, names, stages,
+; tech-brake-bend, tech-cheat, tech-land-wheelie, tech-ramp-wheelie, truck,
+; twoplayer).
 GroundTexture:
   LD A,(RoadTopRow)
   LD E,A
@@ -1380,7 +1388,7 @@ l_A43D:
   JP NZ,l_A353
   RET
 l_A449:
-  LD A,(CurveDir)
+  LD A,(BendDir)
   AND A
   LD A,$FF
   JR Z,l_A452
@@ -1396,23 +1404,25 @@ RandomPtr:
 
   ORG $B07D
 
-; As the segment moves (RowsScrolled), shift HillRows down and fill from the
-; hill's profile (HillProfiles)
+; As the segment moves (RowsScrolled), shift BendRows down and fill from the
+; bend's profile (BendProfiles)
 ;
-; Witness: L1 4377 (c1, crash, ctl, m128, stages, twoplayer).
-ScrollHills:
+; Witness: L1 5198 (c1, crash, ctl, fall5, m128, names, stages,
+; tech-brake-bend, tech-cheat, tech-land-wheelie, tech-ramp-wheelie, truck,
+; twoplayer).
+ScrollBends:
   LD A,(RowsScrolled)
   AND A
   RET Z
-  LD A,(HillPrev)
+  LD A,(BendPrev)
   AND A
-  JR NZ,BlendHill
+  JR NZ,BlendBend
   LD A,(SegmentLeft+$0001)
   ADD A,$80
   RET C
   LD L,A
   LD H,$5B
-  LD A,(Hill)
+  LD A,(Bend)
   AND A
   RET Z
   ADD A,$FA
@@ -1432,7 +1442,7 @@ l_B0A8:
   INC C
   INC E
   JR NZ,l_B0A8
-  LD (HillPtr),BC
+  LD (BendPtr),BC
   RET
 l_B0B3:
   LD E,A
@@ -1443,15 +1453,15 @@ l_B0B3:
   CP C
   LD B,$00
   EX DE,HL
-  JR C,ScrollHillsTail
+  JR C,ScrollBendsTail
   LDIR
-  LD BC,(HillPtr)
+  LD BC,(BendPtr)
   JR l_B0A8
 
-; The profile's end reached inside the copy: the rest from BlendHill's start
+; The profile's end reached inside the copy: the rest from BlendBend's start
 ;
 ; Known only from the code.
-ScrollHillsTail:
+ScrollBendsTail:
   LD C,A
   LDIR
   EX DE,HL
@@ -1459,19 +1469,20 @@ ScrollHillsTail:
   RET Z
   JR l_B0DE
 
-; Hill 0 after a hill: HillRows blended back to flat, the profile's step from
-; HillBlend ($75D7)
+; Bend 0 after a bend: BendRows blended back to straight, the profile's step
+; from BendBlend ($75D7)
 ;
-; Witness: L1 1541 (c1, crash, m128, stages, twoplayer).
-BlendHill:
-  LD A,(Hill)
+; Witness: L1 1756 (c1, crash, fall5, m128, stages, tech-brake-bend,
+; tech-cheat, tech-land-wheelie, tech-ramp-wheelie, truck, twoplayer).
+BlendBend:
+  LD A,(Bend)
   AND A
   RET NZ
   LD A,(SegmentLeft+$0001)
   OR $80
   LD L,A
   LD H,$5B
-; This entry point is used by the routine at ScrollHillsTail.
+; This entry point is used by the routine at ScrollBendsTail.
 l_B0DE:
   LD A,L
   CP $80
@@ -1485,25 +1496,25 @@ l_B0DE:
   LD E,A
   AND $0F
   LD L,A
-  LD A,(HillPrev)
+  LD A,(BendPrev)
   ADD A,$D7
   ADD A,L
   LD L,A
   LD H,$75
   JR NC,l_B0FC
 
-; INC H: HillBlend's index crossing a page (not met)
+; INC H: BendBlend's index crossing a page (not met)
 ;
 ; Known only from the code.
 BlendCarry:
   INC H
-; This entry point is used by the routine at BlendHill.
+; This entry point is used by the routine at BlendBend.
 l_B0FC:
   LD A,(DE)               ; the blend
   LD C,A
   LD A,(HL)
   JR l_B106
-; This entry point is used by the routine at BlendHill.
+; This entry point is used by the routine at BlendBend.
 l_B101:
   LD E,A
   EX DE,HL
@@ -1530,6 +1541,6 @@ l_B117:
   JR NZ,l_B110
   RET
 
-; The road rows the segment moved this pass (AdvanceTrack), for ScrollHills
+; The road rows the segment moved this pass (AdvanceTrack), for ScrollBends
 RowsScrolled:
   DEFB $00

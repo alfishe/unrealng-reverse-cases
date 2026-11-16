@@ -1,94 +1,87 @@
 # Stage 5: 32 segments, 4096 units; the track from 13824 to 17920
-# segments: one token a segment of 128 units, HILL.CURVE.DIR (hill 0 flat, 1-3 HillProfiles; curve 0
-#   straight, 1-3 the bend; DIR CurveDir 0 or 1); a suffix /XX keeps bits 6-7 other than $80 (none); the build
-#   sets bit 5 on the stage's last segment. track: the commands (patterns.txt has the format), the number after
-#   # the distance from the race's start.
+# segments: one token a segment of 128 units, BEND.CREST.DIR (bend 0 straight, 1-3 BendProfiles; crest 0
+#   level, 1-3 CrestTable; DIR BendDir, the bend's side, 0 or 1); a suffix /XX keeps bits 6-7 other than $80
+#   (none); the build sets bit 5 on the stage's last segment. track: the commands (patterns.txt has the format),
+#   the number after # the distance from the race's start as TrackStep counts it (game_walk).
 segments
   0.0.1 2.0.0 2.1.0 0.1.0 3.0.1 3.2.1 0.0.1 2.1.1
   2.1.1 2.1.1 2.0.1 2.2.1 0.0.1 0.1.1 3.1.0 3.0.0
   3.2.0 0.2.0 1.0.1 1.1.1 0.1.1 0.1.1 2.1.0 2.0.0
   2.2.0 2.2.0 2.0.0 2.2.0 0.0.0 0.1.0 0.0.0 0.0.0
 track
-  call $5F10 forever  # 13835
-  call $5F79 96  # 13947
-  call $5F69 104  # 14043
-  call $6014 forever  # 14147
-  call $5F5F 128  # 14277
-  var 3  # 14405
-  call $5F75 180  # 14405
-  obj 0 4 2  # 14585
-  call $5F75 144  # 14593
-  obj 0 4 2  # 14737
-  obj 4 8 -64  # 14745
-  call $5F75 64  # 14761
-  obj 0 4 2  # 14825
-  call $5F75 120  # 14833
-  obj 0 4 2  # 14953
-  call $6094 64  # 14961
-  call $5F75 80  # 15025
-  obj 0 0 2  # 15105
-  call $5F75 48  # 15105
-  obj 4 0 -80  # 15153
-  obj 0 4 2  # 15153
-  call $5F75 80  # 15161
-  obj 0 4 2  # 15241
-  call $5F75 232  # 15249
-  obj 0 4 2  # 15481
-  call $6094 72  # 15489
-  obj 4 0 -68  # 15561
-  call $5F75 112  # 15561
-  obj 0 4 2  # 15673
-  call $5F75 156  # 15681
-  obj 0 4 2  # 15837
-  call $6094 80  # 15845
-  call $5F75 120  # 15925
-  call $6094 96  # 16045
-  call $5F75 176  # 16141
-  obj 3 8 -56  # 16317
-  obj 0 4 2  # 16333
-  call $6094 104  # 16341
-  obj 0 4 2  # 16445
-  call $5F75 48  # 16453
-  obj 0 4 2  # 16501
-  call $5F75 128  # 16509
-  call $6094 32  # 16637
-  obj 0 4 2  # 16669
-  call $5F75 168  # 16677
-  obj 4 0 -68  # 16845
-  obj 0 4 2  # 16845
-  call $6094 56  # 16853
-  call $5F75 24  # 16909
-  call $6094 56  # 16933
-  call $5F75 120  # 16989
-  obj 0 4 2  # 17109
-  call $6094 80  # 17117
-  call $5F75 104  # 17197
-  obj 4 0 -60  # 17301
-  obj 0 4 2  # 17301
-  call $5F75 200  # 17309
-  obj 0 4 2  # 17509
-  call $6094 104  # 17517
-  call $5F75 64  # 17621
-  obj 0 4 2  # 17685
-  call $6094 96  # 17693
-  call $5F75 80  # 17789
-  obj 4 0 -74  # 17869
-  obj 0 4 2  # 17869
-  call $5F75 72  # 17877
-  call $6094 80  # 17949
-  call $5F75 112  # 18029
-  obj 0 4 2  # 18141
-  call $6094 76  # 18149
-  obj 0 4 2  # 18225
-  call $606E 104  # 18233
-  obj 4 0 -58  # 18337
-  obj 0 4 2  # 18337
-  call $6094 56  # 18345
-  obj 0 0 2  # 18401
-  call $6094 56  # 18401
-  obj 0 0 2  # 18457
-  call $6094 56  # 18457
-  call $5F75 80  # 18513
-  obj 0 0 2  # 18593
-  call $5F75 forever  # 18593
+  obj 0 4 2  # 13944
+  call $5F75 144  # 13944
+  obj 0 4 2  # 14080
+  obj 4 8 -64  # 14096
+  call $5F75 64  # 14096
+  obj 0 4 2  # 14152
+  call $5F75 120  # 14152
+  obj 0 4 2  # 14272
+  call $6094 64  # 14272
+  call $5F75 80  # 14328
+  obj 0 0 2  # 14392
+  call $5F75 48  # 14392
+  obj 4 0 -80  # 14424
+  obj 0 4 2  # 14432
+  call $5F75 80  # 14432
+  obj 0 4 2  # 14504
+  call $5F75 232  # 14504
+  obj 0 4 2  # 14736
+  call $6094 72  # 14736
+  obj 4 0 -68  # 14800
+  call $5F75 112  # 14800
+  obj 0 4 2  # 14904
+  call $5F75 156  # 14904
+  obj 0 4 2  # 15056
+  call $6094 80  # 15056
+  call $5F75 120  # 15128
+  call $6094 96  # 15240
+  call $5F75 176  # 15328
+  obj 3 8 -56  # 15504
+  obj 0 4 2  # 15512
+  call $6094 104  # 15512
+  obj 0 4 2  # 15616
+  call $5F75 48  # 15616
+  obj 0 4 2  # 15656
+  call $5F75 128  # 15656
+  call $6094 32  # 15768
+  obj 0 4 2  # 15800
+  call $5F75 168  # 15800
+  obj 4 0 -68  # 15960
+  obj 0 4 2  # 15968
+  call $6094 56  # 15968
+  call $5F75 24  # 16016
+  call $6094 56  # 16032
+  call $5F75 120  # 16080
+  obj 0 4 2  # 16200
+  call $6094 80  # 16200
+  call $5F75 104  # 16272
+  obj 4 0 -60  # 16368
+  obj 0 4 2  # 16376
+  call $5F75 200  # 16376
+  obj 0 4 2  # 16576
+  call $6094 104  # 16576
+  call $5F75 64  # 16672
+  obj 0 4 2  # 16728
+  call $6094 96  # 16728
+  call $5F75 80  # 16816
+  obj 4 0 -74  # 16880
+  obj 0 4 2  # 16888
+  call $5F75 72  # 16888
+  call $6094 80  # 16952
+  call $5F75 112  # 17024
+  obj 0 4 2  # 17128
+  call $6094 76  # 17128
+  obj 0 4 2  # 17208
+  call $606E 104  # 17208
+  obj 4 0 -58  # 17308
+  obj 0 4 2  # 17316
+  call $6094 56  # 17316
+  obj 0 0 2  # 17364
+  call $6094 56  # 17364
+  obj 0 0 2  # 17412
+  call $6094 56  # 17412
+  call $5F75 80  # 17460
+  obj 0 0 2  # 17524
+  call $5F75 forever  # 17524
   bytes AF FF EA 80 3F  # leftovers after the track

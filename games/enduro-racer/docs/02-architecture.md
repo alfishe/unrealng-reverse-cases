@@ -70,7 +70,7 @@ space with the track tables of the load. Command: `python3 tools/fig_memmap.py`.
 | --- | --- | --- | --- |
 | `$4000-$5AFF` | the screen | screen | the copied back buffer from line 40, the HUD on lines 0-39 |
 | `$5B00-$5B7F` | RowList | work | the road's rows, one byte a screen line |
-| `$5B80-$5BFF` | HillRows | work | each road row's height offset |
+| `$5B80-$5BFF` | BendRows | work | each road row's height offset |
 | `$5C00-$5C7F` | RoadLines | work | the road's line table |
 | `$5C80-$5CFF` | Riders, JumpHeight, HorizonAddr | work | 6 riders of 15 bytes; the jump; the stage's horizon |
 | `$5D00-$5DFF` | ReverseTable | table | each byte with its bits reversed (Init builds it) |
@@ -83,7 +83,7 @@ space with the track tables of the load. Command: `python3 tools/fig_memmap.py`.
 | `$690F-$6BE7` | Leftover690F | leftover | 729 bytes never read (2.7) |
 | `$6BE8-$7BFF` | sprites, the font, tables | graphics | objects, the font `$7608`, perspective and edge tables `$7800` |
 | `$7C00-$7C53` | CountGlyphs, PassCount ... ExtendedTime | work | the countdown's glyphs, the race's variables |
-| `$7C54-$7FFF` | digits, hills, row scale | tables | the big digits, the hill profiles |
+| `$7C54-$7FFF` | digits, bends, row scale | tables | the big digits, the bend profiles |
 | `$8000-$80B7` | Start, then the line buffer | code, work | `JP Init`; then the scaled drawer's line |
 | `$80B8-$B11C` | Init to the last routine | code | menu, flow, render, road, objects, horizon, race, bike |
 | `$B11D-$B1FF` | LeftoverCode | leftover | 227 bytes of an older build's code |
@@ -346,8 +346,8 @@ flowchart LR
     RC --> RS["RaceStep: Multiply"]
     RS --> RP["RacePass A67E"]
     RP --> T1["AdvanceTrack: TrackStep"]
-    RP --> T2["ScrollHills, BlendHill"]
-    RP --> T3["row builder: RoadRowsCurve or RoadRowsJump"]
+    RP --> T2["ScrollBends, BlendBend"]
+    RP --> T3["row builder: RoadRowsCrest or RoadRowsJump"]
     RP --> T4["DrawRoad: DrawRoadRow, Multiply"]
     RP --> T5["GroundTexture"]
     RP --> T6["MoveRiders, DrawRiders: BlitHead"]

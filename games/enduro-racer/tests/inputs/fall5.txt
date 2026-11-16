@@ -1,0 +1,21 @@
+# fall5: stages' state at stage 5's start (work/stage1/rec/stages/stage-04.szx, stages frame 10272), the Immune To
+# Obstacles and Immune To Trucks POKEs taken back (42971 and 43151 = $CD; the speed POKEs stay); stages' own keys
+# from frame 10272: the first object hit at speed is a fall on stage 5's sand; 300 frames after it
+# Start: work/stage1/rec/stages/stage-04.szx
+0 Q
+0 POKE 42971 205
+0 POKE 43151 205
+50 Q O
+56 Q
+106 Q P
+112 Q
+162 Q O
+168 Q
+218 Q P
+224 Q
+324 Q O
+330 Q
+380 Q P
+386 Q
+391 -
+391 END

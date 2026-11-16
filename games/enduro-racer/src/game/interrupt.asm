@@ -32,7 +32,9 @@
 ; Recorded: c1, m128 and every play recording; 1.00 entries a frame in c1's
 ; play.
 ;
-; Witness: L1 68919 (c1, crash, ctl, m128, stages, twoplayer).
+; Witness: L1 79550 (c1, crash, ctl, fall5, m128, names, stages,
+; tech-brake-bend, tech-cheat, tech-land-wheelie, tech-ramp-wheelie, truck,
+; twoplayer).
 Interrupt:
   LD (IntSavedSp),SP
   LD SP,IntStack+$001E
@@ -94,7 +96,9 @@ EffectStep:
 ; $28), a back buffer row; n >= $40: the screen line n's address + $A600, a
 ; back buffer row. What SetRowTable left there in play.
 ;
-; Witness: L1 68919 (c1, crash, ctl, m128, stages, twoplayer).
+; Witness: L1 79550 (c1, crash, ctl, fall5, m128, names, stages,
+; tech-brake-bend, tech-cheat, tech-land-wheelie, tech-ramp-wheelie, truck,
+; twoplayer).
 IntVector:
   JR Interrupt
 ; This entry point is used by the routine at Interrupt.

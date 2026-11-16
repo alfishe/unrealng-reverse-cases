@@ -58,15 +58,15 @@ MoverTail:
 RowListTail:
   DEFS $40
 
-; The hill row table, 128 bytes: each road row's height offset, built by
-; ScrollHills / BlendHill
+; The bend row table, 128 bytes: each road row's x centre (the bend's sideways
+; shift), built by ScrollBends / BlendBend
 ;
 ; In the image $5B80-$5BC7 are zeros (no block loads them) and $5BC8-$5BFF the
 ; start of the LDDR's leftover: an LDDR moving a block up leaves its first $5E0
 ; bytes where they were, so $5BC8-$61A3 still hold what is now at $61A8-$6783
-; (entry.cpu.bin byte for byte; tools/parts.py rebuilds it so). ClearHillRows
+; (entry.cpu.bin byte for byte; tools/parts.py rebuilds it so). ClearBendRows
 ; and the game overwrite all of $5B80-$642F before reading it.
-HillRows:
+BendRows:
   DEFB $00,$00,$00,$00,$00,$00,$00,$00
   DEFB $00,$00,$00,$00,$00,$00,$00,$00
   DEFB $00,$00,$00,$00,$00,$00,$00,$00
@@ -85,7 +85,7 @@ HillRows:
   DEFB $11,$E8,$13,$18,$A2,$3A,$D0,$A7
 
 ; The screen line of each road row, 128 bytes ($70 + depth / 2): RoadRowsFlat,
-; RoadRowsCurve, RoadRowsJump write it
+; RoadRowsCrest, RoadRowsJump write it
 ;
 ; RoadLines' last entry ($5C7F) gives RoadTopRow = ($5C7F) - $71; all entries
 ; $70 (the road flat under a high jump) make RoadTopRow $FF (the stage 3 reset,
@@ -220,16 +220,19 @@ TrackDistance:
   DEFB $00,$00            ; the distance into the track, 8.8
 StageListPtr:
   DEFB $00,$00            ; the segment in StageList
-CurveDir:
-  DEFB $00                ; the curve's direction: 1 one way, 0 the other
-HillPrev:
-  DEFB $00                ; the previous segment's hill (0-3)
-Hill:
-  DEFB $00                ; the segment's hill
-CurvePrev:
-  DEFB $00                ; the previous segment's curve (0-3)
-Curve:
-  DEFB $00                ; the segment's curve
+BendDir:
+  DEFB $00                ; the bend's side (segment bit 4): 1 one way, 0 the
+                          ; other
+BendPrev:
+  DEFB $00                ; the previous segment's bend (bits 0-1: 0 straight,
+                          ; 1-3 a bend profile)
+Bend:
+  DEFB $00                ; the segment's bend (bits 0-1)
+CrestPrev:
+  DEFB $00                ; the previous segment's crest (bits 2-3: 0 level,
+                          ; 1-3 a rise or dip)
+Crest:
+  DEFB $00                ; the segment's crest (bits 2-3)
 FallX:
   DEFB $00                ; x at a fall (the restart's x)
 GapMarks:
@@ -263,11 +266,11 @@ PlayerPad:
 ; The stage list, one byte a segment (Init copies it from $EB00; the image's
 ; own bytes here are leftovers)
 ;
-; bits 0-1 the hill (HillProfiles 1-3), bits 2-3 the curve (0 straight, 1-3),
-; bit 4 the direction, bit 5 the stage's last segment, bits 6-7 added to the
-; segment's progress at its start (SegmentLen, $AF81). Five stages end at
-; $5E9F, $5EB6, $5ED0, $5EEB, $5F0B: 32, 23, 26, 27 and 32 segments.
-; src/res/track/stage1.txt ... stage5.txt (tools/course.py).
+; bits 0-1 the bend (0 straight, BendProfiles 1-3), bits 2-3 the crest (0
+; level, CrestTable 1-3), bit 4 the direction, bit 5 the stage's last segment,
+; bits 6-7 added to the segment's progress at its start (SegmentLen, $AF81).
+; Five stages end at $5E9F, $5EB6, $5ED0, $5EEB, $5F0B: 32, 23, 26, 27 and 32
+; segments. src/res/track/stage1.txt ... stage5.txt (tools/course.py).
 StageList:
   DEFB $02,$00,$00,$00,$18,$D6,$FE,$FE
   DEFB $CA,$2E,$65,$FE,$FF,$C2,$26,$65

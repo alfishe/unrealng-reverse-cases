@@ -1,0 +1,48 @@
+# tech-brake-bend: c1's play start and keys, but BRAKES instead of THROTTLE from c1 frame 15130 to 15170 (doc 10's
+# run brake-bend); to c1 frame 15320
+# Start: work/stage1/rec/c1/play.szx
+0 Q
+300 Q O
+320 Q P
+340 Q A
+380 Q
+440 SPACE
+480 H
+486 -
+546 H
+552 -
+582 Q
+622 Q O
+634 Q
+664 Q P
+676 Q
+706 Q P
+716 Q O
+726 Q
+766 Q O
+778 Q
+808 Q P
+820 Q
+850 Q P
+860 Q O
+870 Q
+910 Q O
+922 Q
+952 Q P
+964 Q
+994 Q P
+1004 Q O
+1014 Q
+1054 Q O
+1055 SPACE
+1095 Q
+1096 Q P
+1108 Q
+1138 Q P
+1148 Q O
+1158 Q
+1198 Q O
+1210 Q
+1240 Q P
+1245 -
+1245 END

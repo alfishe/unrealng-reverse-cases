@@ -3,12 +3,12 @@
 
     python3 tools/fig_courses.py [--out docs/img/maps/courses.png] [--scale 3]
 
-Reads src/res/track (through tools/res_formats.py and tools/course.py's track walk, as TrackStep runs it) and the
+Reads src/res/track (through tools/res_formats.py's game_walk, as AdvanceTrack and TrackStep walk it) and the
 sprites from build/game.bin for the legend. Each column is one stage from its start (top) to its end (bottom), one
-pixel row every SCALE distance units. The background is the segment's hill (0 flat to 3), the grey band the road
-bent sideways by each segment's curve (0-3) and CurveDir (a sketch: the game keeps no map, it bends the road on the
-screen, and which way CurveDir 1 bends is drawn to the right by convention here), the coloured marks the objects at
-their lateral place (the variable object resolved to the type the stage's `var` command sets), white bars the ramps,
+pixel row every SCALE distance units. The background is the segment's crest (0 level to 3), the grey band the road
+bent sideways by each segment's bend (0-3) and BendDir (a sketch: the game keeps no map, it bends the road on the
+screen, and which way BendDir 1 bends is drawn to the right by convention here), the coloured marks the objects at
+their lateral place (the variable object resolved to the type the last `var` command set), white bars the ramps,
 red bars the stage 3 gap marks. Numbers at the left: distance from the race's start, every 1024 units.
 """
 import argparse
@@ -31,7 +31,7 @@ COLOURS = {0: (255, 255, 255), 1: (150, 150, 150), 2: (20, 120, 20), 3: (230, 16
            5: (200, 60, 200), 6: (200, 90, 40), 7: (60, 200, 255)}
 LARGEST = {4: (29, 8, 0xB4C0), 5: (96, 3, 0xB306), 1: (24, 3, 0xC1BF), 6: (65, 6, 0xBDA8), 2: (107, 5, 0xC27B),
            0: (26, 25, 0xC84F), 3: (101, 6, 0xB702), 7: (91, 8, 0x6D34)}
-HILLS = [(225, 235, 215), (200, 220, 185), (170, 200, 150), (140, 180, 120)]
+CRESTS = [(225, 235, 215), (200, 220, 185), (170, 200, 150), (140, 180, 120)]
 GROUND = ['grass, trees', 'sand, rock spires', 'dunes, a gap', 'sand, cacti', 'beach, palms']
 
 
@@ -53,17 +53,9 @@ def main():
     a = ap.parse_args()
     data = rf.load('track/tables.bin')
     stages, _ = rf.track_stages(data)
-    events, var_at = [], []
-    for o, w, dist in rf.track_walk(data):
-        if w[0] == 'call':
-            n = None if w[2] == 'forever' else int(w[2])
-            course.run(data, course.commands(data, int(w[1].lstrip('$'), 16)), n, dist, events)
-        elif w[0] == 'obj':
-            events.append((dist, 'obj', int(w[1]), int(w[3])))
-        elif w[0] == 'mark':
-            events.append((dist, 'mark', 0, 0))
-        elif w[0] == 'var':
-            var_at.append((dist, int(w[1])))
+    elements, marks_at, _calls = rf.game_walk(data)
+    events = [(p, 'obj', v // 2 if t == 10 else t, x) for p, _a, t, x, v in elements]
+    events += [(p, 'mark', 0, 0) for p, _a in marks_at]
     image = open(os.path.join(CASE, 'build', 'game.bin'), 'rb').read()
     f, fb, fs = kitlib.font(13), kitlib.font(18), kitlib.font(12)
     colw, gap, left, top = 150, 12, 44, 92
@@ -72,7 +64,7 @@ def main():
     longest = max(len(s) for s in stages) * 128 // a.scale
     im = Image.new('RGB', (width, top + longest + 40), (255, 255, 255))
     d = ImageDraw.Draw(im)
-    d.text((8, 6), 'The five courses as the track data lays them out: road bends, hills, objects, ramps', font=fb,
+    d.text((8, 6), 'The five courses as the track data lays them out: road bends, crests, objects, ramps', font=fb,
            fill=(0, 0, 0))
     d.text((8, 30), 'one row = %d distance units (ScrollStep = SPEED x 14 a pass, 8.8); a segment = 128 units'
            % a.scale, font=f, fill=(60, 60, 60))
@@ -81,17 +73,16 @@ def main():
         x0 = left + n * (colw + gap)
         length = 128 * len(segs)
         h = length // a.scale
-        var = [t for dd, t in var_at if dd < start + length][-1]
         d.text((x0, 52), 'stage %d: %d seg.' % (n + 1, len(segs)), font=f, fill=(0, 0, 0))
         d.text((x0, 68), GROUND[n], font=fs, fill=(60, 60, 60))
         centre, shift, marks = colw / 2, [], []
         for s, b in enumerate(segs):
-            hill, curve, direction = b & 3, (b >> 2) & 3, (b >> 4) & 1
+            bend, crest, direction = b & 3, (b >> 2) & 3, (b >> 4) & 1
             y0, y1 = top + s * 128 // a.scale, top + (s + 1) * 128 // a.scale
-            d.rectangle([x0, y0, x0 + colw - 1, y1], fill=HILLS[hill])
+            d.rectangle([x0, y0, x0 + colw - 1, y1], fill=CRESTS[crest])
             for _y in range(y0, y1):
                 shift.append(centre)
-                centre += (curve * (1 if direction else -1)) * 0.3
+                centre += (bend * (1 if direction else -1)) * 0.3
                 centre = max(40, min(colw - 40, centre))
             d.line([x0, y0, x0 + 5, y0], fill=(80, 80, 80))
         for y, c in enumerate(shift):
@@ -104,8 +95,6 @@ def main():
             if kind == 'mark':
                 marks.append((c, y))
                 continue
-            if typ == 10:
-                typ = var
             if typ == 0:
                 d.rectangle([c - 18, y - 1, c + 18, y + 1], fill=(255, 255, 255), outline=(0, 0, 0))
                 continue
@@ -143,8 +132,8 @@ def main():
     d.text((legend_x + 36, y - 4), 'gap mark', font=fs, fill=(0, 0, 0))
     y += 18
     for h in range(4):
-        d.rectangle([legend_x, y, legend_x + 12, y + 10], fill=HILLS[h], outline=(0, 0, 0))
-        d.text((legend_x + 18, y - 2), 'hill %d' % h, font=fs, fill=(0, 0, 0))
+        d.rectangle([legend_x, y, legend_x + 12, y + 10], fill=CRESTS[h], outline=(0, 0, 0))
+        d.text((legend_x + 18, y - 2), 'crest %d' % h, font=fs, fill=(0, 0, 0))
         y += 16
     os.makedirs(os.path.dirname(a.out), exist_ok=True)
     im.save(a.out)

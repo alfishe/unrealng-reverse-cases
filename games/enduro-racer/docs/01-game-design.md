@@ -161,18 +161,19 @@ roadside object, every ramp and stage 3's gaps.
 ![The five courses as the track data lays them out](img/maps/courses.png)
 
 *`python3 tools/fig_courses.py`, from `src/res/track` and the sprites in `build/game.bin`. How to read: one column a
-stage, start at the top, one pixel row every 3 distance units; the shade is the hill (0 flat to 3); the grey band the
-road bent by each segment's curve (a sketch: the game keeps no map); the coloured squares the objects at their
-lateral place; white bars the ramps; red bars stage 3's gap marks. The point: each stage has its own mix of objects
+stage, start at the top, one pixel row every 3 distance units; the shade is the crest (0 level to 3); the grey band the
+road bent by each segment's bend (bits 0-1, to the side bit 4 gives) (a sketch: the game keeps no map); the coloured squares the objects at their
+lateral place, at the distances TrackStep counts (`tools/res_formats.py` `game_walk`); white bars the ramps; red
+bars stage 3's gap marks. The point: each stage has its own mix of objects
 and its own rhythm of bends and ramps; stage 3 alone has gaps.*
 
 | Stage | Segments | Distance (units) | Horizon | Ground | Objects (course.py counts) |
 | ---: | ---: | ---: | --- | --- | --- |
-| 1 | 32 | 4 096 | mountains | grass | 4 ramps; 145 boulders, 190 round trees, 40 conifers, 106 of the stage's variable object |
-| 2 | 23 | 2 944 | clouds | sand | 8 ramps; 131 rock spires, 132 boulders, 41 cacti, 12 conifers, 105 variable |
-| 3 | 26 | 3 328 | dunes | dunes and water | 16 ramps; 288 variable (bushes), 31 boulders, 28 rock spires, 10 gap marks |
-| 4 | 27 | 3 456 | mountains | sand | 13 ramps; 267 boulders, 243 variable (cacti), 46 rock spires |
-| 5 | 32 | 4 096 | clouds | beach | 22 ramps; 206 palms, 155 boulders, 41 variable, 13 rock spires, 6 bushes |
+| 1 | 32 | 4 096 | mountains | grass | 4 ramps; 184 round trees, 144 boulders, 51 conifers, 101 of the stage's variable object |
+| 2 | 23 | 2 944 | clouds | sand | 8 ramps; 152 rock spires, 141 boulders, 39 cacti, 88 variable |
+| 3 | 26 | 3 328 | dunes | dunes and water | 18 ramps; 313 variable (bushes), 14 boulders, 2 bushes, 10 gap marks |
+| 4 | 27 | 3 456 | mountains | sand | 13 ramps; 308 boulders, 221 variable (cacti), 54 rock spires, 3 palms |
+| 5 | 32 | 4 096 | clouds | beach | 26 ramps; 234 palms, 130 boulders, 10 variable, 7 bushes |
 
 The ground colour comes from StageParams (attribute `$20`, `$30`, `$28`, `$70`, `$30`); the horizon from StageTable.
 Stage 5 draws its road with another routine (RoadNone) and has its own off-road rule ([doc
@@ -517,8 +518,8 @@ stage of points.
 ## 1.9 The cheat key
 
 CAPS SHIFT and Q together toggle a fixed track step of `$1000` on stages 1-3: SPEED 293 in effect, faster than the
-throttle can give. It is known only from the code (CheatKey `$A659` in `src/game/race.asm`); no recording held CAPS
-SHIFT.
+throttle can give. The recording `tech-cheat` holds CAPS SHIFT + Q at c1's play: CheatKey `$A659` (in
+`src/game/race.asm`) runs once at its frame 126 and CheatFixedStep `$A674` 51 times after it ([doc 10](10-gameplay-logic.md), 10.12).
 
 ```mermaid
 flowchart LR
@@ -553,10 +554,15 @@ flowchart LR
 
 ## 1.11 Known only from the code
 
-- The cheat key (1.9).
-- The truck's fall: the trucks met in `stages` and `reset3` were under the Immune To Trucks POKE.
-- The full wheelie into a ramp (8 passes and more keep all the speed): no recording held WHEELIE that long.
-- A fall on stage 5 (the skid noise off the right side): no recording fell there.
-- The name entry and the high score table without a POKE: no clean run reached 200 000 points.
+Seven cheap recordings, made after the first draft (WALKTHROUGH 6.0), settle most of what was here:
 
-The recordings that would settle them are listed in [`work/docs/erA-NOTES.md`](../work/docs/erA-NOTES.md).
+- the cheat key (1.9): `tech-cheat`;
+- the truck's fall: `truck` (WALKTHROUGH 6.0: from `stages`' stage 3 state with the Immune To Trucks byte put back, the other POKEs of that state still in place), TruckCrash `$A88F` once at its frame 1 240, a head-on truck in stage 3;
+- the full wheelie into a ramp: `tech-ramp-wheelie`, RampCap `$A808` once at its frame 1 412;
+- a fall on stage 5: `fall5` (from `stages`' stage 5 state, the obstacle and truck bytes put back), FallStage5
+  `$AD36` 8 times at frames 235-280 and Crash `$AF02` once;
+- the name entry: `names` (c1's play with the score POKEd to 300 000 and the timer to 1, a POKE said in its
+  record), the name "ER" typed with a delete and both wraps.
+
+Still known only from the code: the high score table reached by a clean run without any POKE (no clean run reached
+200 000 points), and the stage 3 reset without POKEs (doc 10, 10.13).

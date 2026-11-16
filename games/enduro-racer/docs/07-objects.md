@@ -92,11 +92,11 @@ instructions of the race loop. It also colours the HUD row and the ground.
 
 | Stage | StageTable: horizon, lines, bottom | StageParams: road, rows, off-road | ground attribute | what it gives |
 | --- | --- | --- | --- | --- |
-| 1 | `$E5E0`, 32, `$50` | DrawRoad `$931E`, RoadRowsCurve `$9CB7`, OffRoad `$A1D9` | `$20` | mountains, green |
+| 1 | `$E5E0`, 32, `$50` | DrawRoad `$931E`, RoadRowsCrest `$9CB7`, OffRoad `$A1D9` | `$20` | mountains, green |
 | 2 | `$E9E0`, 9, `$53` | the same | `$30` | clouds, yellow sand |
 | 3 | `$E2C0`, 25, `$57` | DrawRoad, RoadRowsJump `$999A`, OffRoadSand `$A1F6` | `$28` | dunes, cyan; the ramps and gaps |
 | 4 | `$E5E0`, 32, `$50` | as stage 1 | `$70` | mountains, bright yellow |
-| 5 | `$E9E0`, 9, `$5A` | RoadNone `$9A91`, RoadRowsCurve, OffRoadStage5 `$A1F5` | not written | clouds, no road drawn |
+| 5 | `$E9E0`, 9, `$5A` | RoadNone `$9A91`, RoadRowsCrest, OffRoadStage5 `$A1F5` | not written | clouds, no road drawn |
 
 Bytes 7-9 of each StageParams entry are 0. Byte 7 is BlitMode's JR offset ([doc 6](06-rendering.md)).
 
@@ -116,7 +116,7 @@ StageStart (each stage, after StageEnd too):
     RoadCall CALL = word(p + 0); RowBuilderCall CALL = word(p + 2); OffRoadJump JP = word(p + 4)
     attributes $58A0-$59BF = $68                              (the HUD rows)
     if Stage != 4: attributes $59C0-$5AFF = p[6]               (the ground)
-    SplashOn = CurveOp = $87 if Stage is odd (stages 2 and 4) else 0
+    SplashOn = BendOp = $87 if Stage is odd (stages 2 and 4) else 0
 ```
 
 ### Assembly
@@ -158,8 +158,8 @@ flowchart TD
     G -- yes --> I["ground left as it is"]
     H --> J{"Stage odd?"}
     I --> J
-    J -- "yes: stages 2, 4" --> K["SplashOn and CurveOp 87"]
-    J -- no --> L["SplashOn and CurveOp 0"]
+    J -- "yes: stages 2, 4" --> K["SplashOn and BendOp 87"]
+    J -- no --> L["SplashOn and BendOp 0"]
 ```
 
 ### Worked example and witness
@@ -192,18 +192,18 @@ code whose three CALL and JP operands are rewritten at each stage.
 Each segment is one byte of StageList. A stage ends at the byte with bit 5 set. The 140 bytes for the five stages
 run from `$5E80` to `$5F0B`. Each segment is 128 units long.
 
-- bits 0-1: stored in Hill `$5E2F`. 0 is straight; 1-3 pick one of three bend profiles (HillProfiles). The value
-  shifts each row's centre sideways (HillRows, `$5B80` + row), pushes the bike outward (BikeLateralPush) and scrolls
-  the horizon. On screen it is a bend, not a hill.
-- bits 2-3: stored in Curve `$5E31`. 0 is level; 1-3 pick a curve of CurveTable that moves the rows' screen lines
+- bits 0-1: stored in Bend `$5E2F`. 0 is straight; 1-3 pick one of three bend profiles (BendProfiles). The value
+  shifts each row's centre sideways (BendRows, `$5B80` + row), pushes the bike outward (BikeLateralPush) and scrolls
+  the horizon. On screen it is a bend.
+- bits 2-3: stored in Crest `$5E31`. 0 is level; 1-3 pick a column of CrestTable that moves the rows' screen lines
   (RoadLines) up or down. On screen it is a rise or a dip: the road stays straight.
-- bit 4: CurveDir `$5E2D`, the bend's direction (it signs the push and the rows' shift).
+- bit 4: BendDir `$5E2D`, the bend's direction (it signs the push and the rows' shift).
 - bit 5: the stage's last segment.
 - bits 6-7: the length, `$80` on every byte. SegmentDecode stores `b AND $C0` as the operand of the ADD at `$AF80`, so
   the length is that many units.
 
-The source's names have the two fields the other way round: "Hill" is the bend and "Curve" the vertical profile. This
-document keeps the source's names for the variables and says what each does.
+The source names the two fields after what they do: Bend the bend, Crest the vertical profile (the stage 2 source had
+them the other way round, as Hill and Curve).
 
 ![The two segment fields on screen](img/objects/fields.png)
 
@@ -213,7 +213,7 @@ frame 15 250, segment `$91` (bits 0-1 = 1, bits 2-3 = 0): the road bends. The sc
 figure is `python3 tools/fig_objects.py fig-fields docs/img/objects/fields.png work/docs/erC/shots/crest.png
 work/docs/erC/shots/bend.png`.*
 
-| Stage | Segments | Units | Bits 2-3 (Curve) 0/1/2/3 | Bits 0-1 (Hill: bends) 0/1/2/3 |
+| Stage | Segments | Units | Bits 2-3 (Crest) 0/1/2/3 | Bits 0-1 (Bend: bends) 0/1/2/3 |
 | --- | --- | --- | --- | --- |
 | 1 | 32 | 4 096 | 20 / 4 / 0 / 8 | 19 / 7 / 6 / 0 |
 | 2 | 23 | 2 944 | 11 / 4 / 0 / 8 | 8 / 8 / 5 / 2 |
@@ -239,12 +239,12 @@ NextSegment:
     b = *StageListPtr; StageListPtr += 1
     if b bit 5: StageEnd
 SegmentDecode:
-    CurvePrev = Curve; if CurvePrev == 0: RoadRowsFlat
-    Curve = (b >> 2) AND 3
-    HillPrev = Hill; if HillPrev == 0: ClearHillRows
-    Hill = b AND 3
+    CrestPrev = Crest; if CrestPrev == 0: RoadRowsFlat
+    Crest = (b >> 2) AND 3
+    BendPrev = Bend; if BendPrev == 0: ClearBendRows
+    Bend = b AND 3
     the length operand = b AND $C0
-    if bit 4 changed: CurveDir = bit 4; SetCurveDir patches 8 branch opcodes
+    if bit 4 changed: BendDir = bit 4; SetBendDir patches 8 branch opcodes
 ```
 
 ### Assembly
@@ -259,8 +259,8 @@ NextSegment:             ; $AF97
   LD (StageListPtr),HL
   JP NZ,StageEnd
 SegmentDecode:           ; $AFA7
-  LD A,(Curve)
-  LD (CurvePrev),A
+  LD A,(Crest)
+  LD (CrestPrev),A
   AND A
   CALL Z,RoadRowsFlat
   LD HL,(StageListPtr)
@@ -269,7 +269,7 @@ SegmentDecode:           ; $AFA7
   RRA
   RRA
   AND $03
-  LD (Curve),A
+  LD (Crest),A
   ...
   LD A,B
   AND $C0
@@ -289,18 +289,18 @@ flowchart TD
     D -- no --> H
     H --> I{"bit 5 of the byte passed?"}
     I -- yes --> J["StageEnd"]
-    I -- no --> K["SegmentDecode: Curve, Hill, length"]
-    K --> L{"CurveDir changed?"}
-    L -- yes --> M["SetCurveDir: 8 opcodes JR NZ or JR Z"]
+    I -- no --> K["SegmentDecode: Crest, Bend, length"]
+    K --> L{"BendDir changed?"}
+    L -- yes --> M["SetBendDir: 8 opcodes JR NZ or JR Z"]
     L -- no --> Z
     M --> Z
 ```
 
 ### Worked example and witness
 
-Stage 1 starts `80 80 9C 9C 91 95 90 94`. The third byte `$9C` is `%1001 1100`: Hill 0, Curve 3, CurveDir 1, length
-`$80`. The text form in `src/res/track/stage1.txt` writes it `0.3.1`. The fifth, `$91`, is Hill 1 and Curve 0: a bend
-to the CurveDir 1 side on level ground. The samples show the decode: Curve 3 from 14 861 and Hill 1 from 15 139.
+Stage 1 starts `80 80 9C 9C 91 95 90 94`. The third byte `$9C` is `%1001 1100`: Bend 0, Crest 3, BendDir 1, length
+`$80`. The text form in `src/res/track/stage1.txt` writes it `0.3.1`. The fifth, `$91`, is Bend 1 and Crest 0: a bend
+to the BendDir 1 side on level ground. The samples show the decode: Crest 3 from 14 861 and Bend 1 from 15 139.
 
 In `c1`, SegmentLeft starts at `$8000` with StageListPtr `$5E80`. At frame 14 631 (pass 171) it is `$03C0` and
 ScrollStep is `$0348` (60 km/h). The next pass leaves `$03C0 - $0348 = $0078`: its high byte is 0, so the segment
@@ -641,7 +641,7 @@ DrawObject(row A, x B, list IX):
     if A >= list.far: return
     draw = DrawSprite if A < list.aligned else DrawShifted
     entry = the first with A < threshold
-    line = RoadLines[A]; x = the row's centre +/- B * RowScale[A] + the bend's shift (HillRows)
+    line = RoadLines[A]; x = the row's centre +/- B * RowScale[A] + the bend's shift (BendRows)
     the part above line 40 cut; TopClip raised
     draw(entry)
 ```
@@ -703,12 +703,12 @@ first above 30. It is `$7367`: 48 rows, 5 bytes wide, lifted 19 lines. On row 40
 In `c1` frame 15 015 the walk starts at T 42 691 and DrawObject runs three times (T 43 602, 67 727, 69 258). The first
 reaches its JP (IY) at T 44 525 and goes to DrawSprite `$8F29`.
 
-![c1 frame 15 015: ObjectWalk and DrawObject draw the elements ahead into the back buffer](img/routines/DrawObject.gif)
+![c1 frame 15 015: ObjectWalk and DrawObject draw the elements ahead into the back buffer](img/routines/ObjectWalk.gif)
 
 *ObjectWalk and DrawObject in frame 15 015 of `c1`, with the back buffer `$EB00` as 32 × 152 bytes under the memory
-map; the sprite routines show as "other". Command: `python3 ../../kit/routine_anim.py --work work/docs/erC/c1 --window
+map; the sprite routines show as "other". Command: `python3 ../../kit/routine_anim.py --work work/docs/integrate/c1 --window
 15015:42600-15015:69300 --listing build/game.lst --pc 9F18-A0AF,A6D9-A839 --view buffer:EB00:32x152:rows --range
-EB00-FDFF --pictures 60 --out docs/img/routines/DrawObject.gif`.*
+EB00-FDFF --pictures 60 --title "..." --out docs/img/routines/ObjectWalk.gif`.*
 
 The point: the near sprites, the big ones, are drawn byte-aligned. They move many pixels a pass, so the lost 0-7 pixels
 do not show, and the shift is saved where it costs most.
@@ -875,7 +875,7 @@ MoveRiders (each pass), for each rider not out:
     distance += speed - ScrollStep
     if on the ground:
         if row >= $80: next rider
-        bend = HillPrev if row < SegmentLeft.high else Hill      the bend at the rider's row
+        bend = BendPrev if row < SegmentLeft.high else Bend      the bend at the rider's row
         if bend: if pose > lowest: pose -= 1
         elif 0 < pose < 3: pose += 1
 ```
@@ -981,7 +981,7 @@ same heights.
 DrawRiders `$9615` picks the band by row: the first of the seven thresholds 5, 11, 18, 26, 36, 55, 80 above the row.
 The pose picks one of the band's five descriptors (4 for a truck). A descriptor is rows, width, address. Bit 7 of the
 width: drawn byte-aligned (DrawSprite). Bit 7 of the rows: never mirrored. A descriptor without it is mirrored
-(DrawMirrored) when CurveDir is 1, so the rider leans into the bend.
+(DrawMirrored) when BendDir is 1, so the rider leans into the bend.
 
 ![RiderSprites: seven distance bands, five poses](img/objects/riders.png)
 
@@ -1032,7 +1032,7 @@ OtherPlayer `$5E45` in a two-player game, so each player keeps a place on the tr
 | `$5E27` | TrackPtr | 2 | the element at the bike | 7.5 |
 | `$5E29` | TrackDistance | 2 | units past it, 8.8 | 7.5 |
 | `$5E2B` | StageListPtr | 2 | the next segment byte | 7.3 |
-| `$5E2D` | CurveDir, HillPrev, Hill, CurvePrev, Curve | 5 | the segment, decoded: CurveDir the bend's side, Hill the bend, Curve the rise or dip | 7.3 |
+| `$5E2D` | BendDir, BendPrev, Bend, CrestPrev, Crest | 5 | the segment, decoded: BendDir the bend's side, Bend the bend, Crest the rise or dip | 7.3 |
 | `$5E32` | FallX | 1 | x at a fall, the restart's x | [10](10-gameplay-logic.md) |
 | `$5E33` | GapMarks | 2 | the rows of the two `F0` marks, `$7F` none | 7.4 |
 | `$5E35` | Segments | 1 | segments passed | 7.3 |
@@ -1054,9 +1054,11 @@ OtherPlayer `$5E45` in a two-player game, so each player keeps a place on the tr
 ## 7.10 Notes, quirks and what is known only from the code
 
 - A call ends at the first element that would bring its count to its length, and that element is skipped. So the
-  distances written in `src/res/track/stage*.txt` (the sum of the lengths) run ahead of the game's: 380 for 384 at
-  stage 1's first call, 976 for 1 008 four calls on. `tools/course.py` places the skipped element too. The `c1`
-  samples confirm the game's figures (7.4).
+  sum of the calls' lengths runs ahead of the game's distance: 384 against 380 at stage 1's first call, 1 008
+  against 976 four calls on. `src/res/track/stage*.txt` writes each command's distance as the game counts it (# 380,
+  # 976), and `tools/course.py` and `tools/fig_courses.py` place the elements by the same walk
+  (`tools/res_formats.py` `game_walk`), the skipped element left out. The `c1` samples confirm the game's figures
+  (7.4).
 - The track nests one level. TrackStep's code for a return with two frames open (`$AC0D`) is never met.
 - Element type 8 appears once, in the pattern at `$5F0C`, which no call or jump reaches. It would index past
   ObjectTypes.

@@ -19,7 +19,14 @@
     "stage1/rec/stages",
     "stage1/rec/ctl",
     "stage1/rec/crash",
-    "stage1/rec/twoplayer"
+    "stage1/rec/twoplayer",
+    "stage1/rec/truck",
+    "stage1/rec/fall5",
+    "stage1/rec/names",
+    "stage1/rec/tech-ramp-wheelie",
+    "stage1/rec/tech-land-wheelie",
+    "stage1/rec/tech-brake-bend",
+    "stage1/rec/tech-cheat"
   ],
   "ref_builds": [
     [
@@ -38,7 +45,14 @@
     "stage1/rec/stages",
     "stage1/rec/ctl",
     "stage1/rec/crash",
-    "stage1/rec/twoplayer"
+    "stage1/rec/twoplayer",
+    "stage1/rec/truck",
+    "stage1/rec/fall5",
+    "stage1/rec/names",
+    "stage1/rec/tech-ramp-wheelie",
+    "stage1/rec/tech-land-wheelie",
+    "stage1/rec/tech-brake-bend",
+    "stage1/rec/tech-cheat"
   ],
   "overwritten": [
     [
@@ -82,6 +96,13 @@
     "stage1/rec/stages",
     "stage1/rec/ctl",
     "stage1/rec/crash",
-    "stage1/rec/twoplayer"
+    "stage1/rec/twoplayer",
+    "stage1/rec/truck",
+    "stage1/rec/fall5",
+    "stage1/rec/names",
+    "stage1/rec/tech-ramp-wheelie",
+    "stage1/rec/tech-land-wheelie",
+    "stage1/rec/tech-brake-bend",
+    "stage1/rec/tech-cheat"
   ]
 }

@@ -35,7 +35,11 @@ The recordings it rests on ([WALKTHROUGH 6.0](../WALKTHROUGH.md#60-the-recording
   replayed with c1's own input script `tests/inputs/c1.txt`, with one change to the keys. Each run samples the
   bike's variables every frame into `work/docs/erC/tech/<run>.jsonl`. The run `ramp-plain` changes nothing. It
   reproduces c1's SPEED, JumpHeight and BounceTime frame for frame (10.4), so a run is c1 with one change and
-  nothing else. The runs are experiments on an own instance at port base 37795: no TTD recording, no POKE.
+  nothing else. No POKE. The four runs with a change are also TTD recordings with the same keys
+  (`tools/record.py tech-<run>`, `work/stage1/rec/tech-<run>/session.ttd`, WALKTHROUGH 6.0); a recording's
+  frame F is c1's frame 14 075 + F. Their L1s witness the routines: RampCap `$A808` runs once in
+  `tech-ramp-wheelie` (frame 1 412, c1 15 487) and is skipped at the same ramp in `tech-land-wheelie`; CheatKey
+  `$A659` runs once in `tech-cheat` (frame 126, c1 14 201) and CheatFixedStep `$A674` 51 times after it.
 
 A sample of frame N is the memory at the start of frame N. A pass is one turn of the race loop: 6 to 12 frames, 8.6
 on average in `c1`'s play ([doc 4](04-game-loop.md)). SPEED is the high byte of the 8.8 word at `$7C33`. It is shown
@@ -324,12 +328,12 @@ traces the lean itself.
 A bend pushes the bike outward. The push is BikeLateralPush `$AE64`:
 
 ```text
-push = ScrollStep.high * factor / 256        factor $52, $8F, $A4 for bend 1, 2, 3 (HillPrev)
-push is doubled on stages 2 and 4 (CurveOp: ADD A,A), signed by CurveDir
+push = ScrollStep.high * factor / 256        factor $52, $8F, $A4 for bend 1, 2, 3 (BendPrev)
+push is doubled on stages 2 and 4 (BendOp: ADD A,A), signed by BendDir
 LateralX += sideways + push (+ the bounce's push again during a bounce); clamped to -92 .. +92
 ```
 
-The segment's bits 0-1 hold the bend. The source calls the field "Hill" ([doc 7](07-objects.md), 7.3).
+The segment's bits 0-1 hold the bend. The source calls the field Bend ([doc 7](07-objects.md), 7.3).
 
 The road's edge. BikeRoadPlace `$AFFE` turns LateralX into the bike's distance d from the road's middle on the screen.
 Beyond d = `$24` the stage's off-road routine (StageParams) caps SPEED each pass:
@@ -354,7 +358,7 @@ BikeControl, riding on the ground:
     if lean == 0: BounceSpeed = 0
     else: BounceSpeed = min(SteerTable[2 * ScrollStep.high] * LeanTable[lean + 3] / 8, 5.xx), signed by lean
 BikeLateral (every pass):
-    push = (ScrollStep.high, doubled on stages 2 and 4) * factor[HillPrev] / 256, negated if CurveDir == 1
+    push = (ScrollStep.high, doubled on stages 2 and 4) * factor[BendPrev] / 256, negated if BendDir == 1
     HorizonScrollStep = push
     LateralX += BounceSpeed (twice in a bounce) + push; clamp the high byte to -92 .. +92
 ```
@@ -385,11 +389,11 @@ l_AE15:
   ...
 BikeLateral:
   LD A,(ScrollStep+$0001)
-CurveOp:
+BendOp:
   DEFB $87                ; ADD A,A on stages 2 and 4, NOP elsewhere
 BikeLateralPush:
   LD L,A
-  LD A,(HillPrev)         ; the bend, bits 0-1 of the segment
+  LD A,(BendPrev)         ; the bend, bits 0-1 of the segment
   AND A
   JR NZ,l_AE70
   LD DE,$0000
@@ -403,10 +407,10 @@ l_AE70:
   LD A,$A4
 l_AE7C:
   CALL Multiply
-  LD A,(CurveDir)
+  LD A,(BendDir)
   DEC A
   JR NZ,l_AE8B
-  LD HL,$0000             ; CurveDir 1: the other way
+  LD HL,$0000             ; BendDir 1: the other way
   SBC HL,DE
   EX DE,HL
 l_AE8B:
@@ -450,8 +454,8 @@ The cap at 5 keeps the sideways speed's low byte, so below about 50 km/h lean 2 
 3 pushes harder than a full lean can steer, and on stages 2 and 4 even bend 1 does at full speed (6.4 against 3.55).
 A rider who keeps the throttle open in a hard bend drifts off the road, and the off-road cap then takes the speed.
 
-Worked example: `c1` at frame 15 250. The segment is `$91`: bend 1, CurveDir 1. SPEED is 145, so ScrollStep is
-`$07EE` and its high byte 7. The push is 7 × `$52` = 574 = `$023E`: 2.24 units a pass, negated by CurveDir. c1's
+Worked example: `c1` at frame 15 250. The segment is `$91`: bend 1, BendDir 1. SPEED is 145, so ScrollStep is
+`$07EE` and its high byte 7. The push is 7 × `$52` = 574 = `$023E`: 2.24 units a pass, negated by BendDir. c1's
 LateralX high byte goes 34, 35, 35, 35, 33, 32 over 15 245-15 291: c1's taps of O and P hold the line against it.
 
 **The point**: the speed table makes the bike steer like a heavier machine as it goes faster, and the bend's push
@@ -463,9 +467,9 @@ OffRoadStage5 L1 352 (stages only).
 ![c1 frames 15 250-15 253: BikeLateralPush in a bend](img/routines/BikeLateralPush.gif)
 
 *BikeLateral and BikeLateralPush in frames 15 250-15 253 of `c1` (bend 1), with ScrollStep and LateralX
-(`$9136-$9145`) under the memory map. Command: `python3 ../../kit/routine_anim.py --work work/docs/erC/c1 --window
+(`$9136-$9145`) under the memory map. Command: `python3 ../../kit/routine_anim.py --work work/docs/integrate/c1 --window
 15250:0-15254:0 --listing build/game.lst --pc AE60-AF01 --view buffer:9136:16x1:hex --range 9100-91FF --row-bytes 32
---pictures 60 --title "BikeLateralPush in a bend: c1 frames 15 250-15 253, Hill 1" --out
+--pictures 60 --title "BikeLateralPush in a bend: c1 frames 15 250-15 253, Bend 1" --out
 docs/img/routines/BikeLateralPush.gif`.*
 
 ## 10.4 The wheelie, ramps and jumps
@@ -747,8 +751,9 @@ passes the bike the other way: 255 → 1 at 15 237.
 **The point**: a rider is a soft obstacle, a truck a hard one. Both are tested only in the pass the bike reaches
 them, so a rider never runs into the bike from behind.
 
-Witness: RiderHits L1 15 (c1, crash, m128, stages), TruckCrash L1 4 (stages, under the Immune To Trucks POKE, so the
-truck's fall is known only from the code); ObjectHit's bounce and fall in `c1` (15 175, 15 843); `c1-vars.jsonl`
+Witness: RiderHits L1 15 (c1, crash, m128, stages), TruckCrash L1 4 (stages, under the Immune To Trucks POKE) and
+the fall itself in `truck` (WALKTHROUGH 6.0: from `stages`' stage 3 state with the Immune To Trucks byte put back, the other POKEs of that state still in place): TruckCrash `$A88F` once at frame 1 240,
+[the truck ahead](img/play/truck-001241-truck-crash.png); ObjectHit's bounce and fall in `c1` (15 175, 15 843); `c1-vars.jsonl`
 15 151-15 339.
 
 ## 10.6 The crash, lying and getting up
@@ -1461,8 +1466,8 @@ covers about as much track as c1 does at full speed.
 **The point**: the cheat is a track speed, not a bike speed. It is also the only way to see stage 1 faster than
 SPEED 199 allows.
 
-Witness: CheatKey L1 3 (c1, ctl, m128); CheatFixedStep was known only from the code until the run `cheat`
-(`work/docs/erC/tech/cheat.jsonl`).
+Witness: the CAPS SHIFT test at `$A657` in every race recording, CheatKey L1 1 (tech-cheat); the run `cheat` (`work/docs/erC/tech/cheat.jsonl`) and its recording
+`tech-cheat`: CheatKey once at frame 126, CheatFixedStep `$A674` 51 times.
 
 ## 10.13 The bugs
 
@@ -1542,7 +1547,7 @@ What makes Enduro Racer's code worth reading:
    and the riders alike.
 2. **Self-modifying operands as variables.** The game keeps state in instruction operands: HeldKeys is the operand
    of `OR n` at `$AD8A`, CheatStep of `LD A,n` at `$A66F`, BounceSpeed of `LD BC,nn` at `$AE92`, FinishRider of
-   `LD IX,nn` at `$A961`, CurveOp is an `ADD A,A` or a NOP, OffRoadJump a `JP nn` set per stage, the row builder and
+   `LD IX,nn` at `$A961`, BendOp is an `ADD A,A` or a NOP, OffRoadJump a `JP nn` set per stage, the row builder and
    the road routine `CALL nn` set per stage. A stage is selected by patching code, not by testing a stage number.
 3. **One multiply for everything.** Multiply `$8BAE` (A × L into DE) gives ScrollStep, the steering, the bend's
    push, the ramp's cost, the falls, the off-road cap and the stage's parameter address. The rules are written as
@@ -1557,10 +1562,10 @@ What makes Enduro Racer's code worth reading:
 
 ```text
 a stage's behaviour = the code the stage patched:
-    RowBuilderCall: CALL RoadRowsFlat / RoadRowsCurve / RoadRowsJump
+    RowBuilderCall: CALL RoadRowsFlat / RoadRowsCrest / RoadRowsJump
     RoadCall:       CALL DrawRoad ...
     OffRoadJump:    JP OffRoad / OffRoadSand / OffRoadStage5
-    CurveOp:        ADD A,A (stages 2, 4) or NOP
+    BendOp:        ADD A,A (stages 2, 4) or NOP
 ```
 
 ### Assembly
@@ -1587,7 +1592,7 @@ flowchart LR
     B --> C["RowBuilderCall operand"]
     B --> D["RoadCall operand"]
     B --> E["OffRoadJump operand"]
-    B --> F["CurveOp: ADD A,A or NOP"]
+    B --> F["BendOp: ADD A,A or NOP"]
     C --> G["RacePass runs the patched code"]
     D --> G
     E --> G
@@ -1597,7 +1602,7 @@ flowchart LR
 The figure of this section is the steering figure of 10.3, and its animation BikeLateralPush.gif: the multiply, the
 patched `ADD A,A` and the operand BounceSpeed at work in one routine.
 
-Worked example: stage 2 against stage 1. StartRace writes `$87` (ADD A,A) into CurveOp on stages 2 and 4 and 0 (NOP)
+Worked example: stage 2 against stage 1. StartRace writes `$87` (ADD A,A) into BendOp on stages 2 and 4 and 0 (NOP)
 elsewhere. At SPEED 199 a bend 1 then pushes 6.4 units a pass instead of 3.2. The same code, one byte different, makes
 stage 2's bends twice as hard.
 
@@ -1613,10 +1618,11 @@ The unused code the recordings never reached is listed in 10.15.
 
 ## 10.15 Known only from the code
 
-- The truck's crash (TruckCrash): every truck met was under the Immune To Trucks POKE.
-- RampCap: no recording held WHEELIE 8 passes before a ramp; the run `ramp-wheelie` did.
-- CheatFixedStep: no recording held CAPS SHIFT in a race; the run `cheat` did.
-- OffRoadStage5's one-sided test and FallStage5: no recording fell or left the road on stage 5 without POKEs.
-- The landing without a bounce: no recording held WHEELIE at a landing; the run `land-wheelie` did.
+The first draft listed TruckCrash, RampCap, CheatFixedStep, FallStage5 and the landing without a bounce here. The
+recordings `truck`, `tech-ramp-wheelie`, `tech-cheat`, `fall5` and `tech-land-wheelie` (WALKTHROUGH 6.0) now run each
+of them. `fall5` keeps the Keep Speed POKEs of the `stages` state it starts from; OffRoadStage5's `RET NC` side ran
+24 times there, its other side never. What is left:
+
+- OffRoadStage5's test on the other side, and a stage 5 fall without any POKE.
 - The stage 3 reset without POKEs: needs 8 wheelie passes before a pair of ramps at full speed; not run.
 - A tie in RecordStages (equal seconds, compare the hundredths): no recorded stage time had a record's seconds.

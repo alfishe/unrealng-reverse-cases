@@ -7,16 +7,18 @@
 ; through GetUp.
 ;
 ; RaceLoop is one pass: the countdown (16 passes of digits 3, 2, 1, GO in attribute blocks, beeps), PassCount + 1,
-; ScrollStep = SPEED * 14, the AY effect, AdvanceTrack, ScrollHills, the row builder, the road, the ground's dots,
+; ScrollStep = SPEED * 14, the AY effect, AdvanceTrack, ScrollBends, the row builder, the road, the ground's dots,
 ; MoveRiders (after the countdown), DrawRiders, BikeControl and DrawBike, the dust and the splash, the horizon's
 ; rotation, the object walk (draw and collide), the rider collisions, the HUD's flashing words, the copy to the screen
 ; and the horizon, the finish run, the score (the speed's digits each pass), the controls (pause, reset), the speed,
-; the timer every 10 passes. c1's passes take 2 to 3 frames; the heaviest (12 frames in c1 at 17143, 18151, 18911) are
-; passes with many rows and objects on screen (NOTES, leftovers).
+; the timer every 10 passes. c1's passes take 8.0 frames on average (6-12; 648 passes over frames 14075-19265); the
+; heaviest (12 frames at 17143, 18151, 18911, 13 at 15169 with the crash noise) are passes with many rows and objects
+; on screen or a sound effect (doc 04 4.6, 4.7).
 ;
-; The timer (Timer, BCD seconds) counts down once every 10 passes, so a "second" is 10 passes (20-30 frames); a
-; stage's end adds 50 (at most 99) and shows EXTENDED PLAY; the time bonus adds the timer's digits to the score. The
-; stage's time (StageTime) is kept for the lap table. Game over is the timer at 0 with the bike stopped.
+; The timer (Timer, BCD seconds) counts down once every 10 passes, so a "second" is 10 passes (about 80 frames); a
+; stage's end adds 50 (at most 99) and shows EXTENDED PLAY; the time bonus puts the timer's tens and units as the 100
+; 000s and 10 000s digits of the score: 10 000 points a second left. The stage's time (StageTime) is kept for the lap
+; table. Game over is the timer at 0 with the bike stopped.
 ; --------------------------------------------------------------------------------------------------------------------
 
   ORG $A143
@@ -24,13 +26,15 @@
 ; Draw an 8-line glyph at HL as attribute blocks ($52) at DE (C lines:
 ; CountGlyphC)
 ;
-; Witness: L1 22 (c1, crash, ctl, m128, stages, twoplayer).
+; Witness: L1 32 (c1, crash, ctl, m128, names, stages, tech-brake-bend,
+; tech-cheat, tech-land-wheelie, tech-ramp-wheelie, twoplayer).
 CountGlyph:
   LD C,$08
 
 ; The same with C preset (the digits' 10 lines)
 ;
-; Witness: L1 486 (c1, crash, ctl, m128, stages, twoplayer).
+; Witness: L1 616 (c1, crash, ctl, m128, names, stages, tech-brake-bend,
+; tech-cheat, tech-land-wheelie, tech-ramp-wheelie, twoplayer).
 CountGlyphC:
   LD A,$52
   LD B,$08
@@ -55,12 +59,12 @@ l_A158:
 ; The AY effect's five pairs: 7 = $07 (noise on A, B, C), 6 = $1F, volumes 8,
 ; 9, 10 = 15
 AyEffect:
-  DEFB $07,$07,$06,$1F,$08,$0F,$09,$0F
-  DEFB $0A,$0F
+  INCBIN "res/tables/ayeffect.bin",$0000,10
 
 ; Write E AY pairs from HL (as AyWrite, ports loaded each time)
 ;
-; Witness: L1 1330 (c1, crash, m128, stages, twoplayer).
+; Witness: L1 1580 (c1, crash, fall5, m128, stages, tech-land-wheelie,
+; tech-ramp-wheelie, truck, twoplayer).
 AyPairs:
   LD A,(HL)
   LD BC,$FFFD
@@ -79,7 +83,8 @@ AyPairs:
 ;
 ; On the 48K the AY writes reach nothing; the 48K hears CrashSound instead.
 ;
-; Witness: L1 266 (c1, crash, m128, stages, twoplayer).
+; Witness: L1 316 (c1, crash, fall5, m128, stages, tech-land-wheelie,
+; tech-ramp-wheelie, truck, twoplayer).
 PlayEffect:
   LD (EffectTime),A
   EXX
@@ -92,9 +97,9 @@ PlayEffect:
 ; The five stages' routines: road, row builder, off-road, the ground's
 ; attribute, the copy mode, 2 bytes unused
 ;
-; Stage 1: DrawRoad, RoadRowsCurve, OffRoad, $20; 2: the same, $30; 3:
+; Stage 1: DrawRoad, RoadRowsCrest, OffRoad, $20; 2: the same, $30; 3:
 ; DrawRoad, RoadRowsJump, OffRoadSand, $28; 4: as 1, $70; 5: RoadNone,
-; RoadRowsCurve, OffRoadStage5, $30. Byte 7 (BlitMode's JR) is 0 on all.
+; RoadRowsCrest, OffRoadStage5, $30. Byte 7 (BlitMode's JR) is 0 on all.
 ; src/res/tables/stageparams.csv.
 StageParams:
   INCBIN "res/tables/stageparams.bin",$0000,50
@@ -121,15 +126,15 @@ ExtendedText:
 ;
 ; EffectTime 0 / EffectStep 15; flags cleared; pose 3; SetHorizon,
 ; DrawHorizonAt 40. A demo or a new turn (Countdown nonzero): the riders
-; cleared and set from RiderStarts (riders 4 and 5 from stage 2 and 3 on, both
-; in the demo); StageStart: TimerAtStart. Then StageParams patch the row
+; cleared and set from RiderStarts (rider 4 from stage 2, rider 5 from stage 4,
+; both in the demo); StageStart: TimerAtStart. Then StageParams patch the row
 ; builder's and the road's CALLs and the off-road JP, the HUD row's attributes
-; $68 and the ground's (not stage 5); SplashOn and CurveOp on stages 2 and 4;
-; ClearHillRows, RoadRowsFlat, the first segment (SetCurveDir, then
-; SegmentDecode or, resuming, LateralX from FallX); the hills of a segment
-; begun mid-hill.
+; $68 and the ground's (not stage 5); SplashOn and BendOp on stages 2 and 4;
+; ClearBendRows, RoadRowsFlat, the first segment (SetBendDir, then
+; SegmentDecode or, resuming, LateralX from FallX); the bend rows of a segment
+; begun mid-bend.
 ;
-; Witness: L1 23 (c1, crash, ctl, m128, stages, twoplayer).
+; Witness: L1 25 (c1, crash, ctl, fall5, m128, stages, truck, twoplayer).
 StartRace:
   LD HL,$0F00
   LD (EffectTime),HL
@@ -247,7 +252,7 @@ l_A534:
   XOR A
 l_A564:
   LD (SplashOn),A
-  LD (CurveOp),A
+  LD (BendOp),A
   LD IX,Riders
   LD A,(DemoMode)
   AND A
@@ -265,11 +270,11 @@ l_A575:
 l_A583:
   LD (IX+$3C),B
   LD (IX+$4B),C
-  CALL ClearHillRows
+  CALL ClearBendRows
   CALL RoadRowsFlat
   LD HL,(StageListPtr)
   LD B,(HL)
-  CALL SetCurveDir
+  CALL SetBendDir
   LD A,(DemoMode)
   AND A
   JR NZ,l_A5C0
@@ -294,10 +299,10 @@ l_A5B6:
 l_A5C0:
   CALL SegmentDecode
 l_A5C3:
-  LD A,(HillPrev)
+  LD A,(BendPrev)
   AND A
   JR NZ,l_A5EB
-  LD A,(Hill)
+  LD A,(Bend)
   AND A
   JR Z,RaceLoop
   ADD A,$FA
@@ -322,9 +327,9 @@ l_A5EB:
   LD L,B
   SRL H
   RR L
-  LD DE,HillRows
+  LD DE,BendRows
   LDIR
-  CALL BlendHill
+  CALL BlendBend
 ; This entry point is used by the routines at HudPlayer, RaceQuit and StageEnd.
 RaceLoop:
   LD A,(Countdown)        ; one pass
@@ -379,8 +384,10 @@ RaceCount:
 ; CAPS SHIFT and Q: toggle CheatStep (a fixed ScrollStep of $1000 on stages
 ; 1-3)
 ;
-; Known only from the code: no recording held CAPS SHIFT. A step of $1000 is
-; SPEED 293, faster than the throttle gives.
+; A step of $1000 is SPEED 293, faster than the throttle gives. The recording
+; tech-cheat holds CAPS SHIFT + Q at frame 126.
+;
+; Witness: L1 1 (tech-cheat).
 CheatKey:
   LD A,$FB
   IN A,($FE)
@@ -392,7 +399,9 @@ CheatKey:
 
 ; ScrollStep = SPEED * 14 (CheatStep: $1000)
 ;
-; Witness: L1 4382 (c1, crash, ctl, m128, stages, twoplayer).
+; Witness: L1 5203 (c1, crash, ctl, fall5, m128, names, stages,
+; tech-brake-bend, tech-cheat, tech-land-wheelie, tech-ramp-wheelie, truck,
+; twoplayer).
 RaceStep:
   LD A,(Speed+$0001)
   LD L,$0E
@@ -404,23 +413,25 @@ CheatStep:
 
 ; Stages 1-3 with CheatStep: DE = $1000
 ;
-; Known only from the code.
+; Witness: L1 51 (tech-cheat).
 CheatFixedStep:
   LD A,(Stage)
   CP $03
   JR NC,RacePass
   LD DE,$1000
 
-; ScrollStep stored; AyEffectTick, AdvanceTrack, ScrollHills, the row builder,
+; ScrollStep stored; AyEffectTick, AdvanceTrack, ScrollBends, the row builder,
 ; the road, GroundTexture, MoveRiders, DrawRiders, the bike, dust, splash,
 ; horizon, BikeHitX
 ;
-; Witness: L1 4382 (c1, crash, ctl, m128, stages, twoplayer).
+; Witness: L1 5203 (c1, crash, ctl, fall5, m128, names, stages,
+; tech-brake-bend, tech-cheat, tech-land-wheelie, tech-ramp-wheelie, truck,
+; twoplayer).
 RacePass:
   LD (ScrollStep),DE
   CALL AyEffectTick
   CALL AdvanceTrack
-  CALL ScrollHills
+  CALL ScrollBends
 RowBuilderCall:
   CALL RoadRowsJump       ; CALL nn: StageParams' row builder
 RoadCall:
@@ -639,14 +650,18 @@ l_A804:
 
 ; Wheelies capped at 8
 ;
-; Known only from the code: no recording held WHEELIE 8 passes before a ramp.
+; The recording tech-ramp-wheelie holds WHEELIE 13 passes before the ramp at
+; its frame 1 412.
+;
+; Witness: L1 1 (tech-ramp-wheelie).
 RampCap:
   LD A,$08
 
 ; SPEED * (8 * Wheelies - $40 + 256) / 256 (8 or more: unchanged), JumpSpeed,
 ; PrintSpeed, PlayEffect 2, CrashSound
 ;
-; Witness: L1 15 (c1, crash, m128, stages).
+; Witness: L1 19 (c1, crash, m128, stages, tech-land-wheelie,
+; tech-ramp-wheelie, truck).
 RampSpeed:
   ADD A,A
   ADD A,A
@@ -721,16 +736,17 @@ l_A880:
 
 ; A truck head-on: Crash
 ;
-; Known only from the code: the trucks met in stages and reset3 were under the
-; Immune To Trucks POKE, which turns this CALL into LD BC,nn (POKE 43151,1).
+; The trucks met in stages and reset3 were under the Immune To Trucks POKE,
+; which turns this CALL into LD BC,nn (POKE 43151,1); the recording truck puts
+; the byte back and meets a truck head-on at its frame 1 240.
 ;
-; Witness: L1 4 (stages).
+; Witness: L1 5 (stages, truck).
 TruckCrash:
   CALL Crash
 
 ; JR to the HUD
 ;
-; Witness: L1 4 (stages).
+; Witness: L1 5 (stages, truck).
 RiderBounce:
   JR HudFlash
 ; This entry point is used by the routine at RampSpeed.
@@ -778,7 +794,9 @@ DemoText:
 
 ; Two players: PlayerChar, U, P (the font's own glyphs for "UP")
 ;
-; Witness: L1 2031 (c1, crash, ctl, m128, stages, twoplayer).
+; Witness: L1 2433 (c1, crash, ctl, fall5, m128, names, stages,
+; tech-brake-bend, tech-cheat, tech-land-wheelie, tech-ramp-wheelie, truck,
+; twoplayer).
 HudPlayer:
   LD A,(Players)
   DEC A
@@ -803,7 +821,8 @@ ExtendedPlay:
   JR C,l_A90B
   RRA
   JR C,l_A90B
-  LD DE,TrackPatterns+$0174
+  LD DE,$6080             ; the beep: D = $60 edges, E = $80 turns (not an
+                          ; address)
   CALL BeepTone
 l_A90B:
   LD BC,$0948
@@ -852,8 +871,8 @@ FinishCheck:
   CP $05
   JR NZ,ScoreAdd
 FinishRider:
-  LD IX,$0000             ; LD IX,nn: nn = the leading rider (StageEnd at the
-                          ; finish)
+  LD IX,$0000             ; LD IX,nn: nn = the rider with the largest row byte
+                          ; (StageEnd at the finish)
   LD A,(IX+$04)
   CP $40
   JP C,RaceLoop
@@ -862,8 +881,8 @@ FinishRider:
   JP RaceEnd
 ScoreAdd:
   LD A,(FallTime)         ; not falling: ScoreDigits = the speed's digits
-                          ; (hundreds, tens, units; doubled place in the air),
-                          ; AddScore
+                          ; (hundreds, tens, units; one place higher in the
+                          ; air: SPEED x 10), AddScore
   AND A
   JR NZ,RaceControls
   LD (ScoreDigits+$0006),A
@@ -1055,7 +1074,8 @@ RaceOver:
 
 ; TuneRequest 0, RowTable back to the screen (SetRowTable $5A00)
 ;
-; Witness: L1 20 (c1, crash, ctl, m128, stages, twoplayer).
+; Witness: L1 23 (c1, crash, ctl, fall5, m128, names, stages, truck,
+; twoplayer).
 RaceEnd:
   XOR A
   LD (TuneRequest),A
@@ -1064,7 +1084,9 @@ RaceEnd:
 
 ; SPEED in decimal at column 27, line 24 (a blank before 2 and 1 digits)
 ;
-; Witness: L1 4162 (c1, crash, ctl, m128, stages, twoplayer).
+; Witness: L1 4950 (c1, crash, ctl, fall5, m128, names, stages,
+; tech-brake-bend, tech-cheat, tech-land-wheelie, tech-ramp-wheelie, truck,
+; twoplayer).
 PrintSpeed:
   LD A,(Speed+$0001)
   LD H,A
@@ -1085,7 +1107,8 @@ l_AABC:
 
 ; TuneRequest = (Stage AND 1) + 1: tune 1 on stages 1, 3, 5, tune 2 on 2 and 4
 ;
-; Witness: L1 28 (c1, crash, ctl, m128, stages, twoplayer).
+; Witness: L1 34 (c1, crash, ctl, fall5, m128, stages, tech-brake-bend,
+; tech-cheat, tech-land-wheelie, tech-ramp-wheelie, truck, twoplayer).
 SetTune:
   LD A,(Stage)
   AND $01
@@ -1099,7 +1122,7 @@ SetTune:
 ; The seconds are the timer's (10 passes each), so a "time" is in timer
 ; seconds; the hundredths digit is PassCount's units (BCD), a filler.
 ;
-; Witness: L1 16 (c1, crash, m128, stages, twoplayer).
+; Witness: L1 19 (c1, crash, fall5, m128, names, stages, truck, twoplayer).
 StageTime:
   LD A,(Stage)
   ADD A,A
@@ -1139,13 +1162,16 @@ l_AAFC:
   LD (HL),A
   RET
 
-; The stage's last segment passed: the time bonus (the timer's digits to the
-; score), StageTime, Stage + 1; the finish after stage 5
+; The stage's last segment passed: the time bonus (the timer's tens and units
+; as the 100 000s and 10 000s digits: 10 000 points a second left), StageTime,
+; Stage + 1; the finish after stage 5
 ;
 ; Reached by NextSegment's JP NZ with its return address on the stack (POP HL).
 ; Stages 1-4: the big stage digit, ExtendedTime 32, Timer + 50 (at most 99),
-; StageStart. After stage 5: SPEED 0, the leading rider of 0-3 is put in front
-; of the bike (FinishRider) and the run goes on to FinishCheck.
+; StageStart. After stage 5: SPEED 0, the rider of 0-3 with the largest row
+; byte (unsigned: a rider just behind the bike, row $FF, beats one ahead) is
+; put on row 0 at the bike's x with speed and top 2 (FinishRider) and the run
+; goes on to FinishCheck.
 ;
 ; Recorded: stages (frames 3422, 5340, 7806, 10272, the finish 13012), reset3
 ; (stages 2 and 3).
@@ -1219,7 +1245,8 @@ l_AB8C:
 
 ; D edges on the beeper, E loop turns apart (the countdown, EXTENDED PLAY)
 ;
-; Witness: L1 55 (c1, crash, ctl, m128, stages, twoplayer).
+; Witness: L1 73 (c1, crash, ctl, m128, names, stages, tech-brake-bend,
+; tech-cheat, tech-land-wheelie, tech-ramp-wheelie, truck, twoplayer).
 BeepTone:
   XOR A
 l_AB96:
@@ -1237,16 +1264,19 @@ l_AB9B:
 ;
 ; HL is a track pointer, IX a track stack (TrackStack for the bike, the drawing
 ; walk's own), B the element's row for the marks. An element byte is a command
-; (high nibble) and a length (low nibble * 2: the distance to the next element,
-; in ScrollStep's high-byte units). $F0: a gap mark, its row into GapMarks (D,
-; then E; 0 over the gap). $E0 ADDR, LEN: call the pattern at ADDR (a frame of
-; 6 bytes: return, length, distance done) until LEN distance is driven. $D0:
-; return from the pattern (the depth in IX+0). $C0 d: jump by d (signed) in the
-; track. $B0+n: VarObject = 2n. Any other high nibble: an element (its type),
-; and the distance is added to every open pattern's count; a pattern whose
-; count reaches its length returns to its caller first.
+; (high nibble) and a gap (low nibble * 2: the distance from the previous
+; element, in ScrollStep's high-byte units). $F0: a gap mark, its row into
+; GapMarks (D, then E; 0 over the gap). $E0 ADDR, LEN: call the pattern at ADDR
+; (a frame of 6 bytes: return, length, distance done) until LEN distance is
+; driven. $D0: return from the pattern (the depth in IX+0). $C0 d: jump by d
+; (signed) in the track. $B0+n: VarObject = 2n. Any other high nibble: an
+; element (its type), and the distance is added to every open pattern's count;
+; a pattern whose count reaches its length returns to its caller from that
+; element, which is not placed: a call covers its elements below its length.
 ;
-; Witness: L1 70712 (c1, crash, ctl, m128, stages, twoplayer).
+; Witness: L1 82250 (c1, crash, ctl, fall5, m128, names, stages,
+; tech-brake-bend, tech-cheat, tech-land-wheelie, tech-ramp-wheelie, truck,
+; twoplayer).
 TrackStep:
   INC HL
 l_ABA2:
@@ -1394,13 +1424,15 @@ l_AC7F:
 ; On the 128K (Beeper 0) it returns at once (NC): RampSpeed's CALL
 ; NC,AyEffectTick then steps the AY effect.
 ;
-; Witness: L1 194 (c1, crash, m128, stages, twoplayer).
+; Witness: L1 220 (c1, crash, fall5, m128, stages, tech-land-wheelie,
+; tech-ramp-wheelie, truck, twoplayer).
 CrashSound:
   LD D,$F8
 
 ; D edges
 ;
-; Witness: L1 209 (c1, crash, m128, stages, twoplayer).
+; Witness: L1 239 (c1, crash, fall5, m128, stages, tech-land-wheelie,
+; tech-ramp-wheelie, truck, twoplayer).
 CrashSoundD:
   LD A,(Beeper)
   AND A
@@ -1431,7 +1463,9 @@ l_AC9E:
 ; TuneMark 1: the tune stops until SetTune (the next StartRace or a pause's
 ; end).
 ;
-; Witness: L1 4383 (c1, crash, ctl, m128, stages, twoplayer).
+; Witness: L1 5204 (c1, crash, ctl, fall5, m128, names, stages,
+; tech-brake-bend, tech-cheat, tech-land-wheelie, tech-ramp-wheelie, truck,
+; twoplayer).
 AyEffectTick:
   LD HL,(EffectTime)
   LD A,L

@@ -5,7 +5,7 @@
 ; 200: $C800 is the top) and falls with BRAKES ($580 a pass); RaceLoop applies them. ScrollStep = SPEED * 14 moves the
 ; track. The lean (-3 to 3) follows LEFT and RIGHT one step a pass and returns toward 0 every second pass without
 ; them; the sideways speed is SteerTable[speed] * LeanTable[lean] / 8 (at most 5), added to the lateral position
-; LateralX with the curve's push (BikeLateral). WHEELIE held lifts the front (pose 0) and counts passes (Wheelies); at
+; LateralX with the bend's push (BikeLateral). WHEELIE held lifts the front (pose 0) and counts passes (Wheelies); at
 ; a ramp the speed is kept in proportion to the wheelie (8 passes: all of it; none: 3/4) and the jump's height comes
 ; from the ramp's place and the speed. Hitting an object or a truck at 35 km/h or more is a fall (Crash): the bike
 ; flies (JumpSpeed from the speed), lies for FallTime, the turn ends (the turn loop: the other player's turn, or a
@@ -31,8 +31,8 @@ BikePoses:
   DEFB $DE,$3C,$03,$9B,$DC,$80
 ScrollStep:
   DEFB $00,$00            ; SPEED * 14: the track's distance a pass (8.8)
-HillPtr:
-  DEFB $00,$00,$53,$83,$F4,$DA,$80 ; ScrollHills' profile pointer
+BendPtr:
+  DEFB $00,$00,$53,$83,$F4,$DA,$80 ; ScrollBends' profile pointer
 LateralX:
   DEFB $00,$00,$00,$00,$2C,$86,$EC,$D9,$0A ; the bike's sideways place, 8.8
   DEFB $02,$BB,$B5,$DE,$2E,$85,$DE,$D6,$0D ; ($9140 the whole part, $5C-$A4 on
@@ -68,7 +68,9 @@ BikeX:
 ; every pass above 64 km/h, every second above 32, every fourth below, never
 ; stopped. y: RoadLines[0] or $C0 in the air, minus JumpHeight; TopClip raised.
 ;
-; Witness: L1 4333 (c1, crash, ctl, m128, stages, twoplayer).
+; Witness: L1 5151 (c1, crash, ctl, fall5, m128, names, stages,
+; tech-brake-bend, tech-cheat, tech-land-wheelie, tech-ramp-wheelie, truck,
+; twoplayer).
 DrawBike:
   LD A,(Countdown)
   CP $04
@@ -222,7 +224,8 @@ BikeHitX:
 ; POKE: the Keep Speed Off Road POKE turns its LD ($7C34),A at $A1F1 into LD
 ; A,(nn) (WALKTHROUGH 6.0).
 ;
-; Witness: L1 3371 (c1, crash, ctl, m128, stages, twoplayer).
+; Witness: L1 3917 (c1, crash, ctl, m128, names, stages, tech-brake-bend,
+; tech-cheat, tech-land-wheelie, tech-ramp-wheelie, twoplayer).
 OffRoad:
   JR NC,l_A1DD
   NEG
@@ -247,7 +250,7 @@ l_A1E0:
 
 ; Stage 5: no test on one side (RET NC), else OffRoadSand
 ;
-; Witness: L1 352 (stages).
+; Witness: L1 376 (fall5, stages).
 OffRoadStage5:
   RET NC
 OffRoadSand:
@@ -289,7 +292,9 @@ l_A209:
 ; Recorded: crash (the falls, frames 3320-4580), twoplayer (the turn handed
 ; over at a fall).
 ;
-; Witness: L1 4343 (c1, crash, ctl, m128, stages, twoplayer).
+; Witness: L1 5163 (c1, crash, ctl, fall5, m128, names, stages,
+; tech-brake-bend, tech-cheat, tech-land-wheelie, tech-ramp-wheelie, truck,
+; twoplayer).
 BikeControl:
   LD A,(FallTime)
   AND A
@@ -339,7 +344,10 @@ FallSand:
 
 ; Stage 5's fall on the sand: skid noise only off the right side
 ;
-; Known only from the code: no recording fell on stage 5.
+; The recording fall5 (from the stages state of stage 5, the obstacle and truck
+; bytes put back) falls at frames 235-280.
+;
+; Witness: L1 8 (fall5).
 FallStage5:
   BIT 7,(HL)
   RET NZ
@@ -357,7 +365,9 @@ l_AD39:
 
 ; GetUp: LateralX toward 0 by 3 a pass
 ;
-; Witness: L1 4094 (c1, crash, ctl, m128, stages, twoplayer).
+; Witness: L1 4863 (c1, crash, ctl, fall5, m128, names, stages,
+; tech-brake-bend, tech-cheat, tech-land-wheelie, tech-ramp-wheelie, truck,
+; twoplayer).
 GetUpSlide:
   LD A,(GetUp)
   AND A
@@ -526,30 +536,33 @@ l_AE5C:
   LD (BounceSpeed+$0001),DE
 ; This entry point is used by the routine at BikeControl.
 BikeLateral:
-  LD A,(ScrollStep+$0001) ; the curve's push (hill-dependent factor) and the
-                          ; sideways speed into LateralX, kept within the
+  LD A,(ScrollStep+$0001) ; the bend's push (factor by the bend, bits 0-1) and
+                          ; the sideways speed into LateralX, kept within the
                           ; road's scale; the jump's height
 
-; ADD A,A on stages 2 and 4, NOP elsewhere (StartRace writes it): the curve's
+; ADD A,A on stages 2 and 4, NOP elsewhere (StartRace writes it): the bend's
 ; push doubled there
 ;
 ; L1 has the byte executed in every recording; the kit keeps it as a byte
 ; because StartRace changes the instruction.
-CurveOp:
+BendOp:
   DEFB $87
 
-; The push: (ScrollStep's high byte, doubled on stages 2 and 4) * the hill's
-; factor ($52, $8F, $A4), signed by CurveDir; HorizonSpeed too
+; The push: (ScrollStep's high byte, doubled on stages 2 and 4) * the bend's
+; factor ($52, $8F, $A4; BendPrev holds the bend), signed by BendDir;
+; HorizonSpeed too
 ;
 ; Then LateralX += the sideways speed (BounceSpeed added during a bounce) + the
 ; push, clamped to $A4-$5C. In the air: JumpHeight += JumpSpeed, JumpSpeed -=
 ; $02F0; the landing (below the road's line) ends the jump: pose 3, lean 0,
 ; Wheelies 0, and with WHEELIE not held a 6-pass bounce.
 ;
-; Witness: L1 4150 (c1, crash, ctl, m128, stages, twoplayer).
+; Witness: L1 4934 (c1, crash, ctl, fall5, m128, names, stages,
+; tech-brake-bend, tech-cheat, tech-land-wheelie, tech-ramp-wheelie, truck,
+; twoplayer).
 BikeLateralPush:
   LD L,A
-  LD A,(HillPrev)
+  LD A,(BendPrev)
   AND A
   JR NZ,l_AE70
   LD DE,$0000
@@ -563,7 +576,7 @@ l_AE70:
   LD A,$A4
 l_AE7C:
   CALL Multiply
-  LD A,(CurveDir)
+  LD A,(BendDir)
   DEC A
   JR NZ,l_AE8B
   LD HL,$0000
@@ -625,7 +638,7 @@ l_AEE2:
   LD (BounceTime),HL
 l_AEEA:
   LD (JumpHeight),HL
-  LD HL,BackBuffer+$0750
+  LD HL,-$02F0            ; the gravity: JumpSpeed - $02F0 a pass
   ADD HL,DE
   LD (JumpSpeed),HL
   BIT 7,D
@@ -643,7 +656,7 @@ l_AEEA:
 ; Recorded: crash, c1, m128, twoplayer (no fall in stages and reset3: their
 ; POKEs make the bike immune).
 ;
-; Witness: L1 11 (c1, crash, m128, twoplayer).
+; Witness: L1 13 (c1, crash, fall5, m128, truck, twoplayer).
 Crash:
   LD A,(RoadLines)
   CPL
@@ -670,11 +683,13 @@ Crash:
 ; passed (TrackStep); the segment's progress, and the next segment when it ends
 ;
 ; SegmentLeft counts down by ScrollStep; its high byte's change is RowsScrolled
-; (ScrollHills). At the segment's end: SegmentLeft = the segment's length
+; (ScrollBends). At the segment's end: SegmentLeft = the segment's length
 ; ($AF81: the segment byte's bits 6-7 + $80, in 256 units), and in a demo
 ; DemoMode - 1 (at 0 the demo ends: DemoEnd).
 ;
-; Witness: L1 4382 (c1, crash, ctl, m128, stages, twoplayer).
+; Witness: L1 5203 (c1, crash, ctl, fall5, m128, names, stages,
+; tech-brake-bend, tech-cheat, tech-land-wheelie, tech-ramp-wheelie, truck,
+; twoplayer).
 AdvanceTrack:
   CALL BikeRoadPlace
   LD DE,(ScrollStep)
@@ -745,7 +760,8 @@ DemoEnd:
 ; Segments + 1, StageListPtr to the next segment; bit 5 of the one passed: the
 ; stage's end (StageEnd)
 ;
-; Witness: L1 215 (c1, crash, m128, stages, twoplayer).
+; Witness: L1 257 (c1, crash, fall5, m128, stages, tech-brake-bend, tech-cheat,
+; tech-land-wheelie, tech-ramp-wheelie, truck, twoplayer).
 NextSegment:
   LD HL,Segments
   INC (HL)
@@ -755,14 +771,15 @@ NextSegment:
   LD (StageListPtr),HL
   JP NZ,StageEnd
 
-; The segment byte: Hill (bits 0-1), Curve (bits 2-3), CurveDir (bit 4), length
-; (bits 6-7); RoadRowsFlat when the curve was 0, ClearHillRows when the hill
-; was 0
+; The segment byte: Bend (bits 0-1, the bend), Crest (bits 2-3, the crest),
+; BendDir (bit 4, the bend's side), length (bits 6-7); RoadRowsFlat when the
+; crest was 0, ClearBendRows when the bend was 0
 ;
-; Witness: L1 228 (c1, crash, ctl, m128, stages, twoplayer).
+; Witness: L1 270 (c1, crash, ctl, fall5, m128, stages, tech-brake-bend,
+; tech-cheat, tech-land-wheelie, tech-ramp-wheelie, truck, twoplayer).
 SegmentDecode:
-  LD A,(Curve)
-  LD (CurvePrev),A
+  LD A,(Crest)
+  LD (CrestPrev),A
   AND A
   CALL Z,RoadRowsFlat
   LD HL,(StageListPtr)
@@ -771,19 +788,19 @@ SegmentDecode:
   RRA
   RRA
   AND $03
-  LD (Curve),A
-  LD A,(Hill)
-  LD (HillPrev),A
+  LD (Crest),A
+  LD A,(Bend)
+  LD (BendPrev),A
   AND A
-  CALL Z,ClearHillRows
+  CALL Z,ClearBendRows
   POP AF
   LD B,A
   AND $03
-  LD (Hill),A
+  LD (Bend),A
   LD A,B
   AND $C0
   LD (l_AF80+$0001),A
-  LD HL,CurveDir
+  LD HL,BendDir
   XOR A
   BIT 4,B
   JR Z,l_AFDD
@@ -793,11 +810,12 @@ l_AFDD:
   RET Z
   LD (HL),A
 
-; The curve's direction into eight branch opcodes: JR NZ ($20) or JR Z ($28) at
+; The bend's side into eight branch opcodes: JR NZ ($20) or JR Z ($28) at
 ; $9FAF, $93B7, $9680, $94A1, $94F5, $9AF5, $9B73, $9BB5
 ;
-; Witness: L1 54 (c1, crash, ctl, m128, stages, twoplayer).
-SetCurveDir:
+; Witness: L1 62 (c1, crash, ctl, fall5, m128, stages, tech-brake-bend,
+; tech-cheat, tech-land-wheelie, tech-ramp-wheelie, truck, twoplayer).
+SetBendDir:
   LD A,B
   RRCA
   AND $08
@@ -811,7 +829,7 @@ SetCurveDir:
   LD (l_9B67+$000C),A
   LD (l_9BAB+$000A),A
 
-; From LateralX and the curve: patch the road's and the objects' centre into
+; From LateralX and the bend: patch the road's and the objects' centre into
 ; twelve operands, BikeX; OffRoad by stage
 ;
 ; The offset is clamped to +/-$21 (the rest goes to BikeX's offset); the
@@ -819,9 +837,11 @@ SetCurveDir:
 ; $9B9D/$9B9E get ADD A,n or SUB n and the offset; $9F4F and $9643 the signed
 ; offset. In the air or falling no off-road test.
 ;
-; Witness: L1 4436 (c1, crash, ctl, m128, stages, twoplayer).
+; Witness: L1 5265 (c1, crash, ctl, fall5, m128, names, stages,
+; tech-brake-bend, tech-cheat, tech-land-wheelie, tech-ramp-wheelie, truck,
+; twoplayer).
 BikeRoadPlace:
-  LD A,(CurveDir)
+  LD A,(BendDir)
   LD C,A
   LD A,(LateralX+$0001)
   LD B,$00
