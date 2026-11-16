@@ -208,7 +208,8 @@ L1MoversB:
 
 ; Mover A0
 ;
-; Witness: L1 0 (none).
+; Witness: L1 17439 (boss, c1, continue, ctl-if2, ctl-kempston, ctl-sinclair,
+; force, gameover, hiscore, hiscore-typed, l1, restart).
 L1MoverA0:
   JP C,MoveNext
   JP MoveStore

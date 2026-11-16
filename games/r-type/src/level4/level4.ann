@@ -58,7 +58,7 @@ $EF8A b L4Kinds ; The enemy kinds StartWave reads (LevelKinds)
 $F2AE w L4MoversA ; The first mover of each kind (16 words, LevelMoves)
 $F2CE w L4MoversB ; The second mover of each kind (16 words, LevelMoves2)
 $F2EE c L4MoverA0 ; Mover A0
-> Witness: L1 0 (none).
+> Witness: L1 161 (l4).
 $F2F4 c L4MoverA1 ; Mover A1
 > Witness: L1 273 (l4).
 $F302 c L4MoverA2 ; Mover A2

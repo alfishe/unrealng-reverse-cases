@@ -49,7 +49,7 @@ Each case is a full reverse of one game:
 | [Bumpy](games/bumpy/README.md) | Loriciels (Spectrum conversion: Luis Jorge Garcia, J250), 1989 | 48K, tape | complete 2026-11-14 | a bouncing ball on the platforms of 100 single-screen levels of 6 x 6 cells, collecting objects against a timer; one ROM-speed block, beeper effects |
 | [Rex](games/rex/README.md) | Martech Games (The Light), 1988 | 48K / 128K, tape (two sides) | complete 2026-11-15 | a run-and-gun platform shooter: Rex, an armoured dinosaur, through the caves of the Tower of Zenith in two parts loaded apart, the second opened by the code the first gives; standard ROM blocks |
 | [MASK III: VENOM Strikes Back](games/mask-iii/README.md) | Gremlin Graphics, 1988 | 48K / 128K, tape | complete 2026-11-15 | a flick-screen platform shooter: Matt Trakker through 16 rooms of six screens each, four zones, masks switched by keys 1-4, AY music in RAM 4 |
-| [R-Type](games/r-type/README.md) | Electric Dreams Software (Bob Pape), 1988 | 48K / 128K, tape | in progress (stage 1) | Bob Pape's conversion of Irem's horizontally scrolling shooter: the R-9 with the charged beam and the Force through eight levels, each loaded from tape by the game's own turbo loader behind SpeedLock 7 |
+| [R-Type](games/r-type/README.md) | Electric Dreams Software (Bob Pape), 1988 | 48K / 128K, tape | complete 2026-11-15 | Bob Pape's conversion of Irem's horizontally scrolling shooter: the R-9 with the charged beam and the Force through eight levels, each loaded from tape by the game's own turbo loader behind SpeedLock 7 |
 
 ### Software
 

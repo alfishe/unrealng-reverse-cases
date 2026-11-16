@@ -2194,9 +2194,11 @@ def check_witness(seg, skip=(), fix=False, mem=None):
                 former.setdefault(alias, build_name(b))
     lines = open(seg.ann).read().split('\n')
     entry, stale, unrun = None, 0, []
-    # a code entry with no witness line at all (a new one): in an .ann that holds witness lines, --fix-witness writes
-    # "> Witness: L1 N (builds)." after the entry's description when the builds ran it; one no build ran is listed
-    uses_witness = any(WITNESS.search(x) for x in lines if x.strip().startswith('>'))
+    # a code entry with no witness line at all (a new one): --fix-witness writes "> Witness: L1 N (builds)." after
+    # the entry's description when the builds ran it, in any .ann (a fresh one with no witness line yet too: no seed
+    # line by hand); one no build ran is listed. A plain run counts the missing lines only in an .ann that already
+    # holds witness lines (a fresh .ann's entries are not news there)
+    uses_witness = fix or any(WITNESS.search(x) for x in lines if x.strip().startswith('>'))
     missing, missing_unrun, inserts = [], [], []
     last, witnessed = None, False
 

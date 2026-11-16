@@ -205,7 +205,7 @@ L3MoversB:
 
 ; Mover A0
 ;
-; Witness: L1 0 (none).
+; Witness: L1 160 (l3).
 L3MoverA0:
   JP C,MoveNext
   JP MoveStore

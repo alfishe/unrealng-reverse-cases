@@ -208,7 +208,7 @@ L7MoversB:
 
 ; Mover A0
 ;
-; Witness: L1 0 (none).
+; Witness: L1 4951 (deaths-l7, l7).
 L7MoverA0:
   JP C,MoveNext
   JP MoveStore

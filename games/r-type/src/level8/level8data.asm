@@ -191,7 +191,7 @@ L8MoversB:
 
 ; Mover A0
 ;
-; Witness: L1 0 (none).
+; No recording ran it: known only from the code.
 L8MoverA0:
   JP C,MoveNext
   JP MoveStore

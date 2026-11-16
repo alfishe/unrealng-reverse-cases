@@ -26,9 +26,17 @@ Everything after the optional --unreal goes to re_session.py unchanged, but for 
   --tape-seek N  with --media (a tape): the head goes to block N (POST /tape/seek, the emulator's block index: a
               TZX's text and info blocks count) as soon as the tape is inserted, before LOAD "" (or the 128 menu's
               Tape Loader) runs, so a capture loads a later program of the tape (Rex: side 1 block 6, REX 2 alone),
-              with the fast LD-BYTES trap on or off. The seek's answer is printed and kept in W/capture.json
+              with the fast LD-BYTES trap on or off. The seek waits until the tape reports block N
+              (kitlib.tape_wait: with a TTD recording running, unreal-ng puts the tape in at the next frame boundary,
+              and a seek before it answers "Block N out of range"); frames run for that are printed and kept in
+              "tape_seek_wait_frames" (0 when the tape is in at once). The seek's answer is printed and kept in W/capture.json
               "tape_seek"; a case wrapper that replaces corpus.load gets it too when it ends with
               rs.main(['capture', ...]) (the seek follows its load_software call)
+
+  --binary    capture and open with no --binary take $UNREAL_BINARY (work/env.sh sets it to the case's BIN;
+              toolpaths.unreal_binary checks it is an executable) and pass it on, printing "rs.py: --binary B
+              (UNREAL_BINARY)"; re_session.py's own default (the checkout's cmake-build-agent-release) only when the
+              variable is unset. A --binary given is kept
 
   --snapshot S without --model: re_session.py would create its default 48K and a 128K state would not load there;
               rs.py reads the model from the snapshot (an SZX's machine id, a .z80's hardware byte, a .sna's length)
@@ -185,6 +193,11 @@ def capture(args, script):
         def call_seek(tool, params=None, ok=True):
             r = call(tool, params, ok=ok)
             if tool == 'load_software':
+                # the insert may land at the next frame boundary (a recording runs): wait until block N shows
+                waited = kitlib.tape_wait(m.s, seek)
+                if waited:
+                    print(f'rs.py: --tape-seek {seek}: the tape showed its blocks after {waited} frame(s)', flush=True)
+                report['tape_seek_wait_frames'] = waited
                 got = call('invoke_api', {'method': 'POST', 'path': '/api/v1/emulator/{id}/tape/seek',
                                           'body': {'block': seek}}, ok=False)
                 text = (got.text or '').splitlines()[-1][:160] if got.text else ''
@@ -230,6 +243,19 @@ def capture(args, script):
     return status
 
 
+def binary_args(args):
+    """capture / open with no --binary: $UNREAL_BINARY (a case's work/env.sh sets it to its BIN) passed on as
+    --binary, so the instance is the case's build, not re_session.py's default (the checkout's
+    cmake-build-agent-release); printed once. Without the variable the arguments stay as they are"""
+    if args[:1] not in (['capture'], ['open']) or any(a == '--binary' or a.startswith('--binary=') for a in args):
+        return args
+    if not os.environ.get('UNREAL_BINARY'):
+        return args
+    binary = toolpaths.unreal_binary()
+    print(f'rs.py: --binary {binary} (UNREAL_BINARY)', flush=True)
+    return args + ['--binary', binary]
+
+
 def main(argv=None):
     args = list(sys.argv[1:] if argv is None else argv)
     hint = None
@@ -238,7 +264,7 @@ def main(argv=None):
     elif args and args[0].startswith('--unreal='):
         hint, args = args[0].split('=', 1)[1], args[1:]
     script = toolpaths.re_session(hint)
-    args = check_inputs(args)
+    args = binary_args(check_inputs(args))
     if args[:1] == ['capture']:
         return capture(args, script)
     sys.argv = [script] + args

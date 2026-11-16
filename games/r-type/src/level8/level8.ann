@@ -49,7 +49,7 @@ $EBCA b L8Kinds ; The enemy kinds StartWave reads (LevelKinds)
 $EEAC w L8MoversA ; The first mover of each kind (16 words, LevelMoves)
 $EECC w L8MoversB ; The second mover of each kind (16 words, LevelMoves2)
 $EEEC c L8MoverA0 ; Mover A0
-> Witness: L1 0 (none).
+> No recording ran it: known only from the code.
 $EEF2 c L8MoverA1 ; Mover A1
 > Witness: L1 2059 (l8).
 $EF00 c L8MoverA2 ; Mover A2

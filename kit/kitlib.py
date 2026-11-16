@@ -182,6 +182,78 @@ def slots_set(s, port_base, slot, options=None, timeout=20.0, hint=None, **param
     return answer, corpus.Machine(s, port_base)
 
 
+def _api(s, method, path, body=None):
+    """invoke_api on the session's instance: (the answer's JSON body or {}, the answer's last text line)"""
+    params = {'method': method, 'path': '/api/v1/emulator/{id}' + path}
+    if body is not None:
+        params['body'] = body
+    r = s.call('invoke_api', params, ok=False)
+    text = (r.text or '').strip().splitlines()
+    return ((r.structured or {}).get('body') or {}), (text[-1] if text else '')
+
+
+def tape_blocks(s):
+    """the tape's block count as GET /tape reports it (0: no tape, or not parsed yet)"""
+    body, _ = _api(s, 'GET', '/tape')
+    return int(body.get('block_count') or 0) if body.get('status') == 'loaded' else 0
+
+
+def tape_wait(s, block=0, settle=None, frames=10, tries=5):
+    """Waits until the inserted tape reports block @p block (GET /tape block_count > block), so a seek may follow
+    (R-Type stage 1: a seek straight after the insert answered "Block 35 out of range";
+    docs/unreal-ng-run-frames-faults.md). First polled with no frame run (@p tries times, 50 ms apart); then one
+    frame is run and the count read again, up to @p frames frames. @p settle runs exactly that many frames first,
+    whatever the count says (a case's timeline that ran a fixed number: R-Type's 2), and polls after it the same
+    way. Returns the frames run; fails naming the count when the block never shows"""
+    import time
+    run = 0
+    if settle:
+        s.call('control_execution', {'action': 'run_frames', 'frames': settle})
+        run = settle
+    for _ in range(tries):
+        if tape_blocks(s) > block:
+            return run
+        time.sleep(0.05)
+    while run < (settle or 0) + frames:
+        s.call('control_execution', {'action': 'run_frames', 'frames': 1})
+        run += 1
+        if tape_blocks(s) > block:
+            return run
+    raise SystemExit(f'tape_wait: block {block} not reported after {run} frames (block_count {tape_blocks(s)})')
+
+
+def tape_insert(s, path, block=None, play=False, settle=None, signal=True):
+    """Inserts the tape @p path into the running machine (POST /tape/load, no reset) and, with @p block, winds it
+    there (POST /tape/seek) once the tape reports that block (tape_wait: no case needs its own frame run between the
+    two). @p signal turns the fast and turbo tape off first (a game past ROM LD-BYTES' start, where the trap does not
+    belong); @p play starts it, else it is left as the insert left it. @p settle as tape_wait's. Returns {"frames":
+    the frames run while waiting, "seek": the seek's answer, "state": GET /tape's state, "at": its position's block}.
+
+        kitlib.tape_insert(lab.s, 'work/stage1/media/rtype.tzx', block=35)
+    """
+    if signal:
+        for name in ('fast_tape', 'turbo_tape'):
+            _api(s, 'PUT', f'/settings/{name}', {'value': False})
+    body, text = _api(s, 'POST', '/tape/load', {'path': os.path.abspath(path)})
+    if body.get('status') != 'success':
+        raise SystemExit(f'tape_insert {path}: {body.get("message") or text}')
+    out = {'frames': 0, 'seek': None}
+    if block is not None:
+        out['frames'] = tape_wait(s, block, settle)
+        body, text = _api(s, 'POST', '/tape/seek', {'block': block})
+        out['seek'] = body.get('message') or text
+        if body.get('status') != 'success':
+            raise SystemExit(f'tape_insert {path}: seek {block}: {out["seek"]}')
+    elif settle:
+        out['frames'] = tape_wait(s, 0, settle)
+    if play:
+        _api(s, 'POST', '/tape/play', {})
+    body, _ = _api(s, 'GET', '/tape')
+    out['state'] = body.get('state')
+    out['at'] = (body.get('position') or {}).get('block')
+    return out
+
+
 def instruction_times(trace):
     """Each instruction's CPU T-state counted from the trace's start"""
     units = max(1, trace.units_per_t)
@@ -276,7 +348,7 @@ class Listing:
     an address two listings both give code at is the first's
     """
 
-    def __init__(self, path):
+    def __init__(self, path, names=None, auto=None):
         self.lines = []
         self.code_line = {}  # address -> index into lines of the instruction there
         self.labels = []     # (address, name), sorted, global labels only (no '.')
@@ -284,6 +356,8 @@ class Listing:
         for one in ([path] if isinstance(path, str) else path):
             self._read(one)
         self.labels.sort()
+        if auto == 'owner' or names:
+            self._rename(names or {}, auto == 'owner')
         self._label_addresses = [a for a, _ in self.labels]
         names = dict(self.equates)
         names.update({a: n for a, n in self.labels})  # a label wins over an EQU of its address
@@ -313,6 +387,34 @@ class Listing:
                 if address not in self.code_line:
                     self.code_line[address] = len(self.lines)
                 self.lines.append((address, 'code', source))
+
+    def _rename(self, names, owner):
+        """--auto-labels owner: SkoolKit's generated label l_XXXX becomes OWNER_XXXX, OWNER the nearest named label
+        before it (ScrollRows' loops l_8846, l_8881, l_88B3 are ScrollRows_8846, ...); --label ADDR=NAME then names
+        the code at ADDR NAME (the label there renamed, or one added). The listing's own lines show the same names"""
+        new, last = {}, None
+        for address, name in self.labels:
+            if owner and AUTO_LABEL.match(name):
+                if last:
+                    new[(address, name)] = f'{last}_{name[2:]}'
+            else:
+                last = name
+        renamed = {}
+        for (address, name), to in new.items():
+            renamed[name] = to
+        self.labels = [(a, new.get((a, n), n)) for a, n in self.labels]
+        at = {a for a, _ in self.labels}
+        for address, name in names.items():
+            if address in at:
+                old = [n for a, n in self.labels if a == address]
+                for n in old:
+                    renamed[n] = name
+                self.labels = [(a, name if a == address else n) for a, n in self.labels]
+            else:
+                self.labels.append((address, name))
+                at.add(address)
+        self.labels.sort()
+        self.lines = [(a, k, renamed.get(t, t) if k == 'label' else t) for a, k, t in self.lines]
 
     def routine(self, address):
         """The global label at or before address"""
@@ -360,15 +462,41 @@ class NoListing:
         return []
 
 
-def listing(path):
-    """--listing: a path, or a list of them (--listing repeated: merged by address), or none"""
-    return Listing(path) if path else NoListing()
+AUTO_LABEL = re.compile(r'^l_[0-9A-F]{4}$')  # SkoolKit's label for a branch target the .ann does not name
+
+
+def label_names(values):
+    """--label values (ADDR=NAME, comma-separated or repeated; hex, an optional $) to {address: name}"""
+    names = {}
+    for value in values or []:
+        for item in value.replace(' ', ',').split(','):
+            if not item:
+                continue
+            address, eq, name = item.partition('=')
+            if not eq or not re.match(r'^[A-Za-z_][\w.]*$', name):
+                raise SystemExit(f'--label {item}: ADDR=NAME (hex address, a label name)')
+            names[hex_address(address)] = name
+    return names
+
+
+def listing(path, args=None):
+    """--listing: a path, or a list of them (--listing repeated: merged by address), or none; with args, the
+    --label / --auto-labels of add_listing_arg applied"""
+    if not path:
+        return NoListing()
+    return Listing(path, label_names(getattr(args, 'label', None)), getattr(args, 'auto_labels', None))
 
 
 def add_listing_arg(parser):
     parser.add_argument('--listing', action='append', metavar='LISTING',
                         help='the sjasmplus listing that names the code; repeated, several listings of one flat '
                              'image merged by address (build/main.lst and build/music.lst)')
+    parser.add_argument('--label', action='append', metavar='ADDR=NAME',
+                        help='the code at ADDR is NAME (the listing\'s label there renamed, or one added): a loop '
+                             'the .ann leaves to SkoolKit\'s l_XXXX; comma-separated or repeated (hex, an optional $)')
+    parser.add_argument('--auto-labels', choices=('keep', 'owner'), default='keep',
+                        help='owner: each l_XXXX label (SkoolKit\'s, for a branch target the .ann does not name) is '
+                             'OWNER_XXXX, OWNER the nearest named label before it (ScrollRows_8846); keep: as listed')
 
 
 # ---------------------------------------------------------------------------------------------------------------
@@ -390,7 +518,7 @@ def code_listing(args):
     """--listing with the --page / --page-name of add_page_args: a PagedListing (paged mode when any is given)"""
     pages = {int(n): Listing(path) for n, _, path in (v.partition('=') for v in getattr(args, 'page', []))}
     names = {int(n): name for n, _, name in (v.partition('=') for v in getattr(args, 'page_name', []))}
-    return PagedListing(listing(args.listing), pages, names)
+    return PagedListing(listing(args.listing, args), pages, names)
 
 
 def code_locations(trace, paged):

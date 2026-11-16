@@ -49,6 +49,10 @@ the listing names the code and shows its lines, NAME stands for "RAM N" ("Update
 `--pc N:LO-HI`) a plain --pc range at `$C000-$FFFF` is RAM 0's and `N:LO-HI` is RAM N's: `--listing build/game.lst
 --page 6=build/music.lst --pc 6:C000-CD60` follows a player in RAM 6, and the game's code at the same addresses
 counts as "other", its listing shown from the game's.
+
+--label ADDR=NAME (comma-separated or repeated) names the code at ADDR; --auto-labels owner names SkoolKit's l_XXXX
+labels after the nearest named label before them (ScrollRows_8846): loops the .ann leaves unnamed, no listing copy
+(kitlib.add_listing_arg).
 """
 import argparse
 import os

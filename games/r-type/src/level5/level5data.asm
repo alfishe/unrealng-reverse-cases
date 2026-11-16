@@ -189,7 +189,7 @@ L5MoversB:
 
 ; Mover A0
 ;
-; Witness: L1 0 (none).
+; Witness: L1 1904 (l5).
 L5MoverA0:
   JP C,MoveNext
   JP MoveStore

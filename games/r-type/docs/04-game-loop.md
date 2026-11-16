@@ -509,10 +509,10 @@ The beam timeline puts the screen writes of one pass on the raster. The pass is 
 The point: there is no sync with the beam. ScrollRows' inner loops (at `$8881`, `$8846` and `$88B3`) and the ShiftRun
 chain make 3005 screen writes in the pass; 1443 of them land before the beam reaches their line, so those lines show
 the new picture on this frame and the others on the next. A row can show half shifted for a frame. Command: `python3
-../../kit/beam_timeline.py --work work/docs/rtA/l2 --window 8961:0-8967:0 --listing work/docs/rtA/game-scrollrows.lst --listing
-build/level2.lst --out docs/img/loop/beam-pass.png --frames 8961-8966 --title "One pass of level 2 against the beam
-(l2 frames 8961-8966)"`, where `game-scrollrows.lst` is `build/game.lst` with ScrollRows' three loop labels named after
-their routine: `sed -E 's/ l_(8846|8881|88B3):/ ScrollRows_\1:/' build/game.lst`.*
+../../kit/beam_timeline.py --work work/docs/rtA/l2 --window 8961:0-8967:0 --listing build/game.lst --listing
+build/level2.lst --auto-labels owner --out docs/img/loop/beam-pass.png --frames 8961-8966 --title "One pass of level 2
+against the beam (l2 frames 8961-8966)"`, where `--auto-labels owner` names ScrollRows' three loops (SkoolKit's
+`l_8846`, `l_8881`, `l_88B3`) after their routine: `ScrollRows_8846`, ...*
 
 The writes by routine, from the figure's key:
 

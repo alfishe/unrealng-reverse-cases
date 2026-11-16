@@ -199,7 +199,7 @@ L4MoversB:
 
 ; Mover A0
 ;
-; Witness: L1 0 (none).
+; Witness: L1 161 (l4).
 L4MoverA0:
   JP C,MoveNext
   JP MoveStore

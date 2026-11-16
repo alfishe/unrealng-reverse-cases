@@ -13,6 +13,7 @@ install(files) with the bytes of each @res entry.
 | `graphics/font.bin` | `graphics/font.png` | 8 x 8 glyphs, 16 a row; palette index 0 paper, 1 ink, 2 no glyph |
 | `levels/levelN/metatiles.bin` | `metatiles.png`, `metatiles-attrs.csv` | metatile n at x = 32 n (4 x 4 cells upright, index 0 paper, 1 ink); the CSV the 16 cell attributes of each metatile, row by row |
 | `levels/levelN/waves.bin` | `levels/levelN/waves.txt` | the wave script, one wave a line: block column, metatile column.scroll step, then `kind K at C,R` (the kind, the enemy's column and row) or `command N A` (kind `$63`: command N, its argument A); from the first `$FF` column byte on the bytes (the end mark and the kind records) as `bytes` lines in hex |
+| `graphics/sprites.bin`, `levels/levelN/sprites.bin` | `sprites.png`, `sprites.csv` | the sprite cells (kit/cells.py): each object's cells at a place of their own in the PNG (index 0 paper, 1 ink, 2 no pixel), the CSV a line a piece in byte order (its place and size in cells, the objects that point at it, an attribute a cell or `-` for the one-byte empty cell `$36`) and `bytes` lines for the bytes no object holds; the layout from the object table (`tables/game-objects.csv`, `levels/levelN/objects.csv`), the build reads only the two files |
 | `levels/levelN/map.bin` | `levels/levelN/map.txt` | 5 lines (the metatile rows top to bottom), one token a block column: the metatile number and its drawer, `.` as stored, `m` mirrored, `f` upside down, `b` both |
 | anything else | the `.bin` itself | bytes (screens stay SCREEN$ files) |
 
@@ -25,6 +26,11 @@ import struct
 import sys
 
 from PIL import Image
+
+sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', '..', '..', 'kit'))
+import cells  # noqa: E402
+
+del sys.path[0]
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 RES = os.path.join(ROOT, 'src', 'res')
@@ -42,7 +48,11 @@ TABLES = {
 }
 HEXFIELDS = {'address': 4, 'port': 2, 'mask': 2, 'switch': 2}
 SUFFIXES = {'text': ['.txt'], 'table': ['.csv'], 'glyphs': ['.png'], 'metatiles': ['.png', '-attrs.csv'],
-            'map': ['.txt'], 'waves': ['.txt']}
+            'map': ['.txt'], 'waves': ['.txt'], 'cells': ['.png', '.csv']}
+# the sprite cells: the object table that cuts them and their address (Sprites $A604, LNSprites $C4E0)
+SPRITE_TABLES = {'graphics/sprites.bin': ('tables/game-objects.bin', 0xA604)}
+SPRITE_TABLES.update({f'levels/level{n}/sprites.bin': (f'levels/level{n}/objects.bin', 0xC4E0) for n in range(1, 9)})
+INSTALLING = {}  # install(files): the bytes being installed, so a sprite's object table is the new one
 
 
 def kind(name):
@@ -61,6 +71,8 @@ def kind(name):
         return 'map'
     if name.startswith('levels/') and base == 'waves':
         return 'waves'
+    if name in SPRITE_TABLES:
+        return 'cells'
     return None
 
 
@@ -256,13 +268,22 @@ def waves_build(files):
     return bytes(out)
 
 
+def cells_export(name, data):
+    table, base = SPRITE_TABLES[name]
+    objects = INSTALLING.get(table)
+    if objects is None:
+        objects = build_one(table)
+    return cells.export(data, cells.pieces(objects, base))
+
+
 def export(name, data):
     """the editable files of a resource {path under src/res: bytes}, or {name: data} when it stays bytes"""
     k = kind(name)
     base = os.path.splitext(os.path.basename(name))[0]
     forms = {'text': lambda: text_export(data), 'table': lambda: table_export(data, base),
              'glyphs': lambda: glyphs_export(data), 'metatiles': lambda: metatiles_export(data),
-             'map': lambda: map_export(data), 'waves': lambda: waves_export(data)}.get(k, lambda: None)()
+             'map': lambda: map_export(data), 'waves': lambda: waves_export(data),
+             'cells': lambda: cells_export(name, data)}.get(k, lambda: None)()
     if not forms:
         return {name: data}
     return {name[:-4] + suf: b for suf, b in forms.items()}
@@ -286,6 +307,8 @@ def build_one(name):
         return metatiles_build(files, name)
     if k == 'waves':
         return waves_build(files)
+    if k == 'cells':
+        return cells.build(files, name[:-4])
     return map_build(files)
 
 
@@ -311,6 +334,8 @@ def resources():
 
 
 def install(files):
+    INSTALLING.clear()
+    INSTALLING.update(files)
     for name, data in files.items():
         forms = export(name, data)
         for rel, b in forms.items():

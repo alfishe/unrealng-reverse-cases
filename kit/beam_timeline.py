@@ -39,6 +39,10 @@ both for one page combine: the listing names the code and NAME stands for "RAM N
 --listing names the rest. Without them a 128K game's interrupt code in RAM 6 would take the names of the RAM 0
 data at its addresses. The page is the trace's start page, then each `OUT` to `$7FFD`; --pc N:LO-HI is RAM N's.
 
+--label ADDR=NAME (comma-separated or repeated) names the code at ADDR; --auto-labels owner names SkoolKit's l_XXXX
+labels after the nearest named label before them (ScrollRows_8846): loops the .ann leaves unnamed, no listing copy
+(kitlib.add_listing_arg).
+
 --listing may be given more than once: several listings of one flat image (a 48K boot's menu and its music part,
 `--listing build/main.lst --listing build/music.lst`) are merged by address, each naming its own code (where two
 give code at one address, the first wins). --page is for 128K pages, not for a second listing of a flat image.

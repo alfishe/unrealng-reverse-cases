@@ -53,7 +53,7 @@ $F153 b L7Kinds ; The enemy kinds StartWave reads (LevelKinds)
 $F4B1 w L7MoversA ; The first mover of each kind (15 words, LevelMoves)
 $F4CF w L7MoversB ; The second mover of each kind (16 words, LevelMoves2)
 $F4EF c L7MoverA0 ; Mover A0
-> Witness: L1 0 (none).
+> Witness: L1 4951 (deaths-l7, l7).
 $F4F5 c L7MoverA1 ; Mover A1
 > Witness: L1 1741 (deaths-l7, l7).
 $F503 c L7MoverA2 ; Mover A2

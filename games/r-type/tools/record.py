@@ -24,7 +24,7 @@ import time
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 sys.path.insert(0, HERE)
-from lab import Lab, CASE  # noqa: E402
+from lab import Lab, CASE, K  # noqa: E402
 
 TAPE = os.path.join(CASE, 'work', 'stage1', 'media', 'rtype.tzx')
 L, R, U, D, F, X = 'O', 'P', 'Q', 'A', 'M', 'N'
@@ -255,9 +255,9 @@ def plan_c1(r):
 def tape_at(r, block):
     """A state saved in another run holds no tape: the original goes in again, wound to emulator block @p block (the
     stop block before the level the loader will ask for) and left paused there, as a user leaves it"""
-    r.lab.insert_tape(TAPE, play=False)
-    r.lab.run(2)                       # the tape is parsed after the load call returns
-    r.lab.post('/tape/seek', {'block': block})
+    # kitlib.tape_insert: under the TTD recording the insert lands at the next frame boundary, so the seek waits for
+    # it; settle=2 keeps the 2 frames the recordings ran there (lab.frame counts them)
+    r.lab.frame += K.tape_insert(r.lab.s, TAPE, block=block, settle=2)['frames']
     r.lab.post('/tape/play', {})
     r.lab.post('/tape/pause', {})
     t = r.tape()

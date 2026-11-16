@@ -76,3 +76,29 @@ search replays use it.
 1. Is `run_frames N` from a mid-frame position meant to stop at the same instruction as N calls of 1? Today it is
    not (table above).
 2. Does any per-call work (pausing, the WebAPI's `take_control`, a snapshot of the beam) add or drop T-states?
+
+# R-Type: a tape seek straight after the insert, while a TTD recording runs
+
+R-Type stage 1 put the original tape back into a machine started from a state (the level recordings, `tools/record.py`
+`tape_at`) and wound it at once: `POST /tape/load` answered "Tape loaded successfully" and `POST /tape/seek`
+`{"block": 35}` straight after it "Block index 35 out of range". Probed again at the R-Type close (2026-11-15,
+`games/r-type/work/kitfix/tape/probe*.py`, outputs beside them; port base 37720, muted, stopped; the case's `$BIN`
+`scratch/wt-nezs-stage1` of 2026-11-05 and the main checkout's `cmake-build-agent-release` of 2026-11-08 alike):
+
+| machine | `GET /tape` `block_count` right after the load | seek 35 at once | after 1 frame |
+| --- | --- | --- | --- |
+| 48K or 128K, paused or running, no recording | 56 | "Seeked to block 35" | - |
+| 48K, a state loaded, `analysis start record=true` (as `record.py` runs) | 0 (`status` not `loaded`) | "Block index 35 out of range" | 56, "Seeked to block 35" |
+
+So the fault needs a TTD recording: the tape load then is a recorded media change, and unreal-ng puts the tape in at
+the next frame boundary (`MediaManager::CommitMediaOp`: the insert waits in `incoming` when the op stage is at a frame
+boundary or the machine cannot take it now), while the load call has already answered success. A wait in wall time
+does not help on a paused machine; one emulated frame does.
+
+The kit's answer: `kitlib.tape_insert(s, path, block=N)` and `kitlib.tape_wait(s, N)` poll `GET /tape` until
+`block_count > N` and run one frame at a time when the count does not come (at most 10); `rs.py capture --tape-seek
+N` waits the same way. With a recording running that is one frame; `settle=2` keeps a case's fixed run (R-Type's 2).
+
+What the owner may want to check: `POST /tape/load` (and `load_software`) could answer only once the tape is in, or
+say that the insert is pending (and when it lands), so that a seek, `GET /tape/blocks/N` or `GET /tape` right after it
+see the tape the call reported loaded.

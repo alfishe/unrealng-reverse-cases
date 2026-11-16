@@ -6,9 +6,9 @@ Every resource out of the code, in an editable format where one keeps every byte
 | --- | --- | --- |
 | `texts/` | game | the texts (UTF-8) and the high-score table |
 | `tables/` | game | the score awards, the clear list, the default keys, the interrupt tasks, the object table (CSV) |
-| `graphics/` | game | the font (PNG) and the sprites (bytes) |
+| `graphics/` | game | the font (PNG) and the sprites (PNG + CSV) |
 | `sound/` | game | the note periods, command and script tables, the sound scripts |
 | `screens/` | tape, game | the loading screen and the title picture (SCREEN$) |
-| `levels/` | level1-8 | each level's map (text grid), metatiles (PNG + CSV), object table (CSV), sprites |
+| `levels/` | level1-8 | each level's map (text grid), metatiles (PNG + CSV), object table (CSV), sprites (PNG + CSV) |
 | `loader/` | stage2 | the second stage's block table and countdown digits |
 | `leftovers/` | game | the bytes nothing reads |

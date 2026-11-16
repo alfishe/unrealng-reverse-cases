@@ -3,7 +3,8 @@
 #anchor names a heading of its file, and no $ is left in prose (GitHub reads a pair of them as LaTeX math;
 code_addresses.py fixes addresses).
 
-    python3 kit/check_docs.py [--case CASE] [FILE.md ...]   # default: CASE's WALKTHROUGH.md, README.md, docs/**/*.md
+    python3 kit/check_docs.py [--case CASE] [--no-refdocs] [FILE.md ...]
+                                                            # default: CASE's WALKTHROUGH.md, README.md, docs/**/*.md
     python3 kit/check_docs.py --repo [FILE.md ...]          # the repository's own: README, GUIDE, recipes, docs, kit
                                                             # (not the template's docs: their 11 and 12 come later)
 
@@ -14,6 +15,11 @@ counts as linked, and a link of theirs to a file or heading that does not exist 
 prose are not checked). Anchors follow GitHub's slugs: the heading's text with the Markdown marks dropped, lower case, every character
 but letters, digits, '-', '_' and spaces removed, spaces as '-', a repeated slug numbered -1, -2. An explicit
 <a name="..."> or id="..." counts as well. Links inside code (fenced blocks, `spans`) are not links.
+
+Docs 11 and 12 (11-data-reference.md, 12-routine-reference.md) are written by kit/refdocs.py once the sources are
+in; a link to one that does not exist yet is a problem that says so ("not generated yet: kit/refdocs.py --case C
+writes docs 11 and 12"). --no-refdocs (stages 1 and 2, before refdocs) skips those links and their anchors and
+counts them in the last line instead: "docs: ok (2 links to docs 11/12 skipped: not generated yet)".
 """
 import glob
 import os
@@ -131,7 +137,11 @@ def check_mermaid(blocks, tmp):
     return bad
 
 
-def check_links(path, text, linked, rel):
+REFDOCS = ('11-data-reference.md', '12-routine-reference.md')
+SKIPPED = []  # --no-refdocs: the links to docs 11 / 12 not generated yet
+
+
+def check_links(path, text, linked, rel, no_refdocs=False):
     bad = 0
     base = os.path.dirname(path)
     for number, line in enumerate(prose(text), 1):
@@ -143,6 +153,14 @@ def check_links(path, text, linked, rel):
             if file_part:
                 linked.add(dest)
                 if not os.path.exists(dest):
+                    if os.path.basename(dest) in REFDOCS and os.path.basename(os.path.dirname(dest)) == 'docs':
+                        if no_refdocs:
+                            SKIPPED.append(f'{rel}:{number}')
+                            continue
+                        bad += 1
+                        print(f'{rel}:{number}: missing {target} (not generated yet: kit/refdocs.py --case C writes '
+                              f'docs 11 and 12; --no-refdocs before that)')
+                        continue
                     bad += 1
                     print(f'{rel}:{number}: missing {target}')
                     continue
@@ -181,6 +199,8 @@ def main():
         here, argv = os.path.abspath(argv[1]), argv[2:]
     elif argv[:1] == ['--repo']:
         repo_mode, here, argv = True, REPO, argv[1:]
+    no_refdocs = '--no-refdocs' in argv
+    argv = [a for a in argv if a != '--no-refdocs']
     files = [os.path.abspath(f) for f in argv] or default_files(repo_mode)
     bad = 0
     linked = set()
@@ -191,14 +211,15 @@ def main():
             rel = os.path.relpath(path, here)
             bad += check_entities(text, rel)
             blocks += [(rel, n, block) for n, block in enumerate(mermaid_blocks(text))]
-            bad += check_links(path, text, linked, rel)
+            bad += check_links(path, text, linked, rel, no_refdocs)
             for n in code_addresses.bare_dollars(text):
                 bad += 1
                 print(f'{rel}:{n}: $ in prose renders as math on GitHub (code_addresses.py)')
         bad += check_mermaid(blocks, tmp)
         if not argv and not repo_mode:
             for path in res_readmes():
-                bad += check_links(path, open(path, encoding='utf-8').read(), linked, os.path.relpath(path, here))
+                bad += check_links(path, open(path, encoding='utf-8').read(), linked, os.path.relpath(path, here),
+                                   no_refdocs)
     if not argv and not repo_mode:
         img = os.path.join(here, 'docs', 'img')
         for figure in sorted(glob.glob(os.path.join(img, '**', '*.*'), recursive=True)):
@@ -207,7 +228,9 @@ def main():
             if figure.endswith(('.png', '.gif', '.svg', '.jpg')) and os.path.normpath(figure) not in linked:
                 bad += 1
                 print(f'{os.path.relpath(figure, here)}: no document links this figure')
-    print('docs: ok' if not bad else f'docs: {bad} problem(s)')
+    skipped = f' ({len(SKIPPED)} link{"s" if len(SKIPPED) != 1 else ""} to docs 11/12 skipped: not generated yet)' \
+        if SKIPPED else ''
+    print(('docs: ok' if not bad else f'docs: {bad} problem(s)') + skipped)
     sys.exit(1 if bad else 0)
 
 

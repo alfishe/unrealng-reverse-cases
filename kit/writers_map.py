@@ -23,6 +23,10 @@ side at --scale (2) when they fit, else at the largest whole scale that does, el
 insets on a row of their own under them, enlarged as far as that row allows; a long --title on several lines.
 --width 0 is the older picture: every panel on one row at --scale, the zoom as high as the views (up to 2620 px).
 
+--label ADDR=NAME (comma-separated or repeated) names the code at ADDR; --auto-labels owner names SkoolKit's l_XXXX
+labels after the nearest named label before them (ScrollRows_8846): loops the .ann leaves unnamed, no listing copy
+(kitlib.add_listing_arg).
+
 --listing may be given more than once: several listings of one flat image (a 48K boot's menu and its music part,
 `--listing build/main.lst --listing build/music.lst`) are merged by address, each naming its own code (where two
 give code at one address, the first wins). --page is for 128K pages, not for a second listing of a flat image.
@@ -88,7 +92,7 @@ def main():
     args = p.parse_args()
 
     trace = K.load_trace(args)
-    lst = K.listing(args.listing)
+    lst = K.listing(args.listing, args)
     view = parse_view(args.view)
     if not view:
         raise SystemExit('--view none: nothing to map')

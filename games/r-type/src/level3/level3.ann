@@ -50,7 +50,7 @@ $ED50 b L3Kinds ; The enemy kinds StartWave reads (LevelKinds)
 $F0A6 w L3MoversA ; The first mover of each kind (16 words, LevelMoves)
 $F0C6 w L3MoversB ; The second mover of each kind (16 words, LevelMoves2)
 $F0E6 c L3MoverA0 ; Mover A0
-> Witness: L1 0 (none).
+> Witness: L1 160 (l3).
 $F0EC c L3MoverA1 ; Mover A1
 > Witness: L1 840 (l3).
 $F0FA c L3MoverA2 ; Mover A2

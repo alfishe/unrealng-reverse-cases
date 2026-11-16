@@ -1,6 +1,6 @@
 # R-Type (Electric Dreams Software, 1988)
 
-State: docs written, in review (2026-11-15): docs 01-10 by three writers, docs 11 and 12 generated, integrated; the
+State: complete (2026-11-15; two review rounds, kit gaps fixed): docs 01-10 by three writers, docs 11 and 12 generated, integrated; the
 tape builds identical from the sources. 12 documents, 100 figures (PNG), 43 animations (GIF), 78 mermaid diagrams and 31
 audio files (24 short WAV, the longest 1.5 s; 7 MP3 over 2 s: the level 2 beat cut at 30 s, the level end tune and the
 other long sounds; 1.6 MB), counted on 2026-11-15 with:

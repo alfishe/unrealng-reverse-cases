@@ -43,7 +43,7 @@ $F197 b L2Kinds ; The enemy kinds StartWave reads (LevelKinds)
 $F4BF w L2MoversA ; The first mover of each kind (10 words, LevelMoves)
 $F4D3 w L2MoversB ; The second mover of each kind (16 words, LevelMoves2)
 $F4F3 c L2MoverA0 ; Mover A0
-> Witness: L1 0 (none).
+> Witness: L1 2994 (l2).
 $F4F9 c L2MoverA1 ; Mover A1
 > No recording ran it: known only from the code.
 $F507 c L2MoverA2 ; Mover A2

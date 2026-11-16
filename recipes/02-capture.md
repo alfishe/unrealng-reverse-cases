@@ -31,6 +31,10 @@ BIN=$UNREAL_NG/cmake-build-agent-release/bin/unreal-qt.app/Contents/MacOS/unreal
    - A later program of the same tape (a part 2, a demo) loads alone with `python3 ../../kit/rs.py capture ...
      --media ... --tape-seek N`: the head goes to block N before the tape plays (Rex: side 1 block 6, REX 2;
      the emulator's block index counts a TZX's text blocks).
+   - A case lab that puts a tape back into a machine started from a state and winds it (a level recording) uses
+     `kitlib.tape_insert(s, path, block=N)`: while a TTD recording runs the tape goes in only at the next frame
+     boundary, so a seek straight after the load answers "Block N out of range" (R-Type); the helper waits for it.
+   - `rs.py open` and `capture` take `$UNREAL_BINARY` (set by `work/env.sh` to `$BIN`) when no `--binary` is given.
 
 2. **Note how the tape loaded.** Every frame number of a recording depends on it. In every document, write the
    recording's name and how it loaded next to each frame number.

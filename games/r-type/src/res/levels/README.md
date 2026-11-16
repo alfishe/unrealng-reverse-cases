@@ -7,7 +7,7 @@ Each level's body (LoadLevel `$FE03` loads it to `$C4AE`) holds its own graphics
 | `map.txt` | 5 lines (the metatile rows, top to bottom), one token a block column of 32 pixels: the metatile number and its drawer, `.` as stored (`$8741`), `m` mirrored (`$8778`), `f` upside down (`$87B8`), `b` both (`$87F2`) |
 | `metatiles.png`, `metatiles-attrs.csv` | metatile n at x = 32 n, 4 x 4 cells upright (index 0 paper, 1 ink); the CSV the 16 cell attributes of each metatile, row by row. In memory metatile n is the 144 bytes at the map - 144 (n + 1) (MetatileAddress `$882D`), so the file runs from the highest metatile down |
 | `objects.csv` | the object table: width, height (cells), the cells' address (LevelObject `$8E85`) |
-| `sprites.bin` | the objects' cells as bytes (the stride varies: see `graphics/README.md`) |
+| `sprites.png`, `sprites.csv` | the objects' cells in the kit's cell format (`kit/cells.py`, the pieces cut by `objects.csv`: see `graphics/README.md`); the 9 bytes after the last object, which no object points at, as a `bytes` line |
 | `waves.txt` | the wave script (RunWaves), one wave a line: block column, metatile column.scroll step, then `kind K at C,R` (the kind, the enemy's column and row) or `command N A` (kind `$63`); from the end mark `$FF` on, the bytes up to the kind table (the end mark and the kind records) as `bytes` lines in hex. Formats: doc 7, 7.3 (RunWaves and the commands) |
 
 | File | Entry | Address | Bytes |

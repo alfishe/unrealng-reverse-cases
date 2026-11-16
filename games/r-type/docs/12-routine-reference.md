@@ -4956,7 +4956,7 @@ src/level1/level1.json`; the recordings: `work/stage1/rec/l1` (l1: level 1 playe
 
 **Mover A0**
 
-Witness: L1 0 (none).
+Witness: L1 17439 (boss, c1, continue, ctl-if2, ctl-kempston, ctl-sinclair, force, gameover, hiscore, hiscore-typed, l1, restart).
 
 | | |
 | --- | --- |
@@ -5361,7 +5361,7 @@ src/level2/level2.json`; the recordings: `work/stage1/rec/l2` (l2: level 2 playe
 
 **Mover A0**
 
-Witness: L1 0 (none).
+Witness: L1 2994 (l2).
 
 | | |
 | --- | --- |
@@ -5653,7 +5653,7 @@ src/level3/level3.json`; the recordings: `work/stage1/rec/l3` (l3: level 3 playe
 
 **Mover A0**
 
-Witness: L1 0 (none).
+Witness: L1 160 (l3).
 
 | | |
 | --- | --- |
@@ -6020,7 +6020,7 @@ src/level4/level4.json`; the recordings: `work/stage1/rec/l4` (l4: level 4 playe
 
 **Mover A0**
 
-Witness: L1 0 (none).
+Witness: L1 161 (l4).
 
 | | |
 | --- | --- |
@@ -6414,7 +6414,7 @@ src/level5/level5.json`; the recordings: `work/stage1/rec/l5` (l5: level 5 playe
 
 **Mover A0**
 
-Witness: L1 0 (none).
+Witness: L1 1904 (l5).
 
 | | |
 | --- | --- |
@@ -6750,7 +6750,7 @@ src/level6/level6.json`; the recordings: `work/stage1/rec/l6` (l6: level 6 playe
 
 **Mover A0**
 
-Witness: L1 0 (none).
+Witness: L1 5812 (l6).
 
 | | |
 | --- | --- |
@@ -6969,7 +6969,7 @@ src/level7/level7.json`; the recordings: `work/stage1/rec/l7` (l7: level 7 playe
 
 **Mover A0**
 
-Witness: L1 0 (none).
+Witness: L1 4951 (deaths-l7, l7).
 
 | | |
 | --- | --- |
@@ -7264,7 +7264,7 @@ src/level8/level8.json`; the recordings: `work/stage1/rec/l8` (l8: level 8 playe
 
 **Mover A0**
 
-Witness: L1 0 (none).
+No recording ran it: known only from the code.
 
 | | |
 | --- | --- |

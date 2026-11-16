@@ -59,7 +59,7 @@ $EFFB b L1Kinds ; The enemy kinds StartWave reads (LevelKinds)
 $F365 w L1MoversA ; The first mover of each kind (16 words, LevelMoves)
 $F385 w L1MoversB ; The second mover of each kind (16 words, LevelMoves2)
 $F3A5 c L1MoverA0 ; Mover A0
-> Witness: L1 0 (none).
+> Witness: L1 17439 (boss, c1, continue, ctl-if2, ctl-kempston, ctl-sinclair, force, gameover, hiscore, hiscore-typed, l1, restart).
 $F3AB c L1MoverA1 ; Mover A1
 > Witness: L1 4033 (boss, c1, continue, ctl-if2, ctl-kempston, ctl-sinclair, force, gameover, hiscore, hiscore-typed, l1, restart).
 $F3B9 c L1MoverA2 ; Mover A2

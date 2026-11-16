@@ -18,6 +18,7 @@
    | Kind | Format | Examples |
    | --- | --- | --- |
    | graphics, sprites, fonts | indexed PNG (ink, paper, mask colour), one sheet with the frames in a row | hate, `res_gfx.py`, `res_font.py` |
+   | sprite cells of no fixed stride (a cell is an attribute and 8 lines, or one marker byte when empty) | `kit/cells.py`: PNG + a CSV layout cut by the object table, the build from the two files alone | R-Type (`graphics/sprites`, `levels/levelN/sprites`) |
    | screens | `.scr` (or PNG + attributes) | every case |
    | tunes, effects | text, one row a note or a step (`res_tune.py`, `res_effects.py`, `sk10.py decode`, `sound_data.py`); `.pt3` for a Pro Tracker module | zynaps, zynaps-128, ZS |
    | levels, maps | text, one row a cell or a record (`res_levels.py`, `zs_level.py`) | zynaps, ZS |

@@ -193,7 +193,7 @@ L2MoversB:
 
 ; Mover A0
 ;
-; Witness: L1 0 (none).
+; Witness: L1 2994 (l2).
 L2MoverA0:
   JP C,MoveNext
   JP MoveStore

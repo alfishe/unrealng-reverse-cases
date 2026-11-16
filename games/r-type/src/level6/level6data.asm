@@ -175,7 +175,7 @@ L6MoversB:
 
 ; Mover A0
 ;
-; Witness: L1 0 (none).
+; Witness: L1 5812 (l6).
 L6MoverA0:
   JP C,MoveNext
 ; This entry point is used by the routines at L6MoverA3 and L6MoverA4.

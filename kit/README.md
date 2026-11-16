@@ -61,7 +61,19 @@ calls `re_session.main` itself does the same with `kitlib.model_from_snapshot(ar
   so the capture loads a later program of the tape, with the fast LD-BYTES trap on or off (Rex: side 1
   `--tape-seek 6` loads REX 2 alone, its image identical to `tools/parts.py`'s). The answer is printed and kept in
   `W/capture.json` `tape_seek`; a case wrapper that replaces `corpus.load` gets it too when it ends with
-  `rs.main(['capture', ...])`.
+  `rs.main(['capture', ...])`. The seek waits until the tape reports block N (`kitlib.tape_wait`): with a TTD
+  recording running, unreal-ng puts a tape in at the next frame boundary and a seek before it answers "Block N out of
+  range" (R-Type stage 1, [docs/unreal-ng-run-frames-faults.md](../docs/unreal-ng-run-frames-faults.md)); frames run
+  for that are printed and kept as `tape_seek_wait_frames` (0 when the tape is in at once).
+- `--binary`: `capture` and `open` with no `--binary` take `$UNREAL_BINARY` (a case's `work/env.sh` sets it to its
+  `BIN`) and pass it on (`rs.py: --binary B (UNREAL_BINARY)`); re_session.py's own default, the checkout's
+  `cmake-build-agent-release`, only when the variable is unset. A `--binary` given is kept.
+
+A case's own lab that puts a tape into a running machine and winds it (a level recording from a state: R-Type's
+`tools/record.py` `tape_at`) calls `kitlib.tape_insert(s, path, block=N[, play=True][, settle=F])`: fast and turbo
+tape off, `POST /tape/load`, then `kitlib.tape_wait` (polls `GET /tape` until `block_count > N`, with no frame run,
+then one frame at a time, at most 10) and `POST /tape/seek`; `settle=F` runs exactly F frames first (a timeline that
+ran a fixed number, R-Type's 2). It returns the frames run, the seek's answer, the tape's state and block.
 
 ```bash
 python3 ../../kit/rs.py capture --work work/stage2/rec/L20 --snapshot work/stage2/lv/L20.szx \
@@ -83,6 +95,7 @@ what the generator does with it, the part files); every file of a case and the c
 | `mkgame.py --case C` | `src/game/*.asm` from `game.ann` (`src/main`, `main.ann` in a case whose `case.json` names `"main": "main"`) ([format](../docs/ann-format.md)), the recordings' `l1.json` and the image `case.json` names; refuses to install unless sjasmplus gives the image's bytes |
 | `mkgame.py --part F.json` / `--image BIN --org A ...` | any other code image the same way: a loader, a menu, a bank, an image of several segments or pieces ([part files](../docs/ann-format.md#5-parts-banks-and-pieces)) |
 | `resinc.py` (a module) | the `.inc` of an `@res NAME.bin include` resource: `lines(items)` writes `DB` / `DW` / label lines (a word may be a label's name), `symbols(case)` gives the `.ann`'s names and each resource's inner labels by offset; `Symbols(case).add(ann, lo, hi)` writes and reads an address of an editable form as a name (`word($CCDA)` is `SharedModels+591`, `value()` the address again); the case's `res_formats.py build` calls it |
+| `cells.py` (a module) | sprite cells of no fixed stride (an attribute and 8 lines, or one marker byte for an empty cell) as a res format: `export(data, pieces(objects, base))` gives `{".png", ".csv"}` (each piece the object table points at drawn at a place of its own, index 0 paper, 1 ink, 2 no pixel; the CSV a line a piece in byte order: place, size, object numbers, an attribute a cell or `-`, and `bytes` lines for what no piece holds), `build(files)` the bytes from the two files alone; `empty` (`$36`) and `attr` (`first` / `last`) are kept in the CSV's first line. R-Type's `graphics/sprites` and `levels/levelN/sprites` |
 | `ctl2ann.py DRAFT.ctl --out F.ann` | a first `.ann` from `re_session.py`'s `draft.ctl` (or an L2 export JSON) |
 | `toolpaths.py` | finds sjasmplus, the SkoolKit venv, unreal-ng and its `re_session.py` (above) |
 | `rs.py ARGS` | runs unreal-ng's `re_session.py` with ARGS (`open`, `build`, `stop`, ...; above); checks `capture --inputs` scripts and splits their `W+O` chords; `capture --stop` stops the instance after it, `capture --expect STATE[@FRAME]` checks that the replay reaches the live run's state |
@@ -93,7 +106,7 @@ what the generator does with it, the part files); every file of a case and the c
 | `rzx_match.py LOG FROM REC [--bytes N] [--attrs N] [--window F] [--room ADDR]` | how long a recording made from an RZX state keeps to the RZX: each saved screen against the RZX log's (a case's `rzx_log.py`: `screens.bin`, `mem.bin`, `log.json`); exact ("in step with the RZX up to frame N"), and by a tolerance: within N bytes (sprites a few pixels apart), N attribute bytes, the closest RZX screen within F frames, the same room (the game's room byte in the recording's `snapshots/` and the RZX's `mem.bin`, within F frames): "in step by the tolerance (...) up to frame N; K of M screens" |
 | `input_vars.py --work W --inputs S --start F` | the bytes that follow the held directions and fire over a scripted recording: a first guess at the player's coordinates (a 16-bit coordinate, or one that moves only now and then, scores low: confirm in the code that reads the controls) |
 | `refdocs.py --case C` | docs 11 and 12 from `game.ann`, the parts of `ref_parts` and the recordings (below); doc 12 links `docs/img/routines/<Label>.gif` and every `<Label>-<what>.gif` |
-| `check_docs.py --case C` | mermaid renders (every diagram in one `mmdc` run: one headless browser, not one a diagram; each on its own only when that run fails, to name the broken one), links and `#anchors` resolve (GitHub slugs), no `$` in prose, every figure in `docs/img` and its subfolders is linked; the resource READMEs (`src/res/README.md`, `src/res/**/README.md`) are read for their links too: a figure they link counts, a broken link of theirs is a problem |
+| `check_docs.py --case C` | mermaid renders (every diagram in one `mmdc` run: one headless browser, not one a diagram; each on its own only when that run fails, to name the broken one), links and `#anchors` resolve (GitHub slugs), no `$` in prose, every figure in `docs/img` and its subfolders is linked; the resource READMEs (`src/res/README.md`, `src/res/**/README.md`) are read for their links too: a figure they link counts, a broken link of theirs is a problem; a link to docs 11 / 12 before `refdocs.py` wrote them says so (`not generated yet`), and `--no-refdocs` (stages 1 and 2) skips those links and counts them in the last line |
 | `check_docs.py --repo` | the same for the repository's own documents: README, GUIDE, recipes, docs, kit |
 | `code_addresses.py FILE.md` | puts hex addresses in prose into code spans |
 
@@ -140,9 +153,10 @@ name it drops (`menu, search ran no instruction there`; an entry no build ran st
 clause, so a data entry is not said to run no instruction), lists the code entries left at `L1 0 ()` after it
 (`witness: src/rex2/rex2.ann: 24 code entries at L1 0 () (no build ran them): 128 $97D2 WaitFire, ...`: the line,
 the address, the name), gives a code entry with no witness line (a new one) its `> Witness: L1 N (builds).` after
-its description when the builds ran it and the `.ann` already holds witness lines (`no witness line, the builds run
-it: L1 1 (door3): written`; one no build ran is listed, none written; without `--fix-witness` a run prints only
-`N code entries with no witness line (--fix-witness writes them)`), and writes the source again from the rewritten `.ann`, so
+its description when the builds ran it, in any `.ann`, a fresh one with no witness line yet too (`no witness line,
+the builds run it: L1 1 (door3): written`; one no build ran is listed, none written; without `--fix-witness` a run
+prints only `N code entries with no witness line (--fix-witness writes them)`, and only for an `.ann` that already
+holds witness lines), and writes the source again from the rewritten `.ann`, so
 that with `--install` one run leaves the `.ann` and the `.asm` current
 ([ann-format.md 3.2](../docs/ann-format.md#32-a-description--text)). One L1 keeps one instruction an address (the
 last bytes run there, the runs of all): mkgame prints the witnessed entries whose bytes changed in the recording, and
@@ -337,6 +351,13 @@ Several listings of one flat image (`routine_anim.py`, `beam_timeline.py`, `writ
 than once merges them by address, each naming its own code (where two give code at one address, the first wins):
 `--listing build/main.lst --listing build/music.lst` names a 48K boot's menu and its music part at `$C000` (ZYX boot);
 `--page` is for 128K pages only.
+
+Loop names (`routine_anim.py`, `beam_timeline.py`, `writers_map.py`): `--label ADDR=NAME` (comma-separated or
+repeated, hex) names the code at ADDR (the listing's label there renamed, or one added), and `--auto-labels owner`
+names each of SkoolKit's `l_XXXX` labels (a branch target the `.ann` leaves unnamed) after the nearest named label
+before it: R-Type's beam timeline gives ScrollRows' three loops as `ScrollRows_8846`, `ScrollRows_8881`,
+`ScrollRows_88B3` from `build/game.lst` itself, the same PNG byte for byte as the `sed` copy of the listing it used
+before. A name the source should keep goes into the `.ann` as an inner label (ann-format 3.3).
 
 routine_anim's memory map is 256 bytes a row; a range too small to make 96 px that way (two rows of 2 px for
 `$5B00-$5CFF`) is wrapped at 128, 64, 32 or 16 bytes a row, at a scale as many times larger, the label says how

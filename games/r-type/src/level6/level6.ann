@@ -38,7 +38,7 @@ $E362 b L6Kinds ; The enemy kinds StartWave reads (LevelKinds)
 $E612 w L6MoversA ; The first mover of each kind (7 words, LevelMoves)
 $E620 w L6MoversB ; The second mover of each kind (16 words, LevelMoves2)
 $E640 c L6MoverA0 ; Mover A0
-> Witness: L1 0 (none).
+> Witness: L1 5812 (l6).
 $E646 c L6MoverA1 ; Mover A1
 > No recording ran it: known only from the code.
 $E654 c L6MoverA2 ; Mover A2
