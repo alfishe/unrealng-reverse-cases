@@ -1,0 +1,90 @@
+# Trail 5 (TROPICANA): Trail5 $EE84-$F03B
+# Blocks in byte order ('#' starts a comment):
+#   record NAME A=LIST B=LIST length=$NNNN   a trail's record (SelectTrail reads it): list A (the ground and the
+#                                            obstacles), list B (the scenery), the length (FinishDistance = length
+#                                            less $48, shown as the comment)
+#   list NAME                                a list: its items follow, the $FFFF end mark is written after them
+#   DIST Y ADV sprite=$SS flags=$FF          an item: the distance along the trail, y (0: the sprite's own height),
+#                                            the advance (0 in the image: InitListWidths fills it), the game sprite,
+#                                            the flags (bit 0 mirrored, bits 1-3 the draw mode)
+#   DIST Y ADV anim=NAME                     an item drawn from an animation record (AnimObject $8A49)
+#   anim NAME sprite=$SS flags=$FF id=$II [motion=HEX]   an animation record: sprite, flags, id, then the motions
+#                                            (+3/+4 the x period and counter, +5/+6 the y ones, +7 the x and y steps,
+#                                            +8/+9 the frame's), the $FF end mark written after them
+#   bytes HEX                                bytes no code reads as a trail
+# Names of anims are their original addresses (Anim8042); a name no block of this file defines is that address in
+# another resource (trail 5's items use trails 1-4's animation records).
+record Trail5 A=A5 B=B5 length=$06B5   # finish $066D
+
+list A5
+$0000  41 0 sprite=$C7 flags=$02
+$0012  41 0 sprite=$C7 flags=$02
+$0078   0 0 anim=AnimEF78
+$0080  23 0 sprite=$07 flags=$05
+$0088  23 0 sprite=$C9 flags=$04
+$0138   0 0 anim=AnimEF80
+$0155  13 0 anim=AnimEFB4
+$0185  13 0 anim=AnimEFBD
+$017D   0 0 anim=AnimEF98
+$0195   0 0 anim=AnimEF8C
+$021D   0 0 anim=AnimEF7C
+$023D   0 0 anim=AnimEF84
+$0272   0 0 anim=AnimF006
+$02AA   0 0 anim=AnimF00F
+$02D2   0 0 anim=AnimEFA4
+$02EA   0 0 anim=AnimEFA8
+$0322   0 0 anim=AnimEFAC
+$033A   0 0 anim=AnimEFB0
+$0352   0 0 anim=AnimEF90
+$03A5  24 0 anim=AnimEFCF
+$03CD  24 0 anim=AnimEFDA
+$04BD   0 0 anim=AnimEF88
+$04D7  13 0 anim=AnimEFC6
+$04F7   0 0 anim=AnimEF9C
+$0517   0 0 anim=AnimEFA0
+$0537   0 0 anim=AnimEF94
+$057D  24 0 anim=AnimEFE5
+$05A5  40 0 anim=AnimEFF0
+$05CD  28 0 anim=AnimEFFB
+$066D   0 0 sprite=$B2 flags=$00
+$06AD   0 0 anim=AnimEF78
+$06B5  23 0 sprite=$08 flags=$05
+$06BD  23 0 sprite=$CA flags=$04
+
+list B5
+$00B8  44 0 sprite=$6E flags=$00
+$00CD  49 0 sprite=$13 flags=$00
+$00E3  29 0 sprite=$6E flags=$00
+$01A3  28 0 sprite=$AF flags=$00
+$01AF  35 0 sprite=$6E flags=$00
+$01B8  34 0 sprite=$6E flags=$00
+
+anim AnimEF78 sprite=$7B flags=$C2 id=$64
+anim AnimEF7C sprite=$A5 flags=$C2 id=$65
+anim AnimEF80 sprite=$09 flags=$01 id=$0B
+anim AnimEF84 sprite=$09 flags=$01 id=$0C
+anim AnimEF88 sprite=$09 flags=$01 id=$0D
+anim AnimEF8C sprite=$0A flags=$01 id=$0E
+anim AnimEF90 sprite=$0A flags=$01 id=$0F
+anim AnimEF94 sprite=$0A flags=$01 id=$10
+anim AnimEF98 sprite=$0B flags=$01 id=$11
+anim AnimEF9C sprite=$0B flags=$01 id=$12
+anim AnimEFA0 sprite=$0B flags=$01 id=$13
+anim AnimEFA4 sprite=$0B flags=$01 id=$14
+anim AnimEFA8 sprite=$0B flags=$01 id=$15
+anim AnimEFAC sprite=$0B flags=$01 id=$16
+anim AnimEFB0 sprite=$0B flags=$01 id=$17
+anim AnimEFB4 sprite=$68 flags=$02 id=$32 motion=0000030001
+anim AnimEFBD sprite=$68 flags=$02 id=$33 motion=0000030001
+anim AnimEFC6 sprite=$68 flags=$02 id=$34 motion=1200000040
+anim AnimEFCF sprite=$71 flags=$02 id=$3C motion=20001800311100
+anim AnimEFDA sprite=$71 flags=$02 id=$3D motion=20001800311100
+anim AnimEFE5 sprite=$71 flags=$02 id=$3E motion=14000C00441100
+anim AnimEFF0 sprite=$71 flags=$02 id=$3F motion=04000400141100
+anim AnimEFFB sprite=$71 flags=$02 id=$40 motion=04000800141100
+anim AnimF006 sprite=$73 flags=$02 id=$46 motion=0800080011
+anim AnimF00F sprite=$73 flags=$02 id=$47 motion=1800040012
+
+# leftover bytes, as text: s.H............t.\........t.].......
+bytes 7302480800040012FF0800040012FF74025C06000A00111100FF74025D03000A
+bytes 00121100

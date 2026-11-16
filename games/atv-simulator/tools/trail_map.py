@@ -1,76 +1,119 @@
 #!/usr/bin/env python3
-"""A first map of ATV Simulator's six trails from the data: the course record each trail's setup reads (`$EC9C`:
-trails 1-4 at `$7C9C` + 6 n, trail 5 at `$EE84`, trail 6 at `$60AC`, the copy of `$F230`), and the two lists it
-points at, drawn along the trail's distance.
+"""Draw ATV Simulator's six trails from the resources: src/res/trails/*.txt (the records, the lists, the animation
+records) with the sprites of src/res/sprites/game.png, through tools/res_formats.py (the bytes the build makes).
 
-    python3 tools/trail_map.py IMAGE.bin OUT.png       # IMAGE: a 64 K image in play (trail 6's record is copied)
+    python3 tools/trail_map.py OUT.png [TRAIL ...]     # TRAIL 1-6, default all six
 
-The record: +0 list A (`$D6B6`), +2 list B (`$D6B8`), +4 the trail's length (the finish `$D6C0` is 72 less).
-List A: 6-byte entries, distance, a word, a word, to `$FFFF` (the objects: the third word is a graphic or a type;
-stage 3 names them). List B: 6-byte entries, distance and two words, to `$FFFF` (drawn as a step line of its first
-word). The format is a first reading of the bytes; every field is to be confirmed by the code in stage 3.
+Each trail is a strip read left to right, one distance unit a pixel, wrapped every 1024 units: list A (the ground
+pieces and the obstacles, each at its distance with its sprite, y counted up from the band's base line, y = 0 the
+sprite's own height) above list B (the scenery, its own band); the red line is the finish (the length less $48,
+FinishCheck). Mirrored items (flags bit 0) are drawn mirrored; an item drawn from an animation record shows the
+record's sprite with a yellow mark under it. The drawing is a map of the data, not the screen: the game scrolls
+list B at an eighth of list A's speed.
 """
+import os
 import sys
 
 from PIL import Image, ImageDraw, ImageFont
 
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+import res_formats as rf  # noqa: E402
+
 NAMES = ['SAND DUNING', 'GRASSTRAKIN', 'ICEBERGS', 'PYRAMIDS', 'TROPICANA', 'SWAMP']
+WRAP = 1024
+BAND_A, BAND_B = 110, 70
 
 
-def word(m, a):
-    return m[a] | m[a + 1] << 8
-
-
-def entries(m, a):
-    out = []
-    while word(m, a) != 0xFFFF and len(out) < 200:
-        out.append((a, word(m, a), word(m, a + 2), word(m, a + 4)))
-        a += 6
+def sprites():
+    """sprite number -> (width in bytes, height, pixel bytes) from the game bank's bytes"""
+    data = rf.load('sprites/game.bin')
+    out = {}
+    for n in range(data[0]):
+        o = rf.word(data, 4 + 2 * n)
+        w, h = data[o], data[o + 1]
+        out[n] = (w, h, data[o + 4:o + 4 + w * h])
     return out
 
 
+def trails():
+    """trail number -> (length, list A items, list B items); an item is (distance, y, sprite, flags, anim)"""
+    anims, recs = {}, {}
+    for name in rf.TRAILS:
+        blocks, _lists = rf.trail_parse(name, rf.load(name))
+        byaddr = {}
+        for b in blocks:
+            if b[0] == 'anim':
+                anims[b[1]] = b[2]
+            elif b[0] == 'list':
+                byaddr[b[1]] = b[2]
+        for b in blocks:
+            if b[0] == 'record':
+                recs[int(b[1][5:])] = (b[4], byaddr[b[2]], byaddr[b[3]])
+
+    def items(lst):
+        r = []
+        for it in lst:
+            a = rf.word(it, 4) if it[5] & 0xF0 else None
+            spr, fl = (anims[a][0], anims[a][1]) if a in anims else (it[4], it[5])
+            r.append((rf.word(it, 0), it[2], spr, fl, a))
+        return r
+    return {t: (ln, items(la), items(lb)) for t, (ln, la, lb) in recs.items()}
+
+
+def blit(px, size, spr, x0, ybase, y, mirror, colour):
+    w, h, bs = spr
+    top = ybase - (y if y else h)
+    for j in range(h):
+        for i in range(w * 8):
+            if bs[j * w + i // 8] >> (7 - i % 8) & 1:
+                xx, yy = x0 + (w * 8 - 1 - i if mirror else i), top + j
+                if 0 <= xx < size[0] and 0 <= yy < size[1]:
+                    px[xx, yy] = colour
+
+
 def main():
-    m = open(sys.argv[1], 'rb').read()
-    recs = [0x7C9C + 6 * n for n in range(4)] + [0xEE84, 0x60AC]
-    W, LEFT, H = 1050, 150, 150
+    if len(sys.argv) < 2:
+        print(__doc__)
+        return 2
+    which = [int(a) for a in sys.argv[2:]] or list(range(1, 7))
+    sp, tr = sprites(), trails()
     try:
         font = ImageFont.truetype('/System/Library/Fonts/Menlo.ttc', 12)
-        big = ImageFont.truetype('/System/Library/Fonts/Menlo.ttc', 14)
     except OSError:
-        font = big = ImageFont.load_default()
-    im = Image.new('RGB', (W, 40 + H * 6), (24, 24, 32))
-    dr = ImageDraw.Draw(im)
-    dr.text((10, 10), 'ATV Simulator: the six trails from their course records (distance left to right, 0 to the length)',
-            fill=(230, 230, 230), font=big)
-    for t, r in enumerate(recs):
-        la, lb, ln = word(m, r), word(m, r + 2), word(m, r + 4)
-        y0 = 40 + t * H
-        sc = (W - LEFT - 20) / max(ln, 1)
-        dr.text((10, y0 + 10), f'{t + 1} {NAMES[t]}', fill=(230, 220, 120), font=big)
-        dr.text((10, y0 + 30), f'record ${r:04X}', fill=(200, 200, 200), font=font)
-        dr.text((10, y0 + 46), f'A ${la:04X}  B ${lb:04X}', fill=(200, 200, 200), font=font)
-        dr.text((10, y0 + 62), f'length {ln} (${ln:04X})', fill=(200, 200, 200), font=font)
-        base = y0 + H - 22
-        dr.line([LEFT, base, LEFT + ln * sc, base], fill=(90, 90, 110))
-        fx = LEFT + (ln - 72) * sc
-        dr.line([fx, y0 + 8, fx, base], fill=(220, 80, 80))
-        dr.text((fx + 3, y0 + 8), 'finish', fill=(220, 80, 80), font=font)
-        b = entries(m, lb)
-        pts = []
-        for i, (_a, x, v, _w) in enumerate(b):
-            nx = b[i + 1][1] if i + 1 < len(b) else ln
-            yy = base - (v & 0xFF) * 1.2
-            pts += [(LEFT + x * sc, yy), (LEFT + nx * sc, yy)]
-        if pts:
-            dr.line(pts, fill=(110, 200, 120), width=2)
-        for i, (_a, x, v, k) in enumerate(entries(m, la)):
-            px = LEFT + x * sc
-            yy = base - 70 - (i % 3) * 14
-            dr.line([px, yy + 12, px, base], fill=(120, 160, 230))
-            dr.text((px + 2, yy), f'{k:X}', fill=(150, 190, 250), font=font)
-    im.save(sys.argv[2])
-    print(im.size)
+        font = ImageFont.load_default()
+    rows = [(t, r) for t in which for r in range((tr[t][0] + WRAP - 1) // WRAP)]
+    strip = BAND_A + BAND_B + 30
+    im = Image.new('RGB', (WRAP + 140, 10 + strip * len(rows)), (24, 24, 32))
+    dr, px = ImageDraw.Draw(im), im.load()
+    for k, (t, r) in enumerate(rows):
+        ln, la, lb = tr[t]
+        y0, x0 = 10 + k * strip, 130 - r * WRAP
+        ga, gb = y0 + BAND_A, y0 + BAND_A + BAND_B
+        label = '%d %s' % (t, NAMES[t - 1]) if r == 0 else '%d from %d' % (t, r * WRAP)
+        dr.text((6, y0 + 4), label, fill=(230, 220, 120), font=font)
+        if r == 0:
+            dr.text((6, y0 + 20), 'length $%04X' % ln, fill=(200, 200, 200), font=font)
+            dr.text((6, y0 + 36), 'A %d, B %d items' % (len(la), len(lb)), fill=(200, 200, 200), font=font)
+        dr.text((6, ga - 14), 'list A', fill=(150, 190, 250), font=font)
+        dr.text((6, gb - 14), 'list B', fill=(110, 200, 120), font=font)
+        end = min(ln, (r + 1) * WRAP)
+        for g in (ga, gb):
+            dr.line([x0 + r * WRAP, g, x0 + end, g], fill=(90, 90, 110))
+        fin = ln - 0x48
+        if r * WRAP <= fin < (r + 1) * WRAP:
+            dr.line([x0 + fin, y0 + 2, x0 + fin, gb], fill=(220, 80, 80))
+        for lst, base, colour in ((lb, gb, (110, 200, 120)), (la, ga, (150, 190, 250))):
+            for d, y, s, fl, a in lst:
+                if not r * WRAP - 64 <= d < (r + 1) * WRAP:
+                    continue
+                if s in sp:
+                    blit(px, im.size, sp[s], x0 + d, base, y, fl & 1, colour)
+                if a is not None:
+                    dr.rectangle([x0 + d, base + 2, x0 + d + 3, base + 5], fill=(230, 200, 60))
+    im.save(sys.argv[1])
+    print('%s: %d x %d, trails %s' % (sys.argv[1], im.size[0], im.size[1], ' '.join(map(str, which))))
+    return 0
 
 
 if __name__ == '__main__':
-    main()
+    sys.exit(main())

@@ -1,14 +1,1214 @@
-# The annotations of the game image: the single source of truth for src/game/*.asm (kit/mkgame.py).
-# The format is in kit/mkgame.py, class Annotations. One line an entry:
-#
-#   @module NAME ; title            the entries from here on go to NAME.asm, the title heads the file
-#   @about a paragraph              the module file's header text, one paragraph a line
-#   $ADDR c Name ; title            a routine
-#   > a description line
-#   $ADDR b Name ; title            data (w words, t text, s space; "b Name 8" rows of 8)
-#   @res graphics/NAME.bin          the entry is a resource: src/res/..., INCBIN
-#   $ADDR Name ; comment            a label and comment inside an entry: on an instruction, or on the data line
-#                                   that starts at ADDR (a data entry's rows are cut there)
-#   @isub $ADDR LD HL,-6            the instruction written so
-#   @equ $ADDR Name [N] ; comment    a variable past the image: an EQU, its operands by name
-#   @inline $ADDR                   a routine that reads its data after the CALL
+# The annotations of ATV Simulator's game image, tape block 7 ($6338-$FF77, 40000 bytes, as the loader at $FFDC
+# leaves it): the source of src/game/*.asm (../../kit/mkgame.py). Format: ../../../../docs/ann-format.md.
+# The recordings (work/stage1/rec, WALKTHROUGH 6): c1 (a 48K from power-on, the original TZX at signal speed, the
+# title, the menu, trail 1 to TIME OUT), menu (the menu's pages, two players), kb (the keyboard, redefine), trail1
+# (trail 1 ridden to the finish), trails (trails 1-2), warp (trails 3-6 by a POKE of the trail number), fuel (a ride
+# at full speed). "Known only from the code" marks what no recording shows.
+
+
+@equ $4000 Screen 6144 at $6C78,$6DD5,$779C,$779F,$77AA,$77AD,$8CDD,$8CE9,$D8DE,$DA4F,$DA8F,$DFA7,$E511,$E55D,$EB4C,$EE45 ; the screen's pixels
+@equ $5800 Attributes 768 at $6A38,$6DDB,$D7FB,$D82F,$DA5B,$DA9B,$ED17 ; the screen's attributes
+@equ $5B00 TunePlayerCopy 1451 at $6DEF,$6DFB,$D7DA,$ECE6 ; the tune player's copy (GameEntry's LDIR from $F850), below the image
+@equ $60AC Trail6 650 at $D7E5,$ECA8 ; trail 6 as GameEntry copies it from $F230: its record, then its lists
+@equ $FFDC StackTop at $D7F2 ; the stack's top: the loader's first byte (GameEntry)
+@equ $FFDA StackRestart at $DA0D ; the stack AbortKey restarts on
+@isub $8D36 LD SP,BufferP2+$06E0 ; the buffer's end, not the tune player's data
+@isub $8D2C LD SP,BufferP1+$06E0 ; the first buffer's end
+@isub $F985 LD SP,$F838 ; TunePlay's saved SP: patched, not BufferP2+$011C
+@equ $6334 StackBelowImage at $8EB6 ; ItemTooLow's stack: four bytes below the image
+
+@module menu ; The title, the tune's interrupt hook, the menus, the controls, one or two players, the split screen
+@about The front end. Title ($6DFB) copies the tune player back from $5B00 to $F850 (the second player's buffer overwrites it in play), shows the credits and the high scores, then MenuLoop ($737C) starts the title tune (TunePlay $F852, tune 0) with the interrupt hook TuneHook pointing at MenuTick ($7340): the menu runs inside the tune player's interrupt until a key stops the tune. A menu is a block of MenuDefs: a count, the box's x and y, its height, then a text and an action per item. The front end draws into the buffer $F03C (22 bytes a line, 80 lines: BufferRows) and copies it to the screen with ShowBuffer or Dissolve.
+@about Controls: player 1 has the keyboard (five keys, redefinable) or a Kempston joystick, player 2 the keyboard or a Sinclair joystick (keys 6-0). ReadP1Controls / ReadP2Controls ($D911 / $D942) turn them into five bits each in Controls1 / Controls2: 4 left, 3 right, 2 wheel up, 1 wheel down, 0 jump (fire).
+
+$6338 b MenuGfx 16 ; The front end's graphics bank: 14 pictures, each a sprite and its attributes
+> +0 the count (14), +1 the bank's length word ($03C5: it ends at $66FD), +3 zero, then a pair of words a picture from +4: the sprite's offset and the attributes' offset, both from $6338. A sprite is width (bytes), height (lines), advance, shift, then width x height bytes; the attributes are width, height (cells) and a byte a cell. MenuSprite ($863D) and MenuSpriteAttrs ($773D) read it (c1: the title's ATV and logo, the trail intro's number, the panel frames).
+@res sprites/menu.bin
+$66FD s MenuGfxEnd ; 35 zeros after the bank, never read
+$6720 b MenuVars ; The menu's variables
+$6720 MenuBoxX ; the current menu box's x (pixels)
+$6721 MenuBoxY ; its y (the top line, counted up from the bottom)
+$6722 MenuBoxHeight ; its height (lines)
+$6723 MenuCount ; its item count
+$6724 TuneTimer ; a word counted by MenuTick each frame: the menu falls back to the title (high byte $80) or the high scores ($0400)
+$6725 MenuSpare ; written 0 by ClearMenuSpare, never read
+$6726 MenuItem ; the highlighted item (0 up)
+$6727 w RowAddrs 16 ; The screen address of each of the 192 lines, top first (BuildRowAddrs fills it at the start; zeros in the image)
+$68A7 w BufferRows 16 ; The offset of each of the 80 buffer lines (22 bytes a line, from 22: BuildBufferRows fills it)
+$6947 b PlayerVars ; Players and scores
+$6947 PlayerCount ; 0 one player, 1 two players (MenuPlayerCount toggles it)
+$6948 Scores ; the two players' scores, five ASCII digits each; "03000" and "02000" in the image, cleared to "00000" by NewGame
+$694D ScoreP2 ; player 2's five digits
+$6952 NameColour ; the name entry's colour ($10 player 1, $28 player 2)
+$6953 NameRow ; the table row the name goes into
+$6954 NameScorePtr ; the row's score
+$6956 NameTextPtr ; the row's name
+$6958 BigScaleX ; the big print's horizontal scale
+$6959 BigScaleY ; its vertical scale (lines a pixel)
+$695A BigRepeat ; its repeat
+$695B BigClear ; 0 OR the pixels, 1 clear them (the shadow)
+$695C CursorPos ; the name entry's cursor (y, x)
+$695E BigMask ; the big print's current bit
+$695F t HiScoreTitle ; "HI SCORE|" (the table's heading) and "A|" (the trail intro's big digit: TrailIntro writes the trail's character over the A)
+@res texts/hiscore.bin
+$6968 BigChar ; "A|": a one-character text the trail intro (the trail's digit) and the name entry's letter grid write over
+$696A t HiNames ; The high score table's five names, six characters and | each
+@res texts/hinames.bin
+$6988 t HiScores ; The five scores, five digits and | each: 20000, 15000, 10000, 05000, 03000
+@res texts/hiscores.bin
+$69A6 c MenuTable ; The front end's jump table; the first entry JP Title
+> Each entry is a JP. The game calls Title, InitTextWidths, Random, Print, LoadIntro, TrailIntro, ShowHud, FillAttrs, PixelMask, MenuSpriteAttrs, DetectKempston, BuildRowAddrs, BuildBufferRows, InitListWidths and CheckHiScore through it; the entries at $69AC, $69AF, $69B5, $69B8, $69BB, $69BE, $69C7, $69CA, $69CD, $69D9, $69E2 and $69E5 are called by no one (known only from the code).
+> Witness: L1 4 (c1, trail1, warp).
+$69A9 c JpInitTextWidths ; JP InitTextWidths
+> Witness: L1 1 (c1).
+$69AC c JpFrameBox ; JP FrameBox
+> Known only from the code: no recording runs it.
+$69AF c JpDissolve ; JP Dissolve
+> Known only from the code: no recording runs it.
+$69B2 c JpRandom ; JP Random
+> Witness: L1 1530 (c1, empty, fuel, kb, trail1, trails, warp).
+$69B5 c JpAnyKey ; JP AnyKey
+> Known only from the code: no recording runs it.
+$69B8 c JpSelectKey ; JP SelectKey
+> Known only from the code: no recording runs it.
+$69BB c JpReadNewKey ; JP ReadNewKey
+> Known only from the code: no recording runs it.
+$69BE c JpShowBufferAt ; JP ShowBufferAt
+> Known only from the code: no recording runs it.
+$69C1 c JpPrint ; JP Print
+> Witness: L1 2324 (c1, empty, kb, trail1, trails, warp).
+$69C4 c JpLoadIntro ; JP LoadIntro
+> Witness: L1 7 (c1, empty, fuel, kb, trail1, trails, warp).
+$69C7 c JpChecker ; JP Checker
+> Known only from the code: no recording runs it.
+$69CA c JpSpriteList ; JP SpriteList
+> Known only from the code: no recording runs it.
+$69CD c JpAttrBoxes ; JP AttrBoxes
+> Known only from the code: no recording runs it.
+$69D0 c JpTrailIntro ; JP TrailIntro
+> Witness: L1 16 (c1, empty, fuel, kb, trail1, trails, warp).
+$69D3 c JpShowHud ; JP ShowHud
+> Witness: L1 16 (c1, empty, fuel, kb, trail1, trails, warp).
+$69D6 c JpFillAttrs ; JP FillAttrs
+> Witness: L1 10 (kb, trails, warp).
+$69D9 c JpAttrAddr ; JP AttrAddr
+> Known only from the code: no recording runs it.
+$69DC c JpPixelMask ; JP PixelMask
+> Witness: L1 24644 (c1, empty, fuel, kb, trail1, trails, warp).
+$69DF c JpMenuSpriteAttrs ; JP MenuSpriteAttrs
+> Witness: L1 1902 (c1, empty, fuel, kb, trail1, trails, warp).
+$69E2 c JpClearPixels ; JP ClearPixels
+> Known only from the code: no recording runs it.
+$69E5 c JpFillAttrsBase ; JP FillAttrsBase
+> Known only from the code: no recording runs it.
+$69E8 c JpDetectKempston ; JP DetectKempston
+> Witness: L1 1 (c1).
+$69EB c JpBuildRowAddrs ; JP BuildRowAddrs
+> Witness: L1 1 (c1).
+$69EE c JpBuildBufferRows ; JP BuildBufferRows
+> Witness: L1 1 (c1).
+$69F1 c JpInitListWidths ; JP InitListWidths
+> Witness: L1 16 (c1, empty, fuel, kb, trail1, trails, warp).
+$69F4 c JpCheckHiScore ; JP CheckHiScore
+> Witness: L1 4 (c1, kb, trail1, warp).
+
+@module render ; The renderer: the draw modes, the sprites, the buffers, the trail lists, the copy to the screen
+@about Everything is drawn into a buffer of 22 bytes x 80 lines (BufferP1 $F03C for the top half, BufferP2 $F71C for the bottom half in a two-player game) and copied to the screen each pass (CopyBuffer, 22 LDIs a line). A sprite is a header (width in bytes, height in lines, advance, shift) and its bytes, line by line from the top; SpriteHeader ($865F) reads it into SpriteWidth.. and DrawSprite calls the current draw mode through ModeVector: the word table DrawModes for the front end, ListModes for the trail. There are no shifted copies: when SpriteX AND 7 differs from the shift a sprite's +3 byte keeps, SpriteHeader has ShiftLeftBy / ShiftRightBy (RotateSpriteLeft / RotateSpriteRight, a bit at a time over the whole sprite) move its bytes in place, and the bank stays so. In c1's heaviest pass (tools/pass_time.py: c1 frame 15356, 438 645 T, 89.7 % of the 7 frames) the two rotate routines take 31 % of the CPU, re-shifting the START sign's sprites ($7B 9 x 31, $A5 5 x 45) as they scroll off the left edge, with a landing's Tone.
+$69F7 w DrawModes 1 ; The front end's draw modes: a routine each, picked by ModeVector ($82F8 points at the word in use)
+> +0 ModeNone (RET: measure only), +2 ModeCopyScreen, +4 ModeOrScreen (no caller), +6 ModeXorScreen, +8 ModeCopyBuffer, +10 ModeXorBuffer, +12 ModeAttrsNone (RET), +14 ModeAttrsCopy (no caller), +16 BigPrint.
+
+@module menu
+$6A09 c LoadIntro ; The intro before the first menu: clear, a checkered band, the ATV and the boxes of the loading picture
+> Clears the screen (ClearScreen), draws a checkered band (Checker) and the sprite list LoadIntroSprites with the menu bank, then the attribute boxes LoadIntroBoxes. Called through JpLoadIntro by NewGame.
+> Witness: L1 7 (c1, empty, fuel, kb, trail1, trails, warp).
+$6A38 c TrailIntro ; The trail's intro: "TRAIL NO." and the trail's number in big print, the name, the panels
+> Clears the screen's attributes and pixels, prints TrailNoText twice (shadow and face) at scale 2 x 5, the trail's number (Trail + "b", a big digit) at scale 2 x 4, dissolves the buffer onto the screen, waits 50 frames, copies the trail's name (CopyTrailName) and prints it and the intro picture (TrailIntroBoxes), waits 150 frames, then draws one or two players' panels (PanelP1, PanelP2), each coloured by TrailAttrs. Called through JpTrailIntro before each trail (c1 frame 15 800).
+> Witness: L1 16 (c1, empty, fuel, kb, trail1, trails, warp).
+$6B3B c FillColumn ; Write E into B lines down from HL (screen)
+> Witness: L1 3136 (c1, empty, fuel, kb, trail1, trails, warp).
+$6B42 c PanelP2 ; The second player's half: its frame, its HUD, the FUEL and SPEED bars
+> The bottom half's sprite list PanelP2Sprites, the side lines (E = $0F / $F0 down 88 lines), the record copy (CopyRecordP2), the HUD at y 6, ShowBars, ShowMaxTime and the attribute boxes PanelP2Boxes. Only in a two-player game (menu: 2 runs).
+> Witness: L1 2 (kb).
+$6B8C c PanelP1 ; The first player's half: its frame, its HUD, the bars
+> As PanelP2 for the top half (y $BE).
+> Witness: L1 16 (c1, empty, fuel, kb, trail1, trails, warp).
+$6BDC c Checker ; A checkered band: B columns of C lines from the position in SpriteX/SpriteY, $AA and $55 by turns
+> Witness: L1 7 (c1, empty, fuel, kb, trail1, trails, warp).
+$6BEC c CheckerColumn ; One column of the band
+> Witness: L1 49 (c1, empty, fuel, kb, trail1, trails, warp).
+$6BFA c FillEveryOther ; Write E to every other line, C times
+> Witness: L1 8624 (c1, empty, fuel, kb, trail1, trails, warp).
+$6C05 c PutMenuSprite ; DestAddr = the buffer address of SpriteX / SpriteY; JP MenuSpriteGo
+> Witness: L1 6 (c1, menu, trail1, warp).
+$6C0E c PutGameSprite ; DestAddr = the buffer address; JP GameSpriteGo
+> Witness: L1 24 (c1, menu, trail1, warp).
+$6C17 c SpriteList ; Draw a list of sprites: x, y, sprite number, ending $FF
+> IX the list. Each item through the routine in SpriteListCall ($6C2A, set by the caller to MenuSprite, GameSprite, PutMenuSprite or PutGameSprite).
+> Witness: L1 183 (c1, empty, fuel, kb, menu, trail1, trails, warp).
+$6C29 SpriteListCall ; CALL (the operand patched): the sprite routine
+$6C3A c CellCount ; A = A / 8 + 1 (pixels to attribute cells)
+> Witness: L1 607 (c1, empty, fuel, kb, menu, trail1, trails, warp).
+$6C43 c AttrBoxes ; Colour a list of boxes: x1, y1, x2, y2, attribute; ending $FF
+> IX the list; each box FillAttrs over (x2-x1)/8+1 columns and (y1-y2)/8+1 rows.
+> Witness: L1 289 (c1, empty, fuel, kb, menu, trail1, trails, warp).
+$6C6F c ShowHud ; Zero the clock, draw the HUD's sprites and boxes, the maximum time and the clock
+> Witness: L1 16 (c1, empty, fuel, kb, trail1, trails, warp).
+$6C9E b PanelP1Sprites 13 ; Sprite lists (x, y, sprite, $FF the end) and attribute box lists (x1, y1, x2, y2, attribute, $FF) of the panels, the HUD and the intros
+> $6C9E PanelP1Sprites, $6CAB PanelP2Sprites, $6CB8 HudSprites, $6CBF LoadIntroSprites (sprite lists); $6CD5 LoadIntroBoxes, $6CEF PanelP2Boxes, $6D18 PanelP1Boxes, $6D41 HudBoxes (box lists).
+@res tables/panels.bin
+$6CAB PanelP2Sprites
+$6CB8 HudSprites
+$6CBF LoadIntroSprites
+$6CD5 LoadIntroBoxes
+$6CEF PanelP2Boxes
+$6D18 PanelP1Boxes
+$6D41 HudBoxes
+$6D51 c FrameBox ; Draw the frame of a box in the buffer (the menus' frames)
+> The buffer address of SpriteX / SpriteY, B the width in pixels, C the height: a top line, C-2 sides ($0F ... $E0), a bottom line.
+> Witness: L1 31 (c1, kb, menu, trail1, warp).
+$6D77 c FrameLine ; A frame's top or bottom line: $03, $FF bytes, $C0
+> Witness: L1 62 (c1, kb, menu, trail1, warp).
+$6D7F c FillFF ; B bytes of $FF after HL
+> Witness: L1 1778 (c1, kb, menu, trail1, warp).
+$6D88 c Dissolve ; Bring the buffer onto the screen by eight passes of rotating its bits in from the sides
+> HL the buffer, DE the screen address. Each pass rotates each line's 22 bytes, the left 11 through RotateLeft and the right through RotateRight, so the picture slides in from both sides, with a delay of $1E x 256 loops between passes. Used by the title, the high scores, the menus and the trail intro (c1: 28 calls).
+> Witness: L1 29 (c1, empty, fuel, kb, menu, trail1, trails, warp).
+$6DC1 c RotateLeft ; Rotate a buffer byte left into the screen byte
+> Witness: L1 204160 (c1, empty, fuel, kb, menu, trail1, trails, warp).
+$6DC9 c RotateRight ; Rotate a buffer byte right into the screen byte
+> Witness: L1 204160 (c1, empty, fuel, kb, menu, trail1, trails, warp).
+$6DD1 c ClearScreen ; Border black, clear the screen and its attributes ($45), wait for no key, 60 frames
+> Also the main menu's START action: the menu returns to NewGame.
+> Witness: L1 22 (c1, empty, fuel, kb, trail1, trails, warp).
+$6DEF c RestoreTunePlayer ; Copy the tune player from $5B00 back to $F850 (no caller; Title and TrailEnd do it inline)
+> Known only from the code.
+$6DFB c Title ; The title sequence: the credits, the high scores, the menus, the title tune
+> Copies TunePlayerCopy ($5B00, $5AB bytes) back to $F850, sets TuneTimer = $04C8, then credits (Credits), the high scores (HiScoreScreen), the menu pages; ends in MenuLoop. GameEntry's outer loop calls it through JpTitle (c1 frame 1 130).
+> Witness: L1 4 (c1, trail1, warp).
+$6E4A c WaitKey60 ; Wait 60 frames or a key or fire (carry set on a key)
+> Witness: L1 42 (c1, empty, fuel, kb, trail1, trails, warp).
+$6E5A b RandomSeed ; The random generator's seed word
+$6E5C c Random ; A pseudo-random byte from the ROM: A = (RandomSeed), the pointer walks $0000-$1BFF
+> HL = RandomSeed; H steps through 0-$1B, L by one: A = the ROM's byte there. The noise effect (Noise $D9AF) is its only caller.
+> Witness: L1 1530 (c1, empty, fuel, kb, trail1, trails, warp).
+$6E6C c Scroller ; Scroll the buffer's credits 32 times (the second credit screen)
+> Witness: L1 4 (c1, trail1, warp).
+$6E81 c Credits ; The credits: the ATV picture, the sprites and boxes, "ALL TERRAIN VEHICLE" and the names
+> Witness: L1 6 (c1, menu, trail1, warp).
+$6ED7 b TrailIntroBoxes 11 ; The trail intro's attribute boxes and the credits' sprite and box lists
+> $6ED7 TrailIntroBoxes, $6EE2 CreditBoxes (box lists); $6EFC CreditSprites1, $6F00 CreditSprites2 (sprite lists).
+@res tables/credits.bin
+$6EE2 CreditBoxes
+$6EFC CreditSprites1
+$6F00 CreditSprites2
+$6F0D HiScorePage ; 0 or 1: the high scores alternate with the credits page each time the menu times out
+$6F0E c HiScoreScreen ; Show the high score table (every other time: the trail list)
+> Witness: L1 5 (c1, menu, trail1, warp).
+$6F8F c ShowAt284F ; DE = the screen address of x $28, y $4F (the menus' buffer place)
+> Witness: L1 5 (c1, menu, trail1, warp).
+$6F97 c TrailListScreen ; The six trail names in the buffer
+> Witness: L1 9 (c1, menu, trail1, warp).
+$6FAB c TrailListLines ; Print TrailList's lines
+> Witness: L1 9 (c1, menu, trail1, warp).
+$6FE9 c ReturnByte ; A lone RET (no caller)
+> Known only from the code.
+$6FEA c HiScoreLines ; Print the five names and scores
+> Witness: L1 4 (c1, trail1, warp).
+$702A b MenuDefs 4 ; The menus: count, x, y, height, then for each item its text and its action (0 none)
+> $702A main (START $6DD1 ClearScreen, ONE/TWO PLAYERS MenuPlayers, CHOOSE CONTROL MenuControl), $703A player 1's controls (KEYBOARD, KEMPSTON, EXIT), $704A, $7056 player 2's (KEYBOARD, SINCLAIR), $7062 player 1's keys, $707E player 2's keys (five items each, RedefineKey), $709A PLAYER ONE, $70A2 PLAYER TWO (titles).
+@res tables/menus.bin
+$703A MenuControls1
+$704A MenuControls2a
+$7056 MenuControls2
+$7062 MenuKeys1
+$707E MenuKeys2
+$709A MenuPlayerOne
+$70A2 MenuPlayerTwo
+$70AA t MenuTexts ; The front end's texts: two bytes (their centring and width, written by InitTextWidths), the characters, |
+> "]" moves the print to x $78 (the key's column). $FF ends the list.
+@res texts/menu.bin
+$720C c MenuBox ; Set the box from a menu (IY): x, y, item count; the line spacing $10 (or $0E for six or more items)
+> Witness: L1 35 (c1, kb, menu, trail1, warp).
+$723B c MenuBoxDraw ; Clear the buffer and draw the menu's frame
+> Witness: L1 31 (c1, kb, menu, trail1, warp).
+$725F c MenuBoxFrame ; The frame (FrameBox) at the box's place
+> Witness: L1 31 (c1, kb, menu, trail1, warp).
+$728C c MenuBoxClear ; Clear the box's attributes
+> Witness: L1 4 (menu).
+$729E c MenuShowDissolve ; The box into the screen by Dissolve
+> Witness: L1 4 (c1, trail1, warp).
+$72A8 c MenuShow ; The box into the screen by ShowBuffer
+> Witness: L1 25 (kb, menu, warp).
+$72B2 c MenuBoxScreen ; DE = the screen address of the box
+> Witness: L1 29 (c1, kb, menu, trail1, warp).
+$72C5 b LineSpacing ; The menu's line spacing (lines)
+$72C6 c MenuItems ; Print the menu's item texts, one under another
+> Witness: L1 31 (c1, kb, menu, trail1, warp).
+$7320 c MenuRedraw ; Draw the menu (MenuDraw) and show it
+> Witness: L1 19 (kb, menu, warp).
+$7326 c MenuOpen ; Draw a menu, show it and run the menu loop again
+> Witness: L1 4 (menu).
+$732F c MenuDraw ; The box, the frame and the items of the menu at IY
+> Witness: L1 31 (c1, kb, menu, trail1, warp).
+$7340 c MenuTick ; The title tune's interrupt hook: count TuneTimer, run the menu
+> TuneHook calls it every frame while the title tune plays (c1: 5388 runs); it counts TuneTimer (MenuTimer), checks the keys and returns to the tune player.
+> Witness: L1 5389 (c1, empty, fuel, kb, menu, trail1, trails, warp).
+$7368 c MenuTimer ; TuneTimer + 1; Z when its low byte wraps
+> Witness: L1 5704 (c1, empty, fuel, kb, menu, trail1, trails, warp).
+$7373 c WaitNoKey ; Wait until no key and no fire
+> Witness: L1 71024 (c1, menu, trail1, warp).
+$737C c MenuLoop ; The menu: highlight, the title tune, keys up and down, select
+> Starts TunePlay with tune 0 and TuneHook = MenuTick; after a key stops it, the loop moves the highlight (any key the next item), SPACE/fire selects (MenuDispatch); TuneTimer reaching $8000 goes back to Title, $0400 to the high scores.
+> Witness: L1 6 (c1, menu, trail1, warp).
+$73FD c ClearMenuSpare ; MenuSpare ($6725) = 0: a byte written here and read by no one
+> Witness: L1 31 (c1, empty, fuel, kb, menu, trail1, trails, warp).
+$7402 c AnyKey ; Carry when any key or the Kempston's fire is down
+> Witness: L1 76684 (c1, empty, fuel, kb, menu, trail1, trails, warp).
+$741F c SelectKey ; Carry when SPACE, ENTER or the Kempston's fire is down
+> Witness: L1 22 (c1, empty, fuel, kb, menu, trail1, trails, warp).
+$7439 c Highlight ; Colour the current item's line with A
+> Witness: L1 35 (c1, menu, trail1, warp).
+$746D c ItemPtr ; IX = the current item's place in the menu (IY): HL its text
+> Witness: L1 62 (c1, empty, fuel, kb, menu, trail1, trails, warp).
+$7489 c MenuDispatch ; Jump to the current item's action
+> Witness: L1 16 (c1, empty, fuel, kb, menu, trail1, trails, warp).
+$7493 c MenuMain ; Show the main menu again
+> Witness: L1 2 (menu).
+$74A4 c MenuControl ; CHOOSE CONTROL: one player's menu, or both players' in turn
+> Witness: L1 2 (menu).
+$74EA c MenuKeys1Select ; Player 1's keyboard: Kempston off, redefine
+> Witness: L1 1 (menu).
+$74F7 c MenuKeys2Select ; Player 2's keyboard: Sinclair off, redefine
+> Witness: L1 1 (menu).
+$751F c RedefineKey ; Highlight a key's line, wait for a key, store it, print it
+> Witness: L1 10 (menu).
+$7542 c ReadNewKey ; Wait for a key that is not one in use: its index in KeyStates (0-39)
+> Witness: L1 10 (menu).
+$7563 c KeySlot ; HL = the player's key slot for the current item (KeyIndexes)
+> Witness: L1 10 (menu).
+$757F w PlayerTexts 2 ; The texts of the main menu's players item: ONE PLAYER, TWO PLAYERS
+$7583 c MenuPlayers ; ONE / TWO PLAYERS: toggle PlayerCount and the item's text
+> Witness: L1 1 (menu).
+$75A7 c ChooseKempston ; Player 1: Kempston on
+> Witness: L1 1 (menu).
+$75AD c ChooseKeys1 ; Set KeyboardFlag1 (no caller)
+> Known only from the code.
+$75B3 c ChooseSinclair ; Player 2: Sinclair on
+> Witness: L1 1 (menu).
+$75B9 c ShowBufferAt ; HALT, copy the buffer (HL) to the screen (DE), $6E0 bytes
+> Witness: L1 181 (c1, empty, fuel, kb, menu, trail1, trails, warp).
+$75C0 c InitTextWidths ; Measure each of MenuTexts and store its centring offset and width
+> Witness: L1 1 (c1).
+$7600 c PrintAt ; Print at H = x, L = y
+> Witness: L1 130 (c1, empty, fuel, kb, menu, trail1, trails, warp).
+$7608 c Print ; Print the text at IX up to |, through the current draw mode
+> " " moves 6 pixels, "]" moves to x $78, " ! . are glyphs $5B, $56, $6F; digits are big sprites $99-$A2 (the buffer's line above), a-j sprites $8D-$96, letters A-Z sprites $1E-$37. Each character's advance + 2.
+> Witness: L1 35677 (c1, empty, fuel, kb, menu, trail1, trails, warp).
+$767D c FillAttrs ; Fill a box of attributes: A the byte, H/L the x/y, B columns, C rows
+> Witness: L1 506 (c1, empty, fuel, kb, menu, trail1, trails, warp).
+$769E c AttrAddr ; HL = the attribute address of SpriteX / SpriteY (AttrBase)
+> Witness: L1 2408 (c1, empty, fuel, kb, menu, trail1, trails, warp).
+$76C5 c PixelMask ; A = the bit of SpriteX within its byte
+> Witness: L1 24644 (c1, empty, fuel, kb, trail1, trails, warp).
+$76D3 c ModeNone ; Draw mode 0: RET (measure only)
+> Witness: L1 109241 (c1, empty, fuel, kb, trail1, trails, warp).
+$76D4 c ModeOrScreen ; OR a sprite onto the screen (no mode word picks it)
+> Known only from the code.
+$76F3 c ModeCopyScreen ; Copy a sprite onto the screen
+> Witness: L1 5961 (c1, empty, fuel, kb, trail1, trails, warp).
+$7711 c ModeXorScreen ; XOR a sprite onto the screen
+> Witness: L1 9938 (c1, empty, fuel, kb, trail1, trails, warp).
+$773D c MenuSpriteAttrs ; Read the attributes of a menu picture (MenuGfx): AttrSrc, AttrWidth, AttrHeight; call the attribute mode
+> Witness: L1 1902 (c1, empty, fuel, kb, trail1, trails, warp).
+$777A c ModeAttrsNone ; RET
+> Witness: L1 1902 (c1, empty, fuel, kb, trail1, trails, warp).
+$777B c ModeAttrsCopy ; Copy a picture's attributes (no mode word picks it)
+> Known only from the code.
+$779C c ClearPixels ; Clear the screen's pixels
+> Witness: L1 22 (c1, empty, fuel, kb, trail1, trails, warp).
+$77AA c ClearTopHalf ; Clear the screen's top half (96 lines)
+> Witness: L1 32 (c1, empty, fuel, kb, trail1, trails, warp).
+$77B3 c ClearBottomHalf ; Clear the lower half
+> Witness: L1 18 (c1, empty, fuel, kb, trail1, trails, warp).
+$77D2 c FillAllAttrs ; Fill all 24 attribute rows with A
+> Witness: L1 32 (c1, empty, fuel, kb, trail1, trails, warp).
+$77DB c FillAttrsBase ; Fill the 768 attributes at AttrBase with A
+> Witness: L1 24 (c1, empty, fuel, kb, trail1, trails, warp).
+$77EA c DetectKempston ; KempstonOn = 1 unless one of 255 reads of port 31 gives all five bits set (no interface: the bus floats to $FF)
+> Witness: L1 1 (c1).
+$7803 c BuildRowAddrs ; Fill RowAddrs with the 192 lines' screen addresses
+> Witness: L1 1 (c1).
+$7817 c ModeCopyBuffer ; Copy a sprite into the buffer (22 bytes a line)
+> Witness: L1 12596 (c1, empty, kb, trail1, trails, warp).
+$7837 c ModeXorBuffer ; XOR a sprite into the buffer
+> Witness: L1 7920 (c1, empty, fuel, kb, menu, trail1, trails, warp).
+$7859 c BuildBufferRows ; Fill BufferRows: 80 offsets of 22
+> Witness: L1 1 (c1).
+$7873 c InitListWidths ; Fill both trail lists' item heights and advances from the sprites
+> For each item of TrailListA and TrailListB: the sprite header (through the item's animation record when flags bits 3-7 are set); +2 (y) becomes the height when 0, +3 the advance. Before each trail (c1: 15 runs).
+> Witness: L1 16 (c1, empty, fuel, kb, trail1, trails, warp).
+$787C c InitList ; One list (HL)
+> Witness: L1 32 (c1, empty, fuel, kb, trail1, trails, warp).
+$78E3 c BigPrint ; Draw mode 8: a sprite scaled by BigScaleX / BigScaleY, ORed or cleared
+> Witness: L1 637 (c1, empty, fuel, kb, trail1, trails, warp).
+$7946 c BigByte ; One sprite byte, scaled
+> Witness: L1 8452 (c1, empty, fuel, kb, trail1, trails, warp).
+$7972 c BigPlot ; One scaled pixel: OR the mask in or clear it
+> Witness: L1 58569 (c1, empty, fuel, kb, trail1, trails, warp).
+$798C c CopyTrailName ; Copy the trail's 11-character name over the dots after "TRAIL NO." (TrailNameSlot)
+> Witness: L1 16 (c1, empty, fuel, kb, trail1, trails, warp).
+$79A9 c TrailAttrs ; Colour a half's playfield with the trail's attribute (TrailInks): 22 x 5 cells at IX; trails 3 and 6 (Icebergs, Swamp) add a blue row (9) at IY
+> Witness: L1 34 (c1, empty, fuel, kb, trail1, trails, warp).
+$79D4 b TrailInks ; The playfield's attribute of each trail: $30, $20, $78, $30, $20, $30
+$79DA w TrailNamePtrs 1 ; The six trail names' addresses
+$79E6 t TrailTexts ; "TRAIL NO.|", the slot "...........|" (TrailNameSlot) and the six names (11 characters, no |)
+$79F0 TrailNameSlot
+@res texts/trails.bin
+
+@module scores ; The high score table and the name entry; the clock, the finish, the score, the lap, EXTENDED PLAY, TIME OUT
+@about The score is five ASCII digits a player (Scores $6948 / $694D): one point up for each $1000 of distance forwards ($D789 bit 12 changing, ScoreUpP1 / ScoreUpP2), one down backwards, and at the trail's end the time bonus counted in by TrailEnd with the EXTENDED PLAY sound. The clock (Clock $D6C9-$D6CB, three ASCII digits) counts up once a second of passes (ClockTick); a trail ends at the finish (both riding players past FinishDistance) or at TIME OUT when the clock reaches the trail's maximum (MaxTimes: 60, 60, 60, 40, 50, 50). After the game CheckHiScore compares each score with the table HiScores and runs the name entry for a place.
+$7A3E c CheckHiScore ; After a game: each player's score into the table when it beats a row, with the name entry
+> Player 1 against the five rows (HiCompare); in a two-player game player 2 too. A place: NameEntry with the player's reader (ReadP1 $7BBE or ReadP2 $7BC2) patched into ReadControlJump. Called through JpCheckHiScore by GameEntry's outer loop after each game (c1: 4 runs, 2 places).
+> Witness: L1 4 (c1, kb, trail1, warp).
+$7A7E c NameEntry ; Insert the score at its row (moving the rows below down), then enter the name on a letter grid
+> A the row (HiCompare). The scores and names below move down by LDDR, the score goes in, the name is blanked; the screen shows the table, the grid of letters A-Z, space and the end mark (4 rows of 7), a cursor moved by the player's controls (left/right/up/down), fire takes the letter under it into the name; the end mark returns.
+> Witness: L1 5 (c1, kb, trail1, warp).
+$7BA2 c ReadControl ; Wait for the controls to be released, then pressed: A the bits
+> Witness: L1 260961 (kb, warp).
+$7BB8 c ReadControlRaw ; Scan the keyboard, then the player's reader
+> Witness: L1 336036 (kb, warp).
+$7BBB ReadControlJump ; JP ReadP1 or ReadP2 (the operand patched by CheckHiScore)
+$7BBE ReadP1 ; A = Controls1
+$7BC2 ReadP2 ; A = Controls2
+$7BC6 NameSelect ; fire: the letter under the cursor into the name, or the end
+$7BFE c NameCursor ; Colour the cursor's 2 x 2 cells with A
+> Witness: L1 22 (kb, warp).
+$7C07 c ShowBufferPlace ; Show the buffer at the screen place H = x, L = y
+> Witness: L1 28 (c1, empty, fuel, kb, menu, trail1, trails, warp).
+$7C11 c ScreenAddrHL ; SpriteX = H, SpriteY = L, HL = the screen address (ScreenAddr)
+> Witness: L1 112 (c1, empty, fuel, kb, menu, trail1, trails, warp).
+$7C1C c NameScreen ; The name entry's screen: the score, the name, "HI SCORE", the colours
+> Witness: L1 4 (kb, warp).
+$7C71 c HiCompare ; Compare a score (HL) with the five rows (DE): Z when it beats none, else A = 5 - the row
+> Witness: L1 10 (c1, kb, trail1, warp).
+$7C91 b TrailsLeftover ; 11 bytes before the trails' records, read by no one ($E1 $79 $C9 ...: code-like leftovers)
+
+@module trails ; The six trails: the records, the object lists, the animated objects
+@about A trail is a record of three words (TrailRecords for trails 1-4, Trail5 $EE84, Trail6 $60AC copied from $F230 by GameEntry): list A (the ground and the obstacles the ATV rides over and hits), list B (the scenery behind: drawn after the ATV's ground test, so it never stops it), and the length; FinishDistance = the length - $48. A list is items of six bytes in order of distance: +0 the distance word, +2 y (0: the sprite's height, filled by InitListWidths), +3 the advance (filled by InitListWidths), +4 the sprite number and +5 the flags (bit 0 mirrored, bits 1-3 the draw mode: 1 deferred to DeferredA, 2 to DeferredB); flags bits 4-7 set make +4/+5 the address of an animation record instead. $FF at +1 ends a list. List A scrolls with the distance (Distance $D789-$D78B, a step of speed x 128 a pass), list B at an eighth of it ($D78E-$D790, speed x 16).
+$7C9C b TrailRecords 6 ; Trails 1-4: list A, list B, length
+> Read by SelectTrail ($EC9C) as TrailRecords + 6 x Trail (c1: trail 1; trails: trails 1-2; warp: 3-4).
+@res trails/trails14.bin
+$7CB4 b Trail1ListA 6 ; Trail 1's list A (the ground and obstacles)
+@res trails/trails14.bin
+$7D34 b Trail2ListA 6 ; Trail 2's list A
+@res trails/trails14.bin
+$7E20 b Trail3ListA 6 ; Trail 3's list A
+@res trails/trails14.bin
+$7F00 b Trail4ListA 6 ; Trail 4's list A
+@res trails/trails14.bin
+$7F80 b Trail1ListB 6 ; Trail 1's list B (the scenery)
+@res trails/trails14.bin
+$7FB2 b Trail2ListB 6 ; Trail 2's list B
+@res trails/trails14.bin
+$7FEA b Trail3ListB 6 ; Trail 3's list B
+@res trails/trails14.bin
+$800A b Trail4ListB 6 ; Trail 4's list B
+@res trails/trails14.bin
+$8042 b AnimRecords ; The animation records of trails 1-4's animated objects
+> An item whose flags have bits 4-7 set points here: +0 the sprite, +1 the flags, +2 the object's id (AnimObject keeps a list of 30 seen ids), then the record's own bytes (the frames and the motion), up to $FF.
+@res trails/trails14.bin
+$807B t TrailsTextLeftover ; "REGROUND|": a text no code prints (a leftover of "FOREGROUND" or "BACKGROUND")
+@module render
+$8080 b RenderVars ; The renderer's and the controls' variables
+> In the image $8080-$80B2 hold "UND|" (the end of TrailsTextLeftover's "REGROUND|") and an older copy of KeyChars with c, e and s for CAPS SHIFT, ENTER and SYMBOL SHIFT: SetupIm2 writes the vector, ClearKeys the key states before any read.
+$8080 Im2Jump ; JP Interrupt: every byte of the IM 2 table ($FE00-$FF00) is $80, so the vector is $8080 (SetupIm2 writes the JP)
+$8084 AttrBase ; the attribute area the attribute routines write ($5800, $5821 for the top half, $59A1 for the bottom)
+$8086 KempstonOn ; 1: player 1 uses the Kempston joystick
+$8087 Keyboard1Alt ; nonzero: player 1's keys are the Sinclair keys 6-0 in a two-player game (no menu item sets it; ChooseKeys1)
+$8088 SinclairOn ; 0: player 2 uses the keyboard, 1 the Sinclair joystick (keys 6-0)
+$8089 JoyBits ; the Kempston's five bits ORed in by ScanKeys
+$808A FillByte ; FillAttrs's attribute byte
+$808B KeyStates ; 40 bytes, 1 for a key held: the eight half-rows from CAPS SHIFT-V to SPACE-B, five keys each, bit 0 first
+$80B3 KeyChars ; the 40 keys' characters for the menus ("_" a key that cannot be chosen: CAPS SHIFT, ENTER, SYMBOL SHIFT, SPACE)
+$80DB SpriteX ; x in pixels (a word for the trail lists: the item's distance minus the scroll)
+$80DD SpriteY ; y, counted up from the bottom line
+$80DF ScreenBase ; the screen's base address for ScreenAddr ($4000, or $4021 / $48A1 in play)
+$80E5 DestAddr ; the buffer or screen address a draw mode writes
+$80E7 SpriteNum ; the sprite number
+$80E8 SpriteData ; the sprite's bytes
+$80EA MaskData ; a mask sprite's bytes (the masked modes)
+$80F2 SpriteWidth ; width in bytes
+$80F3 SpriteHeight ; height in lines
+$80F4 ShiftPtr ; the address of the sprite's shift byte (header +3)
+$80F6 SpriteAdvance ; the sprite's advance (header +2)
+$80F7 AttrDest ; the attribute modes' destination
+$80F9 AttrSrc ; a picture's attributes
+$80FB AttrWidth
+$80FC AttrHeight
+$80FF LineCount ; ShiftBytesRight / ShiftBytesLeft's line counter
+$8100 ShiftCount ; ShiftLeftBy / ShiftRightBy's bit counter
+$8109 KeyIndexes1 ; player 1's five keys (KeyStates indexes: left, right, up, down, jump): S, D, F, C, Z
+$810E KeyIndexes2 ; player 2's: H, J, K, M, B
+$8113 Controls1 ; player 1's control bits this pass: 4 left, 3 right, 2 up, 1 down, 0 jump
+$8114 Controls2 ; player 2's
+$8115 ClipWidth ; the bytes drawn of a clipped sprite
+$8118 ClipSkip ; the bytes skipped of a clipped sprite's lines
+$811A ClipCode ; PlaceItem's verdict: 0 inside, 1 beyond the right edge, 2 before the left edge, 3 cut at the right, 4 cut at the left
+$811B ListBase ; the trail list being walked
+$811D ListIndexPtr ; the address of the list's index word (DistanceIndex / ScenIndex)
+$811F ListScroll ; the list's scroll (the distance)
+$8121 ItemFlags ; the item's draw flags: bit 0 attributes too, bits 1-4 the mask's offset, bit 5 defer to DeferredB, bit 6 defer to DeferredA, bit 7 masked
+$8122 PlayerIndex ; 0 player 1, 1 player 2: whose pass this is
+$8123 SeenCount ; the animated objects stepped this pass (AnimObject; at most 30)
+$8124 SeenIds ; their ids: an object seen twice in a pass (both players) moves once
+$8142 SavedSp ; SP while ClearBuffer pushes zeros
+$8144 BufferBase ; the buffer being drawn ($F03C or $F71C)
+$8146 DeferredA ; deferred sprites drawn before the ATV: the next free offset, $8148 the count, $8149 items of 8 bytes (x, y, advance, sprite, routine, clip code, flags)
+$81E9 DeferredB ; deferred sprites drawn after the ATV: offset, count ($81EB), items from $81EC
+$828C DeferredAttrs ; deferred attribute copies: offset, count ($828E), items of 7 bytes from $828F
+$82F8 ModeVector ; the draw mode word in use (DrawModes or ListModes)
+$82FA AttrModeVector ; the attribute mode word in use
+$82FC SpriteCall ; the sprite routine SpriteGo calls (GameSprite, MenuSprite)
+$82FE c GfxTable ; The renderer's jump table; the first entry JP ScreenAddr
+> The entries at $8307, $830A, $834F, $835E, $8361 and $8367 are called by no one (known only from the code).
+> Witness: L1 3662 (c1, empty, fuel, kb, menu, trail1, trails, warp).
+$8301 c JpNextLineHL ; JP NextLineHL
+> Witness: L1 26033 (c1, empty, fuel, kb, trail1, trails, warp).
+$8304 c JpNextLineDE ; JP NextLineDE
+> Witness: L1 63950 (c1, empty, fuel, kb, menu, trail1, trails, warp).
+$8307 c JpPrevLineHL ; JP PrevLineHL
+> Known only from the code: no recording runs it.
+$830A c JpPrevLineDE ; JP PrevLineDE
+> Known only from the code: no recording runs it.
+$830D c JpClearKeys ; JP ClearKeys
+> Witness: L1 417838 (c1, empty, fuel, kb, menu, trail1, trails, warp).
+$8310 c JpScanKeys ; JP ScanKeys
+> Witness: L1 137129 (c1, empty, fuel, kb, menu, trail1, trails, warp).
+$8313 c JpGameSpriteAt ; JP GameSpriteAt
+> Witness: L1 15850 (c1, empty, fuel, kb, trail1, trails, warp).
+$8316 c JpGameSprite ; JP GameSprite
+> Witness: L1 60204 (c1, empty, fuel, kb, menu, trail1, trails, warp).
+$8319 c JpMenuSpriteAt ; JP MenuSpriteAt
+> Witness: L1 49 (c1, empty, fuel, kb, trail1, trails, warp).
+$831C c JpMenuSprite ; JP MenuSprite
+> Witness: L1 51 (c1, empty, fuel, kb, menu, trail1, trails, warp).
+$831F c JpMultiply ; JP Multiply
+> Witness: L1 878 (c1, empty, fuel, kb, menu, trail1, trails, warp).
+$8322 c JpP1Left ; JP P1Left
+> Witness: L1 24779 (c1, empty, fuel, kb, menu, trail1, trails, warp).
+$8325 c JpP1Right ; JP P1Right
+> Witness: L1 24779 (c1, empty, fuel, kb, menu, trail1, trails, warp).
+$8328 c JpP1Up ; JP P1Up
+> Witness: L1 24779 (c1, empty, fuel, kb, menu, trail1, trails, warp).
+$832B c JpP1Down ; JP P1Down
+> Witness: L1 24779 (c1, empty, fuel, kb, menu, trail1, trails, warp).
+$832E c JpP1Jump ; JP P1Jump
+> Witness: L1 24779 (c1, empty, fuel, kb, menu, trail1, trails, warp).
+$8331 c JpP2Left ; JP P2Left
+> Witness: L1 24779 (c1, empty, fuel, kb, menu, trail1, trails, warp).
+$8334 c JpP2Right ; JP P2Right
+> Witness: L1 24779 (c1, empty, fuel, kb, menu, trail1, trails, warp).
+$8337 c JpP2Up ; JP P2Up
+> Witness: L1 24779 (c1, empty, fuel, kb, menu, trail1, trails, warp).
+$833A c JpP2Down ; JP P2Down
+> Witness: L1 24779 (c1, empty, fuel, kb, menu, trail1, trails, warp).
+$833D c JpP2Jump ; JP P2Jump
+> Witness: L1 24779 (c1, empty, fuel, kb, menu, trail1, trails, warp).
+$8340 c JpCopyBufferP1 ; JP CopyBufferP1
+> Witness: L1 5351 (c1, empty, fuel, kb, trail1, trails, warp).
+$8343 c JpCopyBufferP2 ; JP CopyBufferP2
+> Witness: L1 814 (kb).
+$8346 c JpCopyLines ; JP CopyLines
+> Witness: L1 181 (c1, empty, fuel, kb, menu, trail1, trails, warp).
+$8349 c JpClearBufferP1 ; JP ClearBufferP1
+> Witness: L1 5437 (c1, empty, fuel, kb, menu, trail1, trails, warp).
+$834C c JpClearBufferP2 ; JP ClearBufferP2
+> Witness: L1 813 (kb).
+$834F c JpAttrAddrPlay ; JP AttrAddrPlay
+> Known only from the code: no recording runs it.
+$8352 c JpBufferAddr ; JP BufferAddr
+> Witness: L1 72650 (c1, empty, fuel, kb, menu, trail1, trails, warp).
+$8355 c JpFlushAttrs ; JP FlushAttrs
+> Witness: L1 6160 (c1, empty, fuel, kb, trail1, trails, warp).
+$8358 c JpFlushDeferredA ; JP FlushDeferredA
+> Witness: L1 6160 (c1, empty, fuel, kb, trail1, trails, warp).
+$835B c JpFlushDeferredB ; JP FlushDeferredB
+> Witness: L1 6160 (c1, empty, fuel, kb, trail1, trails, warp).
+$835E c JpDeferA ; JP DeferA
+> Known only from the code: no recording runs it.
+$8361 c JpDeferB ; JP DeferB
+> Known only from the code: no recording runs it.
+$8364 c JpWalkList ; JP WalkList
+> Witness: L1 12323 (c1, empty, fuel, kb, trail1, trails, warp).
+$8367 c JpPlaceClipped ; JP PlaceClipped
+> Known only from the code: no recording runs it.
+$836A c JpSpriteGo ; JP SpriteGo
+> Witness: L1 593 (c1, empty, fuel, kb, trail1, trails, warp).
+$836D w ListModes 1 ; The trail lists' draw modes: OR, OR clipped, masked, masked mirrored, masked XOR, masked clipped
+> +0 OrBuffer, +2 OrBufferClip, +4 MaskBuffer, +6 MaskMirror, +8 MaskBufferAlt, +10 MaskBufferClip. PlaceClipped picks by ClipCode and ItemFlags bit 7.
+$8379 c MaskFromLeft ; A = SpriteX AND 7 XOR 7 + 1 bits set from the left (no caller)
+> Known only from the code.
+$838A c MaskFromRight ; A = SpriteX AND 7 + 1 bits set from the right (no caller)
+> Known only from the code.
+$8399 c ScreenAddr ; HL = the screen address of SpriteX / SpriteY (y up from the bottom, RowAddrs) + ScreenBase
+> Witness: L1 19561 (c1, empty, fuel, kb, menu, trail1, trails, warp).
+$83E5 c Multiply ; HL = A x E (8 x 8 bits)
+> Witness: L1 71671 (c1, empty, fuel, kb, menu, trail1, trails, warp).
+
+@module menu
+$83F9 c P1UsesJoystick ; Carry: player 1 reads the Kempston; else NZ: the Sinclair keys (two players and Keyboard1Alt)
+> Witness: L1 123895 (c1, empty, fuel, kb, menu, trail1, trails, warp).
+$840C c P1Left ; Carry when player 1's left is held (the key KeyIndexes1+0, Kempston bit 1)
+> Witness: L1 24779 (c1, empty, fuel, kb, menu, trail1, trails, warp).
+$842D c P1Right ; Player 1's right (KeyIndexes1+1, Kempston bit 0)
+> Witness: L1 24779 (c1, empty, fuel, kb, menu, trail1, trails, warp).
+$844E c P1Up ; Player 1's wheel up (KeyIndexes1+2, Kempston bit 3)
+> Witness: L1 24779 (c1, empty, fuel, kb, menu, trail1, trails, warp).
+$846F c P1Down ; Player 1's wheel down (KeyIndexes1+3, Kempston bit 2)
+> Witness: L1 24779 (c1, empty, fuel, kb, menu, trail1, trails, warp).
+$8490 c P1Jump ; Player 1's jump (KeyIndexes1+4, Kempston fire, bit 4)
+> Witness: L1 24779 (c1, empty, fuel, kb, menu, trail1, trails, warp).
+$84B1 c P2Left ; Player 2's left: KeyIndexes2+0, or key 6 with the Sinclair joystick
+> Witness: L1 24779 (c1, empty, fuel, kb, menu, trail1, trails, warp).
+$84C8 SinclairLeft ; key 6
+$84CF c P2Right ; Player 2's right: KeyIndexes2+1 or key 7
+> Witness: L1 24779 (c1, empty, fuel, kb, menu, trail1, trails, warp).
+$84E6 SinclairRight ; key 7
+$84ED c P2Up ; Player 2's wheel up: KeyIndexes2+2 or key 9
+> Witness: L1 24779 (c1, empty, fuel, kb, menu, trail1, trails, warp).
+$8504 SinclairUp ; key 9
+$850B c P2Down ; Player 2's wheel down: KeyIndexes2+3 or key 8
+> Witness: L1 24779 (c1, empty, fuel, kb, menu, trail1, trails, warp).
+$8522 SinclairDown ; key 8
+$8529 c P2Jump ; Player 2's jump: KeyIndexes2+4 or key 0
+> Witness: L1 24779 (c1, empty, fuel, kb, menu, trail1, trails, warp).
+$8540 SinclairFire ; key 0
+
+@module render
+$8547 c CopyBlockUnused ; Copy a sprite's lines into the buffer (no caller)
+> Known only from the code.
+$8567 c XorBlockUnused ; XOR a sprite into the buffer, another copy of ModeXorBuffer (no caller)
+> Known only from the code: no recording runs it.
+
+@module menu
+$858A c ClearKeys ; Zero KeyStates and JoyBits
+> Witness: L1 417838 (c1, empty, fuel, kb, menu, trail1, trails, warp).
+$859C c ScanKeys ; Read the eight half-rows into KeyStates (1 a key held) and OR the Kempston's bits into JoyBits
+> Ports $FEFE to $7FFE, five bits each; then IN 31. Called each frame by the interrupt in the front end and each pass in play.
+> Witness: L1 137129 (c1, empty, fuel, kb, menu, trail1, trails, warp).
+
+@module render
+$85D0 c NextLineHL ; HL one screen line down
+> Witness: L1 26033 (c1, empty, fuel, kb, trail1, trails, warp).
+$85DF c NextLineDE ; DE one screen line down
+> Witness: L1 571630 (c1, empty, fuel, kb, menu, trail1, trails, warp).
+$85EE c PrevLineHL ; HL one screen line up (no caller)
+> Known only from the code.
+$85FF c PrevLineDE ; DE one screen line up (no caller)
+> Known only from the code.
+$8610 c GameSpriteAt ; DestAddr = the screen address; GameSprite
+> Witness: L1 15850 (c1, empty, fuel, kb, trail1, trails, warp).
+$8616 c GameSprite ; Draw in-game sprite SpriteNum (GameGfx): the header, the shift, the draw mode
+> No sprite past the bank's count. HL = $8F5C + the word at $8F60 + 2 x SpriteNum: SpriteHeader.
+> Witness: L1 182385 (c1, empty, fuel, kb, menu, trail1, trails, warp).
+$8637 c MenuSpriteAt ; DestAddr = the screen address; MenuSprite
+> Witness: L1 49 (c1, empty, fuel, kb, trail1, trails, warp).
+$863D c MenuSprite ; Draw front-end picture SpriteNum (MenuGfx)
+> Witness: L1 4165 (c1, empty, fuel, kb, menu, trail1, trails, warp).
+$865F c SpriteHeader ; Read a sprite's header (width, height, advance, shift) and shift it to SpriteX's bit offset; call the draw mode
+> HL the header. +0 SpriteWidth, +1 SpriteHeight, +2 Advance, +3 the shift now in the bytes (ShiftPtr), +4 the bytes. When SpriteX AND 7 differs from the shift, ShiftLeftBy / ShiftRightBy move the bytes right or left the short way (up to 4 bits) and stores the new shift: the bank is shifted in place, on demand, and stays so. Then JP (the word at ModeVector).
+> Witness: L1 186550 (c1, empty, fuel, kb, menu, trail1, trails, warp).
+$86C4 c ShiftBytesRight ; Move every line's bytes one byte right (the last byte dropped, a zero in)
+> Witness: L1 9604 (c1, empty, fuel, kb, menu, trail1, trails, warp).
+$86F7 c ShiftBytesLeft ; Move every line's bytes one byte left
+> Witness: L1 9353 (c1, empty, fuel, kb, menu, trail1, trails, warp).
+$871E c RotateSpriteLeft ; Shift the sprite's bytes one bit left (the whole width)
+> Witness: L1 61189 (c1, empty, fuel, kb, menu, trail1, trails, warp).
+$8742 c RotateSpriteRight ; Shift the sprite's bytes one bit right
+> Witness: L1 61101 (c1, empty, fuel, kb, menu, trail1, trails, warp).
+$8759 c ShiftLeftBy ; Shift A bits left, a byte along when the shift wraps
+> Witness: L1 30797 (c1, empty, fuel, kb, menu, trail1, trails, warp).
+$8777 c ShiftRightBy ; Shift A bits right
+> Witness: L1 29358 (c1, empty, fuel, kb, menu, trail1, trails, warp).
+$8799 c AttrAddrPlay ; HL = the attribute address of SpriteX / SpriteY in the play area (80 lines, AttrBase)
+> Witness: L1 1902 (c1, empty, fuel, kb, trail1, trails, warp).
+$87C4 c BufferAddr ; HL = the buffer address of SpriteX / SpriteY (BufferRows, BufferBase)
+> Witness: L1 113665 (c1, empty, fuel, kb, menu, trail1, trails, warp).
+$87F1 c MaskBufferAlt ; Masked draw: (buffer AND NOT mask) XOR sprite
+> Witness: L1 643 (c1, empty, fuel, kb, trail1, trails, warp).
+$8822 c MaskBufferClip ; Masked draw of a clipped sprite (ClipWidth bytes a line)
+> Witness: L1 1336 (c1, empty, fuel, kb, trail1, trails, warp).
+$8862 c MaskBuffer ; Masked draw: (buffer OR mask) XOR sprite
+> Witness: L1 10697 (c1, empty, fuel, kb, trail1, trails, warp).
+$8891 c MaskMirror ; Masked draw mirrored: the bytes and their bits reversed
+> Witness: L1 1631 (c1, fuel, trail1, trails, warp).
+$8906 c FlushDeferredA ; Draw DeferredA's sprites (before the ATV)
+> Witness: L1 6160 (c1, empty, fuel, kb, trail1, trails, warp).
+$8913 c FlushDeferredB ; Draw DeferredB's sprites (after the ATV)
+> Witness: L1 6160 (c1, empty, fuel, kb, trail1, trails, warp).
+$894C c DeferAttrs ; An item with attributes: its picture's attributes into DeferredAttrs
+> Witness: L1 1902 (c1, empty, fuel, kb, trail1, trails, warp).
+$896D c CopyAttrs ; Copy one deferred attribute block to the screen
+> Witness: L1 1902 (c1, empty, fuel, kb, trail1, trails, warp).
+$8995 c FlushAttrs ; Copy every deferred attribute block
+> Witness: L1 6160 (c1, empty, fuel, kb, trail1, trails, warp).
+$89C6 c AddDeferredAttr ; Append the attribute variables to DeferredAttrs
+> Witness: L1 1902 (c1, empty, fuel, kb, trail1, trails, warp).
+$89F8 c DeferA ; Append the sprite's variables to DeferredA
+> Witness: L1 5379 (c1, empty, fuel, kb, trail1, trails, warp).
+$8A0F c DeferB ; Append the sprite's variables to DeferredB
+> Witness: L1 182 (warp).
+$8A49 c AnimObject ; An animated item: take its sprite and flags from its record and step the record's motions once a pass
+> IY the item, IX its record: +0 sprite, +1 flags, +2 id, then up to three motions of (period, counter): the distance (+3/+4, step in +7's high nibble), y (+5/+6, step in +7's low nibble) and the sprite (+8 period and step, +9 counter). A counter's bit 7 is the direction; it turns at the period. A motion with period $FF ends the record, 0 skips it. Each id moves once a pass (SeenIds). Trails 1-4: c1 4449 runs.
+> Witness: L1 4985 (c1, empty, fuel, kb, trail1, trails, warp).
+$8A90 c ListOverflow ; More than 30 animated objects in a pass: blue border, hang
+> Known only from the code.
+$8A97 AnimNewId ; the id into SeenIds
+$8BA0 c PlaceClipped ; Draw an item by its clip code: whole (OrBuffer / MaskBuffer), cut at the right or at the left
+> Witness: L1 41015 (c1, empty, fuel, kb, trail1, trails, warp).
+$8CB2 c SpriteGo ; JP (SpriteCall)
+> Witness: L1 110989 (c1, empty, fuel, kb, trail1, trails, warp).
+$8CB6 c LoadMask ; MaskData = the sprite (SpriteNum + the flags' mask offset)'s bytes
+> Witness: L1 1979 (c1, empty, fuel, kb, trail1, trails, warp).
+$8CDA c CopyBufferP1 ; Copy BufferP1 to the screen's top half ($4021)
+> Witness: L1 5351 (c1, empty, fuel, kb, trail1, trails, warp).
+$8CE6 c CopyBufferP2 ; Copy BufferP2 to the bottom half ($48A1)
+> Witness: L1 814 (kb).
+$8CF2 c CopyLines ; Copy BC bytes from HL to the screen at DE, 22 a line (22 LDIs), DE down a line each
+> Witness: L1 507680 (c1, empty, fuel, kb, menu, trail1, trails, warp).
+$8D28 c ClearBufferP1 ; Zero BufferP1 by PUSH (SP from $F71C down)
+> Witness: L1 5437 (c1, empty, fuel, kb, menu, trail1, trails, warp).
+$8D32 c ClearBufferP2 ; Zero BufferP2 (SP from $FDFC)
+> Witness: L1 813 (kb).
+$8D3C ClearByPush ; 80 x 11 pushes of zero
+$8D53 c OrBuffer ; OR a sprite into the buffer
+> Witness: L1 41154 (c1, empty, fuel, kb, menu, trail1, trails, warp).
+$8D76 c OrBufferClip ; OR a clipped sprite into the buffer
+> Witness: L1 11497 (c1, empty, fuel, kb, trail1, trails, warp).
+$8DA3 c WalkList ; Draw a trail list: skip the items behind, draw the ones on screen, stop at the first beyond
+> ListBase the list, ListIndexPtr its index word (the first item not yet behind), ListScroll the distance. From the index item each item goes through PlaceItem: 2 (behind the left edge) moves the index on by 6, 1 (beyond the right edge) ends the walk; drawn items go to PlaceClipped or a deferred list by ItemFlags. Twice a pass a player (DistanceIndex for list A, ScenIndex for list B).
+> Witness: L1 12323 (c1, empty, fuel, kb, trail1, trails, warp).
+$8E2B c NextIndex ; The index word + 6
+> Witness: L1 272 (c1, fuel, kb, trail1, trails, warp).
+$8E3C c PlaceItem ; Set up an item: its sprite (or AnimObject's), flags, y, advance; x = its distance - ListScroll; the clip code
+> A = 0 inside, 1 beyond the right (x > $AF), 2 behind the left, 3 / 4 cut at an edge. A y below the sprite's height is a broken list: ItemTooLow.
+> Witness: L1 67402 (c1, empty, fuel, kb, trail1, trails, warp).
+$8EB2 ItemTooLow ; red border, SP = $6334, JP Restart (known only from the code)
+$8EBC c PlaceItemDead ; Two instructions no path reaches (SpriteY = SpriteHeight)
+> Known only from the code.
+$8EC2 c PlaceItemX ; x and the clip code
+> Witness: L1 67402 (c1, empty, fuel, kb, trail1, trails, warp).
+$8F26 b GfxLeftover ; 54 bytes before the bank: code no path reaches, a leftover of an earlier build (it calls $9475, $9523 and reads $63F3)
+$8F5C b GameGfx 16 ; The in-game sprite bank: 203 sprites (the ATV, the rider, the ground pieces, the obstacles, the scenery, the font, the digits)
+> +0 the count (203), +1 the bank's length word ($471E: it ends at $D67A), +3 zero, from +4 a word a sprite: its header's offset from $8F5C. Headers as SpriteHeader reads them; the shift byte (+3) is 0 in the image and changes in play. Twelve gaps of two or four bytes between sprites and the 54 bytes $D67A-$D6AF after the last are bytes no offset reaches (the end of a sprite's bytes in an older bank).
+> ZXDB POKE 49433,81 ("infinite fuel") writes $51 over byte 46 of sprite 126 ($C119, its line 7): a pixel byte, no effect on the fuel (recording pokes).
+@res sprites/game.bin
+
+@module loop ; The entry's jumps, the game's variables, the main loop with its 7-frame wait, the interrupt
+@about GameEntry ($D7D6) copies the tune player and trail 6 out of the buffers' way, sets up IM 2 (I = $FE, a table of $80 bytes, the vector $8080 = JP Interrupt) and runs the outer loop: Title, NewGame, CheckHiScore. NewGame clears the scores and runs the trails: Pass ($D851) is one pass of the game for both players, then it waits until the interrupt has counted FrameCount up to 7, so a pass is always 7 frames (7.14 passes a second) when its work fits. Interrupt ($D9D2) counts the frames in play and plays the engines' tones; in the front end (FrameCount $FF) it reads the controls.
+$D6B0 c EntryJumps ; JP GameEntry; JP Restart
+> The loader enters at $D6B0 (c1 frame 14 100); ItemTooLow jumps to Restart at $D6B3.
+> Witness: L1 1 (c1).
+$D6B3 RestartJump
+$D6B6 b LoopVars ; The game's variables
+$D6B6 TrailListA ; the trail's list A (SelectTrail)
+$D6B8 TrailListB ; the trail's list B
+$D6BA SavedSp0 ; SP at the entry
+$D6BC FrameCount ; frames counted by Interrupt since the pass began; $FF in the front end (the interrupt reads the controls instead)
+$D6BE Riding ; the players still in: bit 0 player 1, bit 1 player 2
+$D6BF Trail ; the trail, 0-5
+$D6C0 FinishDistance ; the trail's length - $48: a player whose distance reaches it has finished
+$D6C2 HudY ; the half's HUD line ($BE top, 6 bottom)
+$D6C3 PassControls ; the current player's controls this pass
+$D6C4 GroundY ; the ground under the ATV's wheels (GroundUnder): the higher of $D6C5 (rear) and $D6C6 (front); $D6C7 under the nose, $D6C8 the nose's line
+$D6C9 Clock ; the clock: three ASCII digits; the last one counts passes (ClockTick), not seconds
+$D6CA ClockTens
+$D6CB ClockUnits
+$D6CC MaxTime ; the trail's maximum: the clock's first two digits at TIME OUT ("60" = 600 passes)
+$D6CF MaxTimes ; each trail's maximum: "60", "60", "60", "40", "50", "50"; "30" in the second round (ShowMaxTime)
+$D6DB c GameTable ; The game's jump table; the first entry JP TrailEnd
+> The entries at $D6DE, $D6ED, $D6F0, $D6F3, $D6FC, $D702, $D705 and $D708 are called by no one (known only from the code; $D702 is JP $0000).
+> Known only from the code: no recording runs it.
+$D6DE c JpNewGame ; JP NewGame
+> Known only from the code: no recording runs it.
+$D6E1 c JpLoadRecordP1 ; JP LoadRecordP1
+> Witness: L1 16 (c1, empty, fuel, kb, trail1, trails, warp).
+$D6E4 c JpLoadRecordP2 ; JP LoadRecordP2
+> Witness: L1 2 (kb).
+$D6E7 c JpSaveRecordP1 ; JP SaveRecordP1
+> Witness: L1 16 (c1, empty, fuel, kb, trail1, trails, warp).
+$D6EA c JpSaveRecordP2 ; JP SaveRecordP2
+> Witness: L1 2 (kb).
+$D6ED c JpStop ; JP Stop
+> Known only from the code: no recording runs it.
+$D6F0 c JpAccelerate ; JP Accelerate
+> Known only from the code: no recording runs it.
+$D6F3 c JpSlowDown ; JP SlowDown
+> Known only from the code: no recording runs it.
+$D6F6 c JpShowMaxTime ; JP ShowMaxTime
+> Witness: L1 16 (c1, empty, fuel, kb, trail1, trails, warp).
+$D6F9 c JpShowClock ; JP ShowClock
+> Witness: L1 16 (c1, empty, fuel, kb, trail1, trails, warp).
+$D6FC c JpClockTick ; JP ClockTick
+> Known only from the code: no recording runs it.
+$D6FF c JpShowBars ; JP ShowBars
+> Witness: L1 18 (c1, empty, fuel, kb, trail1, trails, warp).
+$D702 c JpNothing ; JP $0000
+> Known only from the code: no recording runs it.
+$D705 c JpPlayers ; JP Players
+> Known only from the code: no recording runs it.
+$D708 c JpPrintShadow ; JP PrintShadow
+> Known only from the code: no recording runs it.
+$D70B c JpSetupIm2 ; JP SetupIm2
+> Witness: L1 10 (c1, empty, fuel, kb, menu, trail1, trails, warp).
+
+@module vehicle ; The ATV and its rider: the records, the controls, speed, steering, wheelies, jumps, the ground, crashes, tumbling, the rider on foot, mounting, fuel
+@about Each player has a record of 50 bytes (RecordP1 $D70E, RecordP2 $D740); the pass copies it to Record ($D772) and back. The ATV moves along the trail by Distance (speed x 128 a pass), never sideways: Left and Right are the throttle in the facing direction (Accelerate, up to speed level 21) and the brake against it (SlowDown by 2); at a standstill the brake turns the ATV round (the riderless frame $5C while it turns). Up lifts the nose (WheelieUp, 10 passes of WheelieTimer), Down drops it; Jump sets an upward speed from $FD less the slope. GroundUnder scans the buffer's pixels under the wheels: the ground is whatever list A drew there. A drop of 7 or more lines on landing or a step of $15 crashes (Crash): under speed 10 the ATV stops, 10-14 it stops and throws the rider, 15 and up it tumbles (Tumble, 24 passes) and throws the rider. The thrown rider lands lying ($77); Jump stands him up; on foot Left / Right walk him (3 pixels a pass) and Jump jumps; landing on the ATV from behind while facing its way remounts (MountCheck). Fuel ($2000 at each trail) drops by speed x 2 a moving pass; the FUEL bar loses 4 pixels each $400; under $400 the ATV is out of fuel (OutOfFuel: never reached in the recordings).
+$D70E b RecordP1 ; Player 1's record (50 bytes, Record's fields), copied in and out each pass
+$D740 b RecordP2 ; Player 2's record
+$D772 b Record ; The current player's record
+$D772 RiderJump ; the rider's jump on foot: 0 on the ground, 1-7 its phase (RiderJumpTable)
+$D773 VSpeed ; the ATV's vertical speed: $FD-$F8 rising (negative), 1-5 falling (FallSteps)
+$D774 Mounted ; 1 the rider is on the ATV, 0 on foot
+$D775 AtvFrame ; the ATV's sprite: $38-$45 nose up by steps of 2, $46-$4E nose down, $5C riderless, $7D-$87 tumbling
+$D776 Facing ; 0 right, 1 left
+$D777 AtvX ; the ATV's x on screen
+$D778 AtvHeight ; its height above the bottom line
+$D779 PrevHeight ; the height a pass ago ($D77A two passes ago)
+$D77B Speed ; the speed level, 0-21
+$D77C Fuel ; the fuel word ($2000 full; empty under $400)
+$D77E SpeedBarLen ; the SPEED bar's drawn length
+$D77F FuelBar ; the FUEL bar's end x ($90 + the length)
+$D780 JumpLatch ; 1 while jump is held (one jump a press)
+$D781 TurnLeft ; 1 while the ATV turns round to the left
+$D782 TurnRight ; 1 while it turns to the right
+$D783 RiderFrame ; the rider's sprite: 0-8 walking, $18 jumping, $59 riding, $5E-$64 thrown, $77 lying
+$D784 RiderFacing ; 0 right, 1 left
+$D785 RiderX ; the rider's x
+$D786 RiderHeight ; the rider's height
+$D787 RiderSavedX ; the rider's x a pass ago (put back when he walks into a step)
+$D788 RiderSavedHeight
+$D789 Distance ; the distance along the trail, 24 bits ($D789 the fraction)
+$D78A TrackPos ; the distance's whole part: list A's scroll; FinishCheck compares it with FinishDistance
+$D78C DistanceIndex ; list A's index (WalkList)
+$D78E Scenery ; list B's scroll, 24 bits
+$D78F SceneryPos ; its whole part
+$D791 ScenIndex ; list B's index
+$D795 WheelieTimer ; passes the nose stays up after Up or a jump
+$D797 TumbleCount ; passes of tumbling (0 none)
+$D798 FallPhase ; the rider's fall when thrown at a step (FallRider: no recording)
+$D799 ThrowSpeed ; the thrown rider's flight: $F8 - speed / 8 up, then down
+$D79A EngineNote ; bit 7 the engine's tone on, bits 0-4 the passes to the next change (EngineTimer)
+$D79B Bonus ; the time bonus, counted into the score at the trail's end
+$D79D LapTime ; the clock at the finish (three digits)
+$D7A0 GroundBelowRider ; the ground under the rider
+$D7A4 b BeeperByte ; The last byte sent to port $FE (bit 4 the speaker), toggled by Click
+$D7A5 Finished ; the players past the finish: bit 0 player 1, bit 1 player 2
+$D7A6 SecondRound ; 1 after trail 6: the trails again with 30 as every maximum
+$D7A7 RecordTemplate ; a new record (InitRecords): frame $38, x $48, fuel $2000, the bars, the engine 1, lap "000"; its last three bytes are GameEntry's first instruction
+
+@module entry ; The entry: the copies out of the buffers' way, the initialisation, IM 2
+@about The 40000-byte block fills $6338-$FF77, so the game keeps work areas inside its own image: BufferP1 ($F03C-$F71B) lies over trail 6 as loaded ($F230), BufferP2 ($F71C-$FDFB) over the tune player ($F850-$FDFA). GameEntry first copies the tune player to $5B00-$60AB (Title and TrailEnd copy it back before a tune) and trail 6 to $60AC-$6335, just under the image, then the stack goes to $FFDC (the loader's place).
+$D7D6 c GameEntry ; Copy the tune player and trail 6 out, initialise, set IM 2, then the outer loop: Title, NewGame, CheckHiScore
+> Entered from the loader's JP $D6B0 (c1 frame 14 100). LDIR $F850-$FDFA to $5B00 ($5AB bytes), $F230-$F4B9 to $60AC ($28A bytes); DI, SP = $FFDC, Init, SetupIm2.
+> Witness: L1 1 (c1).
+$D7ED Restart ; the restart after ItemTooLow: SP, Init, SetupIm2, the outer loop
+$D7FB OuterLoop ; AttrBase = $5800, Title, NewGame, CheckHiScore, again
+
+@module loop
+$D80D c NewGame ; A game: trail 1, scores "00000", the riding mask from Players; each trail: select, intro, panels, then Pass until the finish or TIME OUT
+> Trail = 0, SecondRound = 0, Riding = 1 or 3 (PlayerCount); LoadIntro; then for each trail SelectTrail, FrameCount = $FF, InitListWidths, InitRecords, TrailIntro, ShowHud, ClearKeys, EI, and the passes. TrailEnd jumps back to NextTrail ($D82F).
+$D82F NextTrail
+$D851 Pass ; One pass: the controls, the clock, both players' updates, then wait for 7 frames; the finish and TIME OUT
+> FrameCount = 0, ReadP1Controls, ReadP2Controls, ClearKeys, ClockTick, Players; then the wait loop on FrameCount (c1: 30 269 229 runs of $D86B over 5081 passes). Both players' Finished bits set (as Riding) end the trail (TrailEnd); the clock's first digit equal to MaxTime's: TIME OUT for both (TimeOut), then TrailEnd when someone finished, else 250 frames and the game ends.
+> Witness: L1 7 (c1, empty, fuel, kb, trail1, trails, warp).
+$D86B WaitFrames
+$D88A c RecordFieldP1 ; A = RecordP1's field +9 (speed), Z when 0
+> Witness: L1 5351 (c1, empty, fuel, kb, trail1, trails, warp).
+$D890 c RecordFieldP2 ; A = RecordP2's field +9
+> Witness: L1 3592 (c1, empty, fuel, kb, trail1, trails, warp).
+$D8C3 c Init ; Controls off (player 2 on the keyboard... SinclairOn = 1), DetectKempston, the row tables, the text widths, FrameCount = $FF
+> Witness: L1 1 (c1).
+$D8ED c SetupIm2 ; IM 2: I = $FE, the table $FE00-$FF00 all $80, JP Interrupt at $8080
+> Witness: L1 20 (c1, empty, fuel, kb, menu, trail1, trails, warp).
+$D911 c ReadP1Controls ; Controls1 = player 1's five tests as bits (4 left, 3 right, 2 up, 1 down, 0 jump)
+> Witness: L1 24779 (c1, empty, fuel, kb, menu, trail1, trails, warp).
+$D942 c ReadP2Controls ; Controls2 from player 2's tests
+> Witness: L1 24779 (c1, empty, fuel, kb, menu, trail1, trails, warp).
+$D974 c RecordField ; A = (IX + DE), Z when 0
+> Witness: L1 123050 (c1, empty, fuel, kb, trail1, trails, warp).
+$D97C c EngineSound ; Both players' engine tones (from Interrupt each frame in play)
+> For each record with the rider mounted (+2) and a speed (+9): three bursts of a square wave whose half-period is $1E - speed + 1 (Tone): the pitch rises with the speed.
+> Witness: L1 47176 (c1, empty, fuel, kb, trail1, trails, warp).
+$D987 c EngineOne ; One record's engine tone
+> Witness: L1 94352 (c1, empty, fuel, kb, trail1, trails, warp).
+$D99E c Tone ; B bursts of a tone: Click, a delay of C x 3 loops
+> Witness: L1 159723 (c1, empty, fuel, kb, trail1, trails, warp).
+$D9AF c Noise ; C clicks with random delays (Random): the thump of a landing
+> Witness: L1 1530 (c1, empty, fuel, kb, trail1, trails, warp).
+$D9C1 SpeakerOff ; port $FE = 0, A = $FF
+$D9C7 c Click ; Toggle the speaker bit in BeeperByte and send it
+> Witness: L1 161253 (c1, empty, fuel, kb, trail1, trails, warp).
+$D9D2 c Interrupt ; The IM 2 handler: in play count FrameCount and sound the engines; in the front end read both players' controls
+> Saves every register. FrameCount < $FF: +1, ScanKeys, EngineSound. $FF: Controls1 = Controls2 = 0, ScanKeys, ReadP1Controls, ReadP2Controls. c1: 58 177 interrupts.
+> Witness: L1 60445 (c1, empty, fuel, kb, menu, trail1, trails, warp).
+$DA01 c AbortKey ; Restart the game when key 0 (KeyStates+15) is down: FrameCount = $FF, SP = $FFDA, JP NewGame
+> No jump reaches it (the handler's two paths jump over it to $DA14): a debug or abort key left in. Known only from the code.
+$DA14 InterruptEnd
+
+@module vehicle
+$DA1E c EngineTimer ; Step the engine note's timer: at speed, every 1 or 2 passes (speed under 3) flip the tone bit
+> Witness: L1 6162 (c1, empty, fuel, kb, trail1, trails, warp).
+$DA4F c PassP1 ; Player 1's pass: the top half (BufferP1 to $4021), the record in, the update, the copy, the record out
+> ScreenBase $4021, BufferBase $F03C, AttrBase $5821, ClearBufferP1, HudY $BE, LoadRecordP1, SlowDown when finished, PassControls = Controls1, EngineTimer, Update, ClearKeys, Advance, CopyBufferP1, FlushAttrs, SaveRecordP1 (c1: 5081 passes).
+> Witness: L1 5349 (c1, empty, fuel, kb, trail1, trails, warp).
+$DA8F c PassP2 ; Player 2's pass: the bottom half (BufferP2 to $48A1)
+> Witness: L1 813 (kb).
+$DACC c Update ; A player's update: draw list A, the ATV's physics, the controls, the jump, the rider, the tumble, list B, the deferred sprites and the ATV, the finish
+> Clears the deferred lists; WalkList over list A at Distance; EngineSound; AtvPhysics; Controls; unless riderless: JumpControl, RiderUpdate, Tumble; WalkList over list B at Scenery; FlushDeferredA, DrawAtvAndRider, FlushDeferredB; then the finish test (FinishCheck).
+$DB34 FinishCheck ; past FinishDistance: the Finished bit; the first time the lap time and the bonus; "LAP TIME" and "EXTENDED PLAY"
+> Bonus = ((MaxTime - the clock) / 2 + 1) x (Trail + 1) + 1, the clock read as a number (DigitsValue). trail1: the finish at frame (see NOTES).
+> Witness: L1 6162 (c1, empty, fuel, kb, trail1, trails, warp).
+
+@module scores
+$DBB0 c DigitsValue ; HL = the number of the three ASCII digits at IX
+> Witness: L1 20 (kb, trails, warp).
+
+@module render
+$DBD1 c ClipY ; A = y; clip a sprite at the play area's top (y $50): drop the lines above it
+> Witness: L1 19368 (c1, empty, fuel, kb, trail1, trails, warp).
+$DBE2 c ClipTop ; Cut the sprite's lines above the play area
+> Witness: L1 70 (c1, fuel, kb, trail1, trails, warp).
+$DC0D b TumbleOffsets ; The tumbling ATV's height offsets (6 bytes)
+$DC13 c AtvY ; The ATV sprite's y from its height and frame (the tumble's offsets, the nose-down frames' WheelOffsets)
+> Witness: L1 6160 (c1, empty, fuel, kb, trail1, trails, warp).
+$DC6E c RiderY ; The rider sprite's y from his height
+> Witness: L1 6160 (c1, empty, fuel, kb, trail1, trails, warp).
+$DC82 c DrawAtvAndRider ; DrawAtv, then DrawRider
+> Witness: L1 6160 (c1, empty, fuel, kb, trail1, trails, warp).
+$DC88 c DrawAtv ; The ATV: body and wheels, mirrored when it faces left
+> Witness: L1 6160 (c1, empty, fuel, kb, trail1, trails, warp).
+$DD45 c DrawAtvUnused ; Four instructions after DrawAtv's left-facing path that no jump reaches: x + 8, sprite $79, JP Wheels
+> Known only from the code.
+$DD55 c Wheels ; The wheels under the body for the upright frames ($38-$4F)
+> Witness: L1 6160 (c1, empty, fuel, kb, trail1, trails, warp).
+$DD84 c WheelY ; The wheels' y
+> Witness: L1 7048 (c1, empty, fuel, kb, trail1, trails, warp).
+$DD96 c DrawRider ; The rider: walking, riding, thrown or lying, mirrored by RiderFacing
+> Witness: L1 6160 (c1, empty, fuel, kb, trail1, trails, warp).
+
+@module vehicle
+$DE2A RiderDrawn ; DrawRider's return point (pushed before the masked draw)
+$DE2B RiderSave ; RiderSavedHeight / RiderSavedX = now (RiderUpdate pushes it as its return)
+$DE38 c RiderUpdate ; The rider each pass: on foot (RiderOnFoot, RiderGround) or mounted (RiderMounted)
+> Witness: L1 6161 (c1, empty, fuel, kb, trail1, trails, warp).
+$DE59 RiderMounted ; the riding pose; a fall when the ground under the rider is far below (no recording)
+$DE7A c RiderPose ; The mounted rider's pose from the ATV's frame (RidePoses)
+> Witness: L1 2030 (c1, empty, fuel, kb, trail1, trails, warp).
+$DEEC b RidePoses ; The mounted rider's sprite for each ATV frame
+$DF18 c RiderPoseY ; The rider's height on the ATV
+> Witness: L1 2030 (c1, empty, fuel, kb, trail1, trails, warp).
+$DF37 c RiderOnFoot ; The rider walks against a step: back to his last x; jumps or falls to the ground
+> Witness: L1 3910 (c1, empty, fuel, kb, trail1, trails, warp).
+$DF7B RiderLand ; on the ground: RiderJump = 0, the standing frame
+$DF91 c UseFuel ; Fuel - speed x 2; the FUEL bar shrinks by a nibble each $400; under $400 OutOfFuel
+> fuel: the bar from $B0 down to $90 in 8 steps. Recording empty (the fuel's high byte POKEd to 5 at frame 567) runs out at frame 767: OutOfFuel ran 83 times, "OUT OF FUEL" is printed, the two SlowDowns a moving pass leave the ATV crawling forward while the throttle is held (screens 000939-after to 002269-end); only the clock ends the run.
+> Witness: L1 1582 (c1, empty, fuel, kb, trail1, trails, warp).
+$DFBC FuelEmptyTest ; AND $FC, Z: out of fuel (the ZXDB POKE 57276 puts a RET here)
+$DFCD c FuelBarStep ; clear the bar's last 4 pixels (6 lines)
+> Witness: L1 135 (c1, empty, fuel, kb, trail1, trails, warp).
+$DFE6 OutOfFuel ; the bar at its start, SlowDown twice; once per player: "OUT OF FUEL" (ZXDB POKE 57318 puts a RET here: an empty tank no longer brakes)
+$E011 c Advance ; Move along the trail by the speed in the facing direction, use fuel
+> Speed under 2: no move. Forwards: Distance + speed x 128, Scenery + speed x 16 (ForwardList, ForwardScenery); backwards the same down. Each $1000 of Distance crossed scores a point up forwards, down backwards (ScoreStep).
+> Witness: L1 6179 (c1, empty, fuel, kb, trail1, trails, warp).
+$E030 c BackList ; Distance - speed x 128; at 0 the trail's start: stop
+> Witness: L1 14 (c1, fuel, kb, trail1, trails, warp).
+$E072 c ScoreDown ; One point off the current player's score
+> Witness: L1 7 (fuel, kb, warp).
+$E07D c BackScenery ; Scenery - speed x 16
+> Witness: L1 14 (c1, fuel, kb, trail1, trails, warp).
+$E0A3 c ForwardList ; Distance + speed x 128
+> Witness: L1 1568 (c1, empty, fuel, kb, trail1, trails, warp).
+$E0CB c ScoreStep ; One point onto the current player's score (not after the finish)
+> Witness: L1 701 (c1, empty, fuel, kb, trail1, trails, warp).
+$E0E1 c ForwardScenery ; Scenery + speed x 16
+> Witness: L1 1568 (c1, empty, fuel, kb, trail1, trails, warp).
+$E105 c Controls ; The controls, unless the rider is falling or thrown: Left, Right, Up, MountCheck
+> Witness: L1 6161 (c1, empty, fuel, kb, trail1, trails, warp).
+$E120 c ControlLeft ; Left: riding, throttle facing left or brake facing right (a standstill turns round); on foot, walk left
+> Witness: L1 5940 (c1, empty, fuel, kb, trail1, trails, warp).
+$E1F0 c ControlRight ; Right: the same the other way
+> Witness: L1 5940 (c1, empty, fuel, kb, trail1, trails, warp).
+$E2BC c ControlUp ; Up: WheelieTimer = 10 and the nose up; at full nose-up ($44) the rider is thrown off backwards (ThrowOff: no recording)
+> Witness: L1 5940 (c1, empty, fuel, kb, trail1, trails, warp).
+$E2E2 ThrowOff
+$E308 WheelieCount
+$E312 b RiderJumpTable ; The rider's jump steps ($E314 on, rising $0A, $07, $04, $02, then falling $01...) and FallSteps ($E319: 0, 1, 2, 4, 6)
+$E319 FallSteps ; the ATV's fall per pass by VSpeed
+$E31F c GetUp ; Lying after a throw: Jump stands the rider up (on foot)
+> Witness: L1 221 (c1, fuel, kb, trail1, trails, warp).
+$E34B c JumpControl ; Jump: riding on the ground, a jump (VSpeed $FD less the climb); on foot the rider's jump
+> Witness: L1 6161 (c1, empty, fuel, kb, trail1, trails, warp).
+$E3BB c DismountUnused ; A dismount no jump reaches: on foot at the ATV's height + 3
+> Known only from the code.
+$E3D1 c RiderHeightClamp ; RiderHeight = A, at most $4F
+> Known only from the code: no recording runs it.
+$E3DD c RiderJumpStart ; The rider's jump on foot
+> Witness: L1 211 (c1, empty, fuel, kb, trail1, trails, warp).
+$E3E5 RiderJumpStep
+$E46E c MountCheck ; The rider lands on the ATV: within its x range and height, facing its way, falling, the ATV upright: mount
+> Rider x in AtvX-12..AtvX+18 (8 less facing left), height AtvHeight+4..+25, RiderFacing = Facing, RiderJump >= 5, AtvFrame $38-$4D: Mounted = 1, RiderFrame $59 (c1: 20 mounts).
+> Witness: L1 5940 (c1, empty, fuel, kb, trail1, trails, warp).
+$E4CA c InitRecords ; Both players' records from RecordTemplate
+> Witness: L1 16 (c1, empty, fuel, kb, trail1, trails, warp).
+$E4E1 c LoadRecordP1 ; Record = RecordP1
+> Witness: L1 8976 (c1, empty, fuel, kb, trail1, trails, warp).
+$E4ED c SaveRecordP1 ; RecordP1 = Record
+> Witness: L1 8965 (c1, empty, fuel, kb, trail1, trails, warp).
+$E4F9 c LoadRecordP2 ; Record = RecordP2
+> Witness: L1 1017 (kb).
+$E505 c SaveRecordP2 ; RecordP2 = Record
+> Witness: L1 1016 (kb).
+$E511 c Stop ; Speed 0 and the SPEED bar cleared
+> Witness: L1 16 (c1, fuel, kb, trail1, trails, warp).
+$E53E c SlowDown ; Speed - 2 (not under 0), the bar
+> Witness: L1 1520 (c1, empty, fuel, kb, trail1, trails, warp).
+$E54C c Accelerate ; Speed + 1, at most 21, the bar
+> Witness: L1 1819 (c1, empty, fuel, kb, trail1, trails, warp).
+$E55D c SpeedBar ; Draw the SPEED bar to the speed
+> Witness: L1 3339 (c1, empty, fuel, kb, trail1, trails, warp).
+$E5A1 c BarNibble ; A bar's 4-pixel step (6 lines)
+> Witness: L1 2205 (c1, empty, fuel, kb, trail1, trails, warp).
+$E5BA c Rise ; Rising: VSpeed + 1 towards 0, the height up by FallSteps
+> Witness: L1 6161 (c1, empty, fuel, kb, trail1, trails, warp).
+$E5E9 c Fall ; Falling: VSpeed + 1 up to 5, the height down by FallSteps
+> Witness: L1 439 (c1, empty, fuel, kb, trail1, trails, warp).
+$E61B b WheelOffsets ; The wheels' x and y offsets for each ATV frame from $38 (pairs)
+$E631 c RearX ; SpriteX = the rear wheel's x
+> Witness: L1 6161 (c1, empty, fuel, kb, trail1, trails, warp).
+$E64A c FrontX ; SpriteX = the front wheel's x (B the frame's offset)
+> Witness: L1 6161 (c1, empty, fuel, kb, trail1, trails, warp).
+$E65F b FrontXLeft ; The left-facing tail of FrontX ($32 $DB $80 $C9: LD (SpriteX),A; RET), read as data by the recordings (see NOTES)
+$E663 c Landing ; The thump of a landing: a tone and a noise, SlowDown
+> Witness: L1 153 (c1, empty, fuel, kb, trail1, trails, warp).
+$E676 c AtvPhysics ; The ATV each pass: rise or fall, the ground under the wheels, landing, the slope, crash tests
+> Not riderless. Rise; GroundUnder at the rear and the front wheel (GroundY the higher); above the ground Fall, else land (Landing when VSpeed was nonzero); a drop of 7 or more after a climb: Crash. Then the nose: the ground under the nose against the wheels gives the frame by SlopeFrames; a step of $15 or more: Crash; WheelieDown when the timer ran out or Down is held.
+> Witness: L1 6161 (c1, empty, fuel, kb, trail1, trails, warp).
+$E797 b SlopeFrames ; The frame offset for each line of slope (0-$14)
+$E7BB c FastFall ; Carry when falling at 5 lines a pass
+> Witness: L1 51 (c1, fuel, kb, trail1, trails, warp).
+$E7C5 c NoseHigh ; The nose in the air: lift the frame
+> Witness: L1 57 (c1, fuel, kb, trail1, trails, warp).
+$E7EF b SlopeTable2 ; A table of multiples of 3 no code reads ($E7AC is read: SlopeFrames' tail)
+$E7FB c OnGround ; Carry when the ATV is within 4 lines of the ground
+> Witness: L1 1696 (c1, empty, fuel, kb, trail1, trails, warp).
+$E806 c CrashIfAir ; Crash unless on the ground
+> Witness: L1 9 (c1, trails).
+$E810 c GroundUnder ; B = the height of the first ground pixel under SpriteX (a column scan of the buffer from the ATV's height + 8 down)
+> Witness: L1 12322 (c1, empty, fuel, kb, trail1, trails, warp).
+$E821 c GroundScan ; The column scan from HL down (C the pixel mask, B lines)
+> Witness: L1 24644 (c1, empty, fuel, kb, trail1, trails, warp).
+$E838 c WheelieUp ; The nose up two frames (to $44)
+> Witness: L1 378 (c1, empty, fuel, kb, trail1, trails, warp).
+$E852 c WheelieDown ; The nose down two frames
+> Witness: L1 597 (c1, empty, fuel, kb, trail1, trails, warp).
+$E86C b TumbleFrames ; The tumble's frames ($7D-$87) and heights ($E884)
+$E884 TumbleHeights
+$E89C c Tumble ; The tumble: 24 passes of TumbleFrames, slowing; then upright ($44) on the ground, stopped
+> Witness: L1 6161 (c1, empty, fuel, kb, trail1, trails, warp).
+$E90C c RiderGroundMounted ; RiderGround under the mounted rider
+> Witness: L1 2030 (c1, empty, fuel, kb, trail1, trails, warp).
+$E91C c RiderGround ; RiderGround under the rider on foot
+> Witness: L1 4131 (c1, empty, fuel, kb, trail1, trails, warp).
+$E94C c Crash ; A crash: back one step, SlowDown; under 10 stop, 10-14 stop and throw, 15 and up tumble and throw
+> c1: 19 crashes (trail1, fuel, trails: see NOTES).
+> Witness: L1 19 (c1, fuel, kb, trail1, trails, warp).
+$E991 c FallRider ; The rider falling down a step (FallPhase): no path in the recordings
+> Known only from the code.
+$E9E3 c RiderToGround ; RiderHeight - E, not below the ground
+> Witness: L1 124 (c1, fuel, kb, trail1, trails, warp).
+$E9FA c Throw ; Throw the rider off: ThrowSpeed $F8 - speed / 8, on foot
+> Witness: L1 12 (c1, fuel, kb, trail1, trails, warp).
+$EA21 c Thrown ; The thrown rider's flight: forwards 4 a pass, up then down, the tumbling frames $5E-$64; lying ($77) when he lands
+> Witness: L1 221 (c1, fuel, kb, trail1, trails, warp).
+$EAAE c FlightStep ; E = FallSteps[min(A, 5) - 1]
+> Witness: L1 221 (c1, fuel, kb, trail1, trails, warp).
+
+@module scores
+$EABF c ClockDigit ; Draw a clock digit (sprite A - $97)
+> Witness: L1 5365 (c1, empty, fuel, kb, trail1, trails, warp).
+$EAC4 c BigDigit ; Draw a HUD digit (sprite A - $A3)
+> Witness: L1 475 (c1, empty, fuel, kb, trail1, trails, warp).
+$EACF c ShowMaxTime ; MaxTime from MaxTimes (or "30" in the second round) and its digits
+> Witness: L1 16 (c1, empty, fuel, kb, trail1, trails, warp).
+$EB18 c ShowClock ; The clock's three digits
+> Witness: L1 16 (c1, empty, fuel, kb, trail1, trails, warp).
+$EB3C c ClockPlace ; The clock's place (x $60, y $66) and its draw mode
+> Witness: L1 5381 (c1, empty, fuel, kb, trail1, trails, warp).
+$EB53 c ClockTick ; Clock + 1 (the last digit each pass, carried into the others) and its digits
+> Witness: L1 5349 (c1, empty, fuel, kb, trail1, trails, warp).
+$EB59 ClockAdd ; ADD A,1: the pass's step (ZXDB POKE 60250,0, "infinite lives", makes it ADD A,0: the clock never moves, recording pokes)
+$EBA5 c ShowBars ; Fuel = $2000, the FUEL bar full, the bars' scale
+> Witness: L1 18 (c1, empty, fuel, kb, trail1, trails, warp).
+$EBCD c ScaleLeft ; A scale mark's left half
+> Witness: L1 72 (c1, empty, fuel, kb, trail1, trails, warp).
+$EBD4 c ScaleRight ; A scale mark's right half
+> Witness: L1 72 (c1, empty, fuel, kb, trail1, trails, warp).
+$EBE3 c TimeOut ; "TIME OUT" in each riding half that has not finished
+> Witness: L1 5 (c1, kb, trail1, trails, warp).
+$EC15 c TimeOutText ; "TIME OUT" at x $40, y $44
+> Witness: L1 5 (c1, kb, trail1, warp).
+$EC26 c PrintShadow ; Print the text at IX twice: XOR then OR one pixel off (a shadow)
+> Witness: L1 1162 (c1, empty, kb, trail1, trails, warp).
+$EC4E t GameTexts ; "TIME OUT|", "OUT OF FUEL|", "EXTENDED PLAY|", "LAP TIME     |" (the lap time written into its blanks)
+@res texts/game.bin
+$EC57 OutOfFuelText
+$EC63 ExtendedText
+$EC71 LapText
+
+@module loop
+$EC7F c Players ; Each riding player's pass: PassP1, PassP2
+> Witness: L1 5349 (c1, empty, fuel, kb, trail1, trails, warp).
+$EC9C c SelectTrail ; TrailListA, TrailListB and FinishDistance from the trail's record (TrailRecords, Trail5, Trail6)
+> Witness: L1 16 (c1, empty, fuel, kb, trail1, trails, warp).
+$ECE0 c TrailEnd ; The trail's end: the finish tune, the bonus counted into the scores, the next trail; after trail 6 the second round
+> Riding = Finished; the tune player back from $5B00; TunePlay tune 1 with no hook (no key stops it); SetupIm2; 50 frames; the finished halves' colour bands; CountBonus; 100 frames; Trail + 1, NextTrail. After trail 6, SecondRound = 1 and Trail = 0 (trails: 9 trail ends).
+> Witness: L1 9 (kb, trails, warp).
+$ED52 c CountBonus ; Count each finished player's Bonus into the score, a point and a tone at a time
+> Witness: L1 3611 (kb, trails, warp).
+$ED5D BonusTone
+$ED6A c BonusP1 ; Player 1's next bonus point
+> Witness: L1 3611 (kb, trails, warp).
+$ED82 c BonusP2 ; Player 2's
+> Witness: L1 3611 (kb, trails, warp).
+$ED9A c BonusDec ; Bonus - 1; Z when it was 0
+> Witness: L1 3813 (kb, trails, warp).
+$EDA7 c BandP1 ; Colour player 1's band
+> Witness: L1 9 (kb, trails, warp).
+$EDB1 c BandP2 ; Colour player 2's band
+> Witness: L1 1 (kb).
+
+@module scores
+$EDBB c ScoreUpP1 ; Player 1's score + 1 (ASCII, carried)
+> Witness: L1 4132 (c1, empty, fuel, kb, trail1, trails, warp).
+$EDC3 c ScoreUpP2 ; Player 2's score + 1
+> Witness: L1 327 (kb).
+$EDCB c ScoreDownP1 ; Player 1's score - 1
+> Witness: L1 6 (fuel, kb, warp).
+$EDD3 c ScoreDownP2 ; Player 2's score - 1
+> Witness: L1 1 (kb).
+$EE1E c ShowScoreP1 ; Player 1's score on the HUD
+> Witness: L1 9906 (c1, empty, fuel, kb, trail1, trails, warp).
+$EE2C c ShowScoreP2 ; Player 2's score
+> Witness: L1 487 (c1, fuel, kb, trail1, trails, warp).
+$EE37 c ShowScore ; The five digits at IX
+> Witness: L1 4466 (c1, empty, fuel, kb, trail1, trails, warp).
+$EE4C b ScoreLeftover ; 56 bytes no code reaches: an older copy of ShowScore and the code after it, assembled one byte lower
+
+@module trails
+$EE84 b Trail5 6 ; Trail 5 (TROPICANA): its record (list A $EE8A, list B $EF52, length $06B5), the lists and its animation records
+@res trails/trail5.bin
+$F039 b Trail5Tail ; 3 bytes after trail 5 (with the 33 before them, $F018-$F038, shaped as animation records no item points at: leftovers)
+@res trails/trail5.bin
+
+@module render
+$F03C b BufferP1 16 ; The first player's buffer, 22 x 80 bytes ($F03C-$F71B), cleared before each use; in the image: $FF and $C4 bytes of $60 (leftovers), zeros, and trail 6 from $F230
+$F101 s BufferP1Zeros ; zeros (the buffer's middle)
+$F230 b Trail6Image 6 ; Trail 6 (SWAMP) as loaded: GameEntry copies $F230-$F4B9 to $60AC, where its addresses point
+> Its record and lists; its last 147 bytes ($F427-$F4B9, the copy's $62A3-$6335) are assembler source text ("LD A,1", "JR MRIGHT", "RIGHT2:LD A,(BDIR)", "CP BOB+8"): the bytes after the trail in the developer's memory, copied along and never read.
+@res trails/trail6.bin
+$F4BA b BufferP1Byte ; one byte of the same source text after the copied range
+$F4BB s BufferP1Rest ; zeros to BufferP2
+$F71C s BufferP2 ; The second player's buffer, 22 x 80 bytes ($F71C-$FDFB): zeros in the image up to the tune player at $F850, which it overwrites in play
+
+@module sound ; The sound: the tune player (two beeper channels and drums on its own interrupt), the tunes, the effects
+@about TunePlay ($F852) plays a tune with A its number: 0 the title tune, 1 the finish tune (TuneTable, 6 bytes a tune: the sequence lists of channel A, channel B and the drums). It owns the machine while it plays: its own IM 2 table (every byte $FD, the vector $FDFD = JP TuneInterrupt), a loop that toggles the speaker for two square-wave channels from the alternate registers, and the drums from the interrupt every 12 frames. TuneInterrupt calls the hook at TuneHook: MenuTick on the title (the menu runs inside the tune), TuneKeyCheck (a key stops the tune) otherwise; TrailEnd blanks the hook so the finish tune always ends by itself. A channel's stream is notes (a byte under $80: NoteTable's period) and commands ($80 + n: 0 next sequence, 1 the note's attack off, 2 the decay, 3 the length, 4 the transposition). The effects are the game's own: Tone and Click (the engine from the interrupt, Landing's thump, the bonus count), Noise (random from the ROM).
+@code $F850-$FB71 ; the tune player, read as data by GameEntry's, Title's and TrailEnd's copies between $F850 and $5B00
+$F850 c TunePlay0 ; LD A,0: the start of an entry point for tune 0 that no one calls (Title and TrailEnd call TunePlay)
+> Known only from the code.
+$F852 c TunePlay ; Play tune A: the channels' sequences, the own IM 2 table and vector, the loop until the tune or a key ends it
+> TuneNumber ($FB57) = A; DI; the three sequence pointers from TuneTable; the attack/decay bytes reset; $FE00-$FF00 = $FD, I = $FE, IM 2, $FDFD = JP TuneInterrupt; the first sequence of each channel; then TuneLoop. Title (c1: 4) and TrailEnd (trail1, trails: 9) call it.
+> Witness: L1 15 (c1, kb, menu, trail1, trails, warp).
+$F8B5 c TuneLoop ; The two channels: count down each channel's period, toggle the speaker, read the next note or command at the end of its length
+> Witness: L1 15 (c1, kb, menu, trail1, trails, warp).
+$F8C4 ChannelAPtr ; LD HL,stream: channel A's stream pointer (the operand patched)
+$F902 ChannelAOn ; LD A,$18: the speaker byte that starts channel A's half-wave (its operand the attack's OR, patched by Envelope)
+$F90B ChannelAOff ; LD A,0: the byte that ends it (the decay's)
+$F913 ChannelBPtr ; LD HL,stream: channel B's stream pointer
+$F951 ChannelBOn ; LD A,$18: channel B's start byte
+$F95A ChannelBOff ; LD A,0: channel B's end byte
+$F876 DrumBorder ; LD A,0: the border bits the drums send (the operand read by DrumNoise and DrumHit)
+$F961 c TuneInterrupt ; The tune's IM 2 handler: count the channels' note timers, the drums every 12 frames, the hook
+> Witness: L1 6910 (c1, empty, fuel, kb, menu, trail1, trails, warp).
+$F96C TuneHook ; CALL MenuTick or TuneKeyCheck (patched by MenuLoop and TrailEnd; three zeros for none)
+$F977 c TuneKeyCheck ; Any key: stop the tune
+> Witness: L1 5388 (c1, empty, fuel, kb, menu, trail1, trails, warp).
+$F97E TuneStop ; DI, the ROM's vector (JP $0038) in TuneVector, SP and HL' as TunePlay saved them (the operands at $F986 and $F989), HL' = $2758, return to the caller
+$F98E c ChannelBCommand ; Channel B's command byte: dispatch by CommandJump
+> Witness: L1 818 (c1, kb, menu, trail1, trails, warp).
+$F9A6 b CommandPad ; one byte between the tables
+$F9A7 c ChannelACommand ; Channel A's command byte
+> Witness: L1 713 (c1, kb, menu, trail1, trails, warp).
+$F9BA c UnusedCommandA4 ; Channel A's command 4: JP SetTransposeA (no tune uses it)
+> Known only from the code.
+$F9BD c CommandEnd ; POP HL; RET: the end of channel A's command table (unreached)
+> Known only from the code.
+$F9BF c CommandsB ; Channel B's commands: decay, attack, length, next
+> Witness: L1 35 (c1, kb, menu, trail1, trails, warp).
+$FA17 c SetTransposeA ; Channel A's transposition from the stream (no tune uses it)
+> Known only from the code.
+$FA20 c SetTransposeB ; Channel B's transposition (TransposeB at $FB69)
+> Witness: L1 2 (menu).
+$FA29 c Drums ; The drums' stream, a byte every 12 interrupts or as DrumSpeed sets (from TuneInterrupt): the byte AND $7F picks 0 next sequence, 1 rest, 2 DrumUnused2, 3 DrumSpeed, 4 DrumUnused, 5 nothing, 6 DrumNoise, 7 DrumHit
+> Witness: L1 1131 (c1, kb, menu, trail1, trails, warp).
+$FA2B DrumPtr ; LD HL,stream: the drums' stream pointer (the operand patched)
+$FA3C b DrumPad ; two zero bytes after command 1's RET
+$FA3E c DrumJump2 ; Drum command 2: JP DrumUnused2 (no tune uses it)
+> Known only from the code.
+$FA41 c DrumJump3 ; Drum command 3: JP DrumSpeed
+> Witness: L1 469 (c1, kb, menu, trail1, trails, warp).
+$FA44 c DrumJump4 ; Drum command 4: JP DrumUnused (no tune uses it)
+> Known only from the code.
+$FA47 c DrumJump5 ; Drum command 5: RET (no tune uses it)
+> Known only from the code.
+$FA48 b DrumPad2 ; two zero bytes after command 5's RET
+$FA4A c DrumJump6 ; Drum commands 6 and 7: JP DrumNoise, JP DrumHit
+> Witness: L1 460 (c1, kb, menu, trail1, trails, warp).
+$FA50 c DrumUnused ; A drum sound no tune uses: 128 bytes of the ROM sent to the speaker
+> Known only from the code.
+$FA5D c DrumNoise ; A noise: the ROM's bytes from $005C sent to the speaker until a zero
+> Witness: L1 460 (c1, kb, menu, trail1, trails, warp).
+$FA6C c DrumUnused2 ; A second unused drum sound
+> Known only from the code.
+$FA7C c DrumNext ; The drums' next sequence
+> Witness: L1 63 (c1, kb, menu, trail1, trails, warp).
+$FA81 c DrumHit ; A drum: 30 clicks of a falling pitch
+> Witness: L1 193 (c1, kb, menu, trail1, trails, warp).
+$FAA9 c DrumSpeed ; The drums' speed (3 x the byte)
+> Witness: L1 469 (c1, kb, menu, trail1, trails, warp).
+$FABC c CommandJump ; Jump to the (A AND $7F)th JP after the caller
+> Witness: L1 2725 (c1, kb, menu, trail1, trails, warp).
+$FAC6 c Envelope ; The channels' note shapes: the attack and decay counters
+> Witness: L1 3180 (c1, kb, menu, trail1, trails, warp).
+$FADF EnvelopeStep ; LD A,n: the envelope's step counter, 1 to 3 (the operand patched)
+$FAF9 c NextSequenceA ; Channel A's next sequence (the list's end: the first again)
+> Witness: L1 70 (c1, kb, menu, trail1, trails, warp).
+$FB16 c NextSequenceB ; Channel B's next sequence
+> Witness: L1 54 (c1, kb, menu, trail1, trails, warp).
+$FB35 c NextSequenceD ; The drums' next sequence
+> Witness: L1 132 (c1, kb, menu, trail1, trails, warp).
+$FB56 c TuneEntry ; HL = TuneTable + 6 x TuneNumber
+> Witness: L1 71 (c1, kb, menu, trail1, trails, warp).
+$FB56 TuneNumber ; LD A,n: the tune (the operand patched by TunePlay)
+$FB64 c NoteLookup ; A = NoteTable's period for the note A + TransposeB
+> Witness: L1 1945 (c1, kb, menu, trail1, trails, warp).
+$FB68 TransposeB ; ADD A,n: channel B's transposition (the operand patched)
+$FB72 b NoteTable 15 ; The 60 notes' half-periods, highest first
+@res sound/tunes.bin
+$FBAE w TuneTable 3 ; Tune 0 (the title) and tune 1 (the finish): channel A's, channel B's and the drums' sequence lists
+@res sound/tunes.bin
+$FBBA w SequencesA0 1 ; The tunes' sequence lists (pattern addresses, 0 then the restart) and the patterns
+@res sound/tunes.bin
+$FDFD b TuneVector ; JP TuneInterrupt, written by TunePlay (zeros in the image)
+$FE00 s Im2Table ; The IM 2 table: $80 each (SetupIm2) or $FD (TunePlay), 257 bytes; zeros in the image
+$FF18 b TopLeftover 16 ; 96 bytes no code reads: system variables and stack bytes, and four glyphs of the ROM's font (A, B, C, D), from the developer's memory

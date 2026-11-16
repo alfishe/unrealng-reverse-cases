@@ -1,0 +1,14 @@
+list,x,y,x2,y2,sprite,attr,bytes
+TrailIntroBoxes,0,56,184,40,,$46,
+TrailIntroBoxes,0,48,184,40,,$06,
+CreditBoxes,56,184,160,152,,$2A,
+CreditBoxes,160,184,192,152,,$29,
+CreditBoxes,104,184,152,184,,$2D,
+CreditBoxes,104,176,152,168,,$72,
+CreditBoxes,56,152,192,152,,$72,
+CreditSprites1,64,75,,,0,,
+CreditSprites2,16,77,,,63,,
+CreditSprites2,16,77,,,62,,
+CreditSprites2,122,77,,,126,,
+CreditSprites2,122,77,,,125,,
+HiScorePage,,,,,,,00

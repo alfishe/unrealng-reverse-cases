@@ -1,0 +1,22 @@
+# The original tape (orig/ATVSimulator.tzx.zip, "ATV Simulator.tzx"), block by block: tools/mktape.py writes it from
+# this list and the files tools/build.sh makes; the build compares the result with the original byte for byte. The
+# format is in tools/mktape.py; docs/03-build-and-load.md 3.1 has the blocks. Every block is a standard-speed TZX
+# block ($10) at the ROM's timings, with the pause after it in ms.
+version 1 10
+# block 0: the BASIC's header, Program "ATV", LINE 10, its length (44) as parameter 2 (the program has no variables)
+header 1007 program ATV basic.bin 10 44
+# block 1: the BASIC (src/tape/basic.asm)
+rom 1885 basic.bin
+# block 2: the loader's header, Bytes "" (an empty name), 34 bytes at 65500 ($FFDC), parameter 2 32768 (SAVE's)
+header 1003 bytes - 34 65500 32768
+# block 3: the machine-code loader (src/loader/loader.asm)
+rom 1777 loader.bin
+# block 4: a header no one reads (the loader asks LD-BYTES for flag $FF and drops it): Bytes "", 6912 at 50000,
+# parameter 2 32800
+header 1008 bytes - 6912 50000 32800
+# block 5: the loading screen, loaded by the loader to $4000 (src/res/screens/loading.scr)
+rom 2197 res/screens/loading.scr
+# block 6: the game's header, read by no one either: Bytes "", 40000 at 25400 ($6338), parameter 2 32768
+header 1009 bytes - 40000 25400 32768
+# block 7: the game, loaded to $6338-$FF77 (src/game/game.asm)
+rom 0 game.bin

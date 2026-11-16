@@ -1,0 +1,40 @@
+# The tunes (TunePlay $F852), in byte order ('#' starts a comment):
+#   notes N ...                      NoteTable: the half-periods of notes 0-59
+#   tune A=SEQ B=SEQ D=SEQ           TuneTable: a tune's sequence lists for channel A, channel B and the drums
+#                                    (tune 0 the title, tune 1 the finish)
+#   seq NAME PAT ...                 a sequence list: the patterns in turn; the 0 end mark is written after them
+#                                    (NextSequenceA/B/D start the list again)
+#   chan NAME TOKEN ...              a channel pattern: nN a note (NoteTable index, plus the transposition), len N
+#                                    the note length (x 3, command $83), env N the envelope (command $82), mute
+#                                    (command $81), tr N the transposition ($84), next (command $80: the next
+#                                    pattern; it ends the pattern)
+#   drum NAME TOKEN ...              a drum pattern, a byte every 12 interrupts (or as speed sets; Drums uses
+#                                    the byte AND $7F, the tunes set bit 7): next ($80, ends the pattern), rest
+#                                    ($81), d2 ($82, DrumUnused2), speed N ($83: N x 3 interrupts a byte), d4
+#                                    ($84, DrumUnused), d5 ($85, nothing), noise ($86, DrumNoise), hit N ($87,
+#                                    DrumHit, N its pitch); any other byte is written $XX
+#   bytes HEX                        bytes no list reaches
+notes 238 225 212 200 189 178 168 159 150 142 134 126 119 112 106 100 94 89 84 79 75 71 67 63 59 56 53 50 47 44 42 39 37 35 33 31 29 28 26 25 23 22 21 19 18 17 16 15 14 14 13 12 11 11 10 9 9 8 8 7
+tune A=SeqFBBA B=SeqFBEC D=SeqFC0A
+tune A=SeqFD7E B=SeqFD82 D=SeqFD86
+seq SeqFBBA PatFC0E PatFC2B PatFC0E PatFC46 PatFC0E PatFC2B PatFC0E PatFC46 PatFC0E PatFC2B PatFC0E PatFC46 PatFC0E PatFC2B PatFC0E PatFC46 PatFC0E PatFC2B PatFC0E PatFC46 PatFC0E PatFC2B PatFC0E PatFC46
+seq SeqFBEC PatFC61 PatFC86 PatFC61 PatFCA7 PatFC61 PatFC86 PatFC61 PatFCA7 PatFD4D PatFCC8 PatFDF7 PatFD4D PatFCC8 PatFDF4
+seq SeqFC0A PatFD62
+chan PatFC0E env 3 len 4 n4 len 4 n16 len 1 n4 mute n4 mute n16 mute len 6 n4 len 4 n16 len 2 n4 n16 n4 n16 next
+chan PatFC2B len 4 n1 len 4 n13 len 1 n1 mute n1 mute n13 mute len 6 n1 len 4 n13 len 2 n1 n13 n1 n13 next
+chan PatFC46 len 4 n0 len 4 n12 len 1 n0 mute n0 mute n12 mute len 6 n0 len 4 n12 len 2 n0 n12 n0 n12 next
+chan PatFC61 env 3 len 1 n23 mute n23 mute n23 mute n23 mute n20 mute n20 mute n23 mute n23 mute n23 mute n23 mute n23 mute n23 mute n20 mute n20 mute n23 mute n23 mute next
+chan PatFC86 n20 mute n20 mute n20 mute n20 mute n16 mute n16 mute n20 mute n20 mute n20 mute n20 mute n20 mute n20 mute n16 mute n16 mute n20 mute n20 mute next
+chan PatFCA7 n19 mute n19 mute n19 mute n19 mute n16 mute n16 mute n19 mute n19 mute n19 mute n19 mute n19 mute n19 mute n16 mute n16 mute n19 mute n19 mute next
+chan PatFCC8 env 4 len 1 n16 n28 n16 n28 n16 n28 n16 n28 n16 n28 n16 n28 n16 n28 n16 n28 n16 n28 n16 n28 n16 n28 n16 n28 n16 n28 n16 n28 n11 n23 n13 n25 n13 n25 n13 n25 n13 n25 n13 n25 n13 n25 n13 n25 n13 n25 n13 n25 n13 n25 n13 n25 n13 n25 n13 n25 n13 n25 n13 n25 n13 n25 n13 n25 n16 n28 n16 n28 n16 n28 n16 n28 n16 n28 n16 n28 n16 n28 n16 n28 n16 n28 n16 n28 n16 n28 n16 n28 n16 n28 n16 n28 n11 n23 n12 n24 n12 n24 n12 n24 n12 n24 n12 n24 n12 n24 n12 n24 n12 n24 n12 n24 n12 n24 n12 n24 n12 n24 n12 n24 n12 n24 n12 n24 n12 n24 n12 n24 next
+chan PatFD4D env 4 len 28 n28 len 2 n35 len 34 n25 len 28 n28 len 2 n35 len 34 n24 next
+drum PatFD62 speed 4 noise speed 2 noise noise speed 4 hit 50 speed 2 noise speed 6 noise speed 2 noise noise speed 4 hit 50 hit 30 next
+seq SeqFD7E PatFD8C
+seq SeqFD82 PatFDBA
+seq SeqFD86 PatFD62 PatFDF0
+chan PatFD8C env 3 len 4 n2 len 4 n14 len 1 n2 mute n2 mute n14 mute len 6 n2 len 4 n14 len 2 n2 n14 n4 n14 len 8 n2 len 1 n3 n4 n5 n6 n7 n8 n9 n10 len 8 n14 $85 next
+chan PatFDBA env 3 len 1 n21 mute n21 mute n21 mute n21 mute n18 mute n18 mute n21 mute n21 mute n21 mute n21 mute n21 mute n21 mute n18 mute n18 mute n21 mute n21 mute len 8 n9 len 1 n10 n11 n12 n13 n14 n15 n16 n17 len 8 n21 $85 next
+drum PatFDF0 speed 255 rest next
+chan PatFDF4 tr 0 next
+chan PatFDF7 tr 2 next
+bytes 008700

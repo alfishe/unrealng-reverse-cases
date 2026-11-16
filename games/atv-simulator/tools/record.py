@@ -456,7 +456,32 @@ def plan_pokes(r):
     r.shot('end')
 
 
-PLANS = {'c1': plan_c1, 'menu': plan_menu, 'kb': plan_kb, 'trails': plan_trails, 'trail1': plan_trail1, 'warp': plan_warp, 'fuel': plan_fuel, 'pokes': plan_pokes}
+def plan_empty(r):
+    """empty: from c1's menu.szx, START (one player, Kempston), the clock stopped by the ZXDB POKE 60250,0; ride_smart
+    for 400 frames (on the ATV), then the fuel's high byte `$D77D` POKEd to 5 (from $20 at the start: the tank all
+    but empty) and ride_smart until the fuel is under $400 (UseFuel's test `$DFBC`, OutOfFuel `$DFE6`) and 1500
+    frames more, a screen at each fuel step and every 150 frames after it ran out"""
+    to_menu(r)
+    start_game(r)
+    r.poke('lives')
+    r.wait(150)
+    ride_smart(r, 400, 'ride', every=10 ** 6)
+    r.lab.write(FUEL, bytes([5]))
+    r.pokes.append({'frame': r.lab.frame, 'address': f'${FUEL:04X}', 'bytes': [5], 'why': 'fuel all but empty'})
+    r.shot('fuel-05')
+    start, last = r.lab.frame, 5
+    while r.lab.frame - start < 6000 and r.rd(FUEL)[0] >= 4:
+        ride_smart(r, 70, 'ride', every=10 ** 6)
+        f = r.rd(FUEL)[0]
+        if f != last:
+            r.shot(f'fuel-{f:02d}')
+            last = f
+    r.shot('empty')
+    ride_smart(r, 1500, 'after', every=150)
+    r.shot('end')
+
+
+PLANS = {'c1': plan_c1, 'menu': plan_menu, 'kb': plan_kb, 'trails': plan_trails, 'trail1': plan_trail1, 'warp': plan_warp, 'fuel': plan_fuel, 'pokes': plan_pokes, 'empty': plan_empty}
 
 def main():
     ap = argparse.ArgumentParser()

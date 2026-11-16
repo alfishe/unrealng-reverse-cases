@@ -1,0 +1,41 @@
+{
+  "about": "Tape block 3, the machine-code loader at $FFDC-$FFFD (34 bytes)",
+  "image_cmd": [
+    "sh",
+    "-c",
+    "test -f work/parts/loader-ffdc.bin || python3 tools/parts.py"
+  ],
+  "image": "work/parts/loader-ffdc.bin",
+  "org": "FFDC",
+  "ann": "src/loader/loader.ann",
+  "top": "loader",
+  "bin": "loader.bin",
+  "dest": "src/loader",
+  "device": "ZXSPECTRUM48",
+  "mode": "blocks",
+  "pages": [
+    5,
+    2,
+    0
+  ],
+  "header": [
+    "; ATV Simulator, Code Masters 1987: tape block 3, the machine-code loader (34 bytes at $FFDC)."
+  ],
+  "l1": [
+    {
+      "path": "work/stage1/rec/c1/l1.json",
+      "lo": "FFDC",
+      "hi": "FFFE",
+      "reads": false
+    }
+  ],
+  "data_entries": "stop",
+  "work": "work/stage2/mkloader",
+  "ref_builds": [
+    [
+      "stage1/rec/c1",
+      "c1: a 48K from power-on, the original TZX at signal speed, the title, the menu, trail 1 to TIME OUT"
+    ]
+  ],
+  "other_builds": []
+}

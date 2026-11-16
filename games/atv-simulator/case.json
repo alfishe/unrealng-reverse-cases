@@ -14,15 +14,44 @@
     "0": "C000"
   },
   "read_builds": [
-    "game"
+    "stage1/rec/c1",
+    "stage1/rec/menu",
+    "stage1/rec/kb",
+    "stage1/rec/trail1",
+    "stage1/rec/trails",
+    "stage1/rec/warp",
+    "stage1/rec/fuel",
+    "stage2/rec/empty"
   ],
   "ref_builds": [
     [
-      "game",
-      "the first recording's game window"
+      "stage1/rec/c1",
+      "c1: a 48K from power-on, the original TZX at signal speed, the title, the menu, trail 1 to TIME OUT"
     ]
   ],
   "header": [
-    "; ATV Simulator, Code Masters 1987: the game image as the loader leaves it (tape block 7 at $6338)."
+    "; ATV Simulator, Code Masters 1987: the game image as the tape's loader leaves it (tape block 7, 40000 bytes at $6338)."
+  ],
+  "ref_load_end": {
+    "stage1/rec/c1": 14100
+  },
+  "no_entries": [
+    "stage1/rec/c1",
+    "stage1/rec/menu",
+    "stage1/rec/kb",
+    "stage1/rec/trail1",
+    "stage1/rec/trails",
+    "stage1/rec/warp",
+    "stage1/rec/fuel",
+    "stage2/rec/empty"
+  ],
+  "no_roots": [
+    "stage1/rec/menu",
+    "stage1/rec/kb",
+    "stage1/rec/trail1",
+    "stage1/rec/trails",
+    "stage1/rec/warp",
+    "stage1/rec/fuel",
+    "stage2/rec/empty"
   ]
 }

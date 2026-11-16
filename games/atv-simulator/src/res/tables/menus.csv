@@ -1,0 +1,33 @@
+menu,x,y,height,text,action,shows
+MenuDefs,56,151,71,,,
+MenuDefs,,,,$70B1,$6DD1,START
+MenuDefs,,,,$70CA,$7583,ONE PLAYER
+MenuDefs,,,,$70B9,$74A4,CHOOSE CONTROL
+MenuControls1,56,151,112,,,
+MenuControls1,,,,$70E5,$74EA,KEYBOARD
+MenuControls1,,,,$70F0,$75A7,KEMPSTON
+MenuControls1,,,,$70FB,$75AD,SINCLAIR
+MenuControls2a,56,151,112,,,
+MenuControls2a,,,,$70E5,$74EA,KEYBOARD
+MenuControls2a,,,,$70F0,$75A7,KEMPSTON
+MenuControls2,56,151,112,,,
+MenuControls2,,,,$70E5,$74F7,KEYBOARD
+MenuControls2,,,,$70FB,$75B3,SINCLAIR
+MenuKeys1,56,151,80,,,
+MenuKeys1,,,,$7106,$7501,LEFT]S
+MenuKeys1,,,,$710F,$7501,RIGHT]D
+MenuKeys1,,,,$7119,$7501,WHEEL UP]F
+MenuKeys1,,,,$7126,$7501,WHEEL DOWN]C
+MenuKeys1,,,,$7135,$7501,JUMP]Z
+MenuKeys1,,,,$70AA,$75B8,EXIT
+MenuKeys2,56,151,80,,,
+MenuKeys2,,,,$713E,$7501,LEFT]H
+MenuKeys2,,,,$7147,$7501,RIGHT]J
+MenuKeys2,,,,$7151,$7501,WHEEL UP]K
+MenuKeys2,,,,$715E,$7501,WHEEL DOWN]M
+MenuKeys2,,,,$716D,$7501,JUMP]B
+MenuKeys2,,,,$70AA,$75B8,EXIT
+MenuPlayerOne,56,191,104,,,
+MenuPlayerOne,,,,$7176,$0000,PLAYER ONE
+MenuPlayerTwo,56,191,104,,,
+MenuPlayerTwo,,,,$7183,$0000,PLAYER TWO

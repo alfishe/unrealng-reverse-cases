@@ -1,0 +1,193 @@
+# Trails 1-4 (SAND DUNING, GRASSTRAKIN, ICEBERGS, PYRAMIDS): TrailRecords $7C9C-$807A
+# Blocks in byte order ('#' starts a comment):
+#   record NAME A=LIST B=LIST length=$NNNN   a trail's record (SelectTrail reads it): list A (the ground and the
+#                                            obstacles), list B (the scenery), the length (FinishDistance = length
+#                                            less $48, shown as the comment)
+#   list NAME                                a list: its items follow, the $FFFF end mark is written after them
+#   DIST Y ADV sprite=$SS flags=$FF          an item: the distance along the trail, y (0: the sprite's own height),
+#                                            the advance (0 in the image: InitListWidths fills it), the game sprite,
+#                                            the flags (bit 0 mirrored, bits 1-3 the draw mode)
+#   DIST Y ADV anim=NAME                     an item drawn from an animation record (AnimObject $8A49)
+#   anim NAME sprite=$SS flags=$FF id=$II [motion=HEX]   an animation record: sprite, flags, id, then the motions
+#                                            (+3/+4 the x period and counter, +5/+6 the y ones, +7 the x and y steps,
+#                                            +8/+9 the frame's), the $FF end mark written after them
+#   bytes HEX                                bytes no code reads as a trail
+# Names of anims are their original addresses (Anim8042); a name no block of this file defines is that address in
+# another resource (trail 5's items use trails 1-4's animation records).
+record Trail1 A=A1 B=B1 length=$0690   # finish $0648
+record Trail2 A=A2 B=B2 length=$0568   # finish $0520
+record Trail3 A=A3 B=B3 length=$05D4   # finish $058C
+record Trail4 A=A4 B=B4 length=$0685   # finish $063D
+
+list A1
+$0070   0 0 anim=Anim8042
+$0078  23 0 sprite=$03 flags=$05
+$0080  23 0 sprite=$C9 flags=$04
+$0148   0 0 sprite=$67 flags=$00
+$01D8   0 0 sprite=$B4 flags=$00
+$0280   0 0 sprite=$A8 flags=$00
+$02B8   0 0 sprite=$A9 flags=$00
+$0350   0 0 sprite=$AA flags=$00
+$0370   0 0 sprite=$AB flags=$00
+$0408   0 0 anim=Anim8046
+$0460   0 0 sprite=$AB flags=$00
+$0480  16 0 sprite=$AB flags=$00
+$04A0  20 0 sprite=$AB flags=$00
+$04C0  16 0 sprite=$AB flags=$00
+$04E0  12 0 sprite=$AB flags=$00
+$0500   8 0 sprite=$AB flags=$00
+$05A8   0 0 sprite=$67 flags=$00
+$05E8   0 0 sprite=$AD flags=$00
+$0688   0 0 anim=Anim8042
+$0690  23 0 sprite=$04 flags=$05
+$0698  23 0 sprite=$CA flags=$04
+
+list A2
+$0070   0 0 anim=Anim8042
+$0078  23 0 sprite=$07 flags=$05
+$0080  23 0 sprite=$C9 flags=$04
+$0110   0 0 sprite=$B7 flags=$00
+$0138  21 0 sprite=$B9 flags=$00
+$0138  14 0 sprite=$B9 flags=$00
+$0138   7 0 sprite=$B9 flags=$00
+$0158  21 0 sprite=$B9 flags=$00
+$0158  14 0 sprite=$B9 flags=$00
+$0158   7 0 sprite=$B9 flags=$00
+$0178  14 0 sprite=$B9 flags=$00
+$0178   7 0 sprite=$B9 flags=$00
+$0198  21 0 sprite=$B9 flags=$00
+$0198  14 0 sprite=$B9 flags=$00
+$0198   7 0 sprite=$B9 flags=$00
+$0258   0 0 sprite=$B2 flags=$00
+$02D0   0 0 sprite=$B7 flags=$00
+$02F8  14 0 sprite=$B8 flags=$00
+$0310  28 0 sprite=$B8 flags=$00
+$0310  14 0 sprite=$B8 flags=$00
+$0328  28 0 sprite=$B8 flags=$00
+$0328  14 0 sprite=$B8 flags=$00
+$0340  14 0 sprite=$B8 flags=$00
+$0358  28 0 sprite=$B8 flags=$00
+$0358  14 0 sprite=$B8 flags=$00
+$0370  28 0 sprite=$B8 flags=$00
+$0370  14 0 sprite=$B8 flags=$00
+$0408   7 0 sprite=$B9 flags=$00
+$0428  14 0 sprite=$B9 flags=$00
+$0428   7 0 sprite=$B9 flags=$00
+$0448  21 0 sprite=$B9 flags=$00
+$0448  14 0 sprite=$B9 flags=$00
+$0448   7 0 sprite=$B9 flags=$00
+$0458   0 0 sprite=$B2 flags=$00
+$0488   0 0 sprite=$B2 flags=$00
+$04F8   0 0 sprite=$AD flags=$00
+$0560   0 0 anim=Anim8042
+$0568  23 0 sprite=$08 flags=$05
+$0570  23 0 sprite=$CA flags=$04
+
+list A3
+$0078   0 0 anim=Anim8042
+$0080  23 0 sprite=$0C flags=$05
+$0088  23 0 sprite=$C9 flags=$04
+$00F0   0 0 sprite=$BB flags=$00
+$0188   0 0 sprite=$BB flags=$00
+$01A9  14 0 sprite=$BA flags=$00
+$01CA  10 0 sprite=$BA flags=$00
+$01EC  23 0 sprite=$BB flags=$00
+$0224  23 0 sprite=$BF flags=$00
+$022C  23 0 sprite=$C1 flags=$00
+$0244  23 0 sprite=$C1 flags=$00
+$025C  23 0 sprite=$C0 flags=$00
+$0264   0 0 sprite=$C0 flags=$00
+$0329   0 0 sprite=$BB flags=$00
+$0361  34 0 anim=Anim8065
+$0363   0 0 anim=Anim8053
+$03D9   0 0 sprite=$B6 flags=$00
+$03E9  24 0 sprite=$B6 flags=$00
+$03F9  23 0 sprite=$C1 flags=$00
+$0411  23 0 sprite=$C0 flags=$00
+$0419   0 0 sprite=$C0 flags=$00
+$0439   0 0 anim=Anim804A
+$043A  32 0 anim=Anim8070
+$0467   0 0 anim=Anim805C
+$048D   0 0 sprite=$BB flags=$00
+$049C  24 0 sprite=$BB flags=$00
+$04BC  21 0 sprite=$C1 flags=$00
+$04D4  21 0 sprite=$C1 flags=$00
+$04EC  37 0 sprite=$C8 flags=$00
+$0504  37 0 sprite=$C0 flags=$00
+$050C  37 0 sprite=$C8 flags=$00
+$0524  37 0 sprite=$C0 flags=$00
+$052C  24 0 sprite=$C0 flags=$00
+$0534   0 0 sprite=$C0 flags=$00
+$05CC   0 0 anim=Anim8042
+$05D4  23 0 sprite=$0D flags=$05
+$05DC  23 0 sprite=$CA flags=$04
+
+list A4
+$0078   0 0 anim=Anim8042
+$0080  23 0 sprite=$03 flags=$05
+$0088  23 0 sprite=$C9 flags=$04
+$0120   0 0 sprite=$AA flags=$00
+$0150   0 0 sprite=$6C flags=$00
+$01C8   0 0 sprite=$B4 flags=$00
+$01DC   0 0 sprite=$B3 flags=$00
+$01F0   0 0 sprite=$AC flags=$00
+$02A8   0 0 sprite=$A7 flags=$00
+$02F0   0 0 sprite=$AE flags=$00
+$0398   0 0 sprite=$AA flags=$00
+$03D0   0 0 sprite=$6C flags=$00
+$03F8   0 0 sprite=$6C flags=$00
+$04C0   0 0 sprite=$AD flags=$00
+$04F8   0 0 sprite=$AC flags=$00
+$0530   0 0 sprite=$AC flags=$00
+$05B8   0 0 sprite=$6D flags=$00
+$05C5  33 0 sprite=$6C flags=$00
+$067D   0 0 anim=Anim8042
+$0685  23 0 sprite=$04 flags=$05
+$068D  23 0 sprite=$CA flags=$04
+
+list B1
+$0000  39 0 sprite=$1B flags=$00
+$00A8  40 0 sprite=$17 flags=$00
+$0120  40 0 sprite=$16 flags=$00
+$0133  32 0 sprite=$16 flags=$00
+$0157  40 0 sprite=$16 flags=$00
+$0170  29 0 sprite=$16 flags=$00
+$01E0  40 0 sprite=$12 flags=$00
+$01F8  53 0 sprite=$13 flags=$00
+
+list B2
+$0000  43 0 sprite=$C7 flags=$00
+$00A0  53 0 sprite=$1C flags=$00
+$00AE  53 0 sprite=$1D flags=$00
+$00B9  48 0 sprite=$1D flags=$00
+$00BF  50 0 sprite=$1D flags=$00
+$0167  54 0 sprite=$1C flags=$00
+$0177  50 0 sprite=$1D flags=$00
+$018F  55 0 sprite=$1C flags=$00
+$022F  57 0 sprite=$1C flags=$00
+
+list B3
+$0028  40 0 sprite=$C3 flags=$00
+$0039  35 0 sprite=$C3 flags=$00
+$0051  39 0 sprite=$C3 flags=$00
+$0100  45 0 sprite=$C5 flags=$00
+$01C0  43 0 sprite=$C4 flags=$00
+
+list B4
+$0080  47 0 sprite=$C6 flags=$00
+$0098  47 0 sprite=$C6 flags=$00
+$00B7  47 0 sprite=$C6 flags=$00
+$00D4  57 0 sprite=$13 flags=$00
+$0150  42 0 sprite=$B0 flags=$00
+$01A0  41 0 sprite=$B0 flags=$00
+$01B4  39 0 sprite=$B0 flags=$00
+$0204  41 0 sprite=$B0 flags=$00
+$0218  42 0 sprite=$B0 flags=$00
+
+anim Anim8042 sprite=$7B flags=$C2 id=$64
+anim Anim8046 sprite=$A5 flags=$C2 id=$65
+anim Anim804A sprite=$BC flags=$22 id=$1E motion=0000030001
+anim Anim8053 sprite=$BC flags=$02 id=$1F motion=0000020002
+anim Anim805C sprite=$BC flags=$22 id=$20 motion=0000030001
+anim Anim8065 sprite=$BD flags=$02 id=$29 motion=00000681011100
+anim Anim8070 sprite=$BD flags=$02 id=$2A motion=14000A00211100
