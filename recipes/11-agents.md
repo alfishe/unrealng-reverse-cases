@@ -59,7 +59,7 @@ When both halves are in, the lead (or one editor agent) does the following:
 
 | Resource | Rule |
 | --- | --- |
-| **unreal-ng binary** | one release build shared by all agents and used read-only (`$UNREAL_NG/cmake-build-agent-release/...`, a worktree such as `scratch/wt-nezs-stage1`); no agent builds unreal-ng or makes a worktree for itself, which matters most when the disk is short. A tool gap is fixed by one agent in one worktree, landed, and the shared binary is rebuilt once |
+| **unreal-ng binary** | one release build shared by all agents and used read-only (`$UNREAL_NG/cmake-build-agent-release/...`, a worktree such as `scratch/wt-reverse-tooling`); no agent builds unreal-ng or makes a worktree for itself, which matters most when the disk is short. A tool gap is fixed by one agent in one worktree, landed, and the shared binary is rebuilt once |
 | **Port bases** | one per agent, 100 or more apart, written in its prompt; the brief lists the ranges other agents hold. Ports run from the base: WebAPI = base, CLI +100, MCP +200, GDB +300, DeZog +400, ZRCP +500. Never take port 10000 or a pid that is not yours |
 | **Instances** | muted (audio only to files), offscreen, one per recording; each agent **stops only the instances it started** (`re_session.py stop --work W` checks the pid) |
 | **The build** | `tools/build.sh` holds `build/.lock`, and **one builder per case**. A docs agent runs the build only to check it stays identical. Two parts building at once use separate locks (`build/.lock-trd`) |
