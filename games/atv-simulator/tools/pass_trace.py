@@ -7,6 +7,7 @@ Unlike tools/pass_time.py (a replay with the keys set at pass starts) it measure
 
 W is a `kit/rs.py open` folder whose instance holds the recording (the trace is kept in W/traces/), or give
 --trace FILE.uatr. Prints the count, the least and the most, and the heaviest passes with their start and end.
+The kit's form: `python3 kit/pass_time.py --start D851 --end D86B --budget-frames 7 --work W --window ...`.
 c1 over 15 150-15 450 and 15 400-15 800: the heaviest pass starts at frame 15 412, 446 565 T, 91.3 % (doc 04, 4.7).
 """
 import argparse
@@ -15,6 +16,11 @@ import sys
 
 sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', '..', '..', 'kit'))
 import kitlib as K  # noqa: E402
+import importlib.util  # noqa: E402
+# kit/pass_time.py under its own name (this case has a tools/pass_time.py too)
+_spec = importlib.util.spec_from_file_location('kit_pass_time', os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', '..', '..', 'kit', 'pass_time.py'))
+PT = importlib.util.module_from_spec(_spec)
+_spec.loader.exec_module(PT)
 
 PASS, WAIT, FRAMES = 0xD851, 0xD86B, 7
 
@@ -24,19 +30,8 @@ def main():
     K.add_trace_args(ap)
     ap.add_argument('--top', type=int, default=10)
     a = ap.parse_args()
-    tr = K.load_trace(a)
-    frame_t, unit = tr.frame_t, max(1, tr.units_per_t)
-
-    def at(x):
-        return x.frame * frame_t + x.t // unit
-
-    passes, start = [], None
-    for x in tr.instructions:
-        if x.pc == PASS:
-            start = x
-        elif x.pc == WAIT and start is not None:
-            passes.append((at(x) - at(start), start.frame, start.t // unit, x.frame, x.t // unit))
-            start = None
+    found, frame_t = PT.trace_passes(K.load_trace(a), PASS, WAIT)
+    passes = [(p['T'], p['start'][0], p['start'][1], p['end'][0], p['end'][1]) for p in found]
     if not passes:
         raise SystemExit('no whole pass in the window')
     budget = FRAMES * frame_t

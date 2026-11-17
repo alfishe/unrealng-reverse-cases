@@ -6,6 +6,8 @@ one path in this repository instead of a variable set on one machine.
     python3 kit/rs.py capture ... [--stop] [--expect STATE[@FRAME] ...] [--expect-ranges LO-HI[,LO-HI ...]]
                                   [--tape-seek N]
     python3 kit/rs.py capture --snapshot S ...      (no --model: the snapshot's own model, kitlib.snapshot_model)
+    python3 kit/rs.py call --work W --tool TOOL ACTION ['{...}'] [--json OUT]   (any MCP tool, not only analysis)
+    python3 kit/rs.py seek --work W --frame F [--t T] [--image OUT.bin] [--first-pc LO-HI] [--json OUT]
 
 Everything after the optional --unreal goes to re_session.py unchanged, but for these, read here first (capture):
 
@@ -51,6 +53,20 @@ Everything after the optional --unreal goes to re_session.py unchanged, but for 
               kit's own T-states an entry: L1's inclusive count runs on after such a jump (676 717 T for Enduro
               Racer's 744-25 467), so the kit sums the handler's own T-states and its calls' (rs.handler_estimates).
               kit/handler_time.py measures each entry exactly over a trace window
+
+  call --tool TOOL  re_session.py's call sends its ACTION and JSON to the `analysis` tool only; with --tool the kit
+              sends them to that MCP tool (time_travel, control_execution, inspect_state, ...) on W's instance, the
+              control session taken first, and prints the answer's text (--json OUT: its structuredContent). Without
+              --tool (or --tool analysis) re_session.py's call runs as before. E.g.
+              `rs.py call --work W --tool time_travel seek '{"frame": 14114, "tinframe": 0}'`
+
+  seek        an image cut at a moment of W's loaded recording: time_travel seek to frame F, T-state T in the frame
+              (default 0), prints the seek's answer and the registers there (PC, SP, AF, BC, DE, HL, IX, IY, IM, IFF),
+              --image OUT.bin writes the 64 K Z80 view there (as start.bin is written), --json OUT the registers and
+              the moment. --first-pc LO-HI (hex, inclusive) bisects frame F for the first T at which PC lies in the
+              range (the T before it outside: a program's entry, a jump out of a loader), seeks there and cuts the
+              image there; it takes the PC outside the range at T 0 and inside it at the frame's end, once in staying
+              in (ATV Simulator: c1's entry `$D6B0` in frame 14113, work/stage1/entryimg.py)
 
 re_session.py's docstring (python3 kit/rs.py -h) is the reference for the rest. The cases' `$RS` (docs/case-files.md)
 is this script. The checkout is found as kit/toolpaths.py finds it: --unreal, $UNREAL_NG, the unreal-ng submodule, a
@@ -329,6 +345,138 @@ def interrupts_note(args):
               f'build); kit/handler_time.py --exit {site.lstrip("$")} measures each entry over a trace window')
 
 
+def _session(work, script):
+    sys.path.insert(0, os.path.dirname(script))
+    import corpus
+    import re_session
+    s, state = re_session.session_of(work)
+    return s, corpus.Machine(s, state['port_base'])
+
+
+def call_tool(args, script):
+    """call --tool TOOL: ACTION and JSON to any MCP tool; None when re_session.py's own call is the one"""
+    import argparse
+    ap = argparse.ArgumentParser(prog='rs.py call')
+    ap.add_argument('--work', required=True)
+    ap.add_argument('--tool', default='analysis')
+    ap.add_argument('--json')
+    ap.add_argument('action')
+    ap.add_argument('args', nargs='?')
+    a = ap.parse_args(args[1:])
+    if a.tool == 'analysis':
+        return None
+    s, _ = _session(a.work, script)
+    body = json.loads(a.args) if a.args else {}
+    r = s.call(a.tool, dict(body, action=a.action), ok=False)
+    print(r.text)
+    if a.json:
+        with open(a.json, 'w') as f:
+            json.dump(r.structured or {}, f, indent=1)
+    return 1 if r.is_error else 0
+
+
+def strip_tool(args):
+    """re_session.py's call arguments with a --tool analysis taken out"""
+    out, k = [], 0
+    while k < len(args):
+        if args[k] == '--tool' and k + 1 < len(args):
+            k += 2
+            continue
+        if args[k].startswith('--tool='):
+            k += 1
+            continue
+        out.append(args[k])
+        k += 1
+    return out
+
+
+REGS = (('pc', 'special'), ('sp', 'special'), ('af', 'main'), ('bc', 'main'), ('de', 'main'), ('hl', 'main'),
+        ('ix', 'index'), ('iy', 'index'))
+
+
+def registers(m):
+    """{name: value} of the machine's registers (WebAPI /registers), the 16-bit pairs and the interrupt state"""
+    regs = m.get('/registers')
+    out = {}
+    for name, group in REGS:
+        v = (regs.get(group) or {}).get(name, regs.get(name))
+        if isinstance(v, str):
+            v = int(v.lstrip('$').replace('0x', ''), 16)
+        out[name] = v
+    for name in ('im', 'iff1', 'iff2', 'i', 'r'):
+        for group in ('special', 'interrupt', 'interrupts', None):
+            src = regs if group is None else (regs.get(group) or {})
+            if name in src:
+                out[name] = src[name]
+                break
+    return out
+
+
+def seek_to(s, m, frame, t):
+    """time_travel seek: (the answer, the PC there)"""
+    r = s.call('time_travel', {'action': 'seek', 'frame': frame, 'tinframe': t}, ok=False)
+    if r.is_error:
+        raise SystemExit(f'rs.py seek: frame {frame} T {t}: {(r.text or "").strip()[:300]}')
+    return r, registers(m)['pc']
+
+
+def seek(args, script):
+    import argparse
+    ap = argparse.ArgumentParser(prog='rs.py seek')
+    ap.add_argument('--work', required=True)
+    ap.add_argument('--frame', type=int, required=True)
+    ap.add_argument('--t', type=int, default=0, help='the T-state in the frame (default 0)')
+    ap.add_argument('--image', help='the 64 K Z80 view at that moment')
+    ap.add_argument('--first-pc', help='LO-HI (hex): bisect the frame for the first T with PC in the range')
+    ap.add_argument('--frame-t', type=int, default=69888, help='--first-pc: the T-states of a frame (48K 69888)')
+    ap.add_argument('--json')
+    a = ap.parse_args(args[1:])
+    s, m = _session(a.work, script)
+    t = a.t
+    out = {'frame': a.frame}
+    if a.first_pc:
+        lo, hi = kitlib.hex_range(a.first_pc)
+
+        def inside(x):
+            return lo <= seek_to(s, m, a.frame, x)[1] <= hi
+
+        if inside(0):
+            raise SystemExit(f'rs.py seek --first-pc: PC is in ${lo:04X}-${hi:04X} at frame {a.frame} T 0 already')
+        a0, a1 = 0, a.frame_t - 1
+        if not inside(a1):
+            raise SystemExit(f'rs.py seek --first-pc: PC is not in ${lo:04X}-${hi:04X} at frame {a.frame}\'s end')
+        while a1 - a0 > 1:
+            mid = (a0 + a1) // 2
+            if inside(mid):
+                a1 = mid
+            else:
+                a0 = mid
+        before = seek_to(s, m, a.frame, a0)[1]
+        t = a1
+        out['before'] = {'t': a0, 'pc': before}
+    r, _ = seek_to(s, m, a.frame, t)
+    out['t'] = t
+    out['answer'] = (r.text or '').strip().splitlines()[0] if r.text else ''
+    out['registers'] = registers(m)
+    print(out['answer'])
+    if 'before' in out:
+        print(f"first PC in {a.first_pc}: frame {a.frame} T {t} (T {out['before']['t']}: PC "
+              f"${out['before']['pc']:04X})")
+    print('  '.join(f'{k.upper()} ' + (f'${v:04X}' if isinstance(v, int) and k in dict(REGS) else str(v))
+                    for k, v in out['registers'].items()))
+    if a.image:
+        data = m.read(0, 0x10000)
+        os.makedirs(os.path.dirname(os.path.abspath(a.image)), exist_ok=True)
+        with open(a.image, 'wb') as f:
+            f.write(data)
+        out['image'] = a.image
+        print(f'{a.image}: the 64 K Z80 view at frame {a.frame} T {t}')
+    if a.json:
+        with open(a.json, 'w') as f:
+            json.dump(out, f, indent=1)
+    return 0
+
+
 def main(argv=None):
     args = list(sys.argv[1:] if argv is None else argv)
     hint = None
@@ -340,6 +488,13 @@ def main(argv=None):
     args = binary_args(check_inputs(args))
     if args[:1] == ['capture']:
         return capture(args, script)
+    if args[:1] == ['seek']:
+        return seek(args, script)
+    if args[:1] == ['call']:
+        status = call_tool(args, script)
+        if status is not None:
+            return status
+        args = strip_tool(args)
     sys.argv = [script] + args
     sys.path.insert(0, os.path.dirname(script))
     runpy.run_path(script, run_name='__main__')

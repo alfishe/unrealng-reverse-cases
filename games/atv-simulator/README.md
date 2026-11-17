@@ -1,6 +1,6 @@
 # ATV Simulator (Code Masters, 1987)
 
-State: docs written, in review (2026-11-16): docs 01-10 by three writers, docs 11 and 12 generated, integrated; the
+State: complete (2026-11-16; two review rounds, kit gaps fixed): docs 01-10 by three writers, docs 11 and 12 generated, integrated; the
 tape builds identical from the sources. 12 documents, 90 figures (PNG), 48 animations (GIF), 96 mermaid diagrams and
 5 audio files (3 short WAV, the longest 3.4 s; 2 MP3 over 5 s: the title tune and the engine; 1.4 MB), 13 recordings
 (WALKTHROUGH 6.0), counted on 2026-11-16 with:

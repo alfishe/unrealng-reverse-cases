@@ -11,7 +11,7 @@ calls install(files) with the bytes of each @res entry.
 | `texts/NAME.bin` | `texts/NAME.txt` | UTF-8, one string a line: a line ending in `|` is a string with the game's end mark, a quoted line ("...") bytes with no end mark (the fixed-width trail names); `\\xNN` for a byte that is no printable character |
 | `tables/panels.bin`, `tables/credits.bin` | `.csv` | the sprite lists (x, y, sprite) and attribute box lists (x1, y1, x2, y2, attr) of SpriteList / AttrBoxes, a row an item; a list ends where the next name starts (the `$FF` mark); `shows` names a sprite for the reader (not built) |
 | `tables/menus.bin` | `tables/menus.csv` | the menus (MenuDefs): a menu row (x, y, height) and its item rows (text address, action address) |
-| `sprites/game.bin`, `sprites/menu.bin` | `sprites/NAME.png`, `sprites/NAME.csv` | the sprite banks: every sprite's pixels at a place of its own in the PNG (index 0 paper, 1 ink, 2 no pixel), the CSV a row a piece in byte order (its numbers, place, size, header bytes; the menu bank's attribute blocks as hex) and `bytes` rows for the bytes no number reaches; the bank's header (count, length, offsets) is made from the rows |
+| `sprites/game.bin`, `sprites/menu.bin` | `sprites/NAME.png`, `sprites/NAME.csv` | the sprite banks: every sprite's pixels at a place of its own in the PNG (index 0 paper, 1 ink, 2 no pixel), the CSV a row a piece in byte order (its numbers, place, size, header bytes; the menu bank's attribute blocks as hex) and `bytes` rows for the bytes no number reaches; the bank's header (count, length, offsets) is made from the rows (kit/sprite_bank.py) |
 | `trails/NAME.bin` | `trails/NAME.txt` | the trail records, the object lists and the animation records as text (TRAIL_HELP) |
 | `sound/tunes.bin` | `sound/tunes.txt` | the note table, the tune table, the sequence lists and the channel and drum patterns as text (TUNE_HELP) |
 | `tables/NAME.bin` (BYTE_TABLES) | `tables/NAME.txt` | a byte table of the game's rules or pictures (the ATV's and rider's frames, offsets, the fall and jump steps, the trails' inks): one row of `$XX` bytes per line, `#` comments; the rows' lengths are only for reading |
@@ -27,6 +27,9 @@ import os
 import sys
 
 from PIL import Image
+
+sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', '..', '..', 'kit'))
+import sprite_bank as SB  # noqa: E402
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 RES = os.path.join(ROOT, 'src', 'res')
@@ -315,93 +318,23 @@ def menus_build(files, name):
 
 # sprite banks ----------------------------------------------------------------------------------------------------------
 
-def bank_pieces(name, data):
-    """the count, the length word and [(offset, kind, numbers, length)] in byte order"""
-    count, menu = data[0], name == 'sprites/menu.bin'
-    table = {}
-    for i in range(count * (2 if menu else 1)):
-        off = word(data, 4 + 2 * i)
-        k = ('sprite' if i % 2 == 0 else 'attrs') if menu else 'sprite'
-        table.setdefault((off, k), []).append(i // 2 if menu else i)
-    pieces = []
-    for (off, k), nums in sorted(table.items()):
-        pieces.append((off, k, nums, (4 if k == 'sprite' else 2) + data[off] * data[off + 1]))
-    return count, word(data, 1), pieces
+# The banks go through kit/sprite_bank.py (a count, the length word, a word a piece; a sprite's 4-byte header: width,
+# height, advance, shift); the menu bank has a sprite's and an attribute block's word a picture.
+BANK = {'fields': ('width', 'height', 'advance', 'shift'), 'count_at': 0, 'length_at': 1, 'table_at': 4,
+        'sheet': SHEET, 'gap': 2}
+
+
+def bank_spec(name):
+    return dict(BANK, kinds=('sprite', 'attrs') if name == 'sprites/menu.bin' else ('sprite',))
 
 
 def sprites_export(name, data):
-    count, length, pieces = bank_pieces(name, data)
-    o = 4 + 2 * count * (2 if name == 'sprites/menu.bin' else 1)
-    rows, places, x, y, rowh = [], [], 0, 0, 0
-    for off, k, nums, ln in pieces:
-        assert off >= o, (name, hex(off))
-        if off > o:
-            rows.append(['bytes', h(o, 4), '', '', '', '', '', '', '', data[o:off].hex().upper()])
-        w, hh = data[off], data[off + 1]
-        ns = ' '.join(str(n) for n in nums)
-        if k == 'sprite':
-            if x + w * 8 > SHEET:
-                x, y, rowh = 0, y + rowh + 2, 0
-            places.append((x, y, data[off + 4:off + ln], w, hh))
-            rows.append(['sprite', h(off, 4), ns, x, y, w, hh, data[off + 2], data[off + 3], ''])
-            x += w * 8 + 2
-            rowh = max(rowh, hh)
-        else:
-            rows.append(['attrs', h(off, 4), ns, '', '', w, hh, '', '', data[off + 2:off + ln].hex().upper()])
-        o = off + ln
-    assert o == length, (name, hex(o), hex(length))
-    if o < len(data):
-        rows.append(['bytes', h(o, 4), '', '', '', '', '', '', '', data[o:].hex().upper()])
-    img = Image.new('P', (SHEET, max(1, y + rowh)), 2)
-    img.putpalette(sum((list(c) for c in PALETTE), []))
-    px = img.load()
-    for x0, y0, bs, w, hh in places:
-        for j in range(hh):
-            for i in range(w):
-                b = bs[j * w + i]
-                for bit in range(8):
-                    px[x0 + i * 8 + bit, y0 + j] = (b >> (7 - bit)) & 1
-    f = io.BytesIO()
-    img.save(f, 'PNG')
-    header = ['kind', 'offset', 'numbers', 'x', 'y', 'width', 'height', 'advance', 'shift', 'bytes']
-    return {stem(name) + '.png': f.getvalue(), stem(name) + '.csv': csv_text(header, rows)}
+    files = SB.export(data, **bank_spec(name))
+    return {stem(name) + ext: b for ext, b in files.items()}
 
 
 def sprites_build(files, name):
-    menu = name == 'sprites/menu.bin'
-    px = Image.open(io.BytesIO(files[stem(name) + '.png'])).load()
-    rows = csv_rows(files[stem(name) + '.csv'])
-    count = max(int(n) for r in rows if r['numbers'] for n in r['numbers'].split()) + 1
-    first = 4 + 2 * count * (2 if menu else 1)
-    body, table, end = bytearray(), {}, None
-    for i, r in enumerate(rows):
-        off = first + len(body)
-        if r['kind'] == 'bytes':
-            if i == len(rows) - 1:  # the bytes after the bank's end (the length word stops before them)
-                end = off
-            body += bytes.fromhex(r['bytes'])
-            continue
-        w, hh = num(r['width']), num(r['height'])
-        if r['kind'] == 'sprite':
-            x0, y0 = num(r['x']), num(r['y'])
-            body += bytes([w, hh, num(r['advance']), num(r['shift'])])
-            for j in range(hh):
-                for c in range(w):
-                    b = 0
-                    for bit in range(8):
-                        b = b << 1 | (px[x0 + c * 8 + bit, y0 + j] == 1)
-                    body.append(b)
-        else:
-            body += bytes([w, hh]) + bytes.fromhex(r['bytes'])
-        for n in r['numbers'].split():
-            table[(int(n), r['kind'])] = off
-    if end is None:
-        end = first + len(body)
-    head = bytearray([count]) + le(end) + b'\0'
-    for n in range(count):
-        for k in (('sprite', 'attrs') if menu else ('sprite',)):
-            head += le(table[(n, k)])
-    return bytes(head + body)
+    return SB.build({ext: files[stem(name) + ext] for ext in ('.png', '.csv')}, stem(name), **bank_spec(name))
 
 
 # trails ----------------------------------------------------------------------------------------------------------

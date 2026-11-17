@@ -128,8 +128,12 @@ menu, timer, rzx x32).` A line that no longer agrees, say after `case.json` swap
 `mkgame.py --fix-witness` rewrites N and the list in the `.ann` (the rest of the line stays), gives a code entry
 that has no witness line yet its `> Witness: L1 N (builds).` after its last `>` line when the builds ran it and the
 `.ann` already holds witness lines, or in any `.ann` with `--fix-witness`, a fresh one with no witness line yet
-too (no seed line by hand; an entry no build ran gets none and is listed; any `Witness:` text counts as a line; a
-plain run counts the missing lines only in an `.ann` that already holds some), and writes the source again from it (with `--install` one run leaves the `.asm` current too); a range it wrote is read back as its builds
+too (no seed line by hand; any `Witness:` text counts as a line; a plain run counts the missing lines only in an
+`.ann` that already holds some); a code entry no build ran whose description does not say so yet (no "Known only
+from the code", no phrase below) gets `> Known only from the code: no recording runs it.` after its last `>` line,
+and so does one whose witness line, alone on its line, now reads `L1 0 ()` (the line replaced); that exact line is
+the kit's: when a build runs the entry later, `--fix-witness` writes the witness line in its place (a writer's own
+"Known only ..." text is left as written and printed below), and writes the source again from it (with `--install` one run leaves the `.asm` current too); a range it wrote is read back as its builds
 whatever the family's prefix (`load-l2-load-l5`, `sec-l2-s10-sec-l2-s12`); a build that `case.json` lists in both
 `read_builds` and `code_builds` counts once; a line that names a build no list of the segment names any more (a
 build taken out of `read_builds`, or put in `witness_skip`) is rewritten without it (`NAME left the lists`); a line

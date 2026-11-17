@@ -10,7 +10,8 @@ image's bytes: a case's game, or any other part of the medium (a loader, a menu,
     every form also takes --venv VENV --sjasmplus BIN (else $SKOOLKIT_VENV / $SJASMPLUS, kit/toolpaths.py) and
     --fix-witness (rewrite the stale "Witness: L1 N (builds)" lines of the .ann, which every run prints, and write
     the source again from the rewritten .ann: with --install one run leaves the .ann and the .asm current; then list
-    the code entries left at "L1 0 ()", which no build ran)
+    the code entries left at "L1 0 ()", which no build ran; a code entry no build ran whose text does not say so
+    gets "> Known only from the code: no recording runs it.")
 
 The game: CASE/case.json (or --config) names the 64 K image, the range that is the game, the banks, the recordings
 (read_builds: work/<build>/l1.json whose instructions and data reads count; code_builds: whose instructions only;
@@ -2224,6 +2225,11 @@ NOT_RUN = re.compile(r'\b(?:not|never) (?:executed|run|reached) in any recording
                      r'\bno recording (?:runs|ran|reaches|reached) (?:it|here)\b', re.I)
 
 
+# the line --fix-witness writes on a code entry no build ran (and the one it writes back to a witness line when a build
+# runs the entry later: only this exact text, the kit's own; a writer's own "Known only ..." text stays)
+KNOWN_ONLY = '> Known only from the code: no recording runs it.'
+
+
 def says_not_run(text):
     """the NOT_RUN phrase of a description line that is said of the entry: not in brackets (a branch's note), not
     with another subject ("The RET at $781D is not executed ...", "the two-player paths were ..."; "this is" and "it
@@ -2292,15 +2298,31 @@ def check_witness(seg, skip=(), fix=False, mem=None):
     # line by hand); one no build ran is listed. A plain run counts the missing lines only in an .ann that already
     # holds witness lines (a fresh .ann's entries are not news there)
     uses_witness = fix or any(WITNESS.search(x) for x in lines if x.strip().startswith('>'))
-    missing, missing_unrun, inserts = [], [], []
-    last, witnessed = None, False
+    missing, missing_unrun, inserts, known_written, known_back = [], [], [], [], []
+    last, witnessed, said_known, own_known = None, False, False, None
+    replaced = [0]  # the witness lines alone at L1 0 () turned into KNOWN_ONLY
 
     def close_entry():
+        # said_known: the entry's text says no recording runs it ("Known only from the code", the NOT_RUN phrases);
+        # own_known: the line index of the kit's own KNOWN_ONLY line
         if entry is None or entry[1] != 'c' or not LO <= entry[0] < HI or witnessed or not uses_witness:
             return
         n, names = witness_text(builds, entry[0])
         if not n:
-            missing_unrun.append((last + 1, entry[0], entry[2] or ''))
+            if said_known:
+                return
+            if fix:
+                # --fix-witness: the entry no build ran gets the line that says so
+                known_written.append((last + 1, entry[0], entry[2] or ''))
+                inserts.append((last + 1, KNOWN_ONLY))
+            else:
+                missing_unrun.append((last + 1, entry[0], entry[2] or ''))
+            return
+        if fix and own_known is not None:
+            # the kit's own line, and a build runs the entry now: the witness line in its place
+            indent = lines[own_known][:len(lines[own_known]) - len(lines[own_known].lstrip())]
+            lines[own_known] = indent + '> Witness: L1 %d (%s).' % (n, names)
+            known_back.append((own_known + 1, entry[0], entry[2] or '', n, names))
             return
         missing.append((last + 1, entry[0], entry[2] or '', n, names))
         if fix:
@@ -2313,12 +2335,16 @@ def check_witness(seg, skip=(), fix=False, mem=None):
             if m and m.group(2):
                 close_entry()
                 entry = (int(m.group(1), 16), m.group(2), m.group(3))
-                last, witnessed = i, False
+                last, witnessed, said_known, own_known = i, False, False, None
             continue
         if text.startswith('>') and last is not None:
             last = i  # a description line is the last entry's, inner lines between or not (ann-format 3.2)
         if text.startswith('>') and 'Witness:' in text:
             witnessed = True  # any witness text, "Witness: L1 18 585 passes" too
+        if text.startswith('>') and ('Known only from the code' in text or says_not_run(text)):
+            said_known = True
+            if text == KNOWN_ONLY:
+                own_known = i
         if not text.startswith('>') or entry is None or entry[1] != 'c' or not LO <= entry[0] < HI:
             continue  # an entry outside this image (an .ann shared by several parts) is another part's
         said = says_not_run(text)
@@ -2355,7 +2381,12 @@ def check_witness(seg, skip=(), fix=False, mem=None):
                 return w.group(0)
             return 'Witness: L1 %d (%s)' % (n, names)
         lines[i] = WITNESS.sub(sub, line)
-        if fix and any(w.group(1) == '0' and not w.group(2).strip() for w in WITNESS.finditer(lines[i])):
+        if fix and lines[i].strip() == '> Witness: L1 0 ().':
+            # a witness line alone, and no build runs the entry any more: the line that says so instead
+            lines[i] = lines[i][:len(lines[i]) - len(lines[i].lstrip())] + KNOWN_ONLY
+            known_written.append((i + 1, entry[0], entry[2] or ''))
+            replaced[0] += 1
+        elif fix and any(w.group(1) == '0' and not w.group(2).strip() for w in WITNESS.finditer(lines[i])):
             unrun.append((i + 1, entry[0], entry[2] or ''))
     close_entry()
     rel = os.path.relpath(seg.ann, ROOT)
@@ -2365,13 +2396,22 @@ def check_witness(seg, skip=(), fix=False, mem=None):
     if missing and not fix:
         print('witness: %s: %d code entr%s with no witness line (--fix-witness writes %s)' % (
             rel, len(missing), 'y' if len(missing) == 1 else 'ies', 'it' if len(missing) == 1 else 'them'))
-    if fix and missing_unrun:
-        print('witness: %s: %d code entr%s with no witness line and no build ran %s (none written): %s' % (
-            rel, len(missing_unrun), 'y' if len(missing_unrun) == 1 else 'ies',
-            'it' if len(missing_unrun) == 1 else 'them', ', '.join('%d $%04X %s' % u for u in missing_unrun)))
+    if missing_unrun:
+        print('witness: %s: %d code entr%s with no witness line that no build ran and no text says so '
+              '(--fix-witness writes "%s"): %s' % (
+                  rel, len(missing_unrun), 'y' if len(missing_unrun) == 1 else 'ies', KNOWN_ONLY[2:],
+                  ', '.join('%d $%04X %s' % u for u in missing_unrun[:12]) +
+                  (', ...' if len(missing_unrun) > 12 else '')))
+    if known_written:
+        print('witness: %s: %d code entr%s no build ran: "%s" written: %s' % (
+            rel, len(known_written), 'y' if len(known_written) == 1 else 'ies', KNOWN_ONLY[2:],
+            ', '.join('%d $%04X %s' % u for u in known_written)))
+    for at, address, name, n, names in known_back:
+        print('witness: %s:%d $%04X %s: "%s", the builds run it now: L1 %d (%s): written in its place' % (
+            rel, at, address, name, KNOWN_ONLY[2:], n, names))
     for at, text in sorted(inserts, reverse=True):
         lines.insert(at, text)
-    stale += len(inserts)
+    stale += len(inserts) + len(known_back) + replaced[0]
     shared = {}
     for b, r in builds.items():
         for a in r.shared:
@@ -2609,7 +2649,8 @@ def main():
     p.add_argument('--install', action='store_true', help='write the sources when the bytes are the image\'s')
     p.add_argument('--fix-witness', action='store_true', help='rewrite the stale "Witness: L1 N (builds)" lines of '
                    'the .ann from the recordings (mkgame prints them in any case) and write the source again from '
-                   'the rewritten .ann (with --install both are current after one run)')
+                   'the rewritten .ann (with --install both are current after one run); a code entry no build ran '
+                   'gets "Known only from the code: no recording runs it."')
     args = p.parse_args()
     args.venv = toolpaths.skoolkit_venv(args.venv)
     args.sjasmplus = toolpaths.sjasmplus(args.sjasmplus)

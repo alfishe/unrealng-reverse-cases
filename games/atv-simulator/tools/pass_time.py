@@ -7,7 +7,7 @@ recording c1's play: its state play.szx (frame 14 821, the trail 1 intro) and c1
 
     python3 tools/pass_time.py [--port-base 37780] [--out work/stage2/pass]
 
-Each pass: control_execution run_until_pc `$D851`, the time (inspect_state snapshot: frame, T in the frame), run_until_pc
+Each pass (kit/pass_time.py's now / run_to; `kit/pass_time.py --live` is the same without the keys): control_execution run_until_pc `$D851`, the time (inspect_state snapshot: frame, T in the frame), run_until_pc
 `$D86B`, the time again; the work is the difference in T. A pass is 7 x 69 888 = 489 216 T. Prints the count, the
 least, the mean and the most, the ten heaviest passes (their frame in c1's numbering, the state at their end) and
 writes OUT/passes.json; at each new most it saves OUT/heaviest.png and OUT/heaviest.szx (the machine paused at
@@ -21,6 +21,11 @@ import sys
 HERE = os.path.dirname(os.path.abspath(__file__))
 sys.path.insert(0, HERE)
 from lab import Lab, CASE  # noqa: E402
+import importlib.util  # noqa: E402
+# kit/pass_time.py under its own name (this case has a tools/pass_time.py too)
+_spec = importlib.util.spec_from_file_location('kit_pass_time', os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', '..', '..', 'kit', 'pass_time.py'))
+PT = importlib.util.module_from_spec(_spec)
+_spec.loader.exec_module(PT)
 
 START, START_FRAME = os.path.join(CASE, 'work', 'stage1', 'rec', 'c1', 'play.szx'), 14821
 SCRIPT = os.path.join(CASE, 'tests', 'inputs', 'c1.txt')
@@ -44,22 +49,11 @@ def script():
 
 
 def now(lab):
-    t = lab.s.call('inspect_state', {'aspects': ['snapshot']}, ok=False).structured['snapshot']
-    return t['time']['frame'], t['time']['t'], t['regs']
-
-
-def pc_of(regs):
-    for k in ('pc', 'PC'):
-        if k in regs:
-            return regs[k]
-    pc = (regs.get('special') or {}).get('pc')
-    return int(pc, 16) if isinstance(pc, str) else pc
+    return PT.now(lab.s)
 
 
 def run_to(lab, pc, frames):
-    lab.s.call('control_execution', {'action': 'run_until_pc', 'pc': pc, 'max_tstates': frames * FRAME_T}, ok=False)
-    f, t, regs = now(lab)
-    return f, t, pc_of(regs) == int(pc, 16)
+    return PT.run_to(lab.s, int(pc, 16), frames)
 
 
 def main():

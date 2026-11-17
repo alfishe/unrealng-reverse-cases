@@ -37,6 +37,10 @@
    | every port access | `time_travel port_events`, or the case's `fig_ports.py collect` |
    | where the player's variables are | `python3 ../../kit/input_vars.py --work work/play --inputs S --start F` |
    | one stretch, access by access | `analysis trace` (the kit's trace scripts run it for you, recipe 07) |
+   | the image at a moment (a program's entry) | `python3 ../../kit/rs.py seek --work W --frame F [--t T] --image OUT.bin` (`--first-pc LO-HI`: the first T of frame F with PC in the range); any other MCP call: `rs.py call --work W --tool time_travel seek '{...}'` |
+   | what the copy loops move, and when | `python3 ../../kit/copies.py W/l1.json --min 64 [--group] --listing build/game.lst` |
+   | which graphics a draw routine was given | `python3 ../../kit/pattern_sheet.py --routine ADDR W/l1.json ... --image IMG --out sheet.png` (its L1 `patterns` bases) |
+   | how long each pass of the main loop takes | `python3 ../../kit/pass_time.py --start A --end B --work W --window F:T-F:T` (the recording), or `--live` (`run_until_pc`) when `toolpaths.py build` says the binary lacks `section_timer` |
 
 4. **Treat every unknown as a tool gap.** Read each unknown left outside the ROM against the replay. What is it?
    Why did no detector name it? Which generic rule would?

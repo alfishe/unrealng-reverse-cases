@@ -3,7 +3,8 @@
 
     python3 kit/toolpaths.py sjasmplus|venv|unreal|binary|re_session [HINT]   # prints the path, or fails with what
                                                                               # it tried
-    python3 kit/toolpaths.py build [BINARY]     # the unreal-ng commit a binary holds, and the fixes it lacks
+    python3 kit/toolpaths.py build [BINARY]     # the unreal-ng commit a binary holds, the fixes it lacks and the
+                                                # features it has (section_timer)
 
 From Python: toolpaths.sjasmplus(hint), toolpaths.skoolkit_venv(hint), toolpaths.unreal_ng(hint),
 toolpaths.unreal_binary(hint), toolpaths.re_session(hint) (the checkout's tools/verification/analysis/re_session.py,
@@ -27,7 +28,10 @@ bytes (the version, branch and commit strings the About box shows). Then, for ea
 checkout found as above): "has", "LACKS" (with what fails without it) or "unknown" (no checkout knows the commit).
 buildinfo.h is written when CMake configures, so a binary built later from a newer HEAD of the same worktree may
 hold more than it says: when the worktree's HEAD differs and the binary is newer than HEAD's commit, the HEAD is
-checked too and printed beside it. Exit status 0, or 2 when a fix is lacking.
+checked too and printed beside it. Then the features a kit tool asks for (FEATURES below: `analyze_performance
+section_timer`): "has" or "lacks", by the feature's name among the binary's strings (an MCP tool's schema is compiled
+in), with the commit that brought it checked as for the fixes when the strings do not say; a lacking feature is no
+error (kit/pass_time.py --live times passes without it). Exit status 0, or 2 when a fix is lacking.
 """
 import glob
 import os
@@ -150,6 +154,15 @@ FIXES = [
 ]
 
 
+# The unreal-ng features a kit tool can use when the binary has them (toolpaths.binary_features): (name, the strings
+# that show it in the binary, the commit that brought it, what to use without it)
+FEATURES = [
+    ('section_timer', (b'section_timer',), '8a72caa95', 'analyze_performance section_timer (the native timer of code '
+     'sections between marker addresses); without it kit/pass_time.py --live times each pass with run_until_pc, or '
+     'kit/pass_time.py --work W --window F:T-F:T from a trace'),
+]
+
+
 def _git(source, *args):
     import subprocess
     try:
@@ -227,6 +240,34 @@ def binary_fixes(binary, build=None):
     return rows
 
 
+def binary_features(binary, build=None):
+    """[(name, status, what)] for FEATURES: status "has" or "lacks" (the strings), else by the commit as
+    binary_fixes ("has (commit)", "lacks (commit)", "unknown")"""
+    try:
+        data = open(binary, 'rb').read()
+    except OSError:
+        data = None
+    rows = []
+    for name, strings, commit, what in FEATURES:
+        if data is not None:
+            status = 'has' if any(x in data for x in strings) else 'lacks'
+        else:
+            build = build or binary_build(binary)
+            held = _holds([build['source'], unreal_ng(required=False)], commit, build['commit']) \
+                if build['commit'] else None
+            status = {True: 'has (commit)', False: 'lacks (commit)', None: 'unknown'}[held]
+        rows.append((name, status, what))
+    return rows
+
+
+def has_feature(binary, name):
+    """True / False / None (unknown) for one of FEATURES"""
+    for n, status, _ in binary_features(binary):
+        if n == name:
+            return None if status == 'unknown' else status.startswith('has')
+    raise KeyError(name)
+
+
 def warn_binary(binary, who='kit', out=None):
     """one line for each fix a recipe names that the binary lacks (printed to stderr); returns them"""
     lacking = [row for row in binary_fixes(binary) if row[3].startswith('LACKS')]
@@ -248,6 +289,8 @@ def build_report(hint=None):
     for fix, recipe, what, state in binary_fixes(binary, b):
         print(f'{fix}  {state}  ({recipe}){": " + what if state.startswith("LACKS") else ""}')
         status = 2 if state.startswith('LACKS') else status
+    for name, state, what in binary_features(binary):
+        print(f'{name}  {state}  (feature){": " + what if not state.startswith("has") else ""}')
     return status
 
 

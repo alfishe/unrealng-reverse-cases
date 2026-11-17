@@ -1204,8 +1204,6 @@ DismountUnused:
 
 ; RiderHeight = A, at most $4F
 ;
-; Known only from the code: no recording runs it.
-;
 ; Witness: L1 2 (overhang, throwoff).
 RiderHeightClamp:
   LD (RiderHeight),A

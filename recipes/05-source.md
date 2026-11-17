@@ -45,7 +45,9 @@
    ```
 
    `--install` writes the modules `src/game/game.asm` includes; it deletes only the ones the `.ann` no longer has.
-   `--venv` and `--sjasmplus` may be left out when `$SKOOLKIT_VENV` and `$SJASMPLUS` are set. Every other code
+   `--venv` and `--sjasmplus` may be left out when `$SKOOLKIT_VENV` and `$SJASMPLUS` are set. `--fix-witness` (with
+   `--install`) rewrites the witness lines and gives each code entry no build ran, whose text does not say so yet,
+   `> Known only from the code: no recording runs it.` ([ann-format.md 3.2](../docs/ann-format.md#32-a-description--text)). Every other code
    image is a part, written by the same generator from a part file or one command line
    ([ann-format.md](../docs/ann-format.md#5-parts-banks-and-pieces)):
 

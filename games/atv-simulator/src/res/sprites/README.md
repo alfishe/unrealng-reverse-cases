@@ -15,8 +15,8 @@ bit 7 left. A menu attribute block: +0 width, +1 height in cells, then a byte a 
 a piece in byte order: `kind` (sprite, attrs, bytes), `offset` (information: the build places the pieces one after
 another), `numbers` (the sprite or picture numbers that point at it; the build makes the header's table and count
 from them), `x`, `y` (its place in the PNG), `width`, `height`, `advance`, `shift`, and for attrs and bytes rows the
-bytes in hex. A last `bytes` row lies after the bank's end (the length word stops before it). `kit/cells.py` does not
-fit: these sprites are pixel lines with a 4-byte header, not attribute cells.
+bytes in hex. A last `bytes` row lies after the bank's end (the length word stops before it). The codec is
+`kit/sprite_bank.py` (tools/res_formats.py gives it the header fields and the table's place).
 
 **The font.** Print (`$7608`) draws text with game sprites: `A`-`Z` are sprites `$1E-$37` (the character less `$23`),
 `0`-`9` are `$99-$A2` (plus `$69`), `!` is `$56`, `"` is `$5B`, `.` is `$6F`, lower case `a`-`j` are `$8D-$96`
